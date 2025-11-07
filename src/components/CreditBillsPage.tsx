@@ -67,7 +67,14 @@ export function CreditBillsPage() {
         .order('name');
 
       if (accountsError) throw accountsError;
-      setAccounts(accountsData || []);
+      
+      // Converte saldos para centavos
+      const formattedAccounts = accountsData.map(acc => ({
+        ...acc,
+        balance: Math.round(parseFloat(acc.balance) * 100),
+        limit_amount: acc.limit_amount ? Math.round(parseFloat(acc.limit_amount) * 100) : undefined
+      }));
+      setAccounts(formattedAccounts || []);
 
       // 2. CORREÇÃO: Buscar faturas da NOVA tabela 'credit_bills'
       const { data: billsData, error: billsError } = await supabase
@@ -219,17 +226,18 @@ export function CreditBillsPage() {
       if (transferError) throw transferError;
 
       // 3. (Opcional) Atualizar o 'paid_amount' na tabela 'credit_bills' via RPC
-      // (Opcional, mas bom para a UI)
       if (selectedBill) {
+        const newPaidAmount = selectedBill.paid_amount + amountInCents;
+        const newStatus = newPaidAmount >= selectedBill.total_amount ? 'paid' : 'partial';
+        
         await supabase
           .from('credit_bills')
           .update({ 
-            paid_amount: (selectedBill.paid_amount + amountInCents) / 100, // Envia DECIMAL
-            status: (selectedBill.paid_amount + amountInCents) >= selectedBill.total_amount ? 'paid' : 'partial'
+            paid_amount: newPaidAmount / 100, // Envia DECIMAL
+            status: newStatus
           })
           .eq('id', selectedBill.id);
       }
-
 
       toast({
         title: "Pagamento Realizado",
@@ -252,7 +260,8 @@ export function CreditBillsPage() {
 
       const updatedAccounts = updatedAccountsData.map(acc => ({
         ...acc,
-        balance: Math.round(parseFloat(acc.balance) * 100)
+        balance: Math.round(parseFloat(acc.balance) * 100),
+        limit_amount: acc.limit_amount ? Math.round(parseFloat(acc.limit_amount) * 100) : undefined
       }));
 
       const creditAccount = updatedAccounts.find(acc => acc.id === creditAccountId);
@@ -301,7 +310,7 @@ export function CreditBillsPage() {
     // Apply account and status filters
     const filtered = bills.filter(bill => {
       const accountMatches = selectedAccount === "all" || bill.account_id === selectedAccount;
-      // Mapeia 'closed' e 'pending' (do DB) para 'pending' (na UI)
+      // Mapeia 'closed' para 'pending' (na UI)
       let billStatus = bill.status;
       if (billStatus === 'closed') billStatus = 'pending';
       
@@ -328,14 +337,25 @@ export function CreditBillsPage() {
 
   if (loading || categoriesLoading) {
     return (
-      <div className="space-y-6">
-        <div className="animate-pulse">
-          <div className="h-8 bg-muted rounded-md w-48 mb-4"></div>
-          <div className="grid gap-4 md:grid-cols-3">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="h-32 bg-muted rounded-lg"></div>
+      <div className="container-responsive space-y-4">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="space-y-1">
+            <h1 className="text-financial-h1">Faturas de Cartão</h1>
+            <p className="text-financial-secondary">
+              Gerencie suas faturas de cartão de crédito
+            </p>
+          </div>
+        </div>
+        {/* Loading Skeleton */}
+        <div className="space-y-6 animate-pulse">
+          <div className="grid gap-4 md:grid-cols-4">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="h-24 bg-muted rounded-lg"></div>
             ))}
           </div>
+          <div className="h-40 bg-muted rounded-lg"></div>
+          <div className="h-64 bg-muted rounded-lg"></div>
         </div>
       </div>
     );
@@ -399,7 +419,7 @@ export function CreditBillsPage() {
           <Card className="financial-card">
             <div className="flex items-center justify-between">
               <div className="space-y-1 min-w-0 flex-1">
-                <p className="text-financial-caption text-muted-foreground">Este Mês</p>
+                <p className="text-financial-caption text-muted-foreground">Vencendo este Mês</p>
                 <div className="text-financial-value truncate">
                   {filteredBills.filter(b => {
                     const currentMonth = new Date().getMonth();
@@ -645,9 +665,9 @@ export function CreditBillsPage() {
                           <p className="text-financial-caption text-muted-foreground mb-1">Total</p>
                           <p className="text-financial-value text-sm font-bold">{formatCurrency(bill.total_amount)}</p>
                         </div>
-                        {bill.paid_amount > 0 && bill.status === "partial" && (
+                        {bill.paid_amount > 0 && (bill.status === "partial" || bill.status === "paid") && (
                           <div className="col-span-2">
-                            <p className="text-financial-caption text-muted-foreground mb-1">Pago</p>
+                            <p className="text-financial-caption text-muted-foreground mb-1">Valor Pago</p>
                             <p className="text-financial-body text-success font-medium">{formatCurrency(bill.paid_amount)}</p>
                           </div>
                         )}
@@ -666,7 +686,7 @@ export function CreditBillsPage() {
                           <Eye className="h-3 w-3 mr-1" />
                           Ver
                         </Button>
-                        {bill.status !== "paid" && bill.status !== "open" && bill.total_amount > 0 && (
+                        {bill.status !== "paid" && bill.status !== "open" && (bill.total_amount - bill.paid_amount > 0) && (
                           <Button 
                             size="sm" 
                             onClick={() => handlePayBill(bill)}
@@ -694,12 +714,13 @@ export function CreditBillsPage() {
           onPayment={handlePayment}
           // accounts={accounts} // O modal agora usa o useAccountStore
           creditAccount={selectedBill ? accounts.find(acc => acc.id === selectedBill.account_id) : null}
-          invoiceValueInCents={selectedBill?.total_amount} // Passa em centavos
+          // Passa o valor *restante* da fatura, não o total
+          invoiceValueInCents={selectedBill.total_amount - selectedBill.paid_amount}
           nextInvoiceValueInCents={
             creditBills.find(b => 
               b.account_id === selectedBill.account_id &&
               b.status === 'open'
-            )?.total_amount || 0 // Passa em centavos
+            )?.total_amount || 0
           }
         />
       )}

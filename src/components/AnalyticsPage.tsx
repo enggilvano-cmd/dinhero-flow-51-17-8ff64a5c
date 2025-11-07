@@ -148,7 +148,6 @@ export default function AnalyticsPage({ transactions, accounts }: AnalyticsPageP
 
   /**
    * CORREÇÃO: A lógica foi simplificada para priorizar 'category_id'.
-   * O fallback para 'transaction.category' foi removido para manter consistência.
    */
   const getTransactionCategory = (transaction: Transaction) => {
     // 1. Transferências são tratadas primeiro
@@ -275,9 +274,7 @@ export default function AnalyticsPage({ transactions, accounts }: AnalyticsPageP
       .sort(([a], [b]) => a.localeCompare(b))
       .slice(-6); 
     
-    let saldoAcumulado = 0; // O saldo acumulado deve ser calculado com base no histórico
-    // Nota: Para um saldo acumulado real, precisaríamos de *todas* as transações, não apenas as filtradas.
-    // Esta implementação de saldo acumulado é relativa ao período filtrado.
+    let saldoAcumulado = 0; // Nota: Saldo acumulado relativo ao período filtrado.
     
     const sortedMonths = sortedEntries.map(([monthKey, data]) => {
       const saldoMensal = data.income - data.expenses;
@@ -708,3 +705,229 @@ export default function AnalyticsPage({ transactions, accounts }: AnalyticsPageP
               </div>
             )}
           </CardContent>
+        </Card>
+
+        {/* Account Balances */}
+        <Card className="financial-card">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+              <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5" />
+              Saldos por Conta
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-2 sm:p-3">
+            <ChartContainer config={accountChartConfig} className={`${responsiveConfig.containerHeight} w-full overflow-hidden`}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={accountBalanceData} margin={getComposedChartMargins(responsiveConfig)}>
+                  <XAxis 
+                    dataKey="name" 
+                    {...getBarChartAxisProps(responsiveConfig).xAxis}
+                  />
+                  <YAxis 
+                    tickFormatter={(value) => formatCurrencyForAxis(value / 100, isMobile)} // Divide por 100 para o eixo
+                    {...getBarChartAxisProps(responsiveConfig).yAxis}
+                  />
+                  <ChartTooltip 
+                    content={<ChartTooltipContent />}
+                    formatter={(value: number) => [formatCurrency(value), "Saldo"]}
+                  />
+                  <Bar dataKey="balance">
+                    {accountBalanceData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+
+        {/* Monthly Trend */}
+        <Card className="financial-card">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+              <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5" />
+              Evolução Mensal - Receitas vs Despesas
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-2 sm:p-3">
+            <ChartContainer config={chartConfig} className={`${responsiveConfig.containerHeight} w-full overflow-hidden`}>
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart data={monthlyData} margin={getComposedChartMargins(responsiveConfig)}>
+                  {/* Definições de gradientes */}
+                  <defs>
+                    <linearGradient id="colorReceitas" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="hsl(var(--success))" stopOpacity={0.8}/>
+                      <stop offset="100%" stopColor="hsl(var(--success))" stopOpacity={0.3}/>
+                    </linearGradient>
+                    <linearGradient id="colorDespesas" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="hsl(var(--destructive))" stopOpacity={0.8}/>
+                      <stop offset="100%" stopColor="hsl(var(--destructive))" stopOpacity={0.3}/>
+                    </linearGradient>
+                  </defs>
+
+                  <XAxis 
+                    dataKey="month" 
+                    {...getBarChartAxisProps(responsiveConfig).xAxis}
+                  />
+                  <YAxis 
+                    tickFormatter={(value) => formatCurrencyForAxis(value / 100, isMobile)} // Divide por 100
+                    {...getBarChartAxisProps(responsiveConfig).yAxis}
+                  />
+                  <ChartTooltip 
+                    content={<ChartTooltipContent />}
+                    formatter={(value: number, name: string) => [
+                      formatCurrency(value), 
+                      name === 'receitas' ? 'Receitas' : 
+                      name === 'despesas' ? 'Despesas' : 
+                      name === 'saldo' ? 'Saldo Acumulado' : name
+                    ]}
+                    labelFormatter={(label) => `Mês de ${label}`}
+                  />
+
+                  {/* Legenda apenas no desktop */}
+                  {!isMobile && (
+                    <ChartLegend 
+                      content={<ChartLegendContent className="flex justify-center gap-6" />}
+                      verticalAlign="top"
+                    />
+                  )}
+                  
+                  {/* Barras de Receitas com gradiente */}
+                  <Bar 
+                    dataKey="receitas" 
+                    fill="url(#colorReceitas)"
+                    radius={[4, 4, 0, 0]}
+                    name="Receitas"
+                  />
+                  
+                  {/* Barras de Despesas com gradiente */}
+                  <Bar 
+                    dataKey="despesas" 
+                    fill="url(#colorDespesas)"
+                    radius={[4, 4, 0, 0]}
+                    name="Despesas"
+                  />
+                  
+                  {/* Linha de saldo com pontos condicionais */}
+                  <Line 
+                    type="monotone" 
+                    dataKey="saldo" 
+                    stroke="hsl(var(--primary))"
+                    strokeWidth={isMobile ? 2 : 3}
+                    dot={(props: any) => {
+                      const { cx, cy, payload } = props;
+                      const saldo = payload?.saldo || 0;
+                      return (
+                        <circle
+                          cx={cx}
+                          cy={cy}
+                          r={isMobile ? 3 : 4}
+                          fill={saldo >= 0 ? "hsl(var(--primary))" : "hsl(var(--destructive))"}
+                          stroke="hsl(var(--background))"
+                          strokeWidth={2}
+                        />
+                      );
+                    }}
+                    activeDot={{ 
+                      r: isMobile ? 5 : 6, 
+                      strokeWidth: 2,
+                      fill: "hsl(var(--primary))",
+                      stroke: "hsl(var(--background))"
+                    }}
+                    connectNulls={false}
+                    name="Saldo Acumulado"
+                  />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+
+            {/* Indicadores visuais no mobile */}
+            {isMobile && monthlyData.length > 0 && (
+              <div className="flex justify-center gap-4 mt-3 text-xs">
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 rounded bg-success"></div>
+                  <span className="text-muted-foreground">Receitas</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 rounded bg-destructive"></div>
+                  <span className="text-muted-foreground">Despesas</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-0.5 bg-primary"></div>
+                  <span className="text-muted-foreground">Saldo</span>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Category Details Table */}
+      <Card className="financial-card">
+        <CardHeader>
+          <CardTitle className="text-sm sm:text-base">
+            <span className="block sm:hidden">
+              Detalhes - {filterType === "income" ? "Receitas" : "Despesas"}
+            </span>
+            <span className="hidden sm:block">
+              Detalhes por Categoria - {filterType === "income" ? "Receitas" : "Despesas"}
+            </span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {categoryData.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <PieChart className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p className="text-sm">Nenhuma transação encontrada para o período selecionado</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-2 text-xs sm:text-sm">Categoria</th>
+                    <th className="text-right py-2 text-xs sm:text-sm">Valor</th>
+                    <th className="text-right py-2 text-xs sm:text-sm hidden sm:table-cell">%</th>
+                    <th className="text-right py-2 text-xs sm:text-sm hidden md:table-cell">Qtd</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {categoryData.map((item, index) => (
+                    <tr key={item.category} className="border-b last:border-b-0">
+                      <td className="py-2 sm:py-3">
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <div 
+                            className="w-3 h-3 sm:w-4 sm:h-4 rounded-full flex-shrink-0"
+                            style={{ backgroundColor: item.fill }}
+                          />
+                          <span className="text-xs sm:text-sm truncate max-w-[120px] sm:max-w-none">
+                            {item.category}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="text-right py-2 sm:py-3 font-medium text-xs sm:text-sm">
+                        <div className="flex flex-col sm:block">
+                          <span>{formatCurrency(item.amount)}</span>
+                          <span className="text-xs text-muted-foreground sm:hidden">
+                            {item.percentage.toFixed(1)}% • {item.transactions}x
+                          </span>
+                        </div>
+                      </td>
+                      <td className="text-right py-2 sm:py-3 text-xs sm:text-sm hidden sm:table-cell">
+                        {item.percentage.toFixed(1)}%
+                      </td>
+                      <td className="text-right py-2 sm:py-3 text-xs sm:text-sm hidden md:table-cell">
+                        {item.transactions}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

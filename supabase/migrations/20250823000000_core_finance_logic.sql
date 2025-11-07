@@ -164,8 +164,8 @@ CREATE POLICY "Users can update their own credit bills" ON public.credit_bills
 CREATE POLICY "Users can delete their own credit bills" ON public.credit_bills
   FOR DELETE USING (auth.uid() = user_id);
   
-CREATE INDEX idx_credit_bills_user_id ON public.credit_bills(user_id);
-CREATE INDEX idx_credit_bills_account_id ON public.credit_bills(account_id);
+CREATE INDEX IF NOT EXISTS idx_credit_bills_user_id ON public.credit_bills(user_id);
+CREATE INDEX IF NOT EXISTS idx_credit_bills_account_id ON public.credit_bills(account_id);
 
 
 -- 2.2. Função de Trigger (Ligar Transação à Fatura)
@@ -219,8 +219,6 @@ CREATE TRIGGER on_transaction_insert_link_bill
   EXECUTE FUNCTION public.link_transaction_to_bill();
   
 -- 2.4. Função de Trigger (Desligar Transação da Fatura ao Deletar/Atualizar)
--- (Implementação simplificada: apenas remove o valor da fatura antiga ao atualizar/deletar)
-
 CREATE OR REPLACE FUNCTION public.unlink_transaction_from_bill()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -268,9 +266,9 @@ DROP TRIGGER IF EXISTS on_transaction_update_relink_bill ON public.transactions;
 CREATE TRIGGER on_transaction_update_relink_bill
   AFTER UPDATE ON public.transactions
   FOR EACH ROW
-  EXECUTE FUNCTION public.unlink_transaction_from_bill(); -- Desliga da antiga
--- O trigger 'on_transaction_insert_link_bill' (combinado com o RLS do UPDATE) 
--- irá ligar o NEW.value na fatura correta.
+  -- Desliga da antiga (o trigger de INSERT cuidará da nova)
+  EXECUTE FUNCTION public.unlink_transaction_from_bill();
+
 
 -- 2.6. Função de Cron (Gerar e Fechar Faturas)
 -- Esta função deve ser chamada diariamente por um Cron Job (ex: Supabase Cron)

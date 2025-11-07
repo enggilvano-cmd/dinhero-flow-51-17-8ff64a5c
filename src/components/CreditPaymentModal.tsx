@@ -16,9 +16,10 @@ import { useAccountStore } from "@/stores/AccountStore";
 interface CreditPaymentModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  // CORREÇÃO: onPayment agora espera amountInCents e retorna uma Promise
   onPayment: (creditAccountId: string, bankAccountId: string, amountInCents: number, date: Date) => Promise<{ creditAccount: Account, bankAccount: Account }>;
   creditAccount: Account | null;  
-  // Props para valores da fatura, passados pelo componente pai
+  // Props para valores da fatura, passados pelo componente pai (em centavos)
   invoiceValueInCents?: number;
   nextInvoiceValueInCents?: number;
 }
@@ -33,12 +34,13 @@ export function CreditPaymentModal({
 }: CreditPaymentModalProps) {
   const [formData, setFormData] = useState({
     bankAccountId: "",
-    amount: "",
+    amount: "", // String (ex: "100,50")
     paymentType: "invoice" as "invoice" | "total_balance" | "partial",
     date: getTodayString()
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  // CORREÇÃO: Busca contas do store global
   const accounts = useAccountStore((state) => state.accounts);
   const updateAccountsInStore = useAccountStore((state) => state.updateAccounts);
 
@@ -58,7 +60,7 @@ export function CreditPaymentModal({
         date: getTodayString()
       });
     }
-  }, [open, invoiceValueInCents]);
+  }, [open, invoiceValueInCents, creditAccount]); // Adiciona creditAccount
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,11 +102,12 @@ export function CreditPaymentModal({
     }
 
     // O usuário não pode pagar mais do que o saldo devedor total.
-    const totalDebtInCents = Math.abs(creditAccount.balance);
-    if (amountInCents > totalDebtInCents) {
+    const totalDebtInCents = creditAccount ? Math.abs(creditAccount.balance) : 0;
+    // Adiciona uma margem de 1 centavo para problemas de arredondamento
+    if (amountInCents > (totalDebtInCents + 1)) { 
       toast({
         title: "Valor Inválido",
-        description: `O valor do pagamento ( ${formatCurrency(amountInCents)} ) não pode ser maior que a dívida total de ${formatCurrency(totalDebtInCents)}.`,
+        description: `O valor do pagamento (${formatCurrency(amountInCents)}) não pode ser maior que a dívida total de ${formatCurrency(totalDebtInCents)}.`,
         variant: "destructive"
       });
       return;
@@ -112,6 +115,7 @@ export function CreditPaymentModal({
 
     setIsSubmitting(true);
     try {
+      // CORREÇÃO: Chama a onPayment (que agora é a 'transfer')
       const { creditAccount: updatedCreditAccount, bankAccount: updatedBankAccount } = await onPayment(
         creditAccount.id,
         formData.bankAccountId,
@@ -119,11 +123,12 @@ export function CreditPaymentModal({
         createDateFromString(formData.date)
       );
 
-      // Atualiza as contas no store global
+      // Atualiza as contas no store global (recebendo os dados atualizados pelo trigger)
       updateAccountsInStore([updatedCreditAccount, updatedBankAccount]);
       onOpenChange(false); // Fechar o modal
     } catch (error) {
       console.error("Payment failed:", error);
+      // O toast de erro já é tratado na 'CreditBillsPage'
     } finally {
       setIsSubmitting(false);
     }
@@ -132,7 +137,7 @@ export function CreditPaymentModal({
   const handlePaymentTypeChange = (type: "invoice" | "total_balance" | "partial") => {
     let newAmount = "";
     if (type === "invoice" && creditAccount) {
-      // Pagar a fatura fechada
+      // Pagar a fatura fechada (ou o restante dela)
       newAmount = (invoiceValueInCents / 100).toFixed(2).replace('.', ',');
     } else if (type === "total_balance" && creditAccount) {
       // Pagar o saldo devedor total (fatura fechada + fatura aberta)
@@ -166,13 +171,13 @@ export function CreditPaymentModal({
               <h3 className="font-semibold">{creditAccount.name}</h3>
               <div className="text-sm space-y-1">
                 <p className="flex justify-between">
-                  <span className="text-muted-foreground">Fatura Fechada:</span>
+                  <span className="text-muted-foreground">Fatura Fechada (Restante):</span>
                   <span className="font-medium balance-negative">
                     {formatCurrency(invoiceValueInCents || 0)}
                   </span>
                 </p>
                 <p className="flex justify-between">
-                  <span className="text-muted-foreground">Fatura Aberta:</span>
+                  <span className="text-muted-foreground">Fatura Aberta (Parcial):</span>
                   <span className="font-medium text-muted-foreground">
                     {formatCurrency(nextInvoiceValueInCents)}
                   </span>

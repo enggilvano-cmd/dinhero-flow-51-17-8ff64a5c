@@ -91,6 +91,7 @@ export function AddTransactionModal({
       setCategories(data || []);
     };
     
+    // Carrega categorias apenas quando o modal for aberto
     if (open && user) {
         loadCategories();
     }
@@ -203,6 +204,7 @@ export function AddTransactionModal({
           transactions.push(transaction);
         }
 
+        // A função onAddInstallmentTransactions deve ser uma função de 'bulk insert'
         await onAddInstallmentTransactions(transactions);
         toast({
           title: "Sucesso",
@@ -288,6 +290,7 @@ export function AddTransactionModal({
 
             <div className="space-y-2">
               <Label htmlFor="amount">Valor (R$)</Label>
+              {/* CORREÇÃO: Input de 'text' para lidar com vírgula */}
               <Input
                 id="amount"
                 type="text"
@@ -383,6 +386,7 @@ export function AddTransactionModal({
               <div className="space-y-0.5">
                 <Label htmlFor="installment">Transação Parcelada</Label>
                 <p className="text-sm text-muted-foreground">
+                  {/* CORREÇÃO: Texto genérico */}
                   Dividir esta transação em parcelas mensais.
                 </p>
               </div>
@@ -412,12 +416,13 @@ export function AddTransactionModal({
                     {Array.from({ length: 59 }, (_, i) => i + 2).map((num) => (
                       <SelectItem key={num} value={num.toString()}>
                         {num}x
-                        {/* Prévia do valor da parcela */}
-                        {formData.amount && 
+                        {/* A prévia do valor da parcela */}
+                        {formData.amount ? 
                           ` de ${new Intl.NumberFormat('pt-BR', {
                             style: 'currency',
                             currency: 'BRL'
                           }).format(currencyStringToCents(formData.amount) / 100 / num)}`
+                          : ''
                         }
                       </SelectItem>
                     ))}
