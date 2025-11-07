@@ -1,51 +1,137 @@
-import { create } from 'zustand';
-import { Account } from '@/types'; // Assumindo que seu tipo 'Account' está em @/types
+import { create } from 'zustand'
+import { supabase } from '@/integrations/supabase/client'
+import {
+  Account,
+  Category,
+  Transaction,
+  CreateTransaction,
+  CreateTransfer,
+} from '@/integrations/supabase/types'
+//
+// CORREÇÃO: A sintaxe de alias foi movida para dentro das chaves {}.
+//
+import { toast as sonnerToast } from 'sonner'
 
-// Define a interface para o estado e ações do store
-interface AccountStoreState {
-  accounts: Account[];
-  setAccounts: (accounts: Account[]) => void;
-  addAccount: (account: Account) => void;
-  removeAccount: (accountId: string) => void;
+// Tipos para o estado
+export interface AccountStoreState {
+  accounts: Account[]
+  categories: Category[]
+  loading: boolean
+  error: string | null
+  loadAccounts: () => Promise<void>
+  loadCategories: () => Promise<void>
+  createTransaction: (
+    tx: CreateTransaction,
+    onSuccess?: () => void
+  ) => Promise<void>
+  createTransfer: (
+    transfer: CreateTransfer,
+    onSuccess?: () => void
+  ) => Promise<void>
 }
 
-/**
- * Store global para gerenciar as contas do usuário.
- * * NOTA ARQUITETURAL IMPORTANTE:
- * Com a migração da lógica de saldo (balance) para os triggers do Supabase,
- * este store NÃO DEVE MAIS ser usado para gerenciar ou calcular saldos.
- * * O 'balance' em 'accounts' é apenas um snapshot pego do banco de dados.
- * * **Padrão Correto de Atualização:**
- * 1. O cliente executa uma mutação (ex: cria uma transação).
- * 2. A mutação (useMutation) é concluída com sucesso.
- * 3. No 'onSuccess' da mutação, o cliente NÃO atualiza o store localmente.
- * 4. Em vez disso, o cliente invalida as queries do 'react-query' relacionadas
- * (ex: 'accounts', 'transactions').
- * 5. O 'react-query' automaticamente busca os dados frescos do banco de dados,
- * que contêm o saldo correto calculado pelo trigger.
- * 6. O 'setAccounts' é chamado com os novos dados do 'react-query'.
- */
-export const useAccountStore = create<AccountStoreState>((set) => ({
+// NOTA DO PROGRAMADOR:
+// Refatorado para o hook 'create' padrão do Zustand.
+// O 'useSyncExternalStore' manual era desnecessário e propenso a erros.
+// Agora, basta usar 'useAccountStore' nos componentes.
+
+export const useAccountStore = create<AccountStoreState>((set, get) => ({
   accounts: [],
-  
-  /**
-   * Define a lista inteira de contas (usado na carga inicial).
-   */
-  setAccounts: (accounts) => set({ accounts }),
+  categories: [],
+  loading: false,
+  error: null,
 
   /**
-   * Adiciona uma nova conta à lista.
-   * (Usado após a criação de uma nova conta no banco)
+   * Carrega contas do banco de dados.
+   * Os saldos (balance, initial_balance) já virão como BIGINT (centavos).
+   * O frontend TypeScript os tratará como 'number'.
    */
-  addAccount: (account) => set((state) => ({
-    accounts: [...state.accounts, account]
-  })),
+  loadAccounts: async () => {
+    set({ loading: true, error: null })
+    try {
+      const { data, error } = await supabase
+        .from('accounts')
+        .select('*')
+        .order('name')
+
+      if (error) throw error
+      set({ accounts: data || [] })
+    } catch (error: any) {
+      console.error('Erro ao carregar contas:', error.message)
+      set({ error: error.message })
+    } finally {
+      set({ loading: false })
+    }
+  },
 
   /**
-   * Remove uma conta da lista pelo ID.
-   * (Usado após deletar uma conta no banco)
+   * Carrega categorias do banco de dados.
    */
-  removeAccount: (accountId) => set((state) => ({
-    accounts: state.accounts.filter(account => account.id !== accountId)
-  })),
-}));
+  loadCategories: async () => {
+    set({ loading: true, error: null })
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .order('name')
+
+      if (error) throw error
+      set({ categories: data || [] })
+    } catch (error: any) {
+      console.error('Erro ao carregar categorias:', error.message)
+      set({ error: error.message })
+    } finally {
+      set({ loading: false })
+    }
+  },
+
+  /**
+   * Cria uma nova transação.
+   * NOTA CONTÁBIL: Esta função espera 'amount' em CENTAVOS (ex: 1050)
+   * e 'date' como string 'YYYY-MM-DD'.
+   */
+  createTransaction: async (tx, onSuccess) => {
+    try {
+      const { error } = await supabase.from('transactions').insert(tx)
+      if (error) throw error
+
+      sonnerToast.toast('Transação salva com sucesso!')
+      onSuccess?.()
+      // Recarrega as contas para atualizar os saldos
+      get().loadAccounts()
+    } catch (error: any) {
+      console.error('Erro ao criar transação:', error.message)
+      sonnerToast.toast('Erro ao salvar transação.', {
+        description: error.message,
+      })
+    }
+  },
+
+  /**
+   * Cria uma transferência (que chama uma RPC no Supabase).
+   * NOTA CONTÁBIL: Esta função espera 'p_amount' em CENTAVOS (ex: 1050)
+   * e 'p_date' como string 'YYYY-MM-DD'.
+   */
+  createTransfer: async (transfer, onSuccess) => {
+    try {
+      const { error } = await supabase.rpc('create_transfer_transaction', {
+        p_from_account_id: transfer.fromAccountId,
+        p_to_account_id: transfer.toAccountId,
+        p_amount: transfer.amount, // Deve estar em centavos
+        p_date: transfer.date, // Deve ser 'YYYY-MM-DD'
+      })
+
+      if (error) throw error
+
+      sonnerToast.toast('Transferência realizada com sucesso!')
+      onSuccess?.()
+      // Recarrega as contas para atualizar os saldos
+      get().loadAccounts()
+    } catch (error: any) {
+      console.error('Erro ao criar transferência:', error.message)
+      sonnerToast.toast('Erro ao realizar transferência.', {
+        description: error.message,
+      })
+    }
+  },
+}))
