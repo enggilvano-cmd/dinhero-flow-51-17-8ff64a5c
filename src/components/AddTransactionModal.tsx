@@ -3,12 +3,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { createDateFromString, getTodayString, addMonthsToDate } from "@/lib/dateUtils";
+import { createDateFromString, getTodayString, addMonthsToDate, formatDateForStorage } from "@/lib/dateUtils";
 // CORREÇÃO: Importar o parser de moeda
 import { currencyStringToCents } from "@/lib/utils";
 
@@ -20,20 +20,21 @@ interface Category {
 }
 
 interface Transaction {
-  id?: string;
   description: string;
-  // O amount aqui representa o valor em centavos, como um inteiro.
   amount: number;
-  date: Date;
+  date: string;
   type: "income" | "expense" | "transfer";
-  category_id: string; // Corrigido para category_id
-  account_id: string; // Corrigido para account_id
+  category_id: string;
+  account_id: string;
   status: "pending" | "completed";
-  installments?: number; // Metadado para o total de parcelas
-  currentInstallment?: number;
-  parentTransactionId?: string;
-  createdAt?: Date;
+  user_id: string;
+  installments?: number;
+  current_installment?: number;
+  parent_transaction_id?: string;
 }
+
+// Tipo para a inserção no Supabase, que não inclui o 'id'
+type TransactionInsert = Omit<Transaction, 'id'>;
 
 interface Account {
   id: string;
@@ -46,18 +47,16 @@ interface Account {
 interface AddTransactionModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAddTransaction: (transaction: Omit<Transaction, "id" | "createdAt" | "currentInstallment" | "parentTransactionId" | "installments">) => void;
-  onAddInstallmentTransactions?: (transactions: Omit<Transaction, "id" | "createdAt">[]) => void; // Mantém a estrutura completa para parcelas
   accounts: Account[];
+  onTransactionAdded: () => void; // Callback para notificar a página pai que deve recarregar os dados
 }
 
 
 export function AddTransactionModal({ 
   open, 
   onOpenChange, 
-  onAddTransaction, 
-  onAddInstallmentTransactions,
-  accounts 
+  accounts,
+  onTransactionAdded
 }: AddTransactionModalProps) {
   const [formData, setFormData] = useState({
     description: "",
@@ -113,6 +112,16 @@ export function AddTransactionModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // <-- CORREÇÃO 2: Verificar se o usuário existe antes de submeter
+    if (!user) {
+      toast({
+        title: "Erro de Autenticação",
+        description: "Usuário não encontrado. Por favor, faça login novamente.",
+        variant: "destructive"
+      });
+      return;
+    }
     
     const { 
       description, 
@@ -168,7 +177,7 @@ export function AddTransactionModal({
       // CORREÇÃO: A lógica de parcelamento é unificada.
       // Seja cartão de crédito ou não, devemos gerar N transações
       // para que elas caiam nas faturas/fluxos de caixa corretos de cada mês.
-      if (isInstallment && onAddInstallmentTransactions) {
+      if (isInstallment) {
         
         // Lógica de arredondamento para evitar perda de centavos
         const baseInstallmentCents = Math.floor(totalAmountInCents / installments);
@@ -182,30 +191,36 @@ export function AddTransactionModal({
         for (let i = 0; i < installments; i++) {
           // Adiciona o resto na primeira parcela
           const installmentAmount = i === 0 ? (baseInstallmentCents + remainderCents) : baseInstallmentCents;
-          const installmentDate = addMonthsToDate(baseDate, i);
-          const installmentDateStr = installmentDate.toISOString().split('T')[0];
+          const installmentDateObj = addMonthsToDate(baseDate, i);
+          const installmentDateStr = formatDateForStorage(installmentDateObj);
           
           // Status baseado na data da *parcela*
           const installmentStatus = installmentDateStr <= todayStr ? status : "pending";
 
-          const transaction = {
+          const transaction: TransactionInsert = {
             description: `${description} (${i + 1}/${installments})`,
             // O valor deve ser negativo para despesas
-            amount: type === 'expense' ? -Math.abs(installmentAmount) : installmentAmount,
-            date: installmentDate,
+            // A lógica contábil correta é que despesas são negativas e receitas positivas.
+            amount: type === 'expense' ? -Math.abs(installmentAmount) : Math.abs(installmentAmount),
             type: type as "income" | "expense",
             category_id: category_id,
             account_id: account_id,
             status: installmentStatus as "completed" | "pending",
+            user_id: user.id, // <-- CORREÇÃO 3: Adicionado user_id
             installments: installments,
-            currentInstallment: i + 1,
-            parentTransactionId: parentId
+            current_installment: i + 1,
+            parent_transaction_id: parentId,
+            date: installmentDateStr // Usa a data formatada como string
           };
           transactions.push(transaction);
         }
 
-        // A função onAddInstallmentTransactions deve ser uma função de 'bulk insert'
-        await onAddInstallmentTransactions(transactions);
+        // LÓGICA DE INSERÇÃO MOVIDA PARA CÁ
+        const { error } = await supabase.from('transactions').insert(transactions);
+        if (error) {
+          throw error;
+        }
+
         toast({
           title: "Sucesso",
           description: `Transação dividida em ${installments}x adicionada com sucesso!`,
@@ -214,16 +229,22 @@ export function AddTransactionModal({
         
       } else {
         // Cenário 3: Transação Única (sem parcelamento)
-        await onAddTransaction({
+        const transactionToInsert: TransactionInsert = {
           description: description,
-          // O valor deve ser negativo para despesas
-          amount: type === 'expense' ? -Math.abs(totalAmountInCents) : totalAmountInCents,
-          date: createDateFromString(date), // Passa o objeto Date
+          // Garante que despesas sejam sempre negativas e receitas positivas.
+          amount: type === 'expense' ? -Math.abs(totalAmountInCents) : Math.abs(totalAmountInCents),
+          date: formatDateForStorage(createDateFromString(date)), // Passa a data como string 'YYYY-MM-DD'
           type: type as "income" | "expense",
           category_id: category_id,
           account_id: account_id,
-          status: status
-        });
+          status: status,
+          user_id: user.id // <-- CORREÇÃO 3: Adicionado user_id
+        };
+
+        const { error } = await supabase.from('transactions').insert([transactionToInsert]);
+        if (error) {
+          throw error;
+        }
 
         toast({
           title: "Sucesso",
@@ -245,6 +266,7 @@ export function AddTransactionModal({
         installments: "2"
       });
       onOpenChange(false);
+      onTransactionAdded(); // Notifica o componente pai para recarregar os dados
 
     } catch (error: any) {
       console.error('Error creating transaction(s):', error);

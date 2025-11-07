@@ -126,8 +126,8 @@ export function EditTransactionModal({
       // A fatura a que pertence é uma consequência da data, e não o contrário.
       // A seleção de fatura deve servir apenas para mover a transação para outra fatura,
       // o que implica em alterar sua data, mas isso deve ser uma ação explícita do usuário.
-      // Por agora, vamos manter a data que o usuário definiu no formulário.
-      date: formData.date, // A data já é um objeto Date, o backend deve formatá-la corretamente.
+      // A data deve ser formatada para o padrão do banco de dados.
+      date: formatDateForStorage(formData.date),
       type: formData.type,
       category_id: formData.category_id,
       account_id: formData.account_id,
@@ -163,9 +163,9 @@ export function EditTransactionModal({
             <DialogTitle>
               Editar Transação
               {isInstallment && (
-                <span className="text-sm font-normal text-muted-foreground block">
+                <span className="text-sm font-normal text-muted-foreground block">                  
                   Parcela {transaction.current_installment}/{transaction.installments}
-                </span>
+                </span>               
               )}
             </DialogTitle>
           </DialogHeader>

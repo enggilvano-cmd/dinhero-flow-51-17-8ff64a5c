@@ -19,6 +19,6 @@ export function formatCurrency(valueInCents: number): string {
  * @returns O saldo disponível em centavos.
  */
 export function getAvailableBalance(account: Account | undefined): number {
-  if (!account) return 0;
+  if (!account) return 0; // Evita erro se a conta for undefined
   return account.balance + (account.limit_amount || 0);
 }

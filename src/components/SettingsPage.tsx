@@ -155,10 +155,10 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
         }
 
         // Optional: Validate required fields
-        if (data.accounts && !Array.isArray(data.accounts)) {
+        if (data.accounts && !Array.isArray(data.accounts)) { // Validação mais robusta
           throw new Error('Formato de contas inválido');
         }
-        if (data.transactions && !Array.isArray(data.transactions)) {
+        if (data.transactions && !Array.isArray(data.transactions)) { // Validação mais robusta
           throw new Error('Formato de transações inválido');
         }
 
