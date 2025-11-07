@@ -36,17 +36,15 @@ import { Calendar } from './ui/calendar'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { useAccountStore } from '@/stores/AccountStore'
-// parseCurrencyToCents NÃO é mais necessário
-// import { parseCurrencyToCents } from '@/lib/formatters'
 import { Switch } from './ui/switch'
 import { Label } from './ui/label'
-import { CurrencyInput } from './forms/CurrencyInput' // Importar o novo componente
+// CORREÇÃO: Importa de './CurrencyInput' (sem '/forms/')
+import { CurrencyInput } from './CurrencyInput'
 
-// Schema de validação do Zod (CORRIGIDO)
+// Schema de validação do Zod
 const formSchema = z.object({
   type: z.enum(['expense', 'income']),
   description: z.string().min(1, 'A descrição é obrigatória.'),
-  // CORREÇÃO: 'amount' agora é um NÚMERO (centavos)
   amount: z
     .number({ required_error: 'O valor é obrigatório.' })
     .min(1, 'O valor deve ser maior que R$ 0,00'),
@@ -63,7 +61,6 @@ export const AddTransactionModal: React.FC = () => {
     accounts,
     categories,
     createTransaction,
-    loadAccounts,
   } = useAccountStore()
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -71,7 +68,7 @@ export const AddTransactionModal: React.FC = () => {
     defaultValues: {
       type: 'expense',
       description: '',
-      amount: undefined, // CORREÇÃO: Default para input de número
+      amount: undefined, 
       date: new Date(),
       accountId: undefined,
       categoryId: null,
@@ -79,44 +76,33 @@ export const AddTransactionModal: React.FC = () => {
     },
   })
 
-  // Filtra categorias com base no tipo (receita/despesa)
+  // Filtra categorias com base no tipo
   const transactionType = form.watch('type')
   const filteredCategories = React.useMemo(() => {
     return categories.filter((c) => c.type === transactionType)
   }, [categories, transactionType])
 
-  // Função chamada no submit do formulário (CORRIGIDA)
+  // Função chamada no submit
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    //
-    // === NOTA 10/10 DE CORREÇÃO ===
-    //
-    // 1. 'values.amount' JÁ VEM EM CENTAVOS (ex: 15050)
-    //    Não é mais necessário usar 'parseCurrencyToCents'
     let amountInCents = values.amount
-
-    // 2. Garante que a despesa seja negativa e a receita positiva
     if (values.type === 'expense') {
       amountInCents = -Math.abs(amountInCents)
     } else {
       amountInCents = Math.abs(amountInCents)
     }
 
-    // 3. Converte o objeto Date para a string 'YYYY-MM-DD' (padrão do banco)
     const dateString = format(values.date, 'yyyy-MM-dd')
-    // ==============================
 
-    // Chama a ação do store com os dados formatados corretamente
     await createTransaction(
       {
         description: values.description,
-        amount: amountInCents, // JÁ ESTÁ EM CENTAVOS
+        amount: amountInCents,
         date: dateString,
         account_id: values.accountId,
         category_id: values.categoryId,
         is_paid: values.isPaid,
       },
       () => {
-        // Callback de sucesso
         setIsOpen(false)
         form.reset()
       }

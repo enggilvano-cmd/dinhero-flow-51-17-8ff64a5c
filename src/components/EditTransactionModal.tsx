@@ -11,13 +11,15 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { Transaction, Account } from "@/types"; // 'Account' não está sendo usado, pode remover se quiser
+import { Transaction } from "@/types";
 import { useCategories } from "@/hooks/useCategories";
 import { createDateFromString } from "@/lib/dateUtils";
 import { InstallmentEditScopeDialog, EditScope } from "./InstallmentEditScopeDialog";
 import { useAccountStore } from "@/stores/AccountStore";
-
-// MELHORIA DE EXCELÊNCIA (P1): Importar a máscara de moeda
+// CORREÇÃO: Importa de './CurrencyInput' (sem '/forms/')
+// Note que este modal não usa react-hook-form, então
+// a importação de CurrencyInput não é necessária aqui,
+// mas a importação de PatternFormat é.
 import { PatternFormat } from "react-number-format";
 
 interface EditTransactionModalProps {
@@ -27,15 +29,14 @@ interface EditTransactionModalProps {
   transaction: Transaction | null;
 }
 
-// CORREÇÃO: 'amount' no formData agora armazena NÚMERO (centavos)
+// 'amount' no formData armazena NÚMERO (centavos)
 type FormData = {
   description: string;
-  amount: number | undefined; // Armazena centavos (ex: 10050)
+  amount: number | undefined; 
   date: Date;
   type: "income" | "expense";
   category_id: string;
   account_id: string;
-  // CORREÇÃO: O schema do DB usa 'is_paid' (boolean)
   is_paid: boolean;
 };
 
@@ -47,16 +48,13 @@ export function EditTransactionModal({
 }: EditTransactionModalProps) {
   const [formData, setFormData] = useState<FormData>({
     description: "",
-    amount: undefined, // Armazena centavos (ex: 10050)
+    amount: undefined,
     date: new Date(),
     type: "expense" as "income" | "expense",
     category_id: "",
     account_id: "",
     is_paid: true,
   });
-
-  // REMOVIDO: O estado 'numericAmount' é redundante. 'formData.amount' guardará os centavos.
-  // const [numericAmount, setNumericAmount] = useState<number | undefined>(undefined);
 
   const [scopeDialogOpen, setScopeDialogOpen] = useState(false);
   const { toast } = useToast();
@@ -70,30 +68,25 @@ export function EditTransactionModal({
         transaction.date;
       
       const transactionType = transaction.type === "transfer" ? "expense" : transaction.type;
-      
-      // CORREÇÃO: O valor já é BIGINT (centavos, ex: 10050)
       const amountInCents = Math.abs(transaction.amount);
 
       setFormData({
         description: transaction.description,
-        amount: amountInCents, // Armazena o NÚMERO de centavos
+        amount: amountInCents,
         date: transactionDate,
         type: transactionType as "income" | "expense",
         category_id: transaction.category_id,
         account_id: transaction.account_id,
-        // CORREÇÃO: 'status' é 'is_paid' no schema
         is_paid: transaction.is_paid
       });
       
     }
-  }, [open, transaction]); // Removido transaction?.id da dependência, 'transaction' é suficiente
+  }, [open, transaction]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!transaction) return;
     
-    // CORREÇÃO: Valida com o formData.amount (número de centavos)
     if (!formData.description.trim() || !formData.amount || !formData.account_id) {
       toast({
         title: "Erro",
@@ -122,32 +115,28 @@ export function EditTransactionModal({
     }
 
     const isInstallment = transaction.installments && transaction.installments > 1;
-    
     if (isInstallment) {
       setScopeDialogOpen(true);
       return;
     }
-
     processEdit("current");
   };
 
   const processEdit = (editScope: EditScope) => {
     if (!transaction || !formData.amount) return;
 
-    // CORREÇÃO: O valor em centavos (ex: 10050) já está em 'formData.amount'
     const amountInCents = formData.amount;
 
     const updatedTransaction: Transaction = {
       ...transaction,
       description: formData.description.trim(),
       amount: formData.type === 'income' ? amountInCents : -Math.abs(amountInCents),
-      date: formData.date, // O 'onEditTransaction' deve formatar para 'YYYY-MM-DD' se necessário
+      date: formData.date,
       type: formData.type,
       category_id: formData.category_id,
       account_id: formData.account_id,
-      // CORREÇÃO: 'status' é 'is_paid'
       is_paid: formData.is_paid,
-      status: formData.is_paid ? 'completed' : 'pending', // Mantém compatibilidade com 'status' se a 'Transaction' type o tiver
+      status: formData.is_paid ? 'completed' : 'pending',
     };
 
     onEditTransaction(updatedTransaction, editScope);
@@ -198,7 +187,7 @@ export function EditTransactionModal({
 
           <div className="space-y-2">
             <Label htmlFor="amount">Valor</Label>
-            {/* CORREÇÃO: Ligar o PatternFormat ao estado 'formData.amount' (centavos) */}
+            {/* Este modal usa PatternFormat diretamente */}
             <PatternFormat
                 id="amount"
                 customInput={Input}
@@ -209,10 +198,8 @@ export function EditTransactionModal({
                 decimalSeparator=","
                 prefix="R$ "
                 allowNegative={false}
-                // O valor exibido é os centavos / 100
                 value={typeof formData.amount === 'number' ? formData.amount / 100 : undefined}
                 onValueChange={(values) => {
-                  // Salva os centavos (int) de volta no estado
                   const centsValue = Math.round(Number(values.floatValue) * 100)
                   setFormData(prev => ({ ...prev, amount: centsValue }));
                 }}
@@ -318,7 +305,6 @@ export function EditTransactionModal({
             </Select>
           </div>
 
-          {/* CORREÇÃO: Alterado de 'Status' para 'Pago' (is_paid) */}
           <div className="space-y-2">
             <Label htmlFor="is_paid">Status</Label>
             <Select

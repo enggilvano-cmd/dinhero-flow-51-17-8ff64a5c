@@ -4,6 +4,9 @@
  * e o formato do banco de dados (ex: 1050).
  */
 
+// IMPORTAÇÃO ADICIONADA: A nova função precisa do tipo 'Account'
+import { Account } from '@/types'
+
 /**
  * Formata um valor inteiro em centavos para uma string de moeda BRL.
  * @param amountInCents O valor em centavos (ex: 1050)
@@ -68,4 +71,24 @@ export const parseCurrencyToCents = (
 
   // 5. Multiplica por 100 e arredonda para obter os centavos inteiros
   return Math.round(floatValue * 100)
+}
+
+/**
+ * FUNÇÃO ADICIONADA (ESTAVA FALTANDO)
+ * Calcula o saldo disponível (saldo + limite) de uma conta.
+ * @param account O objeto da conta
+ * @returns O saldo disponível em centavos (ex: 10050)
+ */
+export const getAvailableBalance = (
+  account: Account | null | undefined
+): number => {
+  if (!account) {
+    return 0
+  }
+
+  // O limite (cheque especial) é um valor positivo que se soma ao saldo.
+  const limit = account.limit_amount || 0
+
+  // O saldo (balance) já está em centavos.
+  return account.balance + limit
 }
