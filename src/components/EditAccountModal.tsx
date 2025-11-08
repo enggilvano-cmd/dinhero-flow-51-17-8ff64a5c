@@ -29,7 +29,7 @@ export function EditAccountModal({ open, onOpenChange, onEditAccount, account }:
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-  const updateAccountInStore = useAccountStore((state) => state.updateAccount);
+  const updateAccounts = useAccountStore((state) => state.updateAccounts);
 
   useEffect(() => {
     if (account) {
@@ -132,7 +132,7 @@ export function EditAccountModal({ open, onOpenChange, onEditAccount, account }:
       await onEditAccount(updatedAccount);
 
       // Atualiza a conta no store global
-      updateAccountInStore(updatedAccount);
+      updateAccounts(updatedAccount);
 
       toast({
         title: "Sucesso",

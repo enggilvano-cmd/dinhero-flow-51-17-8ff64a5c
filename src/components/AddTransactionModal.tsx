@@ -123,10 +123,46 @@ export function AddTransactionModal({
       installments: installmentsString 
     } = formData;
 
-    if (!description || !amountString || !type || !category_id || !account_id) {
+    if (!description.trim()) {
       toast({
         title: "Erro",
-        description: "Por favor, preencha todos os campos.",
+        description: "Por favor, preencha a descrição.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!amountString) {
+      toast({
+        title: "Erro",
+        description: "Por favor, preencha o valor.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!type) {
+      toast({
+        title: "Erro",
+        description: "Por favor, selecione o tipo de transação.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!category_id) {
+      toast({
+        title: "Erro",
+        description: "Por favor, selecione uma categoria.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!account_id) {
+      toast({
+        title: "Erro",
+        description: "Por favor, selecione uma conta.",
         variant: "destructive"
       });
       return;
