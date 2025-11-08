@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";import { currencyStringToCents } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarIcon } from "lucide-react";
@@ -11,32 +11,18 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { Transaction } from "@/types";
+import { Transaction, Account } from "@/types";
 import { useCategories } from "@/hooks/useCategories";
-import { createDateFromString } from "@/lib/dateUtils";
+import { createDateFromString, formatDateForStorage } from "@/lib/dateUtils";
 import { InstallmentEditScopeDialog, EditScope } from "./InstallmentEditScopeDialog";
 import { useAccountStore } from "@/stores/AccountStore";
-// CORREÇÃO: Importa de '@/components/CurrencyInput' (o componente CurrencyInput não é usado diretamente, mas o comentário estava incorreto)
-import { PatternFormat } from "react-number-format";
 
 interface EditTransactionModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onEditTransaction: (transaction: Transaction, editScope?: EditScope) => void;
-  // CORREÇÃO: Remover accounts, pois são obtidas do store
   transaction: Transaction | null;
 }
-
-// 'amount' no formData armazena NÚMERO (centavos)
-type FormData = {
-  description: string;
-  amount: number | undefined; 
-  date: Date;
-  type: "income" | "expense";
-  category_id: string;
-  account_id: string;
-  is_paid: boolean;
-};
 
 export function EditTransactionModal({
   open,
@@ -44,45 +30,43 @@ export function EditTransactionModal({
   onEditTransaction,
   transaction
 }: EditTransactionModalProps) {
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState({
     description: "",
-    amount: undefined,
+    amount: "",
     date: new Date(),
     type: "expense" as "income" | "expense",
     category_id: "",
     account_id: "",
-    is_paid: true,
+    status: "completed" as "pending" | "completed"
   });
-
   const [scopeDialogOpen, setScopeDialogOpen] = useState(false);
   const { toast } = useToast();
   const { categories } = useCategories();
   const accounts = useAccountStore((state) => state.accounts);
 
   useEffect(() => {
-    if (open && transaction) {
-      const transactionDate = typeof transaction.date === 'string' ?
-        createDateFromString(transaction.date.split('T')[0]) :
+    if (transaction) {
+      // Use createDateFromString para evitar problemas de fuso horário
+      const transactionDate = typeof transaction.date === 'string' ? 
+        createDateFromString(transaction.date.split('T')[0]) : 
         transaction.date;
-      
+      // Only allow income/expense types in edit modal, transfers should be handled separately
       const transactionType = transaction.type === "transfer" ? "expense" : transaction.type;
-      const amountInCents = Math.abs(transaction.amount);
-
       setFormData({
         description: transaction.description,
-        amount: amountInCents,
+        amount: (transaction.amount / 100).toFixed(2).replace('.', ','),
         date: transactionDate,
         type: transactionType as "income" | "expense",
         category_id: transaction.category_id,
         account_id: transaction.account_id,
-        is_paid: transaction.is_paid
+        status: transaction.status
       });
-      
     }
-  }, [open, transaction]);
+  }, [transaction]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (!transaction) return;
     
     if (!formData.description.trim() || !formData.amount || !formData.account_id) {
@@ -94,7 +78,8 @@ export function EditTransactionModal({
       return;
     }
 
-    if (formData.amount <= 0) {
+    const amountInCents = currencyStringToCents(formData.amount);
+    if (isNaN(amountInCents) || amountInCents <= 0) {
       toast({
         title: "Erro",
         description: "Por favor, insira um valor válido.",
@@ -103,6 +88,7 @@ export function EditTransactionModal({
       return;
     }
 
+    // Category is required for income/expense transactions
     if (!formData.category_id) {
       toast({
         title: "Erro",
@@ -112,35 +98,45 @@ export function EditTransactionModal({
       return;
     }
 
+    // Check if this is an installment transaction
     const isInstallment = transaction.installments && transaction.installments > 1;
+    
     if (isInstallment) {
+      // Open scope selection dialog for installment transactions
       setScopeDialogOpen(true);
       return;
     }
+
+    // Process single transaction edit immediately
     processEdit("current");
   };
 
   const processEdit = (editScope: EditScope) => {
-    if (!transaction || !formData.amount) return;
+    if (!transaction) return;
 
-    const amountInCents = formData.amount;
+    const amountInCents = currencyStringToCents(formData.amount);
 
     const updatedTransaction: Transaction = {
       ...transaction,
       description: formData.description.trim(),
-      amount: formData.type === 'income' ? amountInCents : -Math.abs(amountInCents),
-      date: formData.date,
+      amount: amountInCents,
+      // A data da transação não deve ser alterada automaticamente. 
+      // A fatura a que pertence é uma consequência da data, e não o contrário.
+      // A seleção de fatura deve servir apenas para mover a transação para outra fatura,
+      // o que implica em alterar sua data, mas isso deve ser uma ação explícita do usuário.
+      // Por agora, vamos manter a data que o usuário definiu no formulário.
+      date: formData.date, // A data já é um objeto Date, o backend deve formatá-la corretamente.
       type: formData.type,
       category_id: formData.category_id,
       account_id: formData.account_id,
-      is_paid: formData.is_paid,
-      status: formData.is_paid ? 'completed' : 'pending',
+      status: formData.status
     };
 
     onEditTransaction(updatedTransaction, editScope);
     
     const scopeDescription = editScope === "current" ? "A transação" : 
                            editScope === "all" ? "Todas as parcelas" :
+                           editScope === "current-and-previous" ? "As parcelas selecionadas" :
                            "As parcelas restantes";
     
     toast({
@@ -156,7 +152,7 @@ export function EditTransactionModal({
   );
 
   const isInstallment = transaction?.installments && transaction.installments > 1;
-
+  const selectedAccount = accounts.find(acc => acc.id === formData.account_id);
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -185,23 +181,16 @@ export function EditTransactionModal({
 
           <div className="space-y-2">
             <Label htmlFor="amount">Valor</Label>
-            {/* Este modal usa PatternFormat diretamente */}
-            <PatternFormat
-                id="amount"
-                customInput={Input}
-                placeholder="R$ 0,00"
-                format="R$ #,##0.00"
-                mask="_"
-                thousandSeparator="."
-                decimalSeparator=","
-                prefix="R$ "
-                allowNegative={false}
-                value={typeof formData.amount === 'number' ? formData.amount / 100 : undefined}
-                onValueChange={(values) => {
-                  const centsValue = Math.round(Number(values.floatValue) * 100)
-                  setFormData(prev => ({ ...prev, amount: centsValue }));
-                }}
-              />
+            <Input
+              id="amount"
+              type="text"
+              inputMode="decimal"
+              min="0"
+              value={formData.amount}
+              onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+              placeholder="0,00"
+              required
+            />
           </div>
 
           <div className="space-y-2">
@@ -229,7 +218,6 @@ export function EditTransactionModal({
                   selected={formData.date}
                   onSelect={(date) => date && setFormData({ ...formData, date })}
                   initialFocus
-                  locale={ptBR}
                 />
               </PopoverContent>
             </Popover>
@@ -287,36 +275,34 @@ export function EditTransactionModal({
               <SelectTrigger>
                 <SelectValue placeholder="Selecione uma conta" />
               </SelectTrigger>
-              <SelectContent>
-                {accounts.map((account) => (
-                  <SelectItem key={account.id} value={account.id}>
-                    <div className="flex items-center gap-2">
-                      <div
-                        className="w-3 h-3 rounded-full"
-                        style={{ backgroundColor: account.color || "#6b7280" }}
-                      />
-                      {account.name}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
+                <SelectContent>
+                  {accounts.map((account) => (
+                    <SelectItem key={account.id} value={account.id}>
+                      <div className="flex items-center gap-2">
+                        <div 
+                          className="w-3 h-3 rounded-full" 
+                          style={{ backgroundColor: account.color || "#6b7280" }}
+                        />
+                        {account.name}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="is_paid">Status</Label>
+            <Label htmlFor="status">Status</Label>
             <Select
-              value={formData.is_paid ? "paid" : "pending"}
-              onValueChange={(value: "paid" | "pending") => 
-                setFormData({ ...formData, is_paid: value === "paid" })
-              }
+              value={formData.status}
+              onValueChange={(value: "pending" | "completed") => setFormData({ ...formData, status: value })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Selecione o status" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="pending">Pendente</SelectItem>
-                <SelectItem value="paid">Pago</SelectItem>
+                <SelectItem value="completed">Concluída</SelectItem>
               </SelectContent>
             </Select>
           </div>

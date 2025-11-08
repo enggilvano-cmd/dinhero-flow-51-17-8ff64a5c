@@ -1,7 +1,7 @@
 import { useState, FormEvent } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { currencyStringToCents } from "@/lib/formatters"; // Import atualizado
+import { currencyStringToCents } from "@/lib/utils";
 import { Input, InputProps } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -13,8 +13,8 @@ import { useAccountStore } from "@/stores/AccountStore";
 interface AddAccountModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  // onAddAccount agora é uma prop do modal, não do store
-  onAddAccount: (account: Omit<Account, "id" | "user_id" | "created_at" | "updated_at">) => Promise<Account>;
+  // A função agora retorna a conta criada para podermos adicionar ao store
+  onAddAccount: (account: Omit<Account, "id" | "user_id">) => Promise<Account>;
 }
 
 export function AddAccountModal({ open, onOpenChange, onAddAccount }: AddAccountModalProps) {
@@ -47,8 +47,12 @@ export function AddAccountModal({ open, onOpenChange, onAddAccount }: AddAccount
       return;
     }
 
-    // CORREÇÃO: Declarar rawBalanceInCents antes de seu uso
+    // Se for cartão de crédito, sempre armazene o saldo como negativo (dívida).
     const rawBalanceInCents = currencyStringToCents(formData.balance);
+    const balanceInCents = formData.type === 'credit' 
+      ? -Math.abs(rawBalanceInCents) 
+      : rawBalanceInCents;
+      
     if (isNaN(rawBalanceInCents)) {
       toast({
         title: "Erro",
@@ -57,12 +61,6 @@ export function AddAccountModal({ open, onOpenChange, onAddAccount }: AddAccount
       });
       return;
     }
-
-    // Contabilidade: Saldo de cartão de crédito é uma dívida, portanto, negativo.
-    // Outras contas (corrente, poupança) começam com saldo positivo (ou zero).
-    const balanceInCents = formData.type === 'credit' 
-      ? -Math.abs(rawBalanceInCents) 
-      : Math.abs(rawBalanceInCents);
 
     let limitInCents: number | undefined;
     if (formData.limit) {
@@ -80,9 +78,8 @@ export function AddAccountModal({ open, onOpenChange, onAddAccount }: AddAccount
 
     let dueDate: number | undefined;
     if (formData.type === "credit" && formData.dueDate) {
-      // Validação mais robusta para garantir que seja um inteiro no intervalo
-      dueDate = Number(formData.dueDate);
-      if (!Number.isInteger(dueDate) || dueDate < 1 || dueDate > 31) {
+      dueDate = parseInt(formData.dueDate);
+      if (isNaN(dueDate) || dueDate < 1 || dueDate > 31) {
         toast({
           title: "Erro",
           description: "Por favor, insira um dia válido (1-31) para o vencimento.",
@@ -94,8 +91,8 @@ export function AddAccountModal({ open, onOpenChange, onAddAccount }: AddAccount
 
     let closingDate: number | undefined;
     if (formData.type === "credit" && formData.closingDate) {
-      closingDate = Number(formData.closingDate);
-      if (!Number.isInteger(closingDate) || closingDate < 1 || closingDate > 31) {
+      closingDate = parseInt(formData.closingDate);
+      if (isNaN(closingDate) || closingDate < 1 || closingDate > 31) {
         toast({
           title: "Erro",
           description: "Por favor, insira um dia válido (1-31) para o fechamento.",
@@ -117,7 +114,7 @@ export function AddAccountModal({ open, onOpenChange, onAddAccount }: AddAccount
         color: formData.color
       });
 
-      // Adiciona a nova conta criada (com ID e user_id do backend) ao store
+      // Adiciona a nova conta ao store global
       addAccountToStore(newAccount);
 
       toast({

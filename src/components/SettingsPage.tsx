@@ -155,10 +155,10 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
         }
 
         // Optional: Validate required fields
-        if (data.accounts && !Array.isArray(data.accounts)) { // Validação mais robusta
+        if (data.accounts && !Array.isArray(data.accounts)) {
           throw new Error('Formato de contas inválido');
         }
-        if (data.transactions && !Array.isArray(data.transactions)) { // Validação mais robusta
+        if (data.transactions && !Array.isArray(data.transactions)) {
           throw new Error('Formato de transações inválido');
         }
 
@@ -361,12 +361,13 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
                 
                 <div className="relative">
                   <Button 
+                    variant="outline" 
+                    className="gap-2 w-full" 
                     disabled={isImporting}
                     asChild
                   >
-                    {/* CORREÇÃO: As classes de estilo foram movidas do Button para o Label. */}
-                    <label className={`inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 gap-2 w-full cursor-pointer ${isImporting ? 'opacity-50' : ''}`}>
-                      <Upload className="h-4 w-4 mr-2" />
+                    <label className={`cursor-pointer ${isImporting ? 'opacity-50' : ''}`}>
+                      <Upload className="h-4 w-4" />
                       {isImporting ? "Importando..." : "Importar Dados"}
                       <input
                         type="file"
