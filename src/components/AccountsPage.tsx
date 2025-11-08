@@ -54,6 +54,8 @@ export function AccountsPage({
     }).format(value);
   };
 
+  const formatCents = (valueInCents: number) => formatCurrency(valueInCents / 100);
+
   const getAccountIcon = (type: string) => {
     switch (type) {
       case "checking": return <Wallet className="h-5 w-5" />;
@@ -142,7 +144,7 @@ export function AccountsPage({
               <div className="min-w-0 flex-1">
                 <p className="text-xs sm:text-sm font-medium text-muted-foreground">Total em Contas</p>
                 <div className="text-base sm:text-lg lg:text-xl font-bold balance-positive leading-tight">
-                  {formatCurrency(totalBalance)}
+                  {formatCents(totalBalance)}
                 </div>
               </div>
             </div>
@@ -158,7 +160,7 @@ export function AccountsPage({
               <div className="min-w-0 flex-1">
                 <p className="text-xs sm:text-sm font-medium text-muted-foreground">Cartões Utilizados</p>
                 <div className="text-base sm:text-lg lg:text-xl font-bold balance-negative leading-tight">
-                  {formatCurrency(creditUsed)}
+                  {formatCents(creditUsed)}
                 </div>
               </div>
             </div>
@@ -312,7 +314,7 @@ export function AccountsPage({
                           ? "balance-negative" 
                           : account.balance >= 0 ? "balance-positive" : "balance-negative"
                       }`}>
-                        {formatCurrency(account.balance)}
+                        {formatCents(account.balance)}
                       </span>
                     </div>
                     
@@ -321,7 +323,7 @@ export function AccountsPage({
                       <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
                         <div className="flex items-center justify-between sm:justify-start gap-2">
                           <span className="text-xs sm:text-sm text-muted-foreground">Limite:</span>
-                          <span className="text-xs sm:text-sm font-medium">{formatCurrency(account.limit_amount)}</span>
+                          <span className="text-xs sm:text-sm font-medium">{formatCents(account.limit_amount)}</span>
                         </div>
                         
                         {/* Barra de progresso */}

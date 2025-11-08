@@ -243,8 +243,8 @@ const PlaniFlowApp = () => {
         amount: transactionData.amount,
         date: transactionData.date.toISOString().split('T')[0], // Convert to YYYY-MM-DD format
         type: transactionData.type,
-        account_id: transactionData.accountId,
-        category_id: transactionData.category,
+        account_id: transactionData.account_id,
+        category_id: transactionData.category_id,
         status: transactionData.status,
         user_id: user.id
       };
@@ -316,8 +316,8 @@ const PlaniFlowApp = () => {
         amount: data.amount,
         date: data.date.toISOString().split('T')[0], // Convert to YYYY-MM-DD format
         type: data.type,
-        account_id: data.accountId,
-        category_id: data.category,
+        account_id: data.account_id,
+        category_id: data.category_id,
         status: data.status,
         installments: data.installments,
         current_installment: data.currentInstallment,
@@ -345,7 +345,7 @@ const PlaniFlowApp = () => {
         return sum + (trans.type === "income" ? trans.amount : -trans.amount);
       }, 0);
 
-      const accountId = transactionsData[0].accountId;
+      const accountId = transactionsData[0].account_id;
       const account = accounts.find(acc => acc.id === accountId);
       if (account) {
         const newBalance = account.balance + totalAmount;
