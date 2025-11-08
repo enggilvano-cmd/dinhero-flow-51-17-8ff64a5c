@@ -268,7 +268,7 @@ const PlaniFlowApp = () => {
         : -transactionData.amount;
       
       // Get current account balance and validate transaction
-      const account = accounts.find(acc => acc.id === transactionData.accountId);
+      const account = accounts.find(acc => acc.id === transactionData.account_id);
       if (account) {
         const newBalance = account.balance + balanceChange;
         
@@ -282,13 +282,13 @@ const PlaniFlowApp = () => {
         await supabase
           .from('accounts')
           .update({ balance: newBalance })
-          .eq('id', transactionData.accountId)
+          .eq('id', transactionData.account_id)
           .eq('user_id', user.id);
       }
 
       // Update local state
       setAccounts(prev => prev.map(account => {
-        if (account.id === transactionData.accountId) {
+        if (account.id === transactionData.account_id) {
           return { ...account, balance: account.balance + balanceChange };
         }
         return account;
