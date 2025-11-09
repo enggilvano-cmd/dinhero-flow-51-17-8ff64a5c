@@ -80,10 +80,9 @@ const PlaniFlowApp = () => {
   );
   const [loadingData, setLoadingData] = useState(true);
   
-  // --- CORREÇÃO: Estados para os valores da fatura ---
   const [currentInvoiceValue, setCurrentInvoiceValue] = useState(0);
   const [nextInvoiceValue, setNextInvoiceValue] = useState(0);
-  // --- Fim da Correção ---
+  const [payingTotalDebt, setPayingTotalDebt] = useState(0);
   
   const [transactionFilterType, setTransactionFilterType] = useState<
     "income" | "expense" | "transfer" | "all"
@@ -431,8 +430,7 @@ const PlaniFlowApp = () => {
         }
       }
 
-      const parentId = crypto.randomUUID(); // ID compartilhado
-
+      // --- CORREÇÃO: REMOVER parent_transaction_id DE TRANSFERÊNCIAS ---
       const outgoingTransaction = {
         description: `Transferência para ${toAccount.name}`,
         amount,
@@ -443,7 +441,7 @@ const PlaniFlowApp = () => {
         to_account_id: toAccountId,
         status: "completed" as const,
         user_id: user.id,
-        parent_transaction_id: parentId, // Vínculo
+        // parent_transaction_id: parentId, // REMOVIDO
       };
 
       const incomingTransaction = {
@@ -456,8 +454,9 @@ const PlaniFlowApp = () => {
         to_account_id: fromAccountId,
         status: "completed" as const,
         user_id: user.id,
-        parent_transaction_id: parentId, // Vínculo
+        // parent_transaction_id: parentId, // REMOVIDO
       };
+      // --- FIM DA CORREÇÃO ---
 
       const { data: newTransactions, error } = await supabase
         .from("transactions")
@@ -826,12 +825,18 @@ const PlaniFlowApp = () => {
     setEditAccountModalOpen(true);
   };
 
-  const handleCreditPayment = async (
-    creditAccountId: string,
-    bankAccountId: string,
-    amount: number,
-    date: Date
-  ): Promise<{ creditAccount: Account; bankAccount: Account }> => {
+  // --- INÍCIO DA CORREÇÃO DO ERRO F-KEY ---
+  const handleCreditPayment = async ({
+    creditCardAccountId,
+    debitAccountId,
+    amount,
+    paymentDate,
+  }: {
+    creditCardAccountId: string;
+    debitAccountId: string;
+    amount: number;
+    paymentDate: string; // Recebe como string "YYYY-MM-DD"
+  }): Promise<{ creditAccount: Account; bankAccount: Account }> => {
     if (!user) throw new Error("Usuário não autenticado");
 
     try {
@@ -842,51 +847,73 @@ const PlaniFlowApp = () => {
         .eq("name", "Pagamento de Fatura")
         .single();
 
-      const creditAccount = accounts.find((acc) => acc.id === creditAccountId);
-      const bankAccount = accounts.find((acc) => acc.id === bankAccountId);
+      const creditAccount = accounts.find((acc) => acc.id === creditCardAccountId);
+      const bankAccount = accounts.find((acc) => acc.id === debitAccountId);
 
       if (!creditAccount || !bankAccount) {
         throw new Error("Conta de crédito ou conta bancária não encontrada.");
       }
 
-      const parentId = crypto.randomUUID(); // ID compartilhado
-
-      const creditTransaction = {
-        description: `Pagamento fatura ${
-          creditAccount?.name || "cartão de crédito"
-        }`,
-        amount,
-        date: date.toISOString().split("T")[0],
-        type: "income" as const,
-        category_id: paymentCategory?.id || null,
-        account_id: creditAccountId,
-        status: "completed" as const,
-        user_id: user.id,
-        parent_transaction_id: parentId, // Vínculo
-      };
-
+      // --- CORREÇÃO: Inserir a transação de DÉBITO (saída) primeiro ---
       const bankTransaction = {
         description: `Pagamento fatura ${
           creditAccount?.name || "cartão de crédito"
         }`,
         amount,
-        date: date.toISOString().split("T")[0],
+        date: paymentDate,
         type: "expense" as const,
         category_id: paymentCategory?.id || null,
-        account_id: bankAccountId,
+        account_id: debitAccountId,
+        to_account_id: creditCardAccountId, // Indica que é uma transferência para o cartão
         status: "completed" as const,
         user_id: user.id,
-        parent_transaction_id: parentId, // Vínculo
+        parent_transaction_id: null, // Não é uma parcela
+      };
+      
+      const { data: newBankTransaction, error: bankError } = await supabase
+        .from("transactions")
+        .insert(bankTransaction)
+        .select()
+        .single();
+
+      if (bankError) {
+        console.error("Erro do Supabase (bankTransaction):", bankError);
+        throw new Error(`A transação (banco) falhou: ${bankError.message}`);
+      }
+
+      // --- CORREÇÃO: Inserir a transação de CRÉDITO (entrada) em segundo,
+      // referenciando a primeira transação ---
+      const creditTransaction = {
+        description: `Pagamento fatura ${
+          creditAccount?.name || "cartão de crédito"
+        }`,
+        amount,
+        date: paymentDate,
+        type: "income" as const,
+        category_id: paymentCategory?.id || null,
+        account_id: creditCardAccountId,
+        to_account_id: debitAccountId, // Indica que veio do banco
+        status: "completed" as const,
+        user_id: user.id,
+        // Define o 'parent_transaction_id' como o ID da transação de débito
+        parent_transaction_id: newBankTransaction.id, 
       };
 
-      const { data: newTransactions, error } = await supabase
+      const { data: newCreditTransaction, error: creditError } = await supabase
         .from("transactions")
-        .insert([creditTransaction, bankTransaction])
-        .select();
+        .insert(creditTransaction)
+        .select()
+        .single();
 
-      if (error) throw error;
-
-      addGlobalTransactions(newTransactions as Transaction[]);
+      if (creditError) {
+         // Se esta falhar, precisamos reverter a primeira
+        console.error("Erro do Supabase (creditTransaction):", creditError);
+        await supabase.from("transactions").delete().eq("id", newBankTransaction.id);
+        throw new Error(`A transação (cartão) falhou: ${creditError.message}`);
+      }
+      
+      // Adiciona ambas as transações ao store
+      addGlobalTransactions([newBankTransaction as Transaction, newCreditTransaction as Transaction]);
 
       // Update account balances
       const newCreditBalance = creditAccount.balance + amount;
@@ -896,12 +923,12 @@ const PlaniFlowApp = () => {
         supabase
           .from("accounts")
           .update({ balance: newCreditBalance })
-          .eq("id", creditAccountId)
+          .eq("id", creditCardAccountId)
           .eq("user_id", user.id),
         supabase
           .from("accounts")
           .update({ balance: newBankBalance })
-          .eq("id", bankAccountId)
+          .eq("id", debitAccountId)
           .eq("user_id", user.id),
       ]);
 
@@ -922,24 +949,25 @@ const PlaniFlowApp = () => {
       throw error;
     }
   };
+  // --- FIM DA CORREÇÃO ---
 
   const openEditTransaction = (transaction: any) => {
     setEditingTransaction(transaction);
     setEditTransactionModalOpen(true);
   };
 
-  // --- CORREÇÃO: Função para abrir o modal de pagamento ---
   const openCreditPayment = (
     account: Account,
     currentBill: number, // Recebe o valor da fatura atual
-    nextBill: number     // Recebe o valor da próxima fatura
+    nextBill: number, // Recebe o valor da próxima fatura
+    totalBalance: number // Recebe o totalBalance
   ) => {
     setPayingCreditAccount(account);
     setCurrentInvoiceValue(currentBill); // Armazena no estado
-    setNextInvoiceValue(nextBill);     // Armazena no estado
+    setNextInvoiceValue(nextBill); // Armazena no estado
+    setPayingTotalDebt(totalBalance); // Armazena a dívida total
     setCreditPaymentModalOpen(true);
   };
-  // --- Fim da Correção ---
 
   const renderCurrentPage = () => {
     switch (currentPage) {
@@ -949,7 +977,7 @@ const PlaniFlowApp = () => {
             onAddAccount={() => setAddAccountModalOpen(true)}
             onEditAccount={openEditAccount}
             onDeleteAccount={handleDeleteAccount}
-            onPayCreditCard={(account) => openCreditPayment(account, 0, 0)} // Passa 0s pois não vem da pág de faturas
+            onPayCreditCard={(account) => openCreditPayment(account, 0, 0, account.balance < 0 ? Math.abs(account.balance) : 0)} 
             onTransfer={() => setTransferModalOpen(true)}
             initialFilterType={accountFilterType}
           />
@@ -1187,18 +1215,17 @@ const PlaniFlowApp = () => {
         open={transferModalOpen}
         onOpenChange={setTransferModalOpen}
         onTransfer={handleTransfer}
-        accounts={accounts}
       />
 
-      {/* --- CORREÇÃO: Passando os valores da fatura para o modal --- */}
+      {/* Passando os valores da fatura para o modal */}
       <CreditPaymentModal
         open={creditPaymentModalOpen}
         onOpenChange={setCreditPaymentModalOpen}
-        onPayment={handleCreditPayment}
-        accounts={accounts.filter((acc) => acc.type !== "credit")}
+        onPayment={handleCreditPayment} 
         creditAccount={payingCreditAccount}
         invoiceValueInCents={currentInvoiceValue}
         nextInvoiceValueInCents={nextInvoiceValue}
+        totalDebtInCents={payingTotalDebt} 
       />
     </>
   );

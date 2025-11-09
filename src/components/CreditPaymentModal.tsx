@@ -24,7 +24,6 @@ import { AccountBalanceDetails } from "./AccountBalanceDetails";
 import { useAccountStore } from "@/stores/AccountStore";
 import { CurrencyInput } from "./forms/CurrencyInput";
 
-// --- CORREÇÃO AQUI ---
 // Helper para formatar moeda (R$)
 const formatBRL = (valueInCents: number) => {
   // Converte centavos (ex: 12345) para Reais (123.45)
@@ -50,6 +49,8 @@ interface CreditPaymentModalProps {
   creditAccount: Account | null;
   invoiceValueInCents: number; 
   nextInvoiceValueInCents: number;
+  // BUGFIX: Receber a dívida total calculada
+  totalDebtInCents: number;
 }
 
 export function CreditPaymentModal({
@@ -59,6 +60,8 @@ export function CreditPaymentModal({
   creditAccount,
   invoiceValueInCents = 0,
   nextInvoiceValueInCents = 0,
+  // BUGFIX: Usar a prop da dívida total
+  totalDebtInCents: totalDebtInCentsProp = 0, 
 }: CreditPaymentModalProps) {
   const [formData, setFormData] = useState({
     bankAccountId: "",
@@ -77,11 +80,9 @@ export function CreditPaymentModal({
 
   useEffect(() => {
     if (open) {
-      const totalDebtInCents = creditAccount ? Math.abs(creditAccount.balance) : 0;
+      // BUGFIX: Usar a prop totalDebtInCentsProp em vez de recalcular
+      const totalDebtInCents = totalDebtInCentsProp;
       
-      // Prioriza o valor da fatura atual, se for maior que zero
-      // Se não, mas se a dívida total for > 0, sugere a dívida total
-      // Se não, 0
       let initialAmount = 0;
       let initialPaymentType: "invoice" | "total_balance" | "partial" = "partial";
       
@@ -100,7 +101,8 @@ export function CreditPaymentModal({
         date: getTodayString(),
       });
     }
-  }, [open, invoiceValueInCents, creditAccount]); 
+    // BUGFIX: Adicionar totalDebtInCentsProp às dependências
+  }, [open, invoiceValueInCents, creditAccount, totalDebtInCentsProp]); 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -123,7 +125,7 @@ export function CreditPaymentModal({
       const availableBalanceInCents = getAvailableBalance(bankAccount);
       if (availableBalanceInCents < amountInCents) {
         const limitText = bankAccount.limit_amount
-          ? ` (incluindo limite de ${formatBRL(bankAccount.limit_amount)})` // Corrigido
+          ? ` (incluindo limite de ${formatBRL(bankAccount.limit_amount)})`
           : "";
         toast({
           title: "Saldo Insuficiente",
@@ -134,7 +136,8 @@ export function CreditPaymentModal({
       }
     }
 
-    const totalDebtInCents = creditAccount ? Math.abs(creditAccount.balance) : 0;
+    // BUGFIX: Usar a prop totalDebtInCentsProp para validação
+    const totalDebtInCents = totalDebtInCentsProp;
     
     // Pequena margem de 1 centavo para erros de arredondamento
     if (amountInCents > totalDebtInCents + 1) { 
@@ -143,7 +146,7 @@ export function CreditPaymentModal({
         description: `O valor do pagamento (${formatBRL(amountInCents
         )}) não pode ser maior que a dívida total de ${formatBRL(
           totalDebtInCents
-        )}.`, // Corrigido
+        )}.`,
         variant: "destructive",
       });
       return;
@@ -176,7 +179,8 @@ export function CreditPaymentModal({
     }
   };
 
-  const totalDebtInCents = creditAccount ? Math.abs(creditAccount.balance) : 0;
+  // BUGFIX: Usar a prop totalDebtInCentsProp para exibição
+  const totalDebtInCents = totalDebtInCentsProp;
 
   const handlePaymentTypeChange = (
     type: "invoice" | "total_balance" | "partial"
@@ -187,7 +191,8 @@ export function CreditPaymentModal({
       if (type === "invoice") {
         newAmountInCents = invoiceValueInCents;
       } else if (type === "total_balance") {
-        newAmountInCents = totalDebtInCents;
+        // BUGFIX: Usar a prop totalDebtInCentsProp
+        newAmountInCents = totalDebtInCentsProp;
       }
       // Se 'partial', mantém o valor que o usuário digitou
       
@@ -217,7 +222,8 @@ export function CreditPaymentModal({
                 <p className="flex justify-between">
                   <span className="text-muted-foreground">Fatura Fechada:</span>
                   <span className="font-medium balance-negative">
-                    {formatBRL(invoiceValueInCents)}
+                    {/* BUGFIX: Usar Math.max para não mostrar valor negativo (crédito) aqui */}
+                    {formatBRL(Math.max(0, invoiceValueInCents))}
                   </span>
                 </p>
                 <p className="flex justify-between">
@@ -229,6 +235,7 @@ export function CreditPaymentModal({
                 <p className="flex justify-between text-base font-semibold border-t pt-1 mt-1">
                   <span className="text-foreground">Saldo Devedor Total:</span>
                   <span className="balance-negative">
+                    {/* BUGFIX: Usar a prop totalDebtInCents */}
                     {formatBRL(totalDebtInCents)}
                   </span>
                 </p>
@@ -303,6 +310,7 @@ export function CreditPaymentModal({
               >
                 <span className="font-medium text-xs">Pagar Total</span>
                 <span className="text-xs text-muted-foreground">
+                  {/* BUGFIX: Usar a prop totalDebtInCents */}
                   {formatBRL(totalDebtInCents)}
                 </span>
               </Button>
@@ -322,7 +330,7 @@ export function CreditPaymentModal({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="amount">Valor do Pagamento (em centavos)</Label>
+              <Label htmlFor="amount">Valor do Pagamento</Label>
               <CurrencyInput
                 id="amount"
                 value={formData.amountInCents}

@@ -29,6 +29,18 @@ export function CreditCardBillCard({ account, billDetails, onPayBill }: CreditCa
   
   // Usa billDetails.totalBalance (calculado em dateUtils)
   const limitUsedPercentage = limit_amount > 0 ? (billDetails.totalBalance / limit_amount) * 100 : 0;
+  
+  // BUGFIX: Determina a cor com base no valor da fatura (pode ser negativo/crédito)
+  const billAmountColor = billDetails.currentBillAmount > 0 
+    ? "balance-negative" 
+    : billDetails.currentBillAmount < 0 
+    ? "balance-positive" 
+    : "text-muted-foreground";
+  
+  // BUGFIX: Determina o rótulo com base no valor
+  const billLabel = billDetails.currentBillAmount < 0 
+    ? "Crédito na Fatura" 
+    : "Fatura Atual (Vence dia " + account.due_date + ")";
 
   return (
     <Card className="financial-card flex flex-col shadow-md hover:shadow-lg transition-shadow">
@@ -50,9 +62,10 @@ export function CreditCardBillCard({ account, billDetails, onPayBill }: CreditCa
       <CardContent className="space-y-4 flex-1">
         {/* Saldo da Fatura Atual */}
         <div className="space-y-1">
-          <p className="text-sm text-muted-foreground">Fatura Atual (Vence dia {account.due_date})</p>
-          <p className="text-2xl font-bold balance-negative">
-            {/* Deve mostrar R$ 200,00 (ou o valor correto) */}
+          {/* BUGFIX: Rótulo dinâmico */}
+          <p className="text-sm text-muted-foreground">{billLabel}</p>
+          <p className={cn("text-2xl font-bold", billAmountColor)}>
+            {/* BUGFIX: Mostra o valor correto (mesmo negativo) */}
             {formatCents(billDetails.currentBillAmount)}
           </p>
         </div>

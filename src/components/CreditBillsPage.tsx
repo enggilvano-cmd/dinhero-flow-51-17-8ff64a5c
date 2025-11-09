@@ -29,7 +29,9 @@ interface CreditBillsPageProps {
   onPayCreditCard: (
     account: Account,
     currentBillAmount: number,
-    nextBillAmount: number
+    nextBillAmount: number,
+    // BUGFIX: Adicionar totalBalance ao handler
+    totalBalance: number 
   ) => void;
 }
 
@@ -114,7 +116,8 @@ export function CreditBillsPage({ onPayCreditCard }: CreditBillsPageProps) {
                   Fatura Atual (Total)
                 </p>
                 <div className="text-base sm:text-lg lg:text-xl font-bold balance-negative leading-tight">
-                  {formatCents(totalSummary.currentBill)}
+                  {/* BUGFIX: Corrigido para mostrar o valor correto, mesmo se for crédito (negativo) */}
+                  {formatCents(Math.max(0, totalSummary.currentBill))}
                 </div>
               </div>
             </div>
@@ -225,10 +228,12 @@ export function CreditBillsPage({ onPayCreditCard }: CreditBillsPageProps) {
               account={details.account}
               billDetails={details}
               onPayBill={() =>
+                // BUGFIX: Passar o details.totalBalance (dívida total)
                 onPayCreditCard(
                   details.account,
                   details.currentBillAmount,
-                  details.nextBillAmount
+                  details.nextBillAmount,
+                  details.totalBalance // Passa o saldo devedor total calculado
                 )
               }
             />

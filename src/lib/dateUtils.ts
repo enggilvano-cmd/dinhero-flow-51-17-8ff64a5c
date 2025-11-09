@@ -127,45 +127,53 @@ export function calculateBillDetails(
     )
   );
 
-  // --- INÍCIO DA CORREÇÃO DO BUG ---
+  // --- INÍCIO DA CORREÇÃO (Saldo Credor e Saldo Parcial) ---
   let currentBillAmount = 0;
   let nextBillAmount = 0;
-  let newTotalBalance = 0; // 1. Começa a calcular o saldo do zero
+  let newTotalBalance = 0; // Saldo devedor total (limite utilizado)
 
   for (const t of transactions) {
     const tDate = t.date; // t.date agora é um Objeto Date
     
     if (!tDate || isNaN(tDate.getTime())) continue; // Pula datas inválidas
 
-    // 2. Calcula o Saldo Total (Limite Utilizado) manualmente
-    // Isso ignora o `account.balance` antigo (stale)
+    // 1. Calcula o Saldo Total (Limite Utilizado)
+    // Soma despesas (aumenta dívida) e subtrai pagamentos (diminui dívida)
     if (t.type === 'expense') {
       newTotalBalance += t.amount;
     } else if (t.type === 'income') {
       newTotalBalance -= t.amount; // Subtrai pagamentos
     }
 
-    // 3. Para o cálculo da "Fatura Atual", ignoramos os pagamentos
-    if (t.type === 'income') continue;
-
-    // 4. Encontra a fatura correta
+    // 2. Calcula o Saldo da Fatura Atual (currentBillAmount)
+    // Inclui despesas E pagamentos feitos dentro do ciclo da fatura atual
     if (tDate >= currentBillStart && tDate <= currentBillEnd) {
-      currentBillAmount += t.amount;
+      if (t.type === 'expense') {
+        currentBillAmount += t.amount;
+      } else if (t.type === 'income') {
+        // CORREÇÃO: Subtrai o pagamento do valor da fatura atual.
+        // Isso permite que currentBillAmount fique negativo (crédito).
+        currentBillAmount -= t.amount;
+      }
     }
+    // 3. Calcula a Próxima Fatura (nextBillAmount)
+    // Inclui APENAS despesas do próximo ciclo
     else if (tDate >= nextBillStart && tDate <= nextBillEnd) {
-      nextBillAmount += t.amount;
+      if (t.type === 'expense') {
+        nextBillAmount += t.amount;
+      }
     }
   }
 
-  // 5. Usa os novos valores calculados
-  const totalBalance = newTotalBalance; // <-- Correto (ex: R$ 200,00)
-  const availableLimit = (account.limit_amount || 0) - totalBalance; // <-- Correto (ex: R$ 1.800,00)
+  // 4. Usa os novos valores calculados
+  const totalBalance = newTotalBalance; // Saldo devedor total (correto)
+  const availableLimit = (account.limit_amount || 0) - totalBalance; // Limite disponível (correto)
   // --- FIM DA CORREÇÃO ---
 
   return {
-    currentBillAmount, // Fatura Atual (ex: R$ 200,00)
-    nextBillAmount,    // Próxima Fatura
-    totalBalance,      // Limite Utilizado (ex: R$ 200,00)
-    availableLimit,    // Limite Disponível (ex: R$ 1.800,00)
+    currentBillAmount, // Agora pode ser negativo (crédito)
+    nextBillAmount,    // Próxima Fatura (apenas despesas)
+    totalBalance,      // Limite Utilizado (saldo devedor total)
+    availableLimit,    // Limite Disponível
   };
 }
