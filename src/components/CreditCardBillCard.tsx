@@ -4,6 +4,9 @@ import { Progress } from "@/components/ui/progress";
 import { Account } from "@/types";
 import { CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { format, isPast } from 'date-fns'
+import { ptBR } from 'date-fns/locale'
+import { Badge } from '@/components/ui/badge'
 
 // Helper para formatar moeda
 const formatCents = (valueInCents: number) => {
@@ -18,29 +21,43 @@ interface CreditCardBillCardProps {
   billDetails: {
     currentBillAmount: number;
     nextBillAmount: number;
-    totalBalance: number;
+    totalBalance: number; // Este é o saldo devedor total (limite utilizado)
     availableLimit: number;
   };
   onPayBill: () => void;
+  // onDetails: () => void; // Removido por enquanto, pois CreditBillsPage não o usa
 }
 
 export function CreditCardBillCard({ account, billDetails, onPayBill }: CreditCardBillCardProps) {
-  const { limit_amount = 0 } = account;
   
-  // Usa billDetails.totalBalance (calculado em dateUtils)
-  const limitUsedPercentage = limit_amount > 0 ? (billDetails.totalBalance / limit_amount) * 100 : 0;
+  // A verificação de guarda agora está correta.
+  if (!account || !billDetails) {
+    return null
+  }
+
+  const { limit_amount = 0, closing_date, due_date } = account;
+  const { currentBillAmount, nextBillAmount, totalBalance, availableLimit } = billDetails;
+
+  // Calcula o percentual de limite usado
+  const limitUsedPercentage = limit_amount > 0 ? (totalBalance / limit_amount) * 100 : 0;
   
-  // BUGFIX: Determina a cor com base no valor da fatura (pode ser negativo/crédito)
-  const billAmountColor = billDetails.currentBillAmount > 0 
+  // Lógica de Status
+  // Usa a data de fechamento da conta, se existir
+  const closingDate = closing_date ? new Date().setUTCDate(closing_date) : new Date();
+  const isClosed = isPast(closingDate); 
+  const isPaid = currentBillAmount <= 0; // Se a fatura atual é 0 ou negativa (crédito), está paga
+
+  // Determina a cor com base no valor da fatura (pode ser negativo/crédito)
+  const billAmountColor = currentBillAmount > 0 
     ? "balance-negative" 
-    : billDetails.currentBillAmount < 0 
+    : currentBillAmount < 0 
     ? "balance-positive" 
     : "text-muted-foreground";
   
-  // BUGFIX: Determina o rótulo com base no valor
-  const billLabel = billDetails.currentBillAmount < 0 
+  // Determina o rótulo com base no valor
+  const billLabel = currentBillAmount < 0 
     ? "Crédito na Fatura" 
-    : "Fatura Atual (Vence dia " + account.due_date + ")";
+    : `Fatura Atual (Vence dia ${due_date || 'N/A'})`;
 
   return (
     <Card className="financial-card flex flex-col shadow-md hover:shadow-lg transition-shadow">
@@ -54,19 +71,22 @@ export function CreditCardBillCard({ account, billDetails, onPayBill }: CreditCa
           </div>
           <span className="truncate" title={account.name}>{account.name}</span>
         </CardTitle>
-        <span className="text-xs text-muted-foreground text-right whitespace-nowrap pl-2">
-          Fecha dia {account.closing_date} <br/> Vence dia {account.due_date}
-        </span>
+        <div className="flex gap-2 flex-shrink-0">
+          <Badge variant={isClosed ? 'secondary' : 'outline'}>
+            {isClosed ? 'Fechada' : 'Aberta'}
+          </Badge>
+          <Badge variant={isPaid ? 'default' : 'destructive'}>
+            {isPaid ? 'Paga' : 'Pendente'}
+          </Badge>
+        </div>
       </CardHeader>
       
       <CardContent className="space-y-4 flex-1">
         {/* Saldo da Fatura Atual */}
         <div className="space-y-1">
-          {/* BUGFIX: Rótulo dinâmico */}
           <p className="text-sm text-muted-foreground">{billLabel}</p>
           <p className={cn("text-2xl font-bold", billAmountColor)}>
-            {/* BUGFIX: Mostra o valor correto (mesmo negativo) */}
-            {formatCents(billDetails.currentBillAmount)}
+            {formatCents(currentBillAmount)}
           </p>
         </div>
         
@@ -74,19 +94,17 @@ export function CreditCardBillCard({ account, billDetails, onPayBill }: CreditCa
         <div className="space-y-2">
           <div className="flex justify-between text-xs text-muted-foreground">
             <span>Limite Utilizado</span>
-            {/* Deve mostrar R$ 200,00 / R$ 2.000,00 */}
-            <span>{formatCents(billDetails.totalBalance)} / {formatCents(limit_amount)}</span>
+            <span>{formatCents(totalBalance)} / {formatCents(limit_amount)}</span>
           </div>
           <Progress value={limitUsedPercentage} className="h-2" />
           <div className="flex justify-between text-xs">
             <span className="text-muted-foreground">Próxima Fatura (Parcial)</span>
-            <span className="font-medium text-muted-foreground">{formatCents(billDetails.nextBillAmount)}</span>
+            <span className="font-medium text-muted-foreground">{formatCents(nextBillAmount)}</span>
           </div>
           <div className="flex justify-between text-xs">
             <span className="text-muted-foreground">Limite Disponível</span>
-            {/* Deve mostrar R$ 1.800,00 */}
-            <span className={cn("font-medium", billDetails.availableLimit >= 0 ? "balance-positive" : "balance-negative")}>
-              {formatCents(billDetails.availableLimit)}
+            <span className={cn("font-medium", availableLimit >= 0 ? "balance-positive" : "balance-negative")}>
+              {formatCents(availableLimit)}
             </span>
           </div>
         </div>
@@ -96,12 +114,11 @@ export function CreditCardBillCard({ account, billDetails, onPayBill }: CreditCa
         <Button 
           className="w-full" 
           onClick={onPayBill} 
-          // --- CORREÇÃO: Lógica do Botão ---
           // Desabilita apenas se não houver DÍVIDA TOTAL (Limite Utilizado)
-          disabled={billDetails.totalBalance <= 0}
+          disabled={totalBalance <= 0}
         >
-          {/* Muda o texto se a fatura atual for 0, mas ainda houver dívida */}
-          {billDetails.currentBillAmount <= 0 && billDetails.totalBalance > 0 ? "Pagar Valor Avulso" : "Pagar Fatura"}
+          {/* Muda o texto se a fatura atual for 0 ou paga, mas ainda houver dívida total */}
+          {isPaid && totalBalance > 0 ? "Pagar Valor Avulso" : "Pagar Fatura"}
         </Button>
       </CardFooter>
     </Card>
