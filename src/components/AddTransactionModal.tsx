@@ -1,12 +1,28 @@
 import { useState, useEffect, useMemo } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { createDateFromString, getTodayString, addMonthsToDate } from "@/lib/dateUtils";
+import {
+  createDateFromString,
+  getTodayString,
+  addMonthsToDate,
+} from "@/lib/dateUtils";
 import { useCategories } from "@/hooks/useCategories";
 // 1. IMPORTAR O COMPONENTE DE MOEDA CORRETO
 import { CurrencyInput } from "@/components/forms/CurrencyInput";
@@ -40,30 +56,36 @@ interface Account {
 interface AddTransactionModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAddTransaction: (transaction: Omit<Transaction, "id" | "createdAt" | "currentInstallment" | "parentTransactionId">) => void;
-  onAddInstallmentTransactions?: (transactions: Omit<Transaction, "id" | "createdAt">[]) => void; // Mantém a estrutura completa para parcelas
+  onAddTransaction: (
+    transaction: Omit<
+      Transaction,
+      "id" | "createdAt" | "currentInstallment" | "parentTransactionId"
+    >
+  ) => void;
+  onAddInstallmentTransactions?: (
+    transactions: Omit<Transaction, "id" | "createdAt">[]
+  ) => void; // Mantém a estrutura completa para parcelas
   accounts: Account[];
 }
 
-
-export function AddTransactionModal({ 
-  open, 
-  onOpenChange, 
-  onAddTransaction, 
+export function AddTransactionModal({
+  open,
+  onOpenChange,
+  onAddTransaction,
   onAddInstallmentTransactions,
-  accounts 
+  accounts,
 }: AddTransactionModalProps) {
   const [formData, setFormData] = useState({
     description: "",
     // 3. ALTERAR O ESTADO 'amount' PARA NÚMERO (CENTAVOS)
-    amount: 0, 
+    amount: 0,
     date: getTodayString(),
     type: "" as "income" | "expense" | "transfer" | "",
     category_id: "",
     account_id: "",
     status: "completed" as "pending" | "completed",
     isInstallment: false,
-    installments: "2" // Padrão de 2 se parcelado
+    installments: "2", // Padrão de 2 se parcelado
   });
   const { toast } = useToast();
   const { categories } = useCategories();
@@ -73,11 +95,11 @@ export function AddTransactionModal({
     if (formData.date) {
       const transactionDateStr = formData.date; // YYYY-MM-DD format
       const todayStr = getTodayString(); // YYYY-MM-DD format
-      
+
       const newStatus = transactionDateStr <= todayStr ? "completed" : "pending";
-      
+
       if (formData.status !== newStatus) {
-        setFormData(prev => ({ ...prev, status: newStatus }));
+        setFormData((prev) => ({ ...prev, status: newStatus }));
       }
     }
   }, [formData.date]);
@@ -100,7 +122,7 @@ export function AddTransactionModal({
       date,
       status,
       isInstallment,
-      installments: installmentsString
+      installments: installmentsString,
     } = formData;
 
     // 4. REMOVER A CONVERSÃO. O VALOR JÁ ESTÁ EM CENTAVOS.
@@ -112,7 +134,7 @@ export function AddTransactionModal({
       toast({
         title: "Erro",
         description: "Por favor, insira um valor válido maior que zero.",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
@@ -121,7 +143,7 @@ export function AddTransactionModal({
       toast({
         title: "Erro",
         description: "Por favor, preencha a descrição.",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
@@ -130,7 +152,7 @@ export function AddTransactionModal({
       toast({
         title: "Erro",
         description: "Por favor, selecione o tipo de transação.",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
@@ -139,7 +161,7 @@ export function AddTransactionModal({
       toast({
         title: "Erro",
         description: "Por favor, selecione uma categoria.",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
@@ -148,24 +170,31 @@ export function AddTransactionModal({
       toast({
         title: "Erro",
         description: "Por favor, selecione uma conta.",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
 
     const installments = parseInt(installmentsString);
-    if (isInstallment && (isNaN(installments) || installments < 2 || installments > 60)) {
+    if (
+      isInstallment &&
+      (isNaN(installments) || installments < 2 || installments > 60)
+    ) {
       toast({
         title: "Erro",
         description: "O número de parcelas deve ser entre 2 e 60.",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
 
-    const selectedAccount = accounts.find(acc => acc.id === account_id);
+    const selectedAccount = accounts.find((acc) => acc.id === account_id);
     if (!selectedAccount) {
-      toast({ title: "Erro", description: "Conta selecionada não encontrada.", variant: "destructive" });
+      toast({
+        title: "Erro",
+        description: "Conta selecionada não encontrada.",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -175,8 +204,7 @@ export function AddTransactionModal({
       if (isInstallment) {
         // Cenário 1: Parcelamento no Cartão de Crédito
         // Lógica: Lançar UMA transação pelo valor TOTAL para reconciliação
-        if (selectedAccount.type === 'credit' && onAddTransaction) {
-          
+        if (selectedAccount.type === "credit" && onAddTransaction) {
           const transaction = {
             description: `${description} (Compra Total em ${installments}x)`, // Descrição mais clara para o cartão
             amount: numericAmount, // Valor já está em centavos
@@ -186,29 +214,33 @@ export function AddTransactionModal({
             account_id: account_id,
             status: status,
             installments: installments, // Metadata: total de parcelas
-            currentInstallment: 1,      // Metadata: parcela atual
-            parentTransactionId: crypto.randomUUID() // ID único para agrupar
+            currentInstallment: 1, // Metadata: parcela atual
+            parentTransactionId: crypto.randomUUID(), // ID único para agrupar
           };
 
           // DEBUG: Log do objeto enviado
-          console.log("DEBUG: Enviando (Cartão) para onAddTransaction", transaction);
+          console.log(
+            "DEBUG: Enviando (Cartão) para onAddTransaction",
+            transaction
+          );
           await onAddTransaction(transaction);
 
           toast({
             title: "Sucesso",
             description: `Transação (Cartão de Crédito) adicionada com sucesso!`,
-            variant: "default"
+            variant: "default",
           });
-
-        } 
+        }
         // Cenário 2: Parcelamento em outra conta (ex: "Pix Parcelado")
         // Lógica: Lançar N transações futuras, com valor corrigido
-        else if (selectedAccount.type !== 'credit' && onAddInstallmentTransactions) {
-          
+        else if (
+          selectedAccount.type !== "credit" &&
+          onAddInstallmentTransactions
+        ) {
           // Lógica de arredondamento para evitar perda de centavos
           const baseInstallmentCents = Math.floor(numericAmount / installments);
           const remainderCents = numericAmount % installments;
-          
+
           const transactions = [];
           const baseDate = createDateFromString(date);
           const parentId = crypto.randomUUID();
@@ -216,12 +248,18 @@ export function AddTransactionModal({
 
           for (let i = 0; i < installments; i++) {
             // Adiciona o resto na primeira parcela
-            const installmentAmount = i === 0 ? (baseInstallmentCents + remainderCents) : baseInstallmentCents;
+            const installmentAmount =
+              i === 0
+                ? baseInstallmentCents + remainderCents
+                : baseInstallmentCents;
             const installmentDate = addMonthsToDate(baseDate, i);
-            const installmentDateStr = installmentDate.toISOString().split('T')[0];
-            
+            const installmentDateStr = installmentDate
+              .toISOString()
+              .split("T")[0];
+
             // Status baseado na data da *parcela*
-            const installmentStatus = installmentDateStr <= todayStr ? "completed" : "pending";
+            const installmentStatus =
+              installmentDateStr <= todayStr ? "completed" : "pending";
 
             const transaction = {
               description: `${description} (${i + 1}/${installments})`,
@@ -233,19 +271,22 @@ export function AddTransactionModal({
               status: installmentStatus as "completed" | "pending",
               installments: installments,
               currentInstallment: i + 1,
-              parentTransactionId: parentId
+              parentTransactionId: parentId,
             };
             transactions.push(transaction);
           }
 
           // DEBUG: Log do objeto enviado
-          console.log("DEBUG: Enviando (Parcelas) para onAddInstallmentTransactions", transactions);
+          console.log(
+            "DEBUG: Enviando (Parcelas) para onAddInstallmentTransactions",
+            transactions
+          );
           await onAddInstallmentTransactions(transactions);
 
           toast({
             title: "Sucesso",
             description: `Transação dividida em ${installments}x adicionada com sucesso!`,
-            variant: "default"
+            variant: "default",
           });
         }
       } else {
@@ -257,17 +298,20 @@ export function AddTransactionModal({
           type: type as "income" | "expense",
           category_id: category_id,
           account_id: account_id,
-          status: status
+          status: status,
         };
-        
+
         // DEBUG: Log do objeto enviado
-        console.log("DEBUG: Enviando (Única) para onAddTransaction", transactionPayload);
+        console.log(
+          "DEBUG: Enviando (Única) para onAddTransaction",
+          transactionPayload
+        );
         await onAddTransaction(transactionPayload);
 
         toast({
           title: "Sucesso",
           description: "Transação adicionada com sucesso!",
-          variant: "default"
+          variant: "default",
         });
       }
 
@@ -281,16 +325,15 @@ export function AddTransactionModal({
         account_id: "",
         status: "completed",
         isInstallment: false,
-        installments: "2"
+        installments: "2",
       });
       onOpenChange(false);
-
     } catch (error) {
-      console.error('Error creating transaction(s):', error);
+      console.error("Error creating transaction(s):", error);
       toast({
         title: "Erro",
         description: "Erro ao criar transação. Tente novamente.",
-        variant: "destructive"
+        variant: "destructive",
       });
     }
   };
@@ -304,7 +347,7 @@ export function AddTransactionModal({
             Registre uma nova receita ou despesa, com opção de parcelamento.
           </DialogDescription>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="description">Descrição</Label>
@@ -312,20 +355,31 @@ export function AddTransactionModal({
               id="description"
               placeholder="Ex: Compra no supermercado"
               value={formData.description}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, description: e.target.value }))
+              }
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="type">Tipo</Label>
-              <Select value={formData.type} onValueChange={(value) => setFormData(prev => ({ ...prev, type: value as any, category_id: "" }))}>
+              <Select
+                value={formData.type}
+                onValueChange={(value) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    type: value as any,
+                    category_id: "",
+                  }))
+                }
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Tipo" />
                 </SelectTrigger>
                 <SelectContent>
-                <SelectItem value="income">Receita</SelectItem>
-                <SelectItem value="expense">Despesa</SelectItem>
+                  <SelectItem value="income">Receita</SelectItem>
+                  <SelectItem value="expense">Despesa</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -337,7 +391,7 @@ export function AddTransactionModal({
                 id="amount"
                 value={formData.amount}
                 onValueChange={(centsValue) => {
-                  setFormData(prev => ({ ...prev, amount: centsValue }));
+                  setFormData((prev) => ({ ...prev, amount: centsValue }));
                 }}
                 className="h-10 sm:h-11"
               />
@@ -347,8 +401,15 @@ export function AddTransactionModal({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="category_id">Categoria</Label>
-              <Select value={formData.category_id} onValueChange={(value) => setFormData(prev => ({ ...prev, category_id: value }))}>
-                <SelectTrigger disabled={!formData.type || formData.type === "transfer"}>
+              <Select
+                value={formData.category_id}
+                onValueChange={(value) =>
+                  setFormData((prev) => ({ ...prev, category_id: value }))
+                }
+              >
+                <SelectTrigger
+                  disabled={!formData.type || formData.type === "transfer"}
+                >
                   <SelectValue placeholder="Selecione" />
                 </SelectTrigger>
                 <SelectContent>
@@ -373,7 +434,9 @@ export function AddTransactionModal({
                 id="date"
                 type="date"
                 value={formData.date}
-                onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, date: e.target.value }))
+                }
               />
             </div>
           </div>
@@ -381,29 +444,44 @@ export function AddTransactionModal({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="account_id">Conta</Label>
-              <Select value={formData.account_id} onValueChange={(value) => setFormData(prev => ({ ...prev, account_id: value }))}>
+              <Select
+                value={formData.account_id}
+                onValueChange={(value) =>
+                  setFormData((prev) => ({ ...prev, account_id: value }))
+                }
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione a conta" />
                 </SelectTrigger>
-                  <SelectContent>
-                    {accounts.map((account) => (
-                      <SelectItem key={account.id} value={account.id}>
-                        <div className="flex items-center gap-2">
-                          <div 
-                            className="w-3 h-3 rounded-full" 
-                            style={{ backgroundColor: account.color || "#6b7280" }}
-                          />
-                          {account.name}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
+                <SelectContent>
+                  {accounts.map((account) => (
+                    <SelectItem key={account.id} value={account.id}>
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="w-3 h-3 rounded-full"
+                          style={{
+                            backgroundColor: account.color || "#6b7280",
+                          }}
+                        />
+                        {account.name}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="status">Status</Label>
-              <Select value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value as "pending" | "completed" }))}>
+              <Select
+                value={formData.status}
+                onValueChange={(value) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    status: value as "pending" | "completed",
+                  }))
+                }
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
@@ -415,7 +493,6 @@ export function AddTransactionModal({
             </div>
           </div>
 
-
           {/* Installment Options */}
           <div className="space-y-4 border-t pt-4">
             <div className="flex items-center justify-between">
@@ -423,19 +500,20 @@ export function AddTransactionModal({
                 <Label htmlFor="installment">Transação Parcelada</Label>
                 <p className="text-sm text-muted-foreground">
                   {/* CORREÇÃO: Texto dinâmico */}
-                  {formData.account_id && accounts.find(acc => acc.id === formData.account_id)?.type === 'credit' 
+                  {formData.account_id &&
+                  accounts.find((acc) => acc.id === formData.account_id)
+                    ?.type === "credit"
                     ? "Lançar compra parcelada no cartão"
-                    : "Dividir esta transação em parcelas mensais"
-                  }
+                    : "Dividir esta transação em parcelas mensais"}
                 </p>
               </div>
               <Switch
                 id="installment"
                 checked={formData.isInstallment}
-                onCheckedChange={(checked) => 
-                  setFormData(prev => ({ 
-                    ...prev, 
-                    isInstallment: checked
+                onCheckedChange={(checked) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    isInstallment: checked,
                   }))
                 }
               />
@@ -444,9 +522,11 @@ export function AddTransactionModal({
             {formData.isInstallment && (
               <div className="space-y-2">
                 <Label htmlFor="installments">Número de Parcelas</Label>
-                <Select 
-                  value={formData.installments} 
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, installments: value }))}
+                <Select
+                  value={formData.installments}
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({ ...prev, installments: value }))
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione" />
@@ -460,15 +540,18 @@ export function AddTransactionModal({
                         */}
                         {(() => {
                           // CORREÇÃO: Usar formData.amount (que agora são centavos)
-                          const numericAmount = formData.amount; 
-                          return numericAmount > 0 && (formData.account_id && accounts.find(acc => acc.id === formData.account_id)?.type !== 'credit') ?
-                            ` de ${new Intl.NumberFormat('pt-BR', {
-                              style: 'currency',
-                              currency: 'BRL'
-                            }).format((numericAmount / 100) / (num || 1))}`
-                            : ''
-                        })()
-                        }
+                          const numericAmount = formData.amount;
+                          return numericAmount > 0 &&
+                            formData.account_id &&
+                            accounts.find(
+                              (acc) => acc.id === formData.account_id
+                            )?.type !== "credit"
+                            ? ` de ${new Intl.NumberFormat("pt-BR", {
+                                style: "currency",
+                                currency: "BRL",
+                              }).format((numericAmount / 100) / (num || 1))}`
+                            : "";
+                        })()}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -478,7 +561,12 @@ export function AddTransactionModal({
           </div>
 
           <div className="flex gap-3 pt-4">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              className="flex-1"
+            >
               Cancelar
             </Button>
             <Button type="submit" className="flex-1">
