@@ -2,16 +2,15 @@ import { useState, useMemo, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { currencyStringToCents } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Account } from "@/types";
 import { createDateFromString, getTodayString } from "@/lib/dateUtils";
 import { formatCurrency, getAvailableBalance } from "@/lib/formatters";
 import { AccountBalanceDetails } from "./AccountBalanceDetails";
 import { useAccountStore } from "@/stores/AccountStore";
+import { CurrencyInput } from "./forms/CurrencyInput";
 
 interface CreditPaymentModalProps {
   open: boolean;
@@ -33,7 +32,7 @@ export function CreditPaymentModal({
 }: CreditPaymentModalProps) {
   const [formData, setFormData] = useState({
     bankAccountId: "",
-    amount: "",
+    amountInCents: 0,
     paymentType: "invoice" as "invoice" | "total_balance" | "partial",
     date: getTodayString()
   });
@@ -53,7 +52,7 @@ export function CreditPaymentModal({
       // Reseta o formulário ao fechar
       setFormData({
         bankAccountId: "",
-        amount: "",
+        amountInCents: 0,
         paymentType: "invoice",
         date: getTodayString()
       });
@@ -62,18 +61,17 @@ export function CreditPaymentModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!creditAccount || !formData.bankAccountId || !formData.amount) {
+    if (!creditAccount || !formData.bankAccountId || formData.amountInCents <= 0) {
       toast({
         title: "Erro",
-        description: "Por favor, preencha todos os campos.",
+        description: "Por favor, preencha todos os campos e um valor maior que zero.",
         variant: "destructive"
       });
       return;
     }
 
-    // Validação e conversão para centavos
-    const amountInCents = currencyStringToCents(formData.amount);
-    if (isNaN(amountInCents) || amountInCents <= 0) {
+    const { amountInCents } = formData;
+    if (amountInCents <= 0) {
       toast({
         title: "Erro",
         description: "Por favor, insira um valor válido maior que zero.",
@@ -131,19 +129,19 @@ export function CreditPaymentModal({
 
   const handlePaymentTypeChange = (type: "invoice" | "total_balance" | "partial") => {
     let newAmount = "";
+    let newAmountInCents = 0;
     if (type === "invoice" && creditAccount) {
       // Pagar a fatura fechada
-      newAmount = (invoiceValueInCents / 100).toFixed(2).replace('.', ',');
+      newAmountInCents = invoiceValueInCents;
     } else if (type === "total_balance" && creditAccount) {
       // Pagar o saldo devedor total (fatura fechada + fatura aberta)
-      newAmount = (Math.abs(creditAccount.balance) / 100).toFixed(2).replace('.', ',');
+      newAmountInCents = Math.abs(creditAccount.balance);
     }
-    // Se for 'partial', newAmount fica "" e o input é liberado
 
     setFormData(prev => ({
       ...prev,
       paymentType: type,
-      amount: newAmount
+      amountInCents: newAmountInCents,
     }));
   };
   
@@ -261,14 +259,12 @@ export function CreditPaymentModal({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="amount">Valor do Pagamento (R$)</Label>
-              <Input
+              <CurrencyInput
                 id="amount"
-                type="text"
-                placeholder="0,00"
-                value={formData.amount}
-                onChange={(e) => setFormData(prev => ({ 
+                value={formData.amountInCents}
+                onValueChange={(value) => setFormData(prev => ({
                   ...prev, 
-                  amount: e.target.value,
+                  amountInCents: value,
                   // Se o usuário digitar, muda para pagamento parcial
                   paymentType: "partial"
                 }))}

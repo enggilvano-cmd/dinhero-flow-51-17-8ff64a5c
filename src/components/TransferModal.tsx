@@ -1,12 +1,10 @@
 import { useState, useMemo } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { currencyStringToCents } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { createDateFromString, getTodayString } from "@/lib/dateUtils";
-import { Textarea } from "@/components/ui/textarea";
+import { createDateFromString, getTodayString } from "@/lib/dateUtils";import { CurrencyInput } from "./forms/CurrencyInput";
 import { useToast } from "@/hooks/use-toast"; // Textarea não está sendo usado, pode ser removido se não for planejado.
 import { formatCurrency, getAvailableBalance } from "@/lib/formatters";
 import { ArrowRight } from "lucide-react";
@@ -24,7 +22,7 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
   const [formData, setFormData] = useState({
     fromAccountId: "",
     toAccountId: "",
-    amount: "",
+    amountInCents: 0,
     date: getTodayString()
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -43,7 +41,7 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.fromAccountId || !formData.toAccountId || !formData.amount) {
+    if (!formData.fromAccountId || !formData.toAccountId || formData.amountInCents <= 0) {
       toast({
         title: "Erro",
         description: "Por favor, preencha todos os campos.",
@@ -61,24 +59,13 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
       return;
     }
 
-    // Validação e conversão para centavos
-    const amountInCents = currencyStringToCents(formData.amount);
-    if (isNaN(amountInCents) || amountInCents <= 0) {
-      toast({
-        title: "Erro", 
-        description: "Por favor, insira um valor válido maior que zero.",
-        variant: "destructive"
-      });
-      return;
-    }
-
     // Check if source account has sufficient balance or overdraft limit
     // Frontend validation for UX. The backend should always re-validate this rule
     // to ensure data integrity and prevent unauthorized transactions.
     const fromAccount = sourceAccounts.find(acc => acc.id === formData.fromAccountId);
     if (fromAccount) {
       const availableBalanceInCents = getAvailableBalance(fromAccount);
-      if (availableBalanceInCents < amountInCents) {
+      if (availableBalanceInCents < formData.amountInCents) {
         const limitText = fromAccount.limit_amount 
           ? ` (incluindo limite de ${formatCurrency(fromAccount.limit_amount)})`
           : '';
@@ -100,7 +87,7 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
         // Esta chamada única assume que o backend abstrai essa complexidade.
         formData.fromAccountId,
         formData.toAccountId,
-        amountInCents,
+        formData.amountInCents,
         createDateFromString(formData.date)
       );
 
@@ -117,7 +104,7 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
       setFormData({
         fromAccountId: "",
         toAccountId: "",
-        amount: "",
+        amountInCents: 0,
         date: getTodayString()
       });
 
@@ -135,6 +122,9 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Nova Transferência</DialogTitle>
+          <DialogDescription>
+            Mova dinheiro entre suas contas.
+          </DialogDescription>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -207,13 +197,10 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="amount">Valor da Transferência (R$)</Label>
-              <Input
+              <CurrencyInput
                 id="amount"
-                type="text"
-                step="0.01"
-                placeholder="0,00"
-                value={formData.amount}
-                onChange={(e) => setFormData(prev => ({ ...prev, amount: e.target.value }))}
+                value={formData.amountInCents}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, amountInCents: value }))}
               />
             </div>
 

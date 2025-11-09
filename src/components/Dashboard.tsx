@@ -699,7 +699,7 @@ export function Dashboard({ accounts, transactions, categories, onTransfer, onAd
               </div>
             </CardHeader>
             <CardContent className="p-3 pt-0">
-              <div className="relative">
+              <div className="relative min-h-[200px] sm:min-h-[300px] lg:min-h-[350px]">
                 {/* Empty state quando não há dados */}
                 {monthlyData.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-[200px] sm:h-[250px] text-muted-foreground">
@@ -831,10 +831,11 @@ export function Dashboard({ accounts, transactions, categories, onTransfer, onAd
                           stroke="hsl(var(--primary))"
                           strokeWidth={isMobile ? 2 : 3}
                           dot={(props: any) => {
-                            const { cx, cy, payload } = props;
+                            const { cx, cy, payload, key } = props;
                             const saldo = payload?.saldo || 0;
                             return (
                               <circle
+                                key={key}
                                 cx={cx}
                                 cy={cy}
                                 r={isMobile ? 3 : 4}

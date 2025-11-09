@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -90,10 +90,8 @@ export function ImportTransactionsModal({
 
   const findAccountByName = (accountName: string): Account | null => {
     const normalizedName = accountName.toLowerCase().trim();
-    return accounts.find(acc => 
-      acc.name.toLowerCase().includes(normalizedName) ||
-      normalizedName.includes(acc.name.toLowerCase())
-    ) || null;
+    // Busca por correspondência exata para evitar ambiguidades
+    return accounts.find(acc => acc.name.toLowerCase().trim() === normalizedName) || null;
   };
 
   const parseDate = (dateString: string): Date | null => {
@@ -389,6 +387,9 @@ export function ImportTransactionsModal({
             <Upload className="h-5 w-5" />
             Importar Transações do Excel
           </DialogTitle>
+          <DialogDescription>
+            Faça o upload de um arquivo Excel (.xlsx ou .xls) para importar múltiplas transações de uma vez.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="flex-1 overflow-auto space-y-6">

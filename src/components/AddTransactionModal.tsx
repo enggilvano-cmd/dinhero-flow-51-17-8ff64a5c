@@ -1,23 +1,14 @@
-import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useState, useEffect, useMemo } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
 import { createDateFromString, getTodayString, addMonthsToDate } from "@/lib/dateUtils";
-// CORREÇÃO: Importar o parser de moeda
+import { useCategories } from "@/hooks/useCategories";
 import { currencyStringToCents } from "@/lib/utils";
-
-interface Category {
-  id: string;
-  name: string;
-  type: "income" | "expense" | "both";
-  color: string;
-}
 
 interface Transaction {
   id?: string;
@@ -61,38 +52,17 @@ export function AddTransactionModal({
 }: AddTransactionModalProps) {
   const [formData, setFormData] = useState({
     description: "",
-    amount: "", // O input será string (ex: "100,50")
+    amount: "", // Alterado para string para compatibilidade com a função
     date: getTodayString(),
     type: "" as "income" | "expense" | "transfer" | "",
-    category_id: "", // Corrigido para category_id
-    account_id: "", // Corrigido para account_id
+    category_id: "",
+    account_id: "",
     status: "completed" as "pending" | "completed",
     isInstallment: false,
     installments: "2" // Padrão de 2 se parcelado
   });
-  const [categories, setCategories] = useState<Category[]>([]);
   const { toast } = useToast();
-  const { user } = useAuth();
-
-  useEffect(() => {
-    const loadCategories = async () => {
-      if (!user) return;
-      
-      const { data, error } = await supabase
-        .from('categories')
-        .select('*')
-        .eq('user_id', user.id);
-        
-      if (error) {
-        console.error('Error loading categories:', error);
-        return;
-      }
-      
-      setCategories(data || []);
-    };
-    
-    loadCategories();
-  }, [user]);
+  const { categories } = useCategories();
 
   // Automatically set status based on transaction date
   useEffect(() => {
@@ -108,34 +78,46 @@ export function AddTransactionModal({
     }
   }, [formData.date]);
 
+  const filteredCategories = useMemo(() => {
+    if (!formData.type || formData.type === "transfer") return [];
+    return categories.filter(
+      (cat) => cat.type === formData.type || cat.type === "both"
+    );
+  }, [categories, formData.type]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const { 
-      description, 
-      amount: amountString, 
-      type, 
-      category_id, 
-      account_id, 
-      date, 
-      status, 
-      isInstallment, 
-      installments: installmentsString 
+
+    const {
+      description,
+      type,
+      category_id,
+      account_id,
+      date,
+      status,
+      isInstallment,
+      installments: installmentsString
     } = formData;
 
-    if (!description.trim()) {
+    // Adicionar logs para depuração
+    console.log("Valor inserido (string):", formData.amount);
+    const numericAmount = currencyStringToCents(formData.amount);
+    console.log("Valor convertido para centavos:", numericAmount);
+
+    // Garantir que o valor convertido seja usado corretamente
+    if (isNaN(numericAmount) || numericAmount <= 0) {
       toast({
         title: "Erro",
-        description: "Por favor, preencha a descrição.",
+        description: "Por favor, insira um valor válido maior que zero.",
         variant: "destructive"
       });
       return;
     }
 
-    if (!amountString) {
+    if (!description.trim()) {
       toast({
         title: "Erro",
-        description: "Por favor, preencha o valor.",
+        description: "Por favor, preencha a descrição.",
         variant: "destructive"
       });
       return;
@@ -168,17 +150,6 @@ export function AddTransactionModal({
       return;
     }
 
-    // Validação e conversão para centavos
-    const totalAmountInCents = currencyStringToCents(amountString);
-    if (isNaN(totalAmountInCents) || totalAmountInCents <= 0) {
-      toast({
-        title: "Erro",
-        description: "Por favor, insira um valor válido maior que zero.",
-        variant: "destructive"
-      });
-      return;
-    }
-
     const installments = parseInt(installmentsString);
     if (isInstallment && (isNaN(installments) || installments < 2 || installments > 60)) {
       toast({
@@ -204,8 +175,8 @@ export function AddTransactionModal({
         if (selectedAccount.type === 'credit' && onAddTransaction) {
           
           const transaction = {
-            description: `${description} (1/${installments})`, // Descrição indica ser a "mãe"
-            amount: totalAmountInCents, // Valor total da compra
+            description: `${description} (Compra Total em ${installments}x)`, // Descrição mais clara para o cartão
+            amount: numericAmount, // Valor já está em centavos
             date: createDateFromString(date), // Já é um objeto Date
             type: type as "income" | "expense",
             category_id: category_id,
@@ -229,8 +200,8 @@ export function AddTransactionModal({
         else if (selectedAccount.type !== 'credit' && onAddInstallmentTransactions) {
           
           // Lógica de arredondamento para evitar perda de centavos
-          const baseInstallmentCents = Math.floor(totalAmountInCents / installments);
-          const remainderCents = totalAmountInCents % installments;
+          const baseInstallmentCents = Math.floor(numericAmount / installments);
+          const remainderCents = numericAmount % installments;
           
           const transactions = [];
           const baseDate = createDateFromString(date);
@@ -272,7 +243,7 @@ export function AddTransactionModal({
         // Cenário 3: Transação Única (sem parcelamento)
         await onAddTransaction({
           description: description,
-          amount: totalAmountInCents,
+          amount: numericAmount, // Valor já está em centavos
           date: createDateFromString(date), // Passa o objeto Date diretamente
           type: type as "income" | "expense",
           category_id: category_id,
@@ -316,6 +287,9 @@ export function AddTransactionModal({
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Adicionar Nova Transação</DialogTitle>
+          <DialogDescription>
+            Registre uma nova receita ou despesa, com opção de parcelamento.
+          </DialogDescription>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -349,9 +323,11 @@ export function AddTransactionModal({
               <Input
                 id="amount"
                 type="text"
+                step="0.01"
                 placeholder="0,00"
-                value={formData.amount}
-                onChange={(e) => setFormData(prev => ({ ...prev, amount: e.target.value }))}
+                value={formData.amount} // Garantir que o valor seja tratado como string
+                onChange={(e) => setFormData(prev => ({ ...prev, amount: e.target.value }))} // Ajustar para string
+                className="h-10 sm:h-11"
               />
             </div>
           </div>
@@ -364,24 +340,17 @@ export function AddTransactionModal({
                   <SelectValue placeholder="Selecione" />
                 </SelectTrigger>
                 <SelectContent>
-                  {categories
-                    .filter(cat => 
-                      formData.type === "" || 
-                      cat.type === formData.type || 
-                      cat.type === "both"
-                    )
-                    .map((category) => (
-                      <SelectItem key={category.id} value={category.id}>
-                        <div className="flex items-center gap-2">
-                          <div 
-                            className="w-3 h-3 rounded-full" 
-                            style={{ backgroundColor: category.color }}
-                          />
-                          {category.name}
-                        </div>
-                      </SelectItem>
-                    ))
-                  }
+                  {filteredCategories.map((category) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="w-3 h-3 rounded-full"
+                          style={{ backgroundColor: category.color }}
+                        />
+                        {category.name}
+                      </div>
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -477,12 +446,14 @@ export function AddTransactionModal({
                         {/* A prévia do valor da parcela só é exibida se for
                           um parcelamento que GERA N transações (não cartão).
                         */}
-                        {formData.amount && (formData.account_id && accounts.find(acc => acc.id === formData.account_id)?.type !== 'credit') ? 
-                          ` de ${new Intl.NumberFormat('pt-BR', {
-                            style: 'currency',
-                            currency: 'BRL'
-                          }).format(currencyStringToCents(formData.amount) / 100 / num)}`
-                          : ''
+                        {(() => {                          const numericAmount = formData.amountInCents;
+                          return numericAmount > 0 && (formData.account_id && accounts.find(acc => acc.id === formData.account_id)?.type !== 'credit') ?
+                            ` de ${new Intl.NumberFormat('pt-BR', {
+                              style: 'currency',
+                              currency: 'BRL'
+                            }).format((numericAmount / 100) / (num || 1))}`
+                            : ''
+                        })()
                         }
                       </SelectItem>
                     ))}

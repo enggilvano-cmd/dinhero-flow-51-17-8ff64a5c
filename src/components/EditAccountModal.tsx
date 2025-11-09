@@ -1,8 +1,8 @@
 import { useState, useEffect, FormEvent } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { currencyStringToCents } from "@/lib/utils";
+import { CurrencyInput } from "@/components/forms/CurrencyInput";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
@@ -21,8 +21,8 @@ export function EditAccountModal({ open, onOpenChange, onEditAccount, account }:
   const [formData, setFormData] = useState({
     name: "",
     type: "" as "checking" | "savings" | "credit" | "investment" | "",
-    balance: "",
-    limit: "",
+    balanceInCents: 0,
+    limitInCents: 0,
     dueDate: "",
     closingDate: "",
     color: PREDEFINED_COLORS[0]
@@ -36,9 +36,8 @@ export function EditAccountModal({ open, onOpenChange, onEditAccount, account }:
       setFormData({
         name: account.name,
         type: account.type,
-        // Para cartões, mostra o valor da dívida como positivo na UI para consistência
-        balance: (Math.abs(account.balance) / 100).toFixed(2).replace('.', ','),
-        limit: account.limit_amount ? (account.limit_amount / 100).toFixed(2).replace('.', ',') : "",
+        balanceInCents: Math.abs(account.balance), // Armazena como centavos positivos
+        limitInCents: account.limit_amount || 0,
         dueDate: account.due_date?.toString() || "",
         closingDate: account.closing_date?.toString() || "",
         color: account.color || PREDEFINED_COLORS[0]
@@ -51,7 +50,7 @@ export function EditAccountModal({ open, onOpenChange, onEditAccount, account }:
     
     if (!account) return;
     
-    if (!formData.name.trim() || !formData.type || !formData.balance) {
+    if (!formData.name.trim() || !formData.type) {
       toast({
         title: "Erro",
         description: "Por favor, preencha todos os campos obrigatórios.",
@@ -61,33 +60,11 @@ export function EditAccountModal({ open, onOpenChange, onEditAccount, account }:
     }
 
     // Se for cartão de crédito, sempre armazene o saldo como negativo (dívida).
-    const rawBalanceInCents = currencyStringToCents(formData.balance);
     const balanceInCents = formData.type === 'credit' 
-      ? -Math.abs(rawBalanceInCents) 
-      : rawBalanceInCents;
+      ? -Math.abs(formData.balanceInCents) 
+      : formData.balanceInCents;
 
-    if (isNaN(rawBalanceInCents)) {
-      toast({
-        title: "Erro",
-        description: "Por favor, insira um valor válido para o saldo.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    let limitInCents: number | undefined;
-    if (formData.limit) {
-      const parsedLimit = currencyStringToCents(formData.limit);
-      if (isNaN(parsedLimit)) {
-        toast({
-          title: "Erro",
-          description: "Por favor, insira um valor válido para o limite.",
-          variant: "destructive"
-        });
-        return;
-      }
-      limitInCents = parsedLimit;
-    }
+    const limitInCents = formData.limitInCents > 0 ? formData.limitInCents : undefined;
 
     let dueDate: number | undefined;
     if (formData.type === "credit" && formData.dueDate) {
@@ -157,6 +134,9 @@ export function EditAccountModal({ open, onOpenChange, onEditAccount, account }:
       <DialogContent className="w-[95vw] max-w-[425px] max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader className="space-y-2 pb-4">
           <DialogTitle className="text-financial-h3">Editar Conta</DialogTitle>
+          <DialogDescription>
+            Atualize os detalhes da sua conta.
+          </DialogDescription>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
@@ -190,14 +170,9 @@ export function EditAccountModal({ open, onOpenChange, onEditAccount, account }:
             <Label htmlFor="balance" className="text-financial-secondary font-medium">
               {formData.type === "credit" ? "Saldo Devedor Atual" : formData.type === "investment" ? "Valor Aplicado" : "Saldo"}
             </Label>
-            <Input
-              id="balance"
-              type="text"
-              step="0.01"
-              placeholder="0,00"
-              value={formData.balance}
-              onChange={(e) => setFormData(prev => ({ ...prev, balance: e.target.value }))}
-              className="text-financial-input"
+            <CurrencyInput
+              value={formData.balanceInCents}
+              onValueChange={(value) => setFormData(prev => ({ ...prev, balanceInCents: value || 0 }))}
             />
             <p className="text-financial-caption">
               {formData.type === "credit" 
@@ -211,14 +186,9 @@ export function EditAccountModal({ open, onOpenChange, onEditAccount, account }:
 
           <div className="space-y-2">
             <Label htmlFor="limit" className="text-financial-secondary font-medium">Limite da Conta (opcional)</Label>
-            <Input
-              id="limit"
-              type="text"
-              step="0.01"
-              placeholder="0,00"
-              value={formData.limit}
-              onChange={(e) => setFormData(prev => ({ ...prev, limit: e.target.value }))}
-              className="text-financial-input"
+            <CurrencyInput
+              value={formData.limitInCents}
+              onValueChange={(value) => setFormData(prev => ({ ...prev, limitInCents: value || 0 }))}
             />
             <p className="text-financial-caption">
               Defina um limite opcional para esta conta. Útil para controlar teto de gastos.

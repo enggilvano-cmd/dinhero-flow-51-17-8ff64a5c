@@ -1,35 +1,33 @@
 import { useState, FormEvent } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { currencyStringToCents } from "@/lib/utils";
-import { Input, InputProps } from "@/components/ui/input";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Account, PREDEFINED_COLORS, ACCOUNT_TYPE_LABELS } from "@/types";
-import { ColorPicker } from "@/components/forms/ColorPicker";
+import { ColorPicker } from "./forms/ColorPicker";
+import { CurrencyInput } from "@/components/forms/CurrencyInput";
 import { useAccountStore } from "@/stores/AccountStore";
 
 interface AddAccountModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  // A função agora retorna a conta criada para podermos adicionar ao store
-  onAddAccount: (account: Omit<Account, "id" | "user_id">) => Promise<Account>;
 }
 
-export function AddAccountModal({ open, onOpenChange, onAddAccount }: AddAccountModalProps) {
+export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
   const [formData, setFormData] = useState({
     name: "",
     type: "" as "checking" | "savings" | "credit" | "investment" | "",
-    balance: "",
-    limit: "",
+    balanceInCents: 0,
+    limitInCents: 0,
     dueDate: "",
     closingDate: "",
     color: PREDEFINED_COLORS[0]
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-  const addAccountToStore = useAccountStore((state) => state.addAccount);
+  const { addAccount } = useAccountStore();
 
   const handleColorChange = (color: string) => {
     setFormData(prev => ({ ...prev, color }));
@@ -38,7 +36,7 @@ export function AddAccountModal({ open, onOpenChange, onAddAccount }: AddAccount
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    if (!formData.name || !formData.type || !formData.balance) {
+    if (!formData.name || !formData.type) {
       toast({
         title: "Erro",
         description: "Por favor, preencha todos os campos.",
@@ -48,33 +46,11 @@ export function AddAccountModal({ open, onOpenChange, onAddAccount }: AddAccount
     }
 
     // Se for cartão de crédito, sempre armazene o saldo como negativo (dívida).
-    const rawBalanceInCents = currencyStringToCents(formData.balance);
     const balanceInCents = formData.type === 'credit' 
-      ? -Math.abs(rawBalanceInCents) 
-      : rawBalanceInCents;
+      ? -Math.abs(formData.balanceInCents) 
+      : formData.balanceInCents;
       
-    if (isNaN(rawBalanceInCents)) {
-      toast({
-        title: "Erro",
-        description: "Por favor, insira um valor válido para o saldo.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    let limitInCents: number | undefined;
-    if (formData.limit) {
-      const parsedLimit = currencyStringToCents(formData.limit);
-      if (isNaN(parsedLimit)) {
-        toast({
-          title: "Erro",
-          description: "Por favor, insira um valor válido para o limite.",
-          variant: "destructive"
-        });
-        return;
-      }
-      limitInCents = parsedLimit;
-    }
+    const limitInCents = formData.limitInCents > 0 ? formData.limitInCents : undefined;
 
     let dueDate: number | undefined;
     if (formData.type === "credit" && formData.dueDate) {
@@ -104,18 +80,15 @@ export function AddAccountModal({ open, onOpenChange, onAddAccount }: AddAccount
 
     setIsSubmitting(true);
     try {
-      const newAccount = await onAddAccount({
+      await addAccount({
         name: formData.name,
         type: formData.type,
         balance: balanceInCents,
         limit_amount: limitInCents,
         due_date: dueDate,
         closing_date: closingDate,
-        color: formData.color
+        color: formData.color,
       });
-
-      // Adiciona a nova conta ao store global
-      addAccountToStore(newAccount);
 
       toast({
         title: "Sucesso",
@@ -127,8 +100,8 @@ export function AddAccountModal({ open, onOpenChange, onAddAccount }: AddAccount
       setFormData({
         name: "",
         type: "" as "checking" | "savings" | "credit" | "investment" | "",
-        balance: "",
-        limit: "",
+        balanceInCents: 0,
+        limitInCents: 0,
         dueDate: "",
         closingDate: "",
         color: PREDEFINED_COLORS[0]
@@ -153,6 +126,9 @@ export function AddAccountModal({ open, onOpenChange, onAddAccount }: AddAccount
       <DialogContent className="w-[95vw] max-w-md sm:max-w-lg md:max-w-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader className="pb-4">
           <DialogTitle className="text-lg sm:text-xl">Adicionar Nova Conta</DialogTitle>
+          <DialogDescription>
+            Crie uma nova conta bancária, cartão de crédito ou investimento.
+          </DialogDescription>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
@@ -189,14 +165,9 @@ export function AddAccountModal({ open, onOpenChange, onAddAccount }: AddAccount
             <Label htmlFor="balance" className="text-sm font-medium">
           {formData.type === "credit" ? "Saldo Devedor Atual" : formData.type === "investment" ? "Valor Aplicado" : "Saldo Inicial"}
             </Label>
-            <Input
-              id="balance"
-              type="text"
-              step="0.01"
-              placeholder="0,00"
-              value={formData.balance}
-              onChange={(e) => setFormData(prev => ({ ...prev, balance: e.target.value }))}
-              className="h-10 sm:h-11"
+            <CurrencyInput
+              value={formData.balanceInCents}
+              onValueChange={(value) => setFormData(prev => ({ ...prev, balanceInCents: value }))}
             />
             <p className="text-xs sm:text-sm text-muted-foreground">
               {formData.type === "credit" 
@@ -210,15 +181,10 @@ export function AddAccountModal({ open, onOpenChange, onAddAccount }: AddAccount
 
           {/* Limite da Conta */}
           <div className="space-y-2">
-            <Label htmlFor="limit" className="text-sm font-medium">Limite da Conta (opcional)</Label>
-            <Input
-              id="limit"
-              type="text"
-              step="0.01"
-              placeholder="0,00"
-              value={formData.limit}
-              onChange={(e) => setFormData(prev => ({ ...prev, limit: e.target.value }))}
-              className="h-10 sm:h-11"
+            <Label className="text-sm font-medium">Limite da Conta (opcional)</Label>
+            <CurrencyInput
+              value={formData.limitInCents || 0}
+              onValueChange={(value) => setFormData(prev => ({ ...prev, limitInCents: value || 0 }))}
             />
             <p className="text-xs sm:text-sm text-muted-foreground">
               Defina um limite opcional para esta conta. Útil para controlar teto de gastos.

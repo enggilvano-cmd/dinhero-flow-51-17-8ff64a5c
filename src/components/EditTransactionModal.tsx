@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";import { currencyStringToCents } from "@/lib/utils";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarIcon } from "lucide-react";
@@ -13,26 +13,28 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { Transaction, Account } from "@/types";
 import { useCategories } from "@/hooks/useCategories";
-import { createDateFromString, formatDateForStorage } from "@/lib/dateUtils";
+import { createDateFromString } from "@/lib/dateUtils";
 import { InstallmentEditScopeDialog, EditScope } from "./InstallmentEditScopeDialog";
-import { useAccountStore } from "@/stores/AccountStore";
+import { CurrencyInput } from "@/components/forms/CurrencyInput";
 
 interface EditTransactionModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onEditTransaction: (transaction: Transaction, editScope?: EditScope) => void;
   transaction: Transaction | null;
+  accounts: Account[]; // Adicionado para receber a lista de contas
 }
 
 export function EditTransactionModal({
   open,
   onOpenChange,
   onEditTransaction,
-  transaction
+  transaction,
+  accounts
 }: EditTransactionModalProps) {
   const [formData, setFormData] = useState({
     description: "",
-    amount: "",
+    amountInCents: 0,
     date: new Date(),
     type: "expense" as "income" | "expense",
     category_id: "",
@@ -42,7 +44,6 @@ export function EditTransactionModal({
   const [scopeDialogOpen, setScopeDialogOpen] = useState(false);
   const { toast } = useToast();
   const { categories } = useCategories();
-  const accounts = useAccountStore((state) => state.accounts);
 
   useEffect(() => {
     // Apenas atualize o formulário quando o modal for aberto ou a transação real mudar.
@@ -56,7 +57,7 @@ export function EditTransactionModal({
       const transactionType = transaction.type === "transfer" ? "expense" : transaction.type;
       setFormData({
         description: transaction.description,
-        amount: (Math.abs(transaction.amount) / 100).toFixed(2).replace('.', ','),
+        amountInCents: Math.abs(transaction.amount),
         date: transactionDate,
         type: transactionType as "income" | "expense",
         category_id: transaction.category_id,
@@ -71,20 +72,10 @@ export function EditTransactionModal({
     
     if (!transaction) return;
     
-    if (!formData.description.trim() || !formData.amount || !formData.account_id) {
+    if (!formData.description.trim() || formData.amountInCents <= 0 || !formData.account_id) {
       toast({
         title: "Erro",
         description: "Por favor, preencha todos os campos obrigatórios.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const amountInCents = currencyStringToCents(formData.amount);
-    if (isNaN(amountInCents) || amountInCents <= 0) {
-      toast({
-        title: "Erro",
-        description: "Por favor, insira um valor válido.",
         variant: "destructive",
       });
       return;
@@ -116,12 +107,10 @@ export function EditTransactionModal({
   const processEdit = (editScope: EditScope) => {
     if (!transaction) return;
 
-    const amountInCents = currencyStringToCents(formData.amount);
-
     const updatedTransaction: Transaction = {
       ...transaction,
       description: formData.description.trim(),
-      amount: formData.type === 'income' ? amountInCents : -Math.abs(amountInCents),
+      amount: formData.type === 'income' ? formData.amountInCents : -Math.abs(formData.amountInCents),
       // A data da transação não deve ser alterada automaticamente. 
       // A fatura a que pertence é uma consequência da data, e não o contrário.
       // A seleção de fatura deve servir apenas para mover a transação para outra fatura,
@@ -147,6 +136,7 @@ export function EditTransactionModal({
     });
 
     onOpenChange(false);
+    setScopeDialogOpen(false); // Garante que o diálogo de escopo seja fechado
   };
 
   const filteredCategories = categories.filter(cat => 
@@ -167,6 +157,9 @@ export function EditTransactionModal({
                   Parcela {transaction.current_installment}/{transaction.installments}
                 </span>
               )}
+              <DialogDescription>
+                Modifique os detalhes da sua transação.
+              </DialogDescription>
             </DialogTitle>
           </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -183,15 +176,10 @@ export function EditTransactionModal({
 
           <div className="space-y-2">
             <Label htmlFor="amount">Valor</Label>
-            <Input
+            <CurrencyInput
               id="amount"
-              type="text"
-              inputMode="numeric"
-              min="0"
-              value={formData.amount}
-              onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-              placeholder="0,00"
-              required
+              value={formData.amountInCents}
+              onValueChange={(value) => setFormData({ ...formData, amountInCents: value })}
             />
           </div>
 
