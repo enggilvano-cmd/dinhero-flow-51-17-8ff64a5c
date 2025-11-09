@@ -1,11 +1,18 @@
 import { create } from 'zustand';
-import { Account } from '@/types';
-// 1. Importar apenas o Supabase
+import { Account, Transaction } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
-// (O import 'useAuth' foi removido, pois ele é um hook e não pode ser usado aqui)
+// 1. Importar o store de transações
+import { useTransactionStore } from './TransactionStore';
 
-// Define o tipo de dados que o formulário envia (sem id, user_id, etc.)
 type AddAccountPayload = Omit<Account, 'id' | 'user_id' | 'created_at'>;
+
+// 2. Define os parâmetros para a função de pagamento
+interface PayBillParams {
+  creditCardAccountId: string;
+  debitAccountId: string;
+  amount: number;
+  paymentDate: string; // Formato "YYYY-MM-DD"
+}
 
 interface AccountStoreState {
   accounts: Account[];
@@ -13,24 +20,19 @@ interface AccountStoreState {
   addAccount: (payload: AddAccountPayload) => Promise<void>;
   updateAccounts: (updatedAccounts: Account | Account[]) => void;
   removeAccount: (accountId: string) => void;
+  // 3. Adiciona a nova ação de pagamento ao state
+  payCreditCardBill: (params: PayBillParams) => Promise<{
+    updatedCreditAccount: Account;
+    updatedDebitAccount: Account;
+  }>;
 }
 
-/**
- * Store global para gerenciar as contas do usuário.
- */
-export const useAccountStore = create<AccountStoreState>((set) => ({
+export const useAccountStore = create<AccountStoreState>((set, get) => ({
   accounts: [],
 
-  /**
-   * Define a lista inteira de contas (usado na carga inicial).
-   */
   setAccounts: (accounts) => set({ accounts }),
 
-  /**
-   * Adiciona uma nova conta ao banco de dados e, em seguida, ao estado local.
-   */
   addAccount: async (payload) => {
-    // 3. Obter o usuário logado DIRETAMENTE do Supabase
     const {
       data: { user },
       error: authError,
@@ -41,12 +43,11 @@ export const useAccountStore = create<AccountStoreState>((set) => ({
       throw new Error("Usuário não autenticado");
     }
 
-    // 4. Inserir no banco de dados
     const { data: newAccount, error: insertError } = await supabase
       .from("accounts")
       .insert({
         ...payload,
-        user_id: user.id, // Adiciona o ID do usuário
+        user_id: user.id,
       })
       .select()
       .single();
@@ -57,40 +58,111 @@ export const useAccountStore = create<AccountStoreState>((set) => ({
     }
 
     if (newAccount) {
-      // 5. Adicionar a conta retornada pelo DB (com ID) ao estado local
       set((state) => ({
         accounts: [...state.accounts, newAccount as Account],
       }));
     }
   },
 
-  /**
-   * Atualiza uma ou mais contas na lista.
-   * Aceita um único objeto Account ou um array de Accounts.
-   */
   updateAccounts: (updatedAccounts) =>
     set((state) => {
-      // Garante que estamos trabalhando com um array
       const accountsToUpdate = Array.isArray(updatedAccounts)
         ? updatedAccounts
         : [updatedAccounts];
-
-      // Cria um Map para consulta rápida dos IDs das contas atualizadas
       const updatedMap = new Map(accountsToUpdate.map((acc) => [acc.id, acc]));
-
-      // Mapeia as contas existentes, substituindo as que foram atualizadas
       const newAccounts = state.accounts.map(
         (account) => updatedMap.get(account.id) || account
       );
-
       return { accounts: newAccounts };
     }),
 
-  /**
-   * Remove uma conta da lista pelo ID.
-   */
   removeAccount: (accountId) =>
     set((state) => ({
       accounts: state.accounts.filter((account) => account.id !== accountId),
     })),
+
+  // --- ADICIONANDO A LÓGICA DE PAGAMENTO ---
+  payCreditCardBill: async ({
+    creditCardAccountId,
+    debitAccountId,
+    amount,
+    paymentDate,
+  }: PayBillParams) => {
+    // A. Obter dados essenciais
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) throw new Error("Usuário não autenticado");
+
+    const { accounts } = get();
+    const debitAccount = accounts.find(a => a.id === debitAccountId);
+    const creditCardAccount = accounts.find(a => a.id === creditCardAccountId);
+
+    if (!debitAccount || !creditCardAccount) {
+      throw new Error("Conta de débito ou crédito não encontrada");
+    }
+
+    // B. Criar as DUAS transações (Débito e Crédito)
+    const debitTransaction = {
+      type: 'expense',
+      amount,
+      account_id: debitAccountId,
+      description: `Pagamento Fatura ${creditCardAccount.name}`,
+      date: paymentDate,
+      user_id: user.id,
+      category_id: null,
+    };
+
+    const creditTransaction = {
+      type: 'income', // Pagamento é uma 'receita' para o cartão
+      amount,
+      account_id: creditCardAccountId,
+      description: `Pagamento Recebido de ${debitAccount.name}`,
+      date: paymentDate,
+      user_id: user.id,
+      category_id: null,
+    };
+
+    // C. Salvar AMBAS as transações no DB
+    const { data: insertedTransactions, error: transactionError } = await supabase
+      .from('transactions')
+      .insert([debitTransaction, creditTransaction])
+      .select()
+      .returns<Transaction[]>();
+
+    if (transactionError || !insertedTransactions || insertedTransactions.length !== 2) {
+      console.error("Erro ao salvar transações de pagamento:", transactionError);
+      throw new Error("Falha ao registrar transações de pagamento.");
+    }
+
+    // D. Atualizar o estado local (Stores)
+    useTransactionStore.getState().addTransactions(insertedTransactions);
+
+    let updatedDebitAccount: Account | undefined;
+    let updatedCreditAccount: Account | undefined;
+
+    // Atualiza o saldo localmente (o cálculo em dateUtils fará o resto)
+    set((state) => {
+      const newAccounts = state.accounts.map(acc => {
+        if (acc.id === debitAccountId) {
+          updatedDebitAccount = { ...acc, balance: acc.balance - amount };
+          return updatedDebitAccount;
+        }
+        if (acc.id === creditCardAccountId) {
+          updatedCreditAccount = { ...acc, balance: acc.balance + amount };
+          return updatedCreditAccount;
+        }
+        return acc;
+      });
+      return { accounts: newAccounts };
+    });
+
+    if (!updatedCreditAccount || !updatedDebitAccount) {
+       throw new Error("Falha ao atualizar contas no estado local.");
+    }
+    
+    // E. Retornar as contas atualizadas para o modal
+    return { updatedCreditAccount, updatedDebitAccount };
+  },
 }));

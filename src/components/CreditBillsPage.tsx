@@ -1,19 +1,20 @@
 import { useState, useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   CreditCard,
-  CalendarDays, // Ícone para Faturas
-  TrendingUp,   // Ícone para Próxima Fatura
-  DollarSign, // Ícone para Limite
+  CalendarDays,
+  TrendingUp,
+  DollarSign,
   Search,
 } from "lucide-react";
 import { useAccountStore } from "@/stores/AccountStore";
-import { useTransactionStore } from "@/stores/TransactionStore";
+// CORREÇÃO: Importar AppTransaction
+import { useTransactionStore, AppTransaction } from "@/stores/TransactionStore"; 
 import { calculateBillDetails } from "@/lib/dateUtils";
 import { CreditCardBillCard } from "./CreditCardBillCard";
-import { Account, Transaction } from "@/types";
+import { Account } from "@/types";
 import { cn } from "@/lib/utils";
 
 // Helper para formatar moeda
@@ -24,8 +25,6 @@ const formatCents = (valueInCents: number) => {
   }).format(valueInCents / 100);
 };
 
-// --- CORREÇÃO AQUI ---
-// A interface agora define que a função passará os valores da fatura
 interface CreditBillsPageProps {
   onPayCreditCard: (
     account: Account,
@@ -35,22 +34,19 @@ interface CreditBillsPageProps {
 }
 
 export function CreditBillsPage({ onPayCreditCard }: CreditBillsPageProps) {
-  // Lendo direto do estado global
   const allAccounts = useAccountStore((state) => state.accounts);
-  const allTransactions = useTransactionStore((state) => state.transactions);
+  // allTransactions agora é do tipo AppTransaction[]
+  const allTransactions = useTransactionStore((state) => state.transactions); 
 
-  // Novos estados para os filtros
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedAccountId, setSelectedAccountId] = useState("all");
 
-  // Memo para buscar todos os cartões (para os botões de filtro)
   const creditAccounts = useMemo(() => {
     return allAccounts
       .filter((acc) => acc.type === "credit")
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [allAccounts]);
 
-  // Memo para filtrar os cartões com base na busca e seleção
   const filteredCreditAccounts = useMemo(() => {
     return creditAccounts.filter((account) => {
       const matchesSearch = account.name
@@ -62,17 +58,20 @@ export function CreditBillsPage({ onPayCreditCard }: CreditBillsPageProps) {
     });
   }, [creditAccounts, searchTerm, selectedAccountId]);
 
-  // Memo para calcular os detalhes da fatura APENAS para os cartões filtrados
+  // Memo para calcular os detalhes da fatura
   const billDetails = useMemo(() => {
     return filteredCreditAccounts.map((account) => {
       const accountTransactions = allTransactions.filter(
         (t) => t.account_id === account.id
       );
 
+      // --- CORREÇÃO: Passar o tipo correto ---
+      // Passa AppTransaction[] (com 'date' como objeto Date)
       const details = calculateBillDetails(
-        accountTransactions as Transaction[],
+        accountTransactions as AppTransaction[], // Passa o tipo correto
         account
       );
+      // --- FIM DA CORREÇÃO ---
 
       return {
         account,
@@ -81,7 +80,7 @@ export function CreditBillsPage({ onPayCreditCard }: CreditBillsPageProps) {
     });
   }, [filteredCreditAccounts, allTransactions]);
 
-  // Memo para os TOTAIS dos cards superiores
+  // Memo para os TOTAIS (baseado nos cartões filtrados)
   const totalSummary = useMemo(() => {
     return billDetails.reduce(
       (acc, details) => {
@@ -96,7 +95,6 @@ export function CreditBillsPage({ onPayCreditCard }: CreditBillsPageProps) {
 
   return (
     <div className="spacing-responsive-lg fade-in">
-      {/* Header */}
       <h1 className="text-title-1">Faturas de Cartão</h1>
       <p className="text-body text-muted-foreground">
         Acompanhe o vencimento e o limite dos seus cartões de crédito.
@@ -104,6 +102,7 @@ export function CreditBillsPage({ onPayCreditCard }: CreditBillsPageProps) {
 
       {/* CARDS DE TOTAIS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
+        {/* Card Fatura Atual */}
         <Card className="financial-card">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
@@ -112,7 +111,7 @@ export function CreditBillsPage({ onPayCreditCard }: CreditBillsPageProps) {
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs sm:text-sm font-medium text-muted-foreground">
-                  Fatura Atual
+                  Fatura Atual (Total)
                 </p>
                 <div className="text-base sm:text-lg lg:text-xl font-bold balance-negative leading-tight">
                   {formatCents(totalSummary.currentBill)}
@@ -122,6 +121,7 @@ export function CreditBillsPage({ onPayCreditCard }: CreditBillsPageProps) {
           </CardContent>
         </Card>
 
+        {/* Card Próxima Fatura */}
         <Card className="financial-card">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
@@ -130,7 +130,7 @@ export function CreditBillsPage({ onPayCreditCard }: CreditBillsPageProps) {
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs sm:text-sm font-medium text-muted-foreground">
-                  Próxima Fatura (Parcial)
+                  Próxima Fatura (Total)
                 </p>
                 <div className="text-base sm:text-lg lg:text-xl font-bold text-muted-foreground leading-tight">
                   {formatCents(totalSummary.nextBill)}
@@ -140,6 +140,7 @@ export function CreditBillsPage({ onPayCreditCard }: CreditBillsPageProps) {
           </CardContent>
         </Card>
 
+        {/* Card Limite Disponível */}
         <Card className="financial-card sm:col-span-2 xl:col-span-1">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
@@ -148,7 +149,7 @@ export function CreditBillsPage({ onPayCreditCard }: CreditBillsPageProps) {
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs sm:text-sm font-medium text-muted-foreground">
-                  Limite Disponível Total
+                  Limite Disponível (Total)
                 </p>
                 <div
                   className={cn(
@@ -177,7 +178,7 @@ export function CreditBillsPage({ onPayCreditCard }: CreditBillsPageProps) {
             className="pl-10 h-10"
           />
         </div>
-        <div className="flex gap-2 flex-wrap sm:flex-nowrap">
+        <div className="flex gap-2 flex-wrap sm:flex-nowrap overflow-x-auto pb-2">
           <Button
             key="all"
             variant={selectedAccountId === "all" ? "default" : "outline"}
@@ -223,8 +224,6 @@ export function CreditBillsPage({ onPayCreditCard }: CreditBillsPageProps) {
               key={details.account.id}
               account={details.account}
               billDetails={details}
-              // --- CORREÇÃO AQUI ---
-              // Agora passa os valores da fatura ao clicar no botão
               onPayBill={() =>
                 onPayCreditCard(
                   details.account,

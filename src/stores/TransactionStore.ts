@@ -1,18 +1,18 @@
 import { create } from 'zustand';
-import { Transaction } from '@/types'; // Assumindo que seu tipo 'Transaction' está em @/types
-import { createDateFromString } from '@/lib/dateUtils'; // Importar o utilitário de data
+import { Transaction } from '@/types'; 
+import { createDateFromString } from '@/lib/dateUtils'; // Importar o utilitário de data robusto
 
-// Ajusta a interface Transaction para garantir que 'date' seja um objeto Date
-interface AppTransaction extends Omit<Transaction, 'date'> {
+// A interface AppTransaction garante que 'date' é um objeto Date
+export interface AppTransaction extends Omit<Transaction, 'date'> {
   date: Date;
 }
 
 interface TransactionStoreState {
   transactions: AppTransaction[];
-  setTransactions: (transactions: AppTransaction[]) => void;
-  addTransactions: (newTransactions: AppTransaction[]) => void;
-  updateTransaction: (updatedTransaction: AppTransaction) => void;
-  updateTransactions: (updatedTransactions: AppTransaction[]) => void;
+  setTransactions: (transactions: Transaction[]) => void;
+  addTransactions: (newTransactions: Transaction[]) => void;
+  updateTransaction: (updatedTransaction: Transaction) => void;
+  updateTransactions: (updatedTransactions: Transaction[]) => void;
   removeTransaction: (transactionId: string) => void;
   removeTransactions: (transactionIds: string[]) => void;
 }
@@ -22,12 +22,12 @@ export const useTransactionStore = create<TransactionStoreState>((set) => ({
   
   /**
    * Define a lista inteira (usado na carga inicial).
+   * Converte Transaction[] (com datas em string/null) para AppTransaction[]
    */
   setTransactions: (transactions) => set({ 
-    // Garante que todas as datas sejam objetos Date
     transactions: transactions.map(t => ({
       ...t,
-      date: typeof t.date === 'string' ? createDateFromString(t.date) : t.date
+      date: createDateFromString(t.date) // Converte string/null para Date
     }))
   }),
 
@@ -37,9 +37,9 @@ export const useTransactionStore = create<TransactionStoreState>((set) => ({
   addTransactions: (newTransactions) => set((state) => ({
     transactions: [
       ...state.transactions,
-      ...newTransactions.map(t => ({ // Garante a conversão de data
+      ...newTransactions.map(t => ({ 
         ...t,
-        date: typeof t.date === 'string' ? createDateFromString(t.date) : t.date
+        date: createDateFromString(t.date) // Converte string/null para Date
       }))
     ]
   })),
@@ -50,24 +50,22 @@ export const useTransactionStore = create<TransactionStoreState>((set) => ({
   updateTransaction: (updatedTransaction) => set((state) => ({
     transactions: state.transactions.map(t => 
       t.id === updatedTransaction.id ? {
-        ...updatedTransaction, // Garante a conversão de data
-        date: typeof updatedTransaction.date === 'string' 
-          ? createDateFromString(updatedTransaction.date) 
-          : updatedTransaction.date
+        ...updatedTransaction, 
+        date: createDateFromString(updatedTransaction.date) // Converte
       } : t
     )
   })),
 
   /**
-   * Atualiza várias transações de uma vez (mais eficiente).
+   * Atualiza várias transações de uma vez.
    */
   updateTransactions: (updatedTransactions) => set((state) => {
     const updatedMap = new Map(
       updatedTransactions.map(t => [
         t.id, 
-        { // Garante a conversão de data
+        { 
           ...t, 
-          date: typeof t.date === 'string' ? createDateFromString(t.date) : t.date 
+          date: createDateFromString(updatedTransaction.date) // Converte
         }
       ])
     );
@@ -84,7 +82,7 @@ export const useTransactionStore = create<TransactionStoreState>((set) => ({
   })),
 
   /**
-   * Remove várias transações da lista (ex: exclusão de parcelas).
+   * Remove várias transações da lista.
    */
   removeTransactions: (transactionIds) => {
     const idSet = new Set(transactionIds);
