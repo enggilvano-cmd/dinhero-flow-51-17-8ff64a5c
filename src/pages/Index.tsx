@@ -740,51 +740,66 @@ const PlaniFlowApp = () => {
       if (!transactionToDelete) return;
 
       let transactionsToDelete = [transactionToDelete];
-      let accountsToUpdate = new Map<string, number>(); // <accountId, balanceChange>
+      const accountsToRecalculate = new Set<string>([transactionToDelete.account_id]);
 
-      const mainBalanceChange =
-        transactionToDelete.type === "income"
-          ? -transactionToDelete.amount
-          : transactionToDelete.amount;
-      accountsToUpdate.set(transactionToDelete.account_id, mainBalanceChange);
-
-      if (transactionToDelete.parent_transaction_id) {
-        const { data: linkedTransactions, error: findError } = await supabase
+      // Lógica para encontrar e incluir transações de transferência vinculadas
+      const isTransfer = transactionToDelete.to_account_id != null;
+      if (isTransfer) {
+        // Se a transação tem um 'linked_transaction_id', ela é a parte 'income' da transferência.
+        // A outra parte (expense) é o ID que ela referencia.
+        if (transactionToDelete.linked_transaction_id) {
+          const otherPart = transactions.find(t => t.id === transactionToDelete.linked_transaction_id);
+          if (otherPart) {
+            transactionsToDelete.push(otherPart);
+            accountsToRecalculate.add(otherPart.account_id);
+          }
+        } else {
+          // Se não tem, ela é a parte 'expense'. A outra parte (income) a referencia.
+          const otherPart = transactions.find(t => t.linked_transaction_id === transactionToDelete.id);
+          if (otherPart) {
+            transactionsToDelete.push(otherPart);
+            accountsToRecalculate.add(otherPart.account_id);
+          }
+        }
+      }
+      // Lógica para encontrar e incluir transações de parcelamento
+      else if (transactionToDelete.parent_transaction_id) {
+        const { data: installmentTransactions, error: findError } = await supabase
           .from("transactions")
           .select("*")
           .eq("parent_transaction_id", transactionToDelete.parent_transaction_id)
           .neq("id", transactionToDelete.id);
 
-        if (findError) console.error("Erro ao buscar transação vinculada:", findError);
+        if (findError) console.error("Erro ao buscar transações de parcela:", findError);
 
-        if (linkedTransactions && linkedTransactions.length > 0) {
-          for (const linkedTransaction of linkedTransactions) {
-            transactionsToDelete.push(linkedTransaction);
-            const linkedBalanceChange =
-              linkedTransaction.type === "income"
-                ? -linkedTransaction.amount
-                : linkedTransaction.amount;
-            
-            const currentChange = accountsToUpdate.get(linkedTransaction.account_id) || 0;
-            accountsToUpdate.set(linkedTransaction.account_id, currentChange + linkedBalanceChange);
+        if (installmentTransactions && installmentTransactions.length > 0) {
+          for (const installment of installmentTransactions) {
+            transactionsToDelete.push(installment);
+            accountsToRecalculate.add(installment.account_id);
           }
         }
       }
 
       const idsToDelete = transactionsToDelete.map(t => t.id);
+
+      // Deleta as transações do banco de dados
       const { error: deleteError } = await supabase
         .from("transactions")
         .delete()
         .in("id", idsToDelete)
         .eq("user_id", user.id);
-
       if (deleteError) throw deleteError;
 
+      // Recalcula o saldo das contas afetadas
       let updatedAccountsList = [];
-      for (const [accountId, balanceChange] of accountsToUpdate.entries()) {
+      for (const accountId of accountsToRecalculate) {
         const account = accounts.find((acc) => acc.id === accountId);
         if (account) {
-          const newBalance = account.balance + balanceChange;
+          // Recalcula o saldo do zero para garantir consistência
+          const newBalance = transactions
+            .filter(t => t.account_id === accountId && t.status === 'completed' && !idsToDelete.includes(t.id))
+            .reduce((sum, t) => sum + (t.type === 'income' ? t.amount : -t.amount), 0);
+
           await supabase
             .from("accounts")
             .update({ balance: newBalance })
@@ -794,12 +809,14 @@ const PlaniFlowApp = () => {
         }
       }
 
+      // Atualiza os stores locais
       updateGlobalAccounts(updatedAccountsList);
       removeGlobalTransactions(idsToDelete);
 
     } catch (error) {
       console.error("Error deleting transaction(s):", error);
-      toast({ title: "Erro ao estornar", description: (error as Error).message, variant: "destructive" });
+      const message = (error as Error).message || "Ocorreu um erro inesperado.";
+      toast({ title: "Erro ao Excluir", description: message, variant: "destructive" });
     }
   };
 
