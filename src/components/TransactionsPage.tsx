@@ -95,11 +95,14 @@ export function TransactionsPage({
   const { toast } = useToast();
   const { isMobile, isTablet } = useChartResponsive();
 
-  const formatCurrency = (value: number) => {
+  // =================================================================
+  // CORREÇÃO 1: A função 'formatCurrency' local deve dividir por 100
+  // =================================================================
+  const formatCurrency = (valueInCents: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
-    }).format(value);
+    }).format(valueInCents / 100); // Dividido por 100
   };
 
   const getTransactionIcon = (type: string) => {
@@ -251,34 +254,46 @@ export function TransactionsPage({
       const isTransfer = transaction.to_account_id != null;
       const transactionType = isTransfer ? "transfer" : transaction.type;
       
+      // =================================================================
+      // CORREÇÃO 2: Exportar o valor em Reais (dividido por 100)
+      // =================================================================
       return {
         'Data': format(transactionDate, "dd/MM/yyyy", { locale: ptBR }),
         'Descrição': transaction.description,
         'Categoria': getCategoryName(transaction.category_id, isTransfer),
         'Tipo': getTransactionTypeLabel(transactionType),
         'Conta': getAccountName(transaction.account_id),
-        'Valor': transaction.amount,
+        'Valor': transaction.amount / 100, // Dividido por 100
         'Status': getStatusLabel(transaction.status),
         'Parcelas': transaction.installments ? `${transaction.current_installment}/${transaction.installments}` : 'N/A'
       };
     });
 
     const ws = XLSX.utils.json_to_sheet(dataToExport);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Transações");
-
-    // Configurar largura das colunas
-    const colWidths = [
+    
+    // Adiciona formatação de moeda à coluna 'Valor' (coluna F)
+    ws['!cols'] = [
       { wch: 12 }, // Data
       { wch: 30 }, // Descrição
       { wch: 20 }, // Categoria
       { wch: 15 }, // Tipo
       { wch: 25 }, // Conta
-      { wch: 15 }, // Valor
+      { wch: 15, z: 'R$ #,##0.00' }, // Valor (com formatação)
       { wch: 12 }, // Status
       { wch: 12 }  // Parcelas
     ];
-    ws['!cols'] = colWidths;
+    
+    // Aplicar a formatação de moeda para todas as células na coluna F (Valor), exceto o cabeçalho
+    for (let i = 2; i <= dataToExport.length + 1; i++) {
+        const cellRef = `F${i}`;
+        if (ws[cellRef]) { // Verifica se a célula existe
+            ws[cellRef].t = 'n'; // 'n' significa número
+            ws[cellRef].z = 'R$ #,##0.00'; // Formato de moeda
+        }
+    }
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Transações");
 
     // Gerar nome do arquivo com filtros aplicados
     let fileName = 'transacoes';
@@ -298,6 +313,8 @@ export function TransactionsPage({
   };
 
   // Configure table columns
+  // Nenhuma correção necessária aqui, pois usará a função 'formatCurrency' local
+  // que agora está corrigida.
   const tableColumns = [
     {
       key: 'info',

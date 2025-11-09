@@ -8,7 +8,10 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { createDateFromString, getTodayString, addMonthsToDate } from "@/lib/dateUtils";
 import { useCategories } from "@/hooks/useCategories";
-import { currencyStringToCents } from "@/lib/utils";
+// 1. IMPORTAR O COMPONENTE DE MOEDA CORRETO
+import { CurrencyInput } from "@/components/forms/CurrencyInput";
+// 2. REMOVER A IMPORTAÇÃO DA FUNÇÃO DE CONVERSÃO ANTIGA
+// import { currencyStringToCents } from "@/lib/utils";
 
 interface Transaction {
   id?: string;
@@ -52,7 +55,8 @@ export function AddTransactionModal({
 }: AddTransactionModalProps) {
   const [formData, setFormData] = useState({
     description: "",
-    amount: "", // Alterado para string para compatibilidade com a função
+    // 3. ALTERAR O ESTADO 'amount' PARA NÚMERO (CENTAVOS)
+    amount: 0, 
     date: getTodayString(),
     type: "" as "income" | "expense" | "transfer" | "",
     category_id: "",
@@ -99,10 +103,9 @@ export function AddTransactionModal({
       installments: installmentsString
     } = formData;
 
-    // Adicionar logs para depuração
-    console.log("Valor inserido (string):", formData.amount);
-    const numericAmount = currencyStringToCents(formData.amount);
-    console.log("Valor convertido para centavos:", numericAmount);
+    // 4. REMOVER A CONVERSÃO. O VALOR JÁ ESTÁ EM CENTAVOS.
+    const numericAmount = formData.amount;
+    console.log("DEBUG: Valor (em centavos) vindo do estado:", numericAmount);
 
     // Garantir que o valor convertido seja usado corretamente
     if (isNaN(numericAmount) || numericAmount <= 0) {
@@ -187,7 +190,10 @@ export function AddTransactionModal({
             parentTransactionId: crypto.randomUUID() // ID único para agrupar
           };
 
+          // DEBUG: Log do objeto enviado
+          console.log("DEBUG: Enviando (Cartão) para onAddTransaction", transaction);
           await onAddTransaction(transaction);
+
           toast({
             title: "Sucesso",
             description: `Transação (Cartão de Crédito) adicionada com sucesso!`,
@@ -232,7 +238,10 @@ export function AddTransactionModal({
             transactions.push(transaction);
           }
 
+          // DEBUG: Log do objeto enviado
+          console.log("DEBUG: Enviando (Parcelas) para onAddInstallmentTransactions", transactions);
           await onAddInstallmentTransactions(transactions);
+
           toast({
             title: "Sucesso",
             description: `Transação dividida em ${installments}x adicionada com sucesso!`,
@@ -241,7 +250,7 @@ export function AddTransactionModal({
         }
       } else {
         // Cenário 3: Transação Única (sem parcelamento)
-        await onAddTransaction({
+        const transactionPayload = {
           description: description,
           amount: numericAmount, // Valor já está em centavos
           date: createDateFromString(date), // Passa o objeto Date diretamente
@@ -249,7 +258,11 @@ export function AddTransactionModal({
           category_id: category_id,
           account_id: account_id,
           status: status
-        });
+        };
+        
+        // DEBUG: Log do objeto enviado
+        console.log("DEBUG: Enviando (Única) para onAddTransaction", transactionPayload);
+        await onAddTransaction(transactionPayload);
 
         toast({
           title: "Sucesso",
@@ -261,7 +274,7 @@ export function AddTransactionModal({
       // Resetar form e fechar modal em caso de sucesso
       setFormData({
         description: "",
-        amount: "",
+        amount: 0, // 6. ALTERAR RESET para 0
         date: getTodayString(),
         type: "",
         category_id: "",
@@ -306,7 +319,7 @@ export function AddTransactionModal({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="type">Tipo</Label>
-              <Select value={formData.type} onValueChange={(value) => setFormData(prev => ({ ...prev, type: value as any }))}>
+              <Select value={formData.type} onValueChange={(value) => setFormData(prev => ({ ...prev, type: value as any, category_id: "" }))}>
                 <SelectTrigger>
                   <SelectValue placeholder="Tipo" />
                 </SelectTrigger>
@@ -319,14 +332,13 @@ export function AddTransactionModal({
 
             <div className="space-y-2">
               <Label htmlFor="amount">Valor (R$)</Label>
-              {/* CORREÇÃO: Input de 'text' para lidar com vírgula */}
-              <Input
+              {/* 5. SUBSTITUIR O INPUT PELO CURRENCYINPUT */}
+              <CurrencyInput
                 id="amount"
-                type="text"
-                step="0.01"
-                placeholder="0,00"
-                value={formData.amount} // Garantir que o valor seja tratado como string
-                onChange={(e) => setFormData(prev => ({ ...prev, amount: e.target.value }))} // Ajustar para string
+                value={formData.amount}
+                onValueChange={(centsValue) => {
+                  setFormData(prev => ({ ...prev, amount: centsValue }));
+                }}
                 className="h-10 sm:h-11"
               />
             </div>
@@ -336,7 +348,7 @@ export function AddTransactionModal({
             <div className="space-y-2">
               <Label htmlFor="category_id">Categoria</Label>
               <Select value={formData.category_id} onValueChange={(value) => setFormData(prev => ({ ...prev, category_id: value }))}>
-                <SelectTrigger>
+                <SelectTrigger disabled={!formData.type || formData.type === "transfer"}>
                   <SelectValue placeholder="Selecione" />
                 </SelectTrigger>
                 <SelectContent>
@@ -446,7 +458,9 @@ export function AddTransactionModal({
                         {/* A prévia do valor da parcela só é exibida se for
                           um parcelamento que GERA N transações (não cartão).
                         */}
-                        {(() => {                          const numericAmount = formData.amountInCents;
+                        {(() => {
+                          // CORREÇÃO: Usar formData.amount (que agora são centavos)
+                          const numericAmount = formData.amount; 
                           return numericAmount > 0 && (formData.account_id && accounts.find(acc => acc.id === formData.account_id)?.type !== 'credit') ?
                             ` de ${new Intl.NumberFormat('pt-BR', {
                               style: 'currency',
