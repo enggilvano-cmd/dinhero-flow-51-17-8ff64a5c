@@ -112,6 +112,11 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
     } catch (error) {
       // A função onTransfer deve lançar um erro em caso de falha para este bloco ser ativado.
       console.error("Transfer failed:", error);
+      toast({
+        title: "Erro na Transferência",
+        description: "Não foi possível realizar a transferência. Tente novamente.",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }
