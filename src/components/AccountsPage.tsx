@@ -14,7 +14,7 @@ import {
   MoreVertical,
   ArrowRight,
   DollarSign,
-  TrendingUp, // 1. Ícone Adicionado
+  TrendingUp,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -23,19 +23,23 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
-import { useAccountStore } from "@/stores/AccountStore"; // Já estava lendo do store
+// 1. IMPORTAR O STORE
+import { useAccountStore } from "@/stores/AccountStore";
+import { Account } from "@/types"; // Importar o tipo
 
 interface AccountsPageProps {
+  // 2. REMOVER 'accounts' DAS PROPS
+  // accounts: any[]; 
   onAddAccount: () => void;
   onEditAccount: (account: any) => void;
   onDeleteAccount: (accountId: string) => void;
   onPayCreditCard?: (account: any) => void;
   onTransfer?: () => void;
-  // 2. TIPO DE FILTRO ATUALIZADO
   initialFilterType?: "all" | "checking" | "savings" | "credit" | "investment";
 }
 
 export function AccountsPage({
+  // 3. REMOVER 'accounts' DAS PROPS
   onAddAccount,
   onEditAccount,
   onDeleteAccount,
@@ -43,9 +47,10 @@ export function AccountsPage({
   onTransfer,
   initialFilterType = "all",
 }: AccountsPageProps) {
-  const accounts = useAccountStore((state) => state.accounts); // Lê do store
+  // 4. LER AS CONTAS DIRETAMENTE DO STORE
+  const accounts = useAccountStore((state) => state.accounts);
+
   const [searchTerm, setSearchTerm] = useState("");
-  // 3. TIPO DE ESTADO ATUALIZADO
   const [filterType, setFilterType] = useState<
     "all" | "checking" | "savings" | "credit" | "investment"
   >(initialFilterType);
@@ -69,7 +74,6 @@ export function AccountsPage({
         return <PiggyBank className="h-5 w-5" />;
       case "credit":
         return <CreditCard className="h-5 w-5" />;
-      // 4. ÍCONE DE INVESTIMENTO ADICIONADO
       case "investment":
         return <TrendingUp className="h-5 w-5" />;
       default:
@@ -85,7 +89,6 @@ export function AccountsPage({
         return "Poupança";
       case "credit":
         return "Cartão de Crédito";
-      // 5. RÓTULO DE INVESTIMENTO ADICIONADO
       case "investment":
         return "Investimento";
       default:
@@ -98,8 +101,7 @@ export function AccountsPage({
       checking: "default",
       savings: "secondary",
       credit: "destructive",
-      // 6. BADGE DE INVESTIMENTO ADICIONADO
-      investment: "secondary",
+      investment: "secondary", // Corrigido de 'outline' para 'secondary'
     } as const;
     return variants[type as keyof typeof variants] || "default";
   };
@@ -128,14 +130,11 @@ export function AccountsPage({
     }
   };
 
-  // 7. CÁLCULO DO TOTAL ATUALIZADO
-  // Agora usa 'filteredAccounts' em vez de 'accounts'
+  // Os totais agora são calculados a partir das 'filteredAccounts'
   const totalBalance = filteredAccounts
     .filter((acc) => acc.type !== "credit")
     .reduce((sum, acc) => sum + acc.balance, 0);
 
-  // 8. CÁLCULO DE CRÉDITO ATUALIZADO
-  // Agora usa 'filteredAccounts' em vez de 'accounts'
   const creditUsed = filteredAccounts
     .filter((acc) => acc.type === "credit")
     .reduce((sum, acc) => sum + Math.abs(acc.balance), 0);
@@ -180,7 +179,6 @@ export function AccountsPage({
                 <p className="text-xs sm:text-sm font-medium text-muted-foreground">
                   Total em Contas
                 </p>
-                {/* Este total agora é dinâmico com base no filtro */}
                 <div
                   className={`text-base sm:text-lg lg:text-xl font-bold ${
                     totalBalance >= 0 ? "balance-positive" : "balance-negative"
@@ -203,7 +201,6 @@ export function AccountsPage({
                 <p className="text-xs sm:text-sm font-medium text-muted-foreground">
                   Cartões Utilizados
                 </p>
-                {/* Este total agora é dinâmico com base no filtro */}
                 <div className="text-base sm:text-lg lg:text-xl font-bold balance-negative leading-tight">
                   {formatCents(creditUsed)}
                 </div>
@@ -223,7 +220,6 @@ export function AccountsPage({
                   Total de Contas
                 </p>
                 <div className="text-base sm:text-lg lg:text-xl font-bold leading-tight">
-                  {/* Usa filteredAccounts para contagem correta */}
                   {filteredAccounts.length}
                 </div>
               </div>
@@ -244,7 +240,6 @@ export function AccountsPage({
           />
         </div>
         <div className="flex gap-2 flex-wrap sm:flex-nowrap">
-          {/* 9. BOTÃO DE INVESTIMENTO ADICIONADO */}
           {[
             { value: "all", label: "Todas" },
             { value: "checking", label: "Corrente" },

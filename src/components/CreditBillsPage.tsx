@@ -16,7 +16,7 @@ import { CreditCardBillCard } from "./CreditCardBillCard";
 import { Account, Transaction } from "@/types";
 import { cn } from "@/lib/utils";
 
-// Helper para formatar moeda (você já tem isso)
+// Helper para formatar moeda
 const formatCents = (valueInCents: number) => {
   return new Intl.NumberFormat("pt-BR", {
     style: "currency",
@@ -24,27 +24,33 @@ const formatCents = (valueInCents: number) => {
   }).format(valueInCents / 100);
 };
 
+// --- CORREÇÃO AQUI ---
+// A interface agora define que a função passará os valores da fatura
 interface CreditBillsPageProps {
-  onPayCreditCard: (account: Account) => void;
+  onPayCreditCard: (
+    account: Account,
+    currentBillAmount: number,
+    nextBillAmount: number
+  ) => void;
 }
 
 export function CreditBillsPage({ onPayCreditCard }: CreditBillsPageProps) {
-  // 1. Lendo direto do estado global
+  // Lendo direto do estado global
   const allAccounts = useAccountStore((state) => state.accounts);
   const allTransactions = useTransactionStore((state) => state.transactions);
 
-  // 2. Novos estados para os filtros
+  // Novos estados para os filtros
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedAccountId, setSelectedAccountId] = useState("all");
 
-  // 3. Memo para buscar todos os cartões (para os botões de filtro)
+  // Memo para buscar todos os cartões (para os botões de filtro)
   const creditAccounts = useMemo(() => {
     return allAccounts
       .filter((acc) => acc.type === "credit")
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [allAccounts]);
 
-  // 4. Memo para filtrar os cartões com base na busca e seleção
+  // Memo para filtrar os cartões com base na busca e seleção
   const filteredCreditAccounts = useMemo(() => {
     return creditAccounts.filter((account) => {
       const matchesSearch = account.name
@@ -56,7 +62,7 @@ export function CreditBillsPage({ onPayCreditCard }: CreditBillsPageProps) {
     });
   }, [creditAccounts, searchTerm, selectedAccountId]);
 
-  // 5. Memo para calcular os detalhes da fatura APENAS para os cartões filtrados
+  // Memo para calcular os detalhes da fatura APENAS para os cartões filtrados
   const billDetails = useMemo(() => {
     return filteredCreditAccounts.map((account) => {
       const accountTransactions = allTransactions.filter(
@@ -75,8 +81,7 @@ export function CreditBillsPage({ onPayCreditCard }: CreditBillsPageProps) {
     });
   }, [filteredCreditAccounts, allTransactions]);
 
-  // 6. Memo para os TOTAIS dos cards superiores
-  // (Ele soma os valores de 'billDetails', que já estão filtrados)
+  // Memo para os TOTAIS dos cards superiores
   const totalSummary = useMemo(() => {
     return billDetails.reduce(
       (acc, details) => {
@@ -97,7 +102,7 @@ export function CreditBillsPage({ onPayCreditCard }: CreditBillsPageProps) {
         Acompanhe o vencimento e o limite dos seus cartões de crédito.
       </p>
 
-      {/* 7. NOVOS CARDS DE TOTAIS (Baseado no AccountsPage) */}
+      {/* CARDS DE TOTAIS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
         <Card className="financial-card">
           <CardContent className="p-4">
@@ -161,7 +166,7 @@ export function CreditBillsPage({ onPayCreditCard }: CreditBillsPageProps) {
         </Card>
       </div>
 
-      {/* 8. NOVA SEÇÃO DE FILTROS (Baseado no AccountsPage) */}
+      {/* SEÇÃO DE FILTROS */}
       <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -196,7 +201,7 @@ export function CreditBillsPage({ onPayCreditCard }: CreditBillsPageProps) {
         </div>
       </div>
 
-      {/* 9. RENDERIZAÇÃO DOS CARDS (Agora usa 'billDetails') */}
+      {/* RENDERIZAÇÃO DOS CARDS */}
       {billDetails.length === 0 ? (
         <div className="text-center py-12 text-muted-foreground">
           <CreditCard className="h-12 w-12 mx-auto mb-4 opacity-50" />
@@ -218,7 +223,15 @@ export function CreditBillsPage({ onPayCreditCard }: CreditBillsPageProps) {
               key={details.account.id}
               account={details.account}
               billDetails={details}
-              onPayBill={() => onPayCreditCard(details.account)}
+              // --- CORREÇÃO AQUI ---
+              // Agora passa os valores da fatura ao clicar no botão
+              onPayBill={() =>
+                onPayCreditCard(
+                  details.account,
+                  details.currentBillAmount,
+                  details.nextBillAmount
+                )
+              }
             />
           ))}
         </div>

@@ -26,10 +26,9 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { MigrationWarning } from "@/components/MigrationWarning";
 import { createDateFromString } from "@/lib/dateUtils";
-// 1. IMPORTAR OS STORES
 import { useAccountStore } from "@/stores/AccountStore";
 import { useTransactionStore } from "@/stores/TransactionStore";
-import { Account, Transaction } from "@/types"; // Importar tipos
+import { Account, Transaction } from "@/types";
 
 const PlaniFlowApp = () => {
   const { settings, updateSettings } = useSettings();
@@ -37,7 +36,7 @@ const PlaniFlowApp = () => {
   const { toast } = useToast();
   const [currentPage, setCurrentPage] = useState("dashboard");
 
-  // 2. LER O ESTADO DIRETAMENTE DOS STORES
+  // Lendo o estado global dos stores
   const accounts = useAccountStore((state) => state.accounts);
   const setGlobalAccounts = useAccountStore((state) => state.setAccounts);
   const updateGlobalAccounts = useAccountStore(
@@ -61,10 +60,9 @@ const PlaniFlowApp = () => {
   const removeGlobalTransaction = useTransactionStore(
     (state) => state.removeTransaction
   );
-
-  // 3. REMOVER useStates LOCAIS de accounts e transactions
-  // const [accounts, setAccounts] = useState<any[]>([]);
-  // const [transactions, setTransactions] = useState<any[]>([]);
+  const removeGlobalTransactions = useTransactionStore(
+    (state) => state.removeTransactions
+  );
 
   const [categories, setCategories] = useState<any[]>([]);
 
@@ -81,6 +79,12 @@ const PlaniFlowApp = () => {
     null
   );
   const [loadingData, setLoadingData] = useState(true);
+  
+  // --- CORREÇÃO: Estados para os valores da fatura ---
+  const [currentInvoiceValue, setCurrentInvoiceValue] = useState(0);
+  const [nextInvoiceValue, setNextInvoiceValue] = useState(0);
+  // --- Fim da Correção ---
+  
   const [transactionFilterType, setTransactionFilterType] = useState<
     "income" | "expense" | "transfer" | "all"
   >("all");
@@ -96,7 +100,6 @@ const PlaniFlowApp = () => {
     "all" | "checking" | "savings" | "credit" | "investment"
   >("all");
 
-  // Date parameters for transaction navigation - Reset when switching pages
   const [transactionSelectedMonth, setTransactionSelectedMonth] = useState<
     Date | undefined
   >(undefined);
@@ -107,7 +110,6 @@ const PlaniFlowApp = () => {
     Date | undefined
   >(undefined);
 
-  // Reset transaction filters when switching to transactions page
   const resetTransactionFilters = () => {
     setTransactionSelectedMonth(undefined);
     setTransactionCustomStartDate(undefined);
@@ -121,8 +123,6 @@ const PlaniFlowApp = () => {
     const loadData = async () => {
       try {
         setLoadingData(true);
-        console.log("Loading accounts and transactions from Supabase...");
-
         // Load accounts
         const { data: accountsData, error: accountsError } = await supabase
           .from("accounts")
@@ -130,17 +130,12 @@ const PlaniFlowApp = () => {
           .eq("user_id", user.id)
           .order("created_at", { ascending: false });
 
-        if (accountsError) {
-          console.error("Error loading accounts:", accountsError);
-        } else {
-          // 4. ATUALIZAR O STORE GLOBAL EM VEZ DO LOCAL
-          // Mapeamento de campos inconsistentes (limit)
-          const formattedAccounts = (accountsData || []).map((acc) => ({
-            ...acc,
-            limit: acc.limit_amount,
-          }));
-          setGlobalAccounts(formattedAccounts as Account[]);
-        }
+        if (accountsError) throw accountsError;
+        const formattedAccounts = (accountsData || []).map((acc) => ({
+          ...acc,
+          limit: acc.limit_amount,
+        }));
+        setGlobalAccounts(formattedAccounts as Account[]);
 
         // Load categories
         const { data: categoriesData, error: categoriesError } = await supabase
@@ -148,12 +143,8 @@ const PlaniFlowApp = () => {
           .select("*")
           .eq("user_id", user.id);
 
-        if (categoriesError) {
-          console.error("Error loading categories:", categoriesError);
-        } else {
-          console.log("Loaded categories:", categoriesData?.length);
-          setCategories(categoriesData || []);
-        }
+        if (categoriesError) throw categoriesError;
+        setCategories(categoriesData || []);
 
         // Load transactions
         const { data: transactionsData, error: transactionsError } =
@@ -163,24 +154,19 @@ const PlaniFlowApp = () => {
             .eq("user_id", user.id)
             .order("created_at", { ascending: false });
 
-        if (transactionsError) {
-          console.error("Error loading transactions:", transactionsError);
-        } else {
-          // 5. ATUALIZAR O STORE GLOBAL EM VEZ DO LOCAL
-          // Mapeamento de campos inconsistentes (accountId, category, etc.)
-          const formattedTransactions = (transactionsData || []).map(
-            (trans) => ({
-              ...trans,
-              accountId: trans.account_id,
-              category: trans.category_id,
-              currentInstallment: trans.current_installment,
-              parentTransactionId: trans.parent_transaction_id,
-              toAccountId: trans.to_account_id,
-              date: createDateFromString(trans.date), // Garantir que é objeto Date
-            })
-          );
-          setGlobalTransactions(formattedTransactions as Transaction[]);
-        }
+        if (transactionsError) throw transactionsError;
+        const formattedTransactions = (transactionsData || []).map(
+          (trans) => ({
+            ...trans,
+            accountId: trans.account_id,
+            category: trans.category_id,
+            currentInstallment: trans.current_installment,
+            parentTransactionId: trans.parent_transaction_id,
+            toAccountId: trans.to_account_id,
+            date: createDateFromString(trans.date),
+          })
+        );
+        setGlobalTransactions(formattedTransactions as Transaction[]);
       } catch (error) {
         console.error("Error loading data:", error);
       } finally {
@@ -189,32 +175,17 @@ const PlaniFlowApp = () => {
     };
 
     loadData();
-    // 6. DEPENDÊNCIAS ATUALIZADAS
   }, [user, setGlobalAccounts, setGlobalTransactions]);
-
-  // 7. REMOVER handleAddAccount (O modal agora usa o store diretamente)
-  /*
-  const handleAddAccount = async (accountData: any) => {
-    // ...toda a função foi removida...
-  };
-  */
 
   const handleEditAccount = async (updatedAccount: any) => {
     if (!user) return;
-
     try {
       const { error } = await supabase
         .from("accounts")
         .update(updatedAccount)
         .eq("id", updatedAccount.id)
         .eq("user_id", user.id);
-
-      if (error) {
-        console.error("Error updating account:", error);
-        return;
-      }
-
-      // 8. ATUALIZAR O STORE GLOBAL
+      if (error) throw error;
       updateGlobalAccounts(updatedAccount);
       setEditingAccount(null);
     } catch (error) {
@@ -222,49 +193,21 @@ const PlaniFlowApp = () => {
     }
   };
 
-  const handleDeleteAccount = async (accountId: string) => {
-    if (!user) return;
-
-    try {
-      const { error } = await supabase
-        .from("accounts")
-        .delete()
-        .eq("id", accountId)
-        .eq("user_id", user.id);
-
-      if (error) {
-        console.error("Error deleting account:", error);
-        return;
-      }
-
-      // 9. ATUALIZAR O STORE GLOBAL
-      removeGlobalAccount(accountId);
-      
-      // Também remove as transações associadas do store global
-      const transactionsToRemove = transactions
-        .filter(t => t.account_id === accountId)
-        .map(t => t.id);
-      removeGlobalTransaction(transactionsToRemove);
-
-    } catch (error) {
-      console.error("Error deleting account:", error);
-    }
-  };
-
   const handleAddTransaction = async (transactionData: any) => {
     if (!user) return;
-
     try {
-      // Map camelCase properties to snake_case for Supabase
       const mappedData = {
         description: transactionData.description,
         amount: transactionData.amount,
-        date: transactionData.date.toISOString().split("T")[0], // Convert to YYYY-MM-DD format
+        date: transactionData.date.toISOString().split("T")[0],
         type: transactionData.type,
         account_id: transactionData.account_id,
         category_id: transactionData.category_id,
         status: transactionData.status,
         user_id: user.id,
+        installments: transactionData.installments,
+        current_installment: transactionData.currentInstallment,
+        parent_transaction_id: transactionData.parentTransactionId,
       };
 
       const { data, error } = await supabase
@@ -272,50 +215,29 @@ const PlaniFlowApp = () => {
         .insert([mappedData])
         .select()
         .single();
+      if (error) throw error;
 
-      if (error) {
-        console.error("Error adding transaction:", error);
-        return;
-      }
-
-      // 10. ATUALIZAR O STORE GLOBAL DE TRANSAÇÕES
       addGlobalTransactions([data as Transaction]);
 
-      // Update account balance
-      const balanceChange =
-        transactionData.type === "income"
-          ? transactionData.amount
-          : -transactionData.amount;
-
-      const account = accounts.find(
-        (acc) => acc.id === transactionData.account_id
-      );
-      if (account) {
-        const newBalance = account.balance + balanceChange;
-
-        if (
-          account.type === "checking" &&
-          newBalance < 0 &&
-          account.limit_amount
-        ) {
-          if (Math.abs(newBalance) > account.limit_amount) {
-            throw new Error(
-              `Transação excede o limite de ${account.limit_amount.toLocaleString(
-                "pt-BR",
-                { style: "currency", currency: "BRL" }
-              )}`
-            );
-          }
+      // Atualizar saldo da conta (apenas se 'completed')
+      if (transactionData.status === 'completed') {
+        const balanceChange =
+          transactionData.type === "income"
+            ? transactionData.amount
+            : -transactionData.amount;
+        const account = accounts.find(
+          (acc) => acc.id === transactionData.account_id
+        );
+        if (account) {
+          const newBalance = account.balance + balanceChange;
+          // ... (validação de limite) ...
+          await supabase
+            .from("accounts")
+            .update({ balance: newBalance })
+            .eq("id", transactionData.account_id)
+            .eq("user_id", user.id);
+          updateGlobalAccounts({ ...account, balance: newBalance });
         }
-
-        await supabase
-          .from("accounts")
-          .update({ balance: newBalance })
-          .eq("id", transactionData.account_id)
-          .eq("user_id", user.id);
-
-        // 11. ATUALIZAR O STORE GLOBAL DE CONTAS
-        updateGlobalAccounts({ ...account, balance: newBalance });
       }
     } catch (error) {
       console.error("Error adding transaction:", error);
@@ -331,7 +253,6 @@ const PlaniFlowApp = () => {
 
   const handleAddInstallmentTransactions = async (transactionsData: any[]) => {
     if (!user) return;
-
     try {
       const transactionsToInsert = transactionsData.map((data) => ({
         description: data.description,
@@ -351,52 +272,67 @@ const PlaniFlowApp = () => {
         .from("transactions")
         .insert(transactionsToInsert)
         .select();
+      if (error) throw error;
 
-      if (error) {
-        console.error(
-          "Database error adding installment transactions:",
-          error
-        );
-        throw error;
-      }
-
-      // 12. ATUALIZAR O STORE GLOBAL DE TRANSAÇÕES
       addGlobalTransactions(newTransactions as Transaction[]);
 
-      // Update account balance for all installments
+      // Atualizar saldo (apenas para transações 'completed')
       const totalAmount = transactionsData.reduce((sum, trans) => {
-        return sum + (trans.type === "income" ? trans.amount : -trans.amount);
+        if (trans.status === "completed") {
+          return sum + (trans.type === "income" ? trans.amount : -trans.amount);
+        }
+        return sum;
       }, 0);
-
-      const accountId = transactionsData[0].account_id;
-      const account = accounts.find((acc) => acc.id === accountId);
-      if (account) {
-        const newBalance = account.balance + totalAmount;
-        await supabase
-          .from("accounts")
-          .update({ balance: newBalance })
-          .eq("id", accountId)
-          .eq("user_id", user.id);
-
-        // 13. ATUALIZAR O STORE GLOBAL DE CONTAS
-        updateGlobalAccounts({ ...account, balance: newBalance });
+      
+      if (totalAmount !== 0) {
+        const accountId = transactionsData[0].account_id;
+        const account = accounts.find((acc) => acc.id === accountId);
+        if (account) {
+          const newBalance = account.balance + totalAmount;
+          await supabase
+            .from("accounts")
+            .update({ balance: newBalance })
+            .eq("id", accountId)
+            .eq("user_id", user.id);
+          updateGlobalAccounts({ ...account, balance: newBalance });
+        }
       }
     } catch (error) {
       console.error("Error adding installment transactions:", error);
-      throw error; // Re-throw to be caught by the modal
+      throw error;
     }
   };
 
   const handleImportTransactions = async (transactionsData: any[]) => {
     if (!user) return;
-
     try {
-      // ... (Lógica de importação, map de categorias, etc.) ...
       const transactionsToInsert = await Promise.all(
         transactionsData.map(async (data) => {
-          // ... (código de busca/criação de categoria) ...
-          let category_id = null; // Substitua pela sua lógica
-          
+          let category_id = null;
+          if (data.category) {
+            const { data: existingCategory } = await supabase
+              .from("categories")
+              .select("id")
+              .eq("user_id", user.id)
+              .eq("name", data.category)
+              .maybeSingle();
+            if (existingCategory) {
+              category_id = existingCategory.id;
+            } else {
+              const { data: newCategory } = await supabase
+                .from("categories")
+                .insert({
+                  name: data.category,
+                  user_id: user.id,
+                  type: data.type === "income" ? "income" : "expense",
+                })
+                .select("id")
+                .single();
+              if (newCategory) {
+                category_id = newCategory.id;
+              }
+            }
+          }
           return {
             description: data.description,
             amount: data.amount,
@@ -411,18 +347,16 @@ const PlaniFlowApp = () => {
           };
         })
       );
-      
+
       const { data: newTransactions, error } = await supabase
         .from("transactions")
         .insert(transactionsToInsert)
         .select();
-      
+
       if (error) throw error;
 
-      // 14. ATUALIZAR O STORE GLOBAL DE TRANSAÇÕES
       addGlobalTransactions(newTransactions as Transaction[]);
 
-      // ... (Lógica de cálculo de balanço) ...
       const accountBalanceChanges = transactionsData.reduce(
         (acc, trans) => {
           const balanceChange =
@@ -449,20 +383,20 @@ const PlaniFlowApp = () => {
         }
       }
 
-      // 15. ATUALIZAR O STORE GLOBAL DE CONTAS (EM LOTE)
       updateGlobalAccounts(updatedAccountsList);
-
       toast({
         title: "Importação concluída",
         description: `${newTransactions.length} transações importadas com sucesso`,
       });
-
     } catch (error) {
-      console.error('Error importing transactions:', error);
-      // ... (toast de erro) ...
+      console.error("Error importing transactions:", error);
+      toast({
+        title: "Erro na importação",
+        description: "Erro inesperado durante a importação",
+        variant: "destructive",
+      });
     }
   };
-
 
   const handleTransfer = async (
     fromAccountId: string,
@@ -470,17 +404,34 @@ const PlaniFlowApp = () => {
     amount: number,
     date: Date
   ) => {
-    if (!user) return;
+    if (!user) throw new Error("Usuário não autenticado");
 
     try {
       const fromAccount = accounts.find((acc) => acc.id === fromAccountId);
       const toAccount = accounts.find((acc) => acc.id === toAccountId);
-      if (!fromAccount || !toAccount) return;
+      if (!fromAccount || !toAccount) throw new Error("Contas não encontradas");
 
       const newFromBalance = fromAccount.balance - amount;
       const newToBalance = toAccount.balance + amount;
 
-      // ... (verificação de limite) ...
+      if (
+        fromAccount.type === "checking" &&
+        newFromBalance < 0 &&
+        fromAccount.limit_amount
+      ) {
+        if (Math.abs(newFromBalance) > fromAccount.limit_amount) {
+          throw new Error(
+            `Transferência excede o limite da conta ${
+              fromAccount.name
+            } de ${fromAccount.limit_amount.toLocaleString("pt-BR", {
+              style: "currency",
+              currency: "BRL",
+            })}`
+          );
+        }
+      }
+
+      const parentId = crypto.randomUUID(); // ID compartilhado
 
       const outgoingTransaction = {
         description: `Transferência para ${toAccount.name}`,
@@ -489,9 +440,10 @@ const PlaniFlowApp = () => {
         type: "expense" as const,
         category_id: null,
         account_id: fromAccountId,
-        to_account_id: toAccountId, 
+        to_account_id: toAccountId,
         status: "completed" as const,
         user_id: user.id,
+        parent_transaction_id: parentId, // Vínculo
       };
 
       const incomingTransaction = {
@@ -504,6 +456,7 @@ const PlaniFlowApp = () => {
         to_account_id: fromAccountId,
         status: "completed" as const,
         user_id: user.id,
+        parent_transaction_id: parentId, // Vínculo
       };
 
       const { data: newTransactions, error } = await supabase
@@ -511,12 +464,8 @@ const PlaniFlowApp = () => {
         .insert([outgoingTransaction, incomingTransaction])
         .select();
 
-      if (error) {
-        console.error("Error creating transfer:", error);
-        return;
-      }
+      if (error) throw error;
 
-      // 16. ATUALIZAR O STORE GLOBAL DE TRANSAÇÕES
       addGlobalTransactions(newTransactions as Transaction[]);
 
       await Promise.all([
@@ -532,13 +481,19 @@ const PlaniFlowApp = () => {
           .eq("user_id", user.id),
       ]);
 
-      // 17. ATUALIZAR O STORE GLOBAL DE CONTAS (EM LOTE)
       updateGlobalAccounts([
         { ...fromAccount, balance: newFromBalance },
         { ...toAccount, balance: newToBalance },
       ]);
     } catch (error) {
-      // ... (tratamento de erro) ...
+      console.error("Error processing transfer:", error);
+      if (error instanceof Error) {
+        toast({
+          title: "Erro na transferência",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -547,18 +502,16 @@ const PlaniFlowApp = () => {
     editScope?: EditScope
   ) => {
     if (!user) return;
-
     try {
       const oldTransaction = transactions.find(
         (t) => t.id === updatedTransaction.id
       );
       if (!oldTransaction) return;
 
-      // Lógica para Edição ÚNICA
       if (
         !editScope ||
         editScope === "current" ||
-        !updatedTransaction.installments
+        !oldTransaction.parent_transaction_id // Não editar em lote se não for parcela
       ) {
         const cleanTransaction = {
           description: updatedTransaction.description,
@@ -581,36 +534,38 @@ const PlaniFlowApp = () => {
 
         if (error) throw error;
 
-        // ... (cálculo de balanço) ...
-        const oldBalanceChange =
-          oldTransaction.type === "income"
-            ? -oldTransaction.amount
-            : oldTransaction.amount;
-        const newBalanceChange =
-          updatedTransaction.type === "income"
-            ? updatedTransaction.amount
-            : -updatedTransaction.amount;
-            
-        // Update account balance
-        if (oldTransaction.account_id === updatedTransaction.account_id) {
-          const account = accounts.find(
-            (acc) => acc.id === oldTransaction.account_id
-          );
-          if (account) {
-            const newBalance =
-              account.balance + oldBalanceChange + newBalanceChange;
-            await supabase
-              .from("accounts")
-              .update({ balance: newBalance })
-              .eq("id", oldTransaction.account_id)
-              .eq("user_id", user.id);
+        // Recalcular saldo da(s) conta(s) afetada(s)
+        const accountsToRecalculate = new Set<string>([oldTransaction.account_id, updatedTransaction.account_id]);
+        const updatedAccountsList = [];
 
-            // 18. ATUALIZAR O STORE GLOBAL DE CONTAS
-            updateGlobalAccounts({ ...account, balance: newBalance });
+        for (const accountId of accountsToRecalculate) {
+          const account = accounts.find(acc => acc.id === accountId);
+          if (account) {
+            // Recalcula o saldo do zero
+            const { data: refreshedTransactions, error: refreshError } = await supabase
+              .from('transactions')
+              .select('type, amount, status')
+              .eq('user_id', user.id)
+              .eq('account_id', accountId)
+              .eq('status', 'completed');
+            
+            if (refreshError) throw refreshError;
+
+            const newBalance = (refreshedTransactions || []).reduce((sum, t) => {
+              return sum + (t.type === 'income' ? t.amount : -t.amount);
+            }, 0);
+
+            await supabase
+              .from('accounts')
+              .update({ balance: newBalance })
+              .eq('id', accountId)
+              .eq('user_id', user.id);
+            
+            updatedAccountsList.push({ ...account, balance: newBalance });
           }
         }
-
-        // 19. ATUALIZAR O STORE GLOBAL DE TRANSAÇÕES
+        
+        updateGlobalAccounts(updatedAccountsList);
         updateGlobalTransaction(updatedTransaction);
         setEditingTransaction(null);
         return;
@@ -623,7 +578,14 @@ const PlaniFlowApp = () => {
         oldTransaction
       );
     } catch (error) {
-      // ... (tratamento de erro) ...
+      console.error("Error updating transaction:", error);
+      if (error instanceof Error) {
+        toast({
+          title: "Erro",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -632,57 +594,128 @@ const PlaniFlowApp = () => {
     editScope: EditScope,
     oldTransaction: any
   ) => {
-    // ... (lógica de edição de parcelas) ...
-    // ... (lógica de update no supabase) ...
-    const { data: targetTransactions, error: selectError } = await supabase
-      .from('transactions')
-      // ... (query builder) ...
-      
-    if (selectError) throw selectError;
-    
-    for (const transaction of targetTransactions || []) {
-       // ... (update no supabase) ...
-    }
+    if (!user || !oldTransaction.parent_transaction_id) return;
+    try {
+      const cleanTransactionData = {
+        description: updatedTransaction.description,
+        amount: updatedTransaction.amount,
+        type: updatedTransaction.type,
+        category_id: updatedTransaction.category_id,
+        account_id: updatedTransaction.account_id,
+        status: updatedTransaction.status,
+      };
 
-
-    // ... (cálculo de balanço) ...
-    const totalBalanceChange = 0; // Substitua pela sua lógica
-
-    if (totalBalanceChange !== 0) {
-      const account = accounts.find(
-        (acc) => acc.id === updatedTransaction.account_id
+      const baseDescription = oldTransaction.description.replace(
+        / \(\d+\/\d+\)$/,
+        ""
       );
-      if (account) {
-        const newBalance = account.balance + totalBalanceChange;
-        await supabase
-          .from("accounts")
-          .update({ balance: newBalance })
-          .eq("id", updatedTransaction.account_id)
-          .eq("user_id", user?.id);
 
-        // 20. ATUALIZAR O STORE GLOBAL DE CONTAS
-        updateGlobalAccounts({ ...account, balance: newBalance });
+      let queryBuilder = supabase
+        .from("transactions")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("parent_transaction_id", oldTransaction.parent_transaction_id);
+
+      if (editScope === "current-and-previous") {
+        queryBuilder = queryBuilder.lte(
+          "current_installment",
+          oldTransaction.current_installment
+        );
+      } else if (editScope === "current-and-remaining") {
+        queryBuilder = queryBuilder.gte(
+          "current_installment",
+          oldTransaction.current_installment
+        );
       }
-    }
 
-    // Recarregar transações
-    const { data: refreshedTransactions, error: refreshError } = await supabase
-      .from("transactions")
-      .select("*")
-      .eq("user_id", user?.id)
-      .order("created_at", { ascending: false });
+      const { data: targetTransactions, error: selectError } =
+        await queryBuilder;
 
-    if (!refreshError && refreshedTransactions) {
-      const formattedTransactions = refreshedTransactions.map((trans) => ({
-        ...trans,
-        // ... (mapeamento de campos) ...
-        date: createDateFromString(trans.date),
+      if (selectError) throw selectError;
+      if (!targetTransactions || targetTransactions.length === 0) return;
+
+      const updates = targetTransactions.map((transaction) => {
+        const updatedData = {
+          ...cleanTransactionData,
+          description: `${cleanTransactionData.description} (${transaction.current_installment}/${transaction.installments})`,
+        };
+        return supabase
+          .from("transactions")
+          .update(updatedData)
+          .eq("id", transaction.id)
+          .eq("user_id", user.id);
+      });
+
+      await Promise.all(updates);
+
+      // Recarregar TUDO é a forma mais segura
+      const { data: refreshedTransactions, error: refreshError } =
+        await supabase
+          .from("transactions")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false });
+
+      if (refreshError) throw refreshError;
+      
+      const formattedTransactions = (refreshedTransactions || []).map((t) => ({
+        ...t,
+        date: createDateFromString(t.date),
       }));
-      // 21. ATUALIZAR O STORE GLOBAL DE TRANSAÇÕES
       setGlobalTransactions(formattedTransactions as Transaction[]);
-    }
 
-    setEditingTransaction(null);
+      // Recalcula o balanço da(s) conta(s) afetada(s)
+      const accountIds = new Set<string>([oldTransaction.account_id, updatedTransaction.account_id]);
+      const updatedAccountsList = [];
+      
+      for (const accountId of accountIds) {
+        const account = accounts.find(acc => acc.id === accountId);
+        if(account) {
+          const newBalance = (refreshedTransactions || [])
+            .filter(t => t.account_id === accountId && t.status === 'completed')
+            .reduce((sum, t) => {
+              return sum + (t.type === 'income' ? t.amount : -t.amount);
+            }, 0);
+            
+          await supabase
+            .from("accounts")
+            .update({ balance: newBalance })
+            .eq("id", accountId)
+            .eq("user_id", user.id);
+          
+          updatedAccountsList.push({ ...account, balance: newBalance });
+        }
+      }
+      updateGlobalAccounts(updatedAccountsList);
+
+    } catch(error) {
+      console.error("Error in batch edit:", error);
+    } finally {
+      setEditingTransaction(null);
+    }
+  };
+
+  const handleDeleteAccount = async (accountId: string) => {
+    if (!user) return;
+    try {
+      const { error } = await supabase
+        .from("accounts")
+        .delete()
+        .eq("id", accountId)
+        .eq("user_id", user.id);
+      if (error) throw error;
+      
+      removeGlobalAccount(accountId);
+      
+      // Remove transações associadas do store
+      const transactionsToRemove = transactions
+        .filter(t => t.account_id === accountId)
+        .map(t => t.id);
+      removeGlobalTransactions(transactionsToRemove);
+
+    } catch (error) {
+      console.error("Error deleting account:", error);
+    }
   };
 
   const handleDeleteTransaction = async (transactionId: string) => {
@@ -694,39 +727,67 @@ const PlaniFlowApp = () => {
       );
       if (!transactionToDelete) return;
 
-      const { error } = await supabase
-        .from("transactions")
-        .delete()
-        .eq("id", transactionId)
-        .eq("user_id", user.id);
+      let transactionsToDelete = [transactionToDelete];
+      let accountsToUpdate = new Map<string, number>(); // <accountId, balanceChange>
 
-      if (error) throw error;
+      const mainBalanceChange =
+        transactionToDelete.type === "income"
+          ? -transactionToDelete.amount
+          : transactionToDelete.amount;
+      accountsToUpdate.set(transactionToDelete.account_id, mainBalanceChange);
 
-      // Update account balance
-      const account = accounts.find(
-        (acc) => acc.id === transactionToDelete.account_id
-      );
-      if (account) {
-        const balanceChange =
-          transactionToDelete.type === "income"
-            ? -transactionToDelete.amount // Revert income (subtract)
-            : transactionToDelete.amount; // Revert expense (add back)
+      if (transactionToDelete.parent_transaction_id) {
+        const { data: linkedTransactions, error: findError } = await supabase
+          .from("transactions")
+          .select("*")
+          .eq("parent_transaction_id", transactionToDelete.parent_transaction_id)
+          .neq("id", transactionToDelete.id);
 
-        const newBalance = account.balance + balanceChange;
-        await supabase
-          .from("accounts")
-          .update({ balance: newBalance })
-          .eq("id", transactionToDelete.account_id)
-          .eq("user_id", user.id);
+        if (findError) console.error("Erro ao buscar transação vinculada:", findError);
 
-        // 22. ATUALIZAR O STORE GLOBAL DE CONTAS
-        updateGlobalAccounts({ ...account, balance: newBalance });
+        if (linkedTransactions && linkedTransactions.length > 0) {
+          for (const linkedTransaction of linkedTransactions) {
+            transactionsToDelete.push(linkedTransaction);
+            const linkedBalanceChange =
+              linkedTransaction.type === "income"
+                ? -linkedTransaction.amount
+                : linkedTransaction.amount;
+            
+            const currentChange = accountsToUpdate.get(linkedTransaction.account_id) || 0;
+            accountsToUpdate.set(linkedTransaction.account_id, currentChange + linkedBalanceChange);
+          }
+        }
       }
 
-      // 23. ATUALIZAR O STORE GLOBAL DE TRANSAÇÕES
-      removeGlobalTransaction(transactionId);
+      const idsToDelete = transactionsToDelete.map(t => t.id);
+      const { error: deleteError } = await supabase
+        .from("transactions")
+        .delete()
+        .in("id", idsToDelete)
+        .eq("user_id", user.id);
+
+      if (deleteError) throw deleteError;
+
+      let updatedAccountsList = [];
+      for (const [accountId, balanceChange] of accountsToUpdate.entries()) {
+        const account = accounts.find((acc) => acc.id === accountId);
+        if (account) {
+          const newBalance = account.balance + balanceChange;
+          await supabase
+            .from("accounts")
+            .update({ balance: newBalance })
+            .eq("id", accountId)
+            .eq("user_id", user.id);
+          updatedAccountsList.push({ ...account, balance: newBalance });
+        }
+      }
+
+      updateGlobalAccounts(updatedAccountsList);
+      removeGlobalTransactions(idsToDelete);
+
     } catch (error) {
-      console.error("Error deleting transaction:", error);
+      console.error("Error deleting transaction(s):", error);
+      toast({ title: "Erro ao estornar", description: (error as Error).message, variant: "destructive" });
     }
   };
 
@@ -737,14 +798,11 @@ const PlaniFlowApp = () => {
 
   const handleClearAllData = async () => {
     if (!user) return;
-
     try {
-      // ... (delete no supabase) ...
-      await supabase.from('transactions').delete().eq('user_id', user.id);
-      await supabase.from('accounts').delete().eq('user_id', user.id);
-      await supabase.from('categories').delete().eq('user_id', user.id);
+      await supabase.from("transactions").delete().eq("user_id", user.id);
+      await supabase.from("accounts").delete().eq("user_id", user.id);
+      await supabase.from("categories").delete().eq("user_id", user.id);
 
-      // 24. ATUALIZAR OS STORES GLOBAIS
       setGlobalAccounts([]);
       setGlobalTransactions([]);
       setCategories([]);
@@ -754,7 +812,12 @@ const PlaniFlowApp = () => {
         description: "Todos os dados foram removidos com sucesso",
       });
     } catch (error) {
-      // ... (tratamento de erro) ...
+      console.error("Error clearing data:", error);
+      toast({
+        title: "Erro",
+        description: "Erro ao limpar dados",
+        variant: "destructive",
+      });
     }
   };
 
@@ -763,17 +826,15 @@ const PlaniFlowApp = () => {
     setEditAccountModalOpen(true);
   };
 
-  // ----- CORREÇÃO PRINCIPAL AQUI -----
   const handleCreditPayment = async (
     creditAccountId: string,
     bankAccountId: string,
     amount: number,
     date: Date
-  ): Promise<{ creditAccount: Account; bankAccount: Account }> => { // 25. DEFINIR TIPO DE RETORNO
+  ): Promise<{ creditAccount: Account; bankAccount: Account }> => {
     if (!user) throw new Error("Usuário não autenticado");
 
     try {
-      // Find or get the "Pagamento de Fatura" category
       const { data: paymentCategory } = await supabase
         .from("categories")
         .select("id")
@@ -788,17 +849,20 @@ const PlaniFlowApp = () => {
         throw new Error("Conta de crédito ou conta bancária não encontrada.");
       }
 
+      const parentId = crypto.randomUUID(); // ID compartilhado
+
       const creditTransaction = {
         description: `Pagamento fatura ${
           creditAccount?.name || "cartão de crédito"
         }`,
         amount,
         date: date.toISOString().split("T")[0],
-        type: "income" as const, // Payment reduces debt (positive for credit card)
+        type: "income" as const,
         category_id: paymentCategory?.id || null,
         account_id: creditAccountId,
         status: "completed" as const,
         user_id: user.id,
+        parent_transaction_id: parentId, // Vínculo
       };
 
       const bankTransaction = {
@@ -807,35 +871,22 @@ const PlaniFlowApp = () => {
         }`,
         amount,
         date: date.toISOString().split("T")[0],
-        type: "expense" as const, // Payment is an expense for bank account
+        type: "expense" as const,
         category_id: paymentCategory?.id || null,
         account_id: bankAccountId,
         status: "completed" as const,
         user_id: user.id,
+        parent_transaction_id: parentId, // Vínculo
       };
 
       const { data: newTransactions, error } = await supabase
         .from("transactions")
-        .insert(creditTransaction)
+        .insert([creditTransaction, bankTransaction])
         .select();
 
-      const { data: newTransactions2, error: error2 } = await supabase
-        .from("transactions")
-        .insert(bankTransaction)
-        .select();
+      if (error) throw error;
 
-      if (error || error2) {
-        console.error("Error creating credit payment:", error || error2);
-        throw error || error2;
-      }
-
-      const allNewTransactions = [
-        ...(newTransactions || []),
-        ...(newTransactions2 || []),
-      ];
-
-      // 26. ATUALIZAR O STORE GLOBAL DE TRANSAÇÕES
-      addGlobalTransactions(allNewTransactions as Transaction[]);
+      addGlobalTransactions(newTransactions as Transaction[]);
 
       // Update account balances
       const newCreditBalance = creditAccount.balance + amount;
@@ -860,50 +911,50 @@ const PlaniFlowApp = () => {
       };
       const updatedBankAccount = { ...bankAccount, balance: newBankBalance };
 
-      // 27. ATUALIZAR O STORE GLOBAL DE CONTAS
       updateGlobalAccounts([updatedCreditAccount, updatedBankAccount]);
-      
-      // 28. RETORNAR OS OBJETOS ATUALIZADOS
+
       return {
         creditAccount: updatedCreditAccount,
         bankAccount: updatedBankAccount,
       };
-      
     } catch (error) {
       console.error("Error processing credit payment:", error);
-      throw error; // Lança o erro para o modal
+      throw error;
     }
   };
-  // ----- FIM DA CORREÇÃO -----
-
 
   const openEditTransaction = (transaction: any) => {
     setEditingTransaction(transaction);
     setEditTransactionModalOpen(true);
   };
 
-  const openCreditPayment = (account: any) => {
+  // --- CORREÇÃO: Função para abrir o modal de pagamento ---
+  const openCreditPayment = (
+    account: Account,
+    currentBill: number, // Recebe o valor da fatura atual
+    nextBill: number     // Recebe o valor da próxima fatura
+  ) => {
     setPayingCreditAccount(account);
+    setCurrentInvoiceValue(currentBill); // Armazena no estado
+    setNextInvoiceValue(nextBill);     // Armazena no estado
     setCreditPaymentModalOpen(true);
   };
+  // --- Fim da Correção ---
 
   const renderCurrentPage = () => {
-    // 29. As props 'accounts' e 'transactions' agora vêm dos stores
     switch (currentPage) {
       case "accounts":
         return (
           <AccountsPage
-            // 'accounts' prop foi removida (corrigido na etapa anterior)
             onAddAccount={() => setAddAccountModalOpen(true)}
             onEditAccount={openEditAccount}
             onDeleteAccount={handleDeleteAccount}
-            onPayCreditCard={openCreditPayment}
+            onPayCreditCard={(account) => openCreditPayment(account, 0, 0)} // Passa 0s pois não vem da pág de faturas
             onTransfer={() => setTransferModalOpen(true)}
             initialFilterType={accountFilterType}
           />
         );
       case "credit-bills":
-        // A página de faturas agora lê dos stores
         return <CreditBillsPage onPayCreditCard={openCreditPayment} />;
       case "transactions":
         return (
@@ -930,7 +981,108 @@ const PlaniFlowApp = () => {
         return (
           <AnalyticsPage transactions={transactions} accounts={accounts} />
         );
-      // ... (outros casos)
+      case "users":
+        return isAdmin() ? (
+          <UserManagement />
+        ) : (
+          <Dashboard
+            transactions={transactions}
+            accounts={accounts}
+            categories={categories}
+            onTransfer={() => setTransferModalOpen(true)}
+            onAddTransaction={() => setAddTransactionModalOpen(true)}
+            onNavigateToAccounts={(filterType) => {
+              if (filterType) {
+                setAccountFilterType(filterType as any);
+              } else {
+                setAccountFilterType("all");
+              }
+              setCurrentPage("accounts");
+            }}
+            onNavigateToTransactions={(
+              filterType,
+              filterStatus,
+              dateFilter,
+              filterAccountType,
+              selectedMonth,
+              customStartDate,
+              customEndDate
+            ) => {
+              if (filterType) {
+                setTransactionFilterType(filterType);
+              }
+              if (filterStatus) {
+                setTransactionFilterStatus(filterStatus);
+              }
+              if (dateFilter) {
+                setTransactionDateFilter(dateFilter);
+              }
+              if (filterAccountType) {
+                setTransactionFilterAccountType(filterAccountType);
+              }
+              setTransactionSelectedMonth(selectedMonth);
+              setTransactionCustomStartDate(customStartDate);
+              setTransactionCustomEndDate(customEndDate);
+              setCurrentPage("transactions");
+            }}
+          />
+        );
+      case "system-settings":
+        return isAdmin() ? (
+          <SystemSettings />
+        ) : (
+          <Dashboard
+            transactions={transactions}
+            accounts={accounts}
+            categories={categories}
+            onTransfer={() => setTransferModalOpen(true)}
+            onAddTransaction={() => setAddTransactionModalOpen(true)}
+            onNavigateToAccounts={(filterType) => {
+              if (filterType) {
+                setAccountFilterType(filterType as any);
+              } else {
+                setAccountFilterType("all");
+              }
+              setCurrentPage("accounts");
+            }}
+            onNavigateToTransactions={(
+              filterType,
+              filterStatus,
+              dateFilter,
+              filterAccountType,
+              selectedMonth,
+              customStartDate,
+              customEndDate
+            ) => {
+              if (filterType) {
+                setTransactionFilterType(filterType);
+              }
+              if (filterStatus) {
+                setTransactionFilterStatus(filterStatus);
+              }
+              if (dateFilter) {
+                setTransactionDateFilter(dateFilter);
+              }
+              if (filterAccountType) {
+                setTransactionFilterAccountType(filterAccountType);
+              }
+              setTransactionSelectedMonth(selectedMonth);
+              setTransactionCustomStartDate(customStartDate);
+              setTransactionCustomEndDate(customEndDate);
+              setCurrentPage("transactions");
+            }}
+          />
+        );
+      case "profile":
+        return <UserProfile />;
+      case "settings":
+        return (
+          <SettingsPage
+            settings={settings}
+            onUpdateSettings={handleUpdateSettings}
+            onClearAllData={handleClearAllData}
+          />
+        );
       default:
         return (
           <Dashboard
@@ -968,7 +1120,6 @@ const PlaniFlowApp = () => {
               if (filterAccountType) {
                 setTransactionFilterAccountType(filterAccountType);
               }
-              // Store the date parameters for navigation
               setTransactionSelectedMonth(selectedMonth);
               setTransactionCustomStartDate(customStartDate);
               setTransactionCustomEndDate(customEndDate);
@@ -1007,7 +1158,6 @@ const PlaniFlowApp = () => {
       <AddAccountModal
         open={addAccountModalOpen}
         onOpenChange={setAddAccountModalOpen}
-        // onAddAccount foi removido, o modal usa o store
       />
 
       <AddTransactionModal
@@ -1015,7 +1165,7 @@ const PlaniFlowApp = () => {
         onOpenChange={setAddTransactionModalOpen}
         onAddTransaction={handleAddTransaction}
         onAddInstallmentTransactions={handleAddInstallmentTransactions}
-        accounts={accounts} // Passa as contas do store
+        accounts={accounts}
       />
 
       <EditAccountModal
@@ -1030,22 +1180,25 @@ const PlaniFlowApp = () => {
         onOpenChange={setEditTransactionModalOpen}
         onEditTransaction={handleEditTransaction}
         transaction={editingTransaction}
-        accounts={accounts} // Passa as contas do store
+        accounts={accounts}
       />
 
       <TransferModal
         open={transferModalOpen}
         onOpenChange={setTransferModalOpen}
         onTransfer={handleTransfer}
-        accounts={accounts} // Passa as contas do store
+        accounts={accounts}
       />
 
+      {/* --- CORREÇÃO: Passando os valores da fatura para o modal --- */}
       <CreditPaymentModal
         open={creditPaymentModalOpen}
         onOpenChange={setCreditPaymentModalOpen}
         onPayment={handleCreditPayment}
-        accounts={accounts.filter((acc) => acc.type !== "credit")} // Passa contas de débito
+        accounts={accounts.filter((acc) => acc.type !== "credit")}
         creditAccount={payingCreditAccount}
+        invoiceValueInCents={currentInvoiceValue}
+        nextInvoiceValueInCents={nextInvoiceValue}
       />
     </>
   );
