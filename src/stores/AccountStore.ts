@@ -15,14 +15,6 @@ interface PayBillParams {
   paymentDate: string; // Formato "YYYY-MM-DD"
 }
 
-// 4. Define os parâmetros para a função de transferência
-interface TransferParams {
-  fromAccountId: string;
-  toAccountId: string;
-  amountInCents: number;
-  date: Date; // O Modal passa um objeto Date
-}
-
 interface AccountStoreState {
   accounts: Account[];
   setAccounts: (accounts: Account[]) => void;
@@ -34,11 +26,12 @@ interface AccountStoreState {
     updatedCreditAccount: Account;
     updatedDebitAccount: Account;
   }>;
-  // 5. Adiciona a nova ação de transferência ao state
-  transferBetweenAccounts: (params: TransferParams) => Promise<{
-    fromAccount: Account;
-    toAccount: Account;
-  }>;
+  transferBetweenAccounts: (
+    fromAccountId: string,
+    toAccountId: string,
+    amountInCents: number,
+    date: Date,
+  ) => Promise<{ fromAccount: Account; toAccount: Account }>;
 }
 
 export const useAccountStore = create<AccountStoreState>((set, get) => ({
@@ -79,16 +72,13 @@ export const useAccountStore = create<AccountStoreState>((set, get) => ({
   },
 
   updateAccounts: (updatedAccounts) =>
-    set((state) => {
-      const accountsToUpdate = Array.isArray(updatedAccounts)
-        ? updatedAccounts
-        : [updatedAccounts];
-      const updatedMap = new Map(accountsToUpdate.map((acc) => [acc.id, acc]));
-      const newAccounts = state.accounts.map(
-        (account) => updatedMap.get(account.id) || account,
-      );
-      return { accounts: newAccounts };
-    }),
+    {
+      const accountsToUpdate = Array.isArray(updatedAccounts) ? updatedAccounts : [updatedAccounts];
+      const updatedMap = new Map(accountsToUpdate.map(acc => [acc.id, acc]));
+      const currentAccounts = get().accounts;
+      const newAccounts = currentAccounts.map(account => updatedMap.get(account.id) || account);
+      set({ accounts: newAccounts });
+    },
 
   removeAccount: (accountId) =>
     set((state) => ({
@@ -157,7 +147,7 @@ export const useAccountStore = create<AccountStoreState>((set, get) => ({
       throw new Error("Falha ao registrar transações de pagamento.");
     }
 
-    useTransactionStore.getState().addTransactions(insertedTransactions);
+    useTransactionStore.getState().addTransactions(insertedTransactions as Transaction[]);
 
     let updatedDebitAccount: Account | undefined;
     let updatedCreditAccount: Account | undefined;
@@ -185,12 +175,12 @@ export const useAccountStore = create<AccountStoreState>((set, get) => ({
   },
 
   // --- NOVA LÓGICA DE TRANSFERÊNCIA ---
-  transferBetweenAccounts: async ({
+  transferBetweenAccounts: async (
     fromAccountId,
     toAccountId,
     amountInCents,
     date,
-  }: TransferParams) => {
+  ) => {
     // A. Obter dados essenciais
     const {
       data: { user },
@@ -253,27 +243,29 @@ export const useAccountStore = create<AccountStoreState>((set, get) => ({
     }
 
     // D. Atualizar o estado local (Stores)
-    useTransactionStore.getState().addTransactions(insertedTransactions);
+    // O Supabase retorna a data como string. Para o store, precisamos do objeto Date original.
+    const transactionsForStore = insertedTransactions.map(t => ({
+      ...t,
+      date: date, // Usar o objeto Date original
+    }));
+    useTransactionStore.getState().addTransactions(transactionsForStore);
 
-    let updatedFromAccount: Account | undefined;
-    let updatedToAccount: Account | undefined;
+    const updatedFromAccount: Account = {
+      ...fromAccount,
+      balance: fromAccount.balance - amountInCents,
+    };
+    const updatedToAccount: Account = {
+      ...toAccount,
+      balance: toAccount.balance + amountInCents,
+    };
 
     // Atualiza o saldo localmente
     set((state) => {
-      const newAccounts = state.accounts.map((acc) => {
-        if (acc.id === fromAccountId) {
-          updatedFromAccount = {
-            ...acc,
-            balance: acc.balance - amountInCents,
-          };
-          return updatedFromAccount;
-        }
-        if (acc.id === toAccountId) {
-          updatedToAccount = { ...acc, balance: acc.balance + amountInCents };
-          return updatedToAccount;
-        }
-        return acc;
-      });
+      const updatedMap = new Map([
+        [fromAccountId, updatedFromAccount],
+        [toAccountId, updatedToAccount],
+      ]);
+      const newAccounts = state.accounts.map(acc => updatedMap.get(acc.id) || acc);
       return { accounts: newAccounts };
     });
 

@@ -10,7 +10,7 @@ export interface AppTransaction extends Omit<Transaction, 'date'> {
 interface TransactionStoreState {
   transactions: AppTransaction[];
   setTransactions: (transactions: Transaction[]) => void;
-  addTransactions: (newTransactions: Transaction[]) => void;
+  addTransactions: (newTransactions: (Transaction | AppTransaction)[]) => void;
   updateTransaction: (updatedTransaction: Transaction) => void;
   updateTransactions: (updatedTransactions: Transaction[]) => void;
   removeTransaction: (transactionId: string) => void;
@@ -38,8 +38,10 @@ export const useTransactionStore = create<TransactionStoreState>((set) => ({
     transactions: [
       ...state.transactions,
       ...newTransactions.map(t => ({ 
-        ...t,
-        date: createDateFromString(t.date) // Converte string/null para Date
+        ...t, // A data pode ser string, Date ou null
+        // Se a data já for um objeto Date, createDateFromString a retornará como está.
+        // A tipagem (Transaction | AppTransaction)[] já garante que t.date é compatível.
+        date: createDateFromString(t.date)
       }))
     ]
   })),

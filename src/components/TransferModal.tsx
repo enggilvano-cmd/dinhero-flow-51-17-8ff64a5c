@@ -28,7 +28,6 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const accounts = useAccountStore((state) => state.accounts);
-  const updateAccountsInStore = useAccountStore((state) => state.updateAccounts);
 
   // Contas de origem podem ser qualquer tipo, exceto crédito.
   const sourceAccounts = useMemo(() => accounts.filter(acc => acc.type !== "credit"), [accounts]);
@@ -80,7 +79,7 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
 
     setIsSubmitting(true);
     try {
-      const { fromAccount: updatedFromAccount, toAccount: updatedToAccount } = await onTransfer(
+      await onTransfer(
         // Uma transferência deve ser tratada no backend como duas transações atômicas:
         // 1. Uma despesa na conta de origem (fromAccountId)
         // 2. Uma receita na conta de destino (toAccountId)
@@ -90,9 +89,6 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
         formData.amountInCents,
         createDateFromString(formData.date)
       );
-
-      // Atualiza as contas no store global
-      updateAccountsInStore([updatedFromAccount, updatedToAccount]);
 
       toast({
         title: "Sucesso",
