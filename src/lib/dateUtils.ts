@@ -1,59 +1,114 @@
-// Date utilities to handle timezone issues consistently
+import { addMonths, format, parse } from "date-fns";
+import { Account, Transaction } from "@/types"; // Importa os tipos
 
 /**
- * Creates a Date object from a date string (YYYY-MM-DD) avoiding timezone issues
- * by creating the date directly from components to ensure local time
- */
-export function createDateFromString(dateString: string): Date {
-  if (!dateString) return new Date();
-  
-  // Parse the date components to avoid timezone issues
-  const [year, month, day] = dateString.split('-').map(num => parseInt(num, 10));
-  
-  // Create date with local time at 12:00:00 to avoid timezone edge cases
-  return new Date(year, month - 1, day, 12, 0, 0, 0);
-}
-
-/**
- * Formats a Date object to YYYY-MM-DD string for database storage
- */
-export function formatDateForStorage(date: Date): string {
-  if (!date || !(date instanceof Date)) return new Date().toISOString().split('T')[0];
-  
-  // Get local date components to avoid timezone issues
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  
-  return `${year}-${month}-${day}`;
-}
-
-/**
- * Gets today's date as YYYY-MM-DD string
+ * Retorna a data de hoje como uma string no formato "YYYY-MM-DD".
  */
 export function getTodayString(): string {
-  return formatDateForStorage(new Date());
+  return format(new Date(), "yyyy-MM-dd");
 }
 
 /**
- * Compares two dates as strings (YYYY-MM-DD format) or Date objects
- */
-export function compareDates(date1: string | Date, date2: string | Date): number {
-  const d1 = typeof date1 === 'string' ? createDateFromString(date1) : date1;
-  const d2 = typeof date2 === 'string' ? createDateFromString(date2) : date2;
-  
-  return d1.getTime() - d2.getTime();
-}
-
-/**
- * Adds months to a date while preserving the day of month
+ * Adiciona um número de meses a uma data.
+ * @param date - O objeto Date inicial.
+ * @param months - O número de meses a adicionar.
+ * @returns Um novo objeto Date.
  */
 export function addMonthsToDate(date: Date, months: number): Date {
-  const result = new Date(date);
-  result.setMonth(result.getMonth() + months);
+  return addMonths(date, months);
+}
+
+/**
+ * Cria um objeto Date a partir de uma string YYYY-MM-DD,
+ * garantindo que não haja problemas de fuso horário (UTC).
+ * Isso trata a data como "meio-dia" para evitar bugs de "um dia antes".
+ * @param dateString - A data no formato "YYYY-MM-DD".
+ * @returns Um objeto Date.
+ */
+export function createDateFromString(dateString: string): Date {
+  // Se a string já tiver informação de hora/fuso, apenas parseia
+  if (dateString.includes("T") || dateString.includes("Z")) {
+    return new Date(dateString);
+  }
   
-  // Ensure time stays consistent (12:00:00)
-  result.setHours(12, 0, 0, 0);
+  // Se for apenas YYYY-MM-DD, parseia como UTC para evitar fuso
+  // "2025-10-01" -> "2025-10-01T12:00:00.000Z"
+  // Isso garante que .getDate() retorne '1' e não '30' (do mês anterior)
+  try {
+    const [year, month, day] = dateString.split('-').map(Number);
+    if (year && month && day) {
+      // Cria a data em UTC
+      return new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
+    }
+  } catch (e) {
+    console.error("Falha ao parsear data, usando fallback:", dateString, e);
+  }
   
-  return result;
+  // Fallback para o parser nativo se o formato falhar
+  return new Date(dateString);
+}
+
+
+// --- NOVO CONTEÚDO ADICIONADO ABAIXO ---
+
+/**
+ * Calcula os valores da fatura atual e da próxima fatura
+ * com base nas transações e datas do cartão.
+ */
+export function calculateBillDetails(
+  transactions: Transaction[], 
+  account: Account
+) {
+  const today = new Date();
+  const closingDate = account.closing_date || 1; // Dia do fechamento
+  const dueDate = account.due_date || 1;       // Dia do vencimento
+
+  // Garante que a data de hoje use o mesmo fuso (meio-dia UTC)
+  const todayNormalized = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate(), 12, 0, 0));
+
+  // Determina o período da fatura atual
+  let currentBillStart = new Date(Date.UTC(todayNormalized.getUTCFullYear(), todayNormalized.getUTCMonth() - 1, closingDate + 1, 12, 0, 0));
+  let currentBillEnd = new Date(Date.UTC(todayNormalized.getUTCFullYear(), todayNormalized.getUTCMonth(), closingDate, 12, 0, 0));
+
+  // Se a data de hoje já passou o fechamento deste mês,
+  // a "Fatura Atual" (a que está para fechar ou acabou de fechar) é a que termina no próximo mês.
+  if (todayNormalized.getUTCDate() > closingDate) {
+    currentBillStart = new Date(Date.UTC(todayNormalized.getUTCFullYear(), todayNormalized.getUTCMonth(), closingDate + 1, 12, 0, 0));
+    currentBillEnd = new Date(Date.UTC(todayNormalized.getUTCFullYear(), todayNormalized.getUTCMonth() + 1, closingDate, 12, 0, 0));
+  }
+
+  // A "Próxima Fatura" começa um dia depois do fim da atual
+  const nextBillStart = new Date(currentBillEnd.getTime() + (24 * 60 * 60 * 1000));
+  const nextBillEnd = new Date(Date.UTC(currentBillStart.getUTCFullYear(), currentBillStart.getUTCMonth() + 1, closingDate, 12, 0, 0));
+
+  let currentBillAmount = 0;
+  let nextBillAmount = 0;
+
+  for (const t of transactions) {
+    // O store já garante que t.date é um objeto Date
+    const tDate = t.date; 
+
+    // Ignora transações de pagamento (tipo 'income' no cartão)
+    if (t.type === 'income') continue;
+
+    // Verifica se a transação pertence à fatura atual
+    if (tDate >= currentBillStart && tDate <= currentBillEnd) {
+      currentBillAmount += t.amount;
+    }
+    // Verifica se a transação pertence à próxima fatura
+    else if (tDate >= nextBillStart && tDate <= nextBillEnd) {
+      nextBillAmount += t.amount;
+    }
+  }
+
+  // O Saldo Total (account.balance) deve ser a dívida total
+  const totalBalance = Math.abs(account.balance);
+  const availableLimit = (account.limit_amount || 0) - totalBalance;
+
+  return {
+    currentBillAmount, // Valor da fatura "aberta" ou "fechada"
+    nextBillAmount,    // Valor da "próxima" fatura (parcial)
+    totalBalance,      // Dívida total no cartão
+    availableLimit,    // Limite disponível
+  };
 }
