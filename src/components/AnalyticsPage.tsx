@@ -3,36 +3,46 @@ import { createDateFromString } from "@/lib/dateUtils";
 import { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { 
-  BarChart3, 
-  PieChart, 
-  TrendingUp, 
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  BarChart3,
+  PieChart,
+  TrendingUp,
   TrendingDown,
   Download,
   Calendar as CalendarIcon,
   Search,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
 } from "lucide-react";
 import { useChartResponsive } from "@/hooks/useChartResponsive";
-import { 
+import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
   ChartLegend,
-  ChartLegendContent
+  ChartLegendContent,
 } from "@/components/ui/chart";
-import { 
-  formatCurrencyForAxis, 
-  getPieChartProps, 
-  getBarChartAxisProps, 
-  getLineChartProps, 
-  getComposedChartMargins 
+import {
+  formatCurrencyForAxis,
+  getPieChartProps,
+  getBarChartAxisProps,
+  getLineChartProps,
+  getComposedChartMargins,
 } from "@/lib/chartUtils";
 import {
   Bar,
@@ -47,10 +57,24 @@ import {
   LineChart,
   Area,
   AreaChart,
-  ComposedChart
+  ComposedChart,
 } from "recharts";
-import { generateCategoryReport, generateMonthlyReport, exportToCSV, exportToPDF } from "@/lib/reports";
-import { startOfMonth, endOfMonth, subMonths, addMonths, isSameMonth, isSameYear, format, isWithinInterval } from "date-fns";
+import {
+  generateCategoryReport,
+  generateMonthlyReport,
+  exportToCSV,
+  exportToPDF,
+} from "@/lib/reports";
+import {
+  startOfMonth,
+  endOfMonth,
+  subMonths,
+  addMonths,
+  isSameMonth,
+  isSameYear,
+  format,
+  isWithinInterval,
+} from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -96,163 +120,252 @@ const COLORS = [
   "#8884d8",
   "#82ca9d",
   "#ffc658",
-  "#ff7300"
+  "#ff7300",
 ];
+// Cor de fallback caso uma categoria não tenha cor definida
+const FALLBACK_COLOR = "#8884d8";
 
-export default function AnalyticsPage({ transactions, accounts }: AnalyticsPageProps) {
+export default function AnalyticsPage({
+  transactions,
+  accounts,
+}: AnalyticsPageProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterType, setFilterType] = useState<"all" | "income" | "expense" | "transfer">("all");
+  const [filterType, setFilterType] = useState<
+    "all" | "income" | "expense" | "transfer"
+  >("all");
   const [filterAccount, setFilterAccount] = useState<string>("all");
   const [filterCategory, setFilterCategory] = useState<string>("all");
-  const [filterStatus, setFilterStatus] = useState<"all" | "pending" | "completed">("all");
-  const [dateFilter, setDateFilter] = useState<"all" | "current_month" | "month_picker" | "custom">("all");
+  const [filterStatus, setFilterStatus] = useState<
+    "all" | "pending" | "completed"
+  >("all");
+  const [dateFilter, setDateFilter] = useState<
+    "all" | "current_month" | "month_picker" | "custom"
+  >("all");
   const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
-  const [customStartDate, setCustomStartDate] = useState<Date | undefined>(undefined);
-  const [customEndDate, setCustomEndDate] = useState<Date | undefined>(undefined);
+  const [customStartDate, setCustomStartDate] = useState<Date | undefined>(
+    undefined
+  );
+  const [customEndDate, setCustomEndDate] = useState<Date | undefined>(
+    undefined
+  );
   const { toast } = useToast();
-  const { chartConfig: responsiveConfig, isMobile, isTablet, isDesktop } = useChartResponsive();
+  const {
+    chartConfig: responsiveConfig,
+    isMobile,
+    isTablet,
+    isDesktop,
+  } = useChartResponsive();
   const { categories } = useCategories();
 
+  const [categoryChartType, setCategoryChartType] = useState<
+    "expense" | "income"
+  >("expense");
+
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(value);
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    }).format(value); // Esta função espera o valor em REAIS
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "pending": return "destructive";
-      case "completed": return "default";
-      default: return "default";
+      case "pending":
+        return "destructive";
+      case "completed":
+        return "default";
+      default:
+        return "default";
     }
   };
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case "pending": return "Pendente";
-      case "completed": return "Concluída";
-      default: return status;
+      case "pending":
+        return "Pendente";
+      case "completed":
+        return "Concluída";
+      default:
+        return status;
     }
   };
 
   const getAccountName = (accountId: string) => {
-    const account = accounts.find(acc => acc.id === accountId);
+    const account = accounts.find((acc) => acc.id === accountId);
     return account?.name || "Conta não encontrada";
   };
 
   const getTransactionAccountId = (transaction: Transaction) => {
-    return transaction.account_id || transaction.accountId || '';
+    return transaction.account_id || transaction.accountId || "";
   };
 
   const getTransactionCategory = (transaction: Transaction) => {
     // Check if it's a transfer
-    if (transaction.type === 'transfer' || transaction.to_account_id) {
-      return 'Transferência';
+    if (transaction.type === "transfer" || transaction.to_account_id) {
+      return "Transferência";
     }
 
     // Prioritize category_id for more reliable mapping
     if (transaction.category_id) {
-      const category = categories.find(cat => cat.id === transaction.category_id);
-      return category?.name || 'Sem categoria';
+      const category = categories.find(
+        (cat) => cat.id === transaction.category_id
+      );
+      return category?.name || "Sem categoria";
     }
-    
+
     // Fallback to transaction.category if it exists and is not an ID-like string
-    if (transaction.category && typeof transaction.category === 'string' && !transaction.category.match(/^[0-9a-f-]{36}$/i)) {
+    if (
+      transaction.category &&
+      typeof transaction.category === "string" &&
+      !transaction.category.match(/^[0-9a-f-]{36}$/i)
+    ) {
       return transaction.category;
     }
-    
-    return 'Sem categoria';
+
+    return "Sem categoria";
   };
 
   const filteredTransactions = useMemo(() => {
-    return transactions.filter(transaction => {
-      const transactionDate = typeof transaction.date === 'string' ? createDateFromString(transaction.date) : transaction.date;
-      
-      const matchesSearch = !searchTerm || 
-                           transaction.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           getTransactionCategory(transaction).toLowerCase().includes(searchTerm.toLowerCase());
+    return transactions.filter((transaction) => {
+      const transactionDate =
+        typeof transaction.date === "string"
+          ? createDateFromString(transaction.date)
+          : transaction.date;
+
+      const matchesSearch =
+        !searchTerm ||
+        transaction.description
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        getTransactionCategory(transaction)
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase());
       const matchesType = filterType === "all" || transaction.type === filterType;
-      const matchesAccount = filterAccount === "all" || getTransactionAccountId(transaction) === filterAccount;
-      const matchesCategory = filterCategory === "all" || transaction.category_id === filterCategory;
-      const matchesStatus = filterStatus === "all" || transaction.status === filterStatus;
-      
+      const matchesAccount =
+        filterAccount === "all" ||
+        getTransactionAccountId(transaction) === filterAccount;
+      const matchesCategory =
+        filterCategory === "all" ||
+        transaction.category_id === filterCategory;
+      const matchesStatus =
+        filterStatus === "all" || transaction.status === filterStatus;
+
       let matchesPeriod = true;
       if (dateFilter === "current_month") {
-        matchesPeriod = isSameMonth(transactionDate, new Date()) && 
-                       isSameYear(transactionDate, new Date());
+        matchesPeriod =
+          isSameMonth(transactionDate, new Date()) &&
+          isSameYear(transactionDate, new Date());
       } else if (dateFilter === "month_picker") {
         const start = startOfMonth(selectedMonth);
         const end = endOfMonth(selectedMonth);
         matchesPeriod = isWithinInterval(transactionDate, { start, end });
       } else if (dateFilter === "custom" && customStartDate && customEndDate) {
-        matchesPeriod = transactionDate >= customStartDate && transactionDate <= customEndDate;
+        matchesPeriod =
+          transactionDate >= customStartDate && transactionDate <= customEndDate;
       }
-      
-      return matchesSearch && matchesType && matchesAccount && matchesCategory && matchesStatus && matchesPeriod;
+
+      return (
+        matchesSearch &&
+        matchesType &&
+        matchesAccount &&
+        matchesCategory &&
+        matchesStatus &&
+        matchesPeriod
+      );
     });
-  }, [transactions, searchTerm, filterType, filterAccount, filterCategory, filterStatus, dateFilter, selectedMonth, customStartDate, customEndDate, categories]);
+  }, [
+    transactions,
+    searchTerm,
+    filterType,
+    filterAccount,
+    filterCategory,
+    filterStatus,
+    dateFilter,
+    selectedMonth,
+    customStartDate,
+    customEndDate,
+    categories,
+  ]);
 
   const categoryData = useMemo(() => {
-    const reportType = filterType === "income" ? "income" : "expense";
-    
-    // Para o relatório de categoria, precisamos filtrar apenas receitas ou despesas
-    const typeFilteredTransactions = filterType === "all" 
-      ? filteredTransactions.filter(t => t.type === "expense") // padrão para despesas quando "all"
-      : filteredTransactions.filter(t => t.type === reportType);
-    
-    // Filtrar pagamentos de fatura das análises de categoria
-    const categoryFilteredTransactions = typeFilteredTransactions.filter(t => {
+    const typeFilteredTransactions = filteredTransactions.filter(
+      (t) => t.type === categoryChartType
+    );
+
+    const categoryFilteredTransactions = typeFilteredTransactions.filter((t) => {
       const category = getTransactionCategory(t);
-      return category !== 'Pagamento de Fatura';
+      return category !== "Pagamento de Fatura";
     });
-    
+
     if (categoryFilteredTransactions.length === 0) {
       return [];
     }
-    
-    // Criar relatório manual já que temos as transações filtradas
-    const categoryTotals = categoryFilteredTransactions.reduce((acc, transaction) => {
-      const category = getTransactionCategory(transaction);
-      if (category) {
-        acc[category] = (acc[category] || 0) + transaction.amount;
-      }
-      return acc;
-    }, {} as Record<string, number>);
 
-    const totalAmount = Object.values(categoryTotals).reduce((sum, amount) => sum + amount, 0);
+    // 1. LÓGICA DE AGRUPAMENTO ATUALIZADA PARA USAR A COR DA CATEGORIA
+    const categoryTotals = categoryFilteredTransactions.reduce(
+      (acc, transaction) => {
+        // Encontra a categoria real a partir do ID
+        const categoryObj = categories.find(
+          (c) => c.id === transaction.category_id
+        );
+        // Usa o nome da categoria encontrada, ou um fallback
+        const categoryName = categoryObj?.name || "Sem categoria";
+        // Usa a cor da categoria encontrada, ou um fallback
+        const categoryColor = categoryObj?.color || FALLBACK_COLOR;
+
+        if (!acc[categoryName]) {
+          acc[categoryName] = { amount: 0, color: categoryColor };
+        }
+        acc[categoryName].amount += transaction.amount;
+
+        return acc;
+      },
+      {} as Record<string, { amount: number; color: string }>
+    );
+
+    const totalAmount = Object.values(categoryTotals).reduce(
+      (sum, data) => sum + data.amount,
+      0
+    );
 
     const report = Object.entries(categoryTotals)
-      .map(([category, amount]) => ({
+      .map(([category, data]) => ({
         category,
-        amount,
-        percentage: totalAmount > 0 ? (amount / totalAmount) * 100 : 0,
-        transactions: categoryFilteredTransactions.filter(t => getTransactionCategory(t) === category).length
+        amount: data.amount,
+        color: data.color, // Passa a cor da categoria para o relatório
+        percentage: totalAmount > 0 ? (data.amount / totalAmount) * 100 : 0,
+        transactions: categoryFilteredTransactions.filter(
+          (t) => getTransactionCategory(t) === category
+        ).length,
       }))
       .sort((a, b) => b.amount - a.amount);
-    
+
     return report.map((item, index) => ({
       ...item,
-      fill: COLORS[index % COLORS.length]
+      // Define o 'fill' com a cor da categoria
+      fill: item.color || COLORS[index % COLORS.length], // Fallback para cores padrão
     }));
-  }, [filteredTransactions, filterType, categories]);
+  }, [filteredTransactions, categoryChartType, categories]);
 
   const monthlyData = useMemo(() => {
     // Criar relatório manual sem depender da lib/reports
     const monthlyTotals = filteredTransactions.reduce((acc, transaction) => {
-      const transactionDate = typeof transaction.date === 'string' ? createDateFromString(transaction.date) : transaction.date;
-      const monthKey = format(transactionDate, 'yyyy-MM');
-      
+      const transactionDate =
+        typeof transaction.date === "string"
+          ? createDateFromString(transaction.date)
+          : transaction.date;
+      const monthKey = format(transactionDate, "yyyy-MM");
+
       if (!acc[monthKey]) {
         acc[monthKey] = { income: 0, expenses: 0 };
       }
-      
-      if (transaction.type === 'income') {
+
+      if (transaction.type === "income") {
         acc[monthKey].income += transaction.amount;
-      } else if (transaction.type === 'expense') {
+      } else if (transaction.type === "expense") {
         acc[monthKey].expenses += transaction.amount;
       }
-      
+
       return acc;
     }, {} as Record<string, { income: number; expenses: number }>);
 
@@ -260,72 +373,79 @@ export default function AnalyticsPage({ transactions, accounts }: AnalyticsPageP
     const sortedEntries = Object.entries(monthlyTotals)
       .sort(([a], [b]) => a.localeCompare(b))
       .slice(-6); // Últimos 6 meses
-    
+
     let saldoAcumulado = 0;
     const sortedMonths = sortedEntries.map(([monthKey, data]) => {
       const saldoMensal = data.income - data.expenses;
       saldoAcumulado += saldoMensal;
-      
-    // Parse year and month from monthKey to avoid timezone issues
-    const [year, month] = monthKey.split('-').map(num => parseInt(num, 10));
-    
-    return {
-      month: format(new Date(year, month - 1, 1), 'MMM yyyy', { locale: ptBR }),
-      receitas: data.income,
-      despesas: data.expenses,
-      saldo: saldoAcumulado,
-      income: data.income,
-      expenses: data.expenses,
-      balance: saldoAcumulado
-    };
+
+      // Parse year and month from monthKey to avoid timezone issues
+      const [year, month] = monthKey
+        .split("-")
+        .map((num) => parseInt(num, 10));
+
+      return {
+        month: format(new Date(year, month - 1, 1), "MMM yyyy", {
+          locale: ptBR,
+        }),
+        receitas: data.income,
+        despesas: data.expenses,
+        saldo: saldoAcumulado,
+        income: data.income,
+        expenses: data.expenses,
+        balance: saldoAcumulado,
+      };
     });
 
     return sortedMonths;
   }, [filteredTransactions]);
 
   const totalsByType = useMemo(() => {
-    return filteredTransactions.reduce((acc, transaction) => {
-      if (transaction.type === "income") {
-        acc.income += transaction.amount;
-      } else if (transaction.type === "expense") {
-        acc.expenses += transaction.amount;
-      }
-      return acc;
-    }, { income: 0, expenses: 0 });
+    return filteredTransactions.reduce(
+      (acc, transaction) => {
+        if (transaction.type === "income") {
+          acc.income += transaction.amount;
+        } else if (transaction.type === "expense") {
+          acc.expenses += transaction.amount;
+        }
+        return acc;
+      },
+      { income: 0, expenses: 0 }
+    );
   }, [filteredTransactions]);
 
   const accountBalanceData = useMemo(() => {
     return accounts
-      .filter(acc => acc.type !== "credit")
-      .map(account => ({
+      .filter((acc) => acc.type !== "credit")
+      .map((account) => ({
         name: account.name.split(" - ")[0] || account.name,
         balance: account.balance,
         type: account.type,
-        color: account.color || "hsl(var(--primary))"
+        color: account.color || "hsl(var(--primary))",
       }));
   }, [accounts]);
 
   // Chart config específico para o gráfico de saldos de contas
   const accountChartConfig = useMemo(() => {
     const config: Record<string, { label: string; color: string }> = {};
-    accountBalanceData.forEach(account => {
+    accountBalanceData.forEach((account) => {
       config[account.name] = {
         label: account.name,
-        color: account.color
+        color: account.color,
       };
     });
     return config;
   }, [accountBalanceData]);
 
   const handleExportCSV = () => {
-    const data = categoryData.map(item => ({
+    const data = categoryData.map((item) => ({
       Categoria: item.category,
-      Valor: item.amount,
+      Valor: item.amount / 100,
       Porcentagem: `${item.percentage.toFixed(1)}%`,
-      Transações: item.transactions
+      Transações: item.transactions,
     }));
 
-    exportToCSV(data, `relatorio-analise-${filterType}`);
+    exportToCSV(data, `relatorio-analise-${categoryChartType}`);
     toast({
       title: "Relatório exportado",
       description: "O arquivo CSV foi baixado com sucesso.",
@@ -333,14 +453,15 @@ export default function AnalyticsPage({ transactions, accounts }: AnalyticsPageP
   };
 
   const handleExportPDF = () => {
-    const data = categoryData.map(item => ({
+    const data = categoryData.map((item) => ({
       Categoria: item.category,
-      Valor: formatCurrency(item.amount),
+      Valor: formatCurrency(item.amount / 100),
       Porcentagem: `${item.percentage.toFixed(1)}%`,
-      Transações: item.transactions
+      Transações: item.transactions,
     }));
 
-    const reportTypeLabel = filterType === "income" ? "Receitas" : filterType === "expense" ? "Despesas" : "Todas as Transações";
+    const reportTypeLabel =
+      categoryChartType === "income" ? "Receitas" : "Despesas";
     exportToPDF(data, `Relatório de ${reportTypeLabel}`);
     toast({
       title: "Relatório gerado",
@@ -354,13 +475,13 @@ export default function AnalyticsPage({ transactions, accounts }: AnalyticsPageP
       color: "hsl(var(--success))",
     },
     despesas: {
-      label: "Despesas", 
+      label: "Despesas",
       color: "hsl(var(--destructive))",
     },
     saldo: {
       label: "Saldo",
       color: "hsl(var(--primary))",
-    }
+    },
   };
 
   // Chart config específico para o gráfico de categorias
@@ -369,7 +490,7 @@ export default function AnalyticsPage({ transactions, accounts }: AnalyticsPageP
     categoryData.forEach((item, index) => {
       config[item.category] = {
         label: item.category,
-        color: item.fill || COLORS[index % COLORS.length]
+        color: item.fill || COLORS[index % COLORS.length],
       };
     });
     return config;
@@ -377,11 +498,11 @@ export default function AnalyticsPage({ transactions, accounts }: AnalyticsPageP
 
   // Funções para navegação de mês
   const goToPreviousMonth = () => {
-    setSelectedMonth(prev => subMonths(prev, 1));
+    setSelectedMonth((prev) => subMonths(prev, 1));
   };
 
   const goToNextMonth = () => {
-    setSelectedMonth(prev => addMonths(prev, 1));
+    setSelectedMonth((prev) => addMonths(prev, 1));
   };
 
   return (
@@ -394,13 +515,21 @@ export default function AnalyticsPage({ transactions, accounts }: AnalyticsPageP
             Relatórios e gráficos financeiros detalhados
           </p>
         </div>
-        
+
         <div className="flex gap-3">
-          <Button variant="outline" onClick={handleExportCSV} className="gap-2 apple-interaction">
+          <Button
+            variant="outline"
+            onClick={handleExportCSV}
+            className="gap-2 apple-interaction"
+          >
             <Download className="h-4 w-4" />
             Exportar CSV
           </Button>
-          <Button variant="outline" onClick={handleExportPDF} className="gap-2 apple-interaction">
+          <Button
+            variant="outline"
+            onClick={handleExportPDF}
+            className="gap-2 apple-interaction"
+          >
             <Download className="h-4 w-4" />
             Exportar PDF
           </Button>
@@ -410,9 +539,7 @@ export default function AnalyticsPage({ transactions, accounts }: AnalyticsPageP
       {/* Filters */}
       <Card className="financial-card">
         <CardHeader>
-          <CardTitle className="text-headline">
-            Filtros
-          </CardTitle>
+          <CardTitle className="text-headline">Filtros</CardTitle>
         </CardHeader>
         <CardContent className="spacing-responsive-sm">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
@@ -426,7 +553,10 @@ export default function AnalyticsPage({ transactions, accounts }: AnalyticsPageP
               />
             </div>
 
-            <Select value={filterType} onValueChange={(value: any) => setFilterType(value)}>
+            <Select
+              value={filterType}
+              onValueChange={(value: any) => setFilterType(value)}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Tipo" />
               </SelectTrigger>
@@ -461,9 +591,11 @@ export default function AnalyticsPage({ transactions, accounts }: AnalyticsPageP
                 {categories.map((category) => (
                   <SelectItem key={category.id} value={category.id}>
                     <div className="flex items-center gap-2">
-                      <div 
-                        className="w-3 h-3 rounded-full" 
-                        style={{ backgroundColor: category.color || "#6b7280" }}
+                      <div
+                        className="w-3 h-3 rounded-full"
+                        style={{
+                          backgroundColor: category.color || "#6b7280",
+                        }}
                       />
                       {category.name}
                     </div>
@@ -472,7 +604,10 @@ export default function AnalyticsPage({ transactions, accounts }: AnalyticsPageP
               </SelectContent>
             </Select>
 
-            <Select value={filterStatus} onValueChange={(value: any) => setFilterStatus(value)}>
+            <Select
+              value={filterStatus}
+              onValueChange={(value: any) => setFilterStatus(value)}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
@@ -483,7 +618,12 @@ export default function AnalyticsPage({ transactions, accounts }: AnalyticsPageP
               </SelectContent>
             </Select>
 
-            <Select value={dateFilter} onValueChange={(value: "all" | "current_month" | "month_picker" | "custom") => setDateFilter(value)}>
+            <Select
+              value={dateFilter}
+              onValueChange={(
+                value: "all" | "current_month" | "month_picker" | "custom"
+              ) => setDateFilter(value)}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Período" />
               </SelectTrigger>
@@ -531,7 +671,9 @@ export default function AnalyticsPage({ transactions, accounts }: AnalyticsPageP
                       )}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {customStartDate ? format(customStartDate, "dd/MM/yyyy") : "Data início"}
+                      {customStartDate
+                        ? format(customStartDate, "dd/MM/yyyy")
+                        : "Data início"}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
@@ -555,7 +697,9 @@ export default function AnalyticsPage({ transactions, accounts }: AnalyticsPageP
                       )}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {customEndDate ? format(customEndDate, "dd/MM/yyyy") : "Data fim"}
+                      {customEndDate
+                        ? format(customEndDate, "dd/MM/yyyy")
+                        : "Data fim"}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
@@ -584,9 +728,11 @@ export default function AnalyticsPage({ transactions, accounts }: AnalyticsPageP
                   <TrendingUp className="h-5 w-5 text-success" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-caption font-medium">Receitas - Período Filtrado</p>
+                  <p className="text-caption font-medium">
+                    Receitas - Período Filtrado
+                  </p>
                   <div className="text-responsive-xl font-bold balance-positive leading-tight">
-                    {formatCurrency(totalsByType.income)}
+                    {formatCurrency(totalsByType.income / 100)}
                   </div>
                 </div>
               </div>
@@ -602,9 +748,11 @@ export default function AnalyticsPage({ transactions, accounts }: AnalyticsPageP
                   <TrendingDown className="h-5 w-5 text-destructive" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-caption font-medium">Despesas - Período Filtrado</p>
+                  <p className="text-caption font-medium">
+                    Despesas - Período Filtrado
+                  </p>
                   <div className="text-responsive-xl font-bold balance-negative leading-tight">
-                    {formatCurrency(totalsByType.expenses)}
+                    {formatCurrency(totalsByType.expenses / 100)}
                   </div>
                 </div>
               </div>
@@ -620,11 +768,19 @@ export default function AnalyticsPage({ transactions, accounts }: AnalyticsPageP
                   <BarChart3 className="h-5 w-5 text-primary" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-caption font-medium">Saldo Líquido - Período Filtrado</p>
-                  <div className={`text-responsive-xl font-bold leading-tight ${
-                    (totalsByType.income - totalsByType.expenses) >= 0 ? "balance-positive" : "balance-negative"
-                  }`}>
-                    {formatCurrency(totalsByType.income - totalsByType.expenses)}
+                  <p className="text-caption font-medium">
+                    Saldo Líquido - Período Filtrado
+                  </p>
+                  <div
+                    className={`text-responsive-xl font-bold leading-tight ${
+                      totalsByType.income - totalsByType.expenses >= 0
+                        ? "balance-positive"
+                        : "balance-negative"
+                    }`}
+                  >
+                    {formatCurrency(
+                      (totalsByType.income - totalsByType.expenses) / 100
+                    )}
                   </div>
                 </div>
               </div>
@@ -637,50 +793,83 @@ export default function AnalyticsPage({ transactions, accounts }: AnalyticsPageP
       <div className="grid grid-cols-1 gap-4">
         {/* Category Pie Chart */}
         <Card className="financial-card">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+          {/* 2. BOTÕES DE ALTERNÂNCIA ATUALIZADOS COM CORES */}
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="flex items-center gap-2 text-sm sm:text-base font-medium">
               <PieChart className="h-4 w-4 sm:h-5 sm:w-5" />
-              {filterType === "income" ? "Receitas" : filterType === "expense" ? "Despesas" : "Transações"} por Categoria
+              {categoryChartType === "income" ? "Receitas" : "Despesas"} por
+              Categoria
             </CardTitle>
+
+            <div className="flex gap-1 rounded-lg bg-muted p-1">
+              <Button
+                size="sm"
+                variant={
+                  categoryChartType === "expense" ? "destructive" : "ghost"
+                }
+                onClick={() => setCategoryChartType("expense")}
+                className="h-7 px-3 text-xs"
+              >
+                Despesas
+              </Button>
+              <Button
+                size="sm"
+                variant={categoryChartType === "income" ? "default" : "ghost"}
+                onClick={() => setCategoryChartType("income")}
+                className={cn(
+                  "h-7 px-3 text-xs",
+                  categoryChartType === "income" &&
+                    "bg-success text-success-foreground hover:bg-success/90"
+                )}
+              >
+                Receitas
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="p-2 sm:p-3">
-            <ChartContainer 
-              config={categoryChartConfig} 
+            <ChartContainer
+              config={categoryChartConfig}
               className={`${responsiveConfig.containerHeight} w-full overflow-hidden`}
             >
-              <RechartsPieChart 
-                width={undefined}
-                height={undefined}
-              >
-                <ChartTooltip 
+              <RechartsPieChart width={undefined} height={undefined}>
+                <ChartTooltip
                   content={<ChartTooltipContent />}
-                  formatter={(value: number, name: string) => [formatCurrency(value), name]}
+                  formatter={(value: number, name: string) => [
+                    formatCurrency(value / 100),
+                    name,
+                  ]}
                 />
                 <Pie
-                  data={categoryData.map(item => ({
+                  data={categoryData.map((item) => ({
                     ...item,
                     name: item.category,
-                    value: item.amount
+                    value: item.amount,
                   }))}
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={responsiveConfig.showLabels && categoryData.length <= 6
-                    ? ({ name, percentage }: any) => `${name}: ${percentage.toFixed(1)}%` 
-                    : false
+                  label={
+                    responsiveConfig.showLabels && categoryData.length <= 6
+                      ? ({ name, percentage }: any) =>
+                          `${name}: ${percentage.toFixed(1)}%`
+                      : false
                   }
                   outerRadius={responsiveConfig.outerRadius}
                   fill="#8884d8"
                   dataKey="value"
                 >
                   {categoryData.map((entry, index) => (
+                    // A cor agora vem de 'entry.fill', que definimos
+                    // com a cor da categoria no 'useMemo'
                     <Cell key={`cell-${index}`} fill={entry.fill} />
                   ))}
                 </Pie>
                 {responsiveConfig.showLegend && categoryData.length > 0 && (
-                  <ChartLegend 
+                  <ChartLegend
                     content={<ChartLegendContent />}
-                    wrapperStyle={{ paddingTop: responsiveConfig.showLabels ? '10px' : '20px' }}
+                    wrapperStyle={{
+                      paddingTop: responsiveConfig.showLabels ? "10px" : "20px",
+                    }}
                     iconType="circle"
                   />
                 )}
@@ -703,20 +892,31 @@ export default function AnalyticsPage({ transactions, accounts }: AnalyticsPageP
             </CardTitle>
           </CardHeader>
           <CardContent className="p-2 sm:p-3">
-            <ChartContainer config={accountChartConfig} className={`${responsiveConfig.containerHeight} w-full overflow-hidden`}>
+            <ChartContainer
+              config={accountChartConfig}
+              className={`${responsiveConfig.containerHeight} w-full overflow-hidden`}
+            >
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={accountBalanceData} margin={getComposedChartMargins(responsiveConfig)}>
-                  <XAxis 
-                    dataKey="name" 
+                <BarChart
+                  data={accountBalanceData}
+                  margin={getComposedChartMargins(responsiveConfig)}
+                >
+                  <XAxis
+                    dataKey="name"
                     {...getBarChartAxisProps(responsiveConfig).xAxis}
                   />
-                  <YAxis 
-                    tickFormatter={(value) => formatCurrencyForAxis(value, isMobile)}
+                  <YAxis
+                    tickFormatter={(value) =>
+                      formatCurrencyForAxis(value / 100, isMobile)
+                    }
                     {...getBarChartAxisProps(responsiveConfig).yAxis}
                   />
-                  <ChartTooltip 
+                  <ChartTooltip
                     content={<ChartTooltipContent />}
-                    formatter={(value: number) => [formatCurrency(value), "Saldo"]}
+                    formatter={(value: number) => [
+                      formatCurrency(value / 100),
+                      "Saldo",
+                    ]}
                   />
                   <Bar dataKey="balance">
                     {accountBalanceData.map((entry, index) => (
@@ -738,68 +938,110 @@ export default function AnalyticsPage({ transactions, accounts }: AnalyticsPageP
             </CardTitle>
           </CardHeader>
           <CardContent className="p-2 sm:p-3">
-            <ChartContainer config={chartConfig} className={`${responsiveConfig.containerHeight} w-full overflow-hidden`}>
+            <ChartContainer
+              config={chartConfig}
+              className={`${responsiveConfig.containerHeight} w-full overflow-hidden`}
+            >
               <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart data={monthlyData} margin={getComposedChartMargins(responsiveConfig)}>
+                <ComposedChart
+                  data={monthlyData}
+                  margin={getComposedChartMargins(responsiveConfig)}
+                >
                   {/* Definições de gradientes */}
                   <defs>
-                    <linearGradient id="colorReceitas" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="hsl(var(--success))" stopOpacity={0.8}/>
-                      <stop offset="100%" stopColor="hsl(var(--success))" stopOpacity={0.3}/>
+                    <linearGradient
+                      id="colorReceitas"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop
+                        offset="0%"
+                        stopColor="hsl(var(--success))"
+                        stopOpacity={0.8}
+                      />
+                      <stop
+                        offset="100%"
+                        stopColor="hsl(var(--success))"
+                        stopOpacity={0.3}
+                      />
                     </linearGradient>
-                    <linearGradient id="colorDespesas" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="hsl(var(--destructive))" stopOpacity={0.8}/>
-                      <stop offset="100%" stopColor="hsl(var(--destructive))" stopOpacity={0.3}/>
+                    <linearGradient
+                      id="colorDespesas"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop
+                        offset="0%"
+                        stopColor="hsl(var(--destructive))"
+                        stopOpacity={0.8}
+                      />
+                      <stop
+                        offset="100%"
+                        stopColor="hsl(var(--destructive))"
+                        stopOpacity={0.3}
+                      />
                     </linearGradient>
                   </defs>
 
-                  <XAxis 
-                    dataKey="month" 
+                  <XAxis
+                    dataKey="month"
                     {...getBarChartAxisProps(responsiveConfig).xAxis}
                   />
-                  <YAxis 
-                    tickFormatter={(value) => formatCurrencyForAxis(value, isMobile)}
+                  <YAxis
+                    tickFormatter={(value) =>
+                      formatCurrencyForAxis(value / 100, isMobile)
+                    }
                     {...getBarChartAxisProps(responsiveConfig).yAxis}
                   />
-                  <ChartTooltip 
+                  <ChartTooltip
                     content={<ChartTooltipContent />}
                     formatter={(value: number, name: string) => [
-                      formatCurrency(value), 
-                      name === 'receitas' ? 'Receitas' : 
-                      name === 'despesas' ? 'Despesas' : 
-                      name === 'saldo' ? 'Saldo Acumulado' : name
+                      formatCurrency(value / 100),
+                      name === "receitas"
+                        ? "Receitas"
+                        : name === "despesas"
+                        ? "Despesas"
+                        : name === "saldo"
+                        ? "Saldo Acumulado"
+                        : name,
                     ]}
                     labelFormatter={(label) => `Mês de ${label}`}
                   />
 
                   {/* Legenda apenas no desktop */}
                   {!isMobile && (
-                    <ChartLegend 
-                      content={<ChartLegendContent className="flex justify-center gap-6" />}
+                    <ChartLegend
+                      content={
+                        <ChartLegendContent className="flex justify-center gap-6" />
+                      }
                       verticalAlign="top"
                     />
                   )}
-                  
+
                   {/* Barras de Receitas com gradiente */}
-                  <Bar 
-                    dataKey="receitas" 
+                  <Bar
+                    dataKey="receitas"
                     fill="url(#colorReceitas)"
                     radius={[4, 4, 0, 0]}
                     name="Receitas"
                   />
-                  
+
                   {/* Barras de Despesas com gradiente */}
-                  <Bar 
-                    dataKey="despesas" 
+                  <Bar
+                    dataKey="despesas"
                     fill="url(#colorDespesas)"
                     radius={[4, 4, 0, 0]}
                     name="Despesas"
                   />
-                  
+
                   {/* Linha de saldo com pontos condicionais */}
-                  <Line 
-                    type="monotone" 
-                    dataKey="saldo" 
+                  <Line
+                    type="monotone"
+                    dataKey="saldo"
                     stroke="hsl(var(--primary))"
                     strokeWidth={isMobile ? 2 : 3}
                     dot={(props: any) => {
@@ -810,17 +1052,21 @@ export default function AnalyticsPage({ transactions, accounts }: AnalyticsPageP
                           cx={cx}
                           cy={cy}
                           r={isMobile ? 3 : 4}
-                          fill={saldo >= 0 ? "hsl(var(--primary))" : "hsl(var(--destructive))"}
+                          fill={
+                            saldo >= 0
+                              ? "hsl(var(--primary))"
+                              : "hsl(var(--destructive))"
+                          }
                           stroke="hsl(var(--background))"
                           strokeWidth={2}
                         />
                       );
                     }}
-                    activeDot={{ 
-                      r: isMobile ? 5 : 6, 
+                    activeDot={{
+                      r: isMobile ? 5 : 6,
                       strokeWidth: 2,
                       fill: "hsl(var(--primary))",
-                      stroke: "hsl(var(--background))"
+                      stroke: "hsl(var(--background))",
                     }}
                     connectNulls={false}
                     name="Saldo Acumulado"
@@ -855,10 +1101,12 @@ export default function AnalyticsPage({ transactions, accounts }: AnalyticsPageP
         <CardHeader>
           <CardTitle className="text-sm sm:text-base">
             <span className="block sm:hidden">
-              Detalhes - {filterType === "income" ? "Receitas" : filterType === "expense" ? "Despesas" : "Transações"}
+              Detalhes -{" "}
+              {categoryChartType === "income" ? "Receitas" : "Despesas"}
             </span>
             <span className="hidden sm:block">
-              Detalhes por Categoria - {filterType === "income" ? "Receitas" : filterType === "expense" ? "Despesas" : "Todas as Transações"}
+              Detalhes por Categoria -{" "}
+              {categoryChartType === "income" ? "Receitas" : "Despesas"}
             </span>
           </CardTitle>
         </CardHeader>
@@ -866,17 +1114,27 @@ export default function AnalyticsPage({ transactions, accounts }: AnalyticsPageP
           {categoryData.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <PieChart className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p className="text-sm">Nenhuma transação encontrada para o período selecionado</p>
+              <p className="text-sm">
+                Nenhuma transação encontrada para o período selecionado
+              </p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left py-2 text-xs sm:text-sm">Categoria</th>
-                    <th className="text-right py-2 text-xs sm:text-sm">Valor</th>
-                    <th className="text-right py-2 text-xs sm:text-sm hidden sm:table-cell">%</th>
-                    <th className="text-right py-2 text-xs sm:text-sm hidden md:table-cell">Qtd</th>
+                    <th className="text-left py-2 text-xs sm:text-sm">
+                      Categoria
+                    </th>
+                    <th className="text-right py-2 text-xs sm:text-sm">
+                      Valor
+                    </th>
+                    <th className="text-right py-2 text-xs sm:text-sm hidden sm:table-cell">
+                      %
+                    </th>
+                    <th className="text-right py-2 text-xs sm:text-sm hidden md:table-cell">
+                      Qtd
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -884,7 +1142,7 @@ export default function AnalyticsPage({ transactions, accounts }: AnalyticsPageP
                     <tr key={item.category} className="border-b last:border-b-0">
                       <td className="py-2 sm:py-3">
                         <div className="flex items-center gap-2 sm:gap-3">
-                          <div 
+                          <div
                             className="w-3 h-3 sm:w-4 sm:h-4 rounded-full flex-shrink-0"
                             style={{ backgroundColor: item.fill }}
                           />
@@ -895,7 +1153,7 @@ export default function AnalyticsPage({ transactions, accounts }: AnalyticsPageP
                       </td>
                       <td className="text-right py-2 sm:py-3 font-medium text-xs sm:text-sm">
                         <div className="flex flex-col sm:block">
-                          <span>{formatCurrency(item.amount)}</span>
+                          <span>{formatCurrency(item.amount / 100)}</span>
                           <span className="text-xs text-muted-foreground sm:hidden">
                             {item.percentage.toFixed(1)}% • {item.transactions}x
                           </span>

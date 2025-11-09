@@ -14,6 +14,7 @@ import {
   MoreVertical,
   ArrowRight,
   DollarSign,
+  TrendingUp, // 1. Ícone Adicionado
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -22,20 +23,19 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
-// Account interface moved to be inline as we're using Supabase types
+import { useAccountStore } from "@/stores/AccountStore"; // Já estava lendo do store
 
 interface AccountsPageProps {
-  accounts: any[];
   onAddAccount: () => void;
   onEditAccount: (account: any) => void;
   onDeleteAccount: (accountId: string) => void;
   onPayCreditCard?: (account: any) => void;
   onTransfer?: () => void;
-  initialFilterType?: "all" | "checking" | "savings" | "credit";
+  // 2. TIPO DE FILTRO ATUALIZADO
+  initialFilterType?: "all" | "checking" | "savings" | "credit" | "investment";
 }
 
 export function AccountsPage({
-  accounts,
   onAddAccount,
   onEditAccount,
   onDeleteAccount,
@@ -43,9 +43,11 @@ export function AccountsPage({
   onTransfer,
   initialFilterType = "all",
 }: AccountsPageProps) {
+  const accounts = useAccountStore((state) => state.accounts); // Lê do store
   const [searchTerm, setSearchTerm] = useState("");
+  // 3. TIPO DE ESTADO ATUALIZADO
   const [filterType, setFilterType] = useState<
-    "all" | "checking" | "savings" | "credit"
+    "all" | "checking" | "savings" | "credit" | "investment"
   >(initialFilterType);
   const { toast } = useToast();
 
@@ -67,6 +69,9 @@ export function AccountsPage({
         return <PiggyBank className="h-5 w-5" />;
       case "credit":
         return <CreditCard className="h-5 w-5" />;
+      // 4. ÍCONE DE INVESTIMENTO ADICIONADO
+      case "investment":
+        return <TrendingUp className="h-5 w-5" />;
       default:
         return <Wallet className="h-5 w-5" />;
     }
@@ -80,6 +85,9 @@ export function AccountsPage({
         return "Poupança";
       case "credit":
         return "Cartão de Crédito";
+      // 5. RÓTULO DE INVESTIMENTO ADICIONADO
+      case "investment":
+        return "Investimento";
       default:
         return type;
     }
@@ -90,6 +98,8 @@ export function AccountsPage({
       checking: "default",
       savings: "secondary",
       credit: "destructive",
+      // 6. BADGE DE INVESTIMENTO ADICIONADO
+      investment: "secondary",
     } as const;
     return variants[type as keyof typeof variants] || "default";
   };
@@ -118,11 +128,15 @@ export function AccountsPage({
     }
   };
 
-  const totalBalance = accounts
+  // 7. CÁLCULO DO TOTAL ATUALIZADO
+  // Agora usa 'filteredAccounts' em vez de 'accounts'
+  const totalBalance = filteredAccounts
     .filter((acc) => acc.type !== "credit")
     .reduce((sum, acc) => sum + acc.balance, 0);
 
-  const creditUsed = accounts
+  // 8. CÁLCULO DE CRÉDITO ATUALIZADO
+  // Agora usa 'filteredAccounts' em vez de 'accounts'
+  const creditUsed = filteredAccounts
     .filter((acc) => acc.type === "credit")
     .reduce((sum, acc) => sum + Math.abs(acc.balance), 0);
 
@@ -166,10 +180,7 @@ export function AccountsPage({
                 <p className="text-xs sm:text-sm font-medium text-muted-foreground">
                   Total em Contas
                 </p>
-                {/* --- CORREÇÃO AQUI ---
-                  A classe 'balance-positive' estava fixa. 
-                  Agora ela muda dinamicamente com base no valor de 'totalBalance'.
-                */}
+                {/* Este total agora é dinâmico com base no filtro */}
                 <div
                   className={`text-base sm:text-lg lg:text-xl font-bold ${
                     totalBalance >= 0 ? "balance-positive" : "balance-negative"
@@ -192,6 +203,7 @@ export function AccountsPage({
                 <p className="text-xs sm:text-sm font-medium text-muted-foreground">
                   Cartões Utilizados
                 </p>
+                {/* Este total agora é dinâmico com base no filtro */}
                 <div className="text-base sm:text-lg lg:text-xl font-bold balance-negative leading-tight">
                   {formatCents(creditUsed)}
                 </div>
@@ -211,7 +223,8 @@ export function AccountsPage({
                   Total de Contas
                 </p>
                 <div className="text-base sm:text-lg lg:text-xl font-bold leading-tight">
-                  {accounts.length}
+                  {/* Usa filteredAccounts para contagem correta */}
+                  {filteredAccounts.length}
                 </div>
               </div>
             </div>
@@ -231,11 +244,13 @@ export function AccountsPage({
           />
         </div>
         <div className="flex gap-2 flex-wrap sm:flex-nowrap">
+          {/* 9. BOTÃO DE INVESTIMENTO ADICIONADO */}
           {[
             { value: "all", label: "Todas" },
             { value: "checking", label: "Corrente" },
             { value: "savings", label: "Poupança" },
             { value: "credit", label: "Cartão" },
+            { value: "investment", label: "Investimento" },
           ].map((filter) => (
             <Button
               key={filter.value}
@@ -355,9 +370,6 @@ export function AccountsPage({
                       <span className="text-xs sm:text-sm text-muted-foreground font-medium">
                         Saldo:
                       </span>
-                      {/* A lógica aqui na lista já estava correta, tratando 
-                        cartão de crédito e saldos < 0 corretamente.
-                      */}
                       <span
                         className={`text-sm sm:text-base font-bold ${
                           account.type === "credit"
