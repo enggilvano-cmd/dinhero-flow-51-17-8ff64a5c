@@ -702,21 +702,6 @@ export function TransactionsPage({
         <CardContent className="py-4 sm:pt-0">
           <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {/* Busca */}
-              <div className="space-y-1.5 col-span-1 sm:col-span-2 lg:col-span-4">
-                <Label htmlFor="search">Buscar</Label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="search"
-                    placeholder="Buscar transações..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 h-9"
-                  />
-                </div>
-              </div>
-
               {/* Tipo */}
               <div className="space-y-1.5">
                 <Label htmlFor="filterType">Tipo</Label>
@@ -886,6 +871,21 @@ export function TransactionsPage({
                   >
                     {sortOrder === "asc" ? "↑" : "↓"}
                   </Button>
+                </div>
+              </div>
+
+              {/* Busca */}
+              <div className="space-y-1.5 col-span-1 sm:col-span-2 lg:col-span-1">
+                <Label htmlFor="search">Buscar</Label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="search"
+                    placeholder="Buscar transações..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 h-9"
+                  />
                 </div>
               </div>
             </div>{" "}
