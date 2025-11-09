@@ -1,12 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Account } from "@/types";
-import { CreditCard } from "lucide-react";
+import { Account, AppTransaction } from "@/types"; // Importa AppTransaction
+import { CreditCard, RotateCcw } from "lucide-react"; // Importa RotateCcw
 import { cn } from "@/lib/utils";
-import { format, isPast } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
-import { Badge } from '@/components/ui/badge'
+import { format, isPast } from 'date-fns';
+import { ptBR } from 'date-fns/locale'; 
+import { Badge } from "@/components/ui/badge";
 
 // Helper para formatar moeda
 const formatCents = (valueInCents: number) => {
@@ -21,40 +21,54 @@ interface CreditCardBillCardProps {
   billDetails: {
     currentBillAmount: number;
     nextBillAmount: number;
-    totalBalance: number; // Este é o saldo devedor total (limite utilizado)
+    totalBalance: number; 
     availableLimit: number;
+    paymentTransactions: AppTransaction[]; // <-- Prop ADICIONADA
   };
   onPayBill: () => void;
-  // onDetails: () => void; // Removido por enquanto, pois CreditBillsPage não o usa
+  onReversePayment: () => void; // <-- Prop ADICIONADA
 }
 
-export function CreditCardBillCard({ account, billDetails, onPayBill }: CreditCardBillCardProps) {
+export function CreditCardBillCard({ 
+  account, 
+  billDetails, 
+  onPayBill, 
+  onReversePayment // <-- Prop ADICIONADA
+}: CreditCardBillCardProps) {
   
-  // A verificação de guarda agora está correta.
   if (!account || !billDetails) {
     return null
   }
 
   const { limit_amount = 0, closing_date, due_date } = account;
-  const { currentBillAmount, nextBillAmount, totalBalance, availableLimit } = billDetails;
+  const { 
+    currentBillAmount, 
+    nextBillAmount, 
+    totalBalance, 
+    availableLimit,
+    paymentTransactions // <-- Prop ADICIONADA
+  } = billDetails;
 
   // Calcula o percentual de limite usado
   const limitUsedPercentage = limit_amount > 0 ? (totalBalance / limit_amount) * 100 : 0;
   
   // Lógica de Status
-  // Usa a data de fechamento da conta, se existir
-  const closingDate = closing_date ? new Date().setUTCDate(closing_date) : new Date();
-  const isClosed = isPast(closingDate); 
-  const isPaid = currentBillAmount <= 0; // Se a fatura atual é 0 ou negativa (crédito), está paga
+  const closingDate = closing_date ? new Date(new Date().getFullYear(), new Date().getMonth(), closing_date) : new Date();
+  const isClosed = isPast(closingDate);
+  
+  // --- LÓGICA DE PAGO ATUALIZADA ---
+  const hasPayments = paymentTransactions && paymentTransactions.length > 0;
+  const isBillPaid = currentBillAmount <= 0;
+  const isFullyPaid = totalBalance <= 0;
+  const canReverse = hasPayments; // <-- Lógica do Estorno
+  // --- FIM DA LÓGICA ---
 
-  // Determina a cor com base no valor da fatura (pode ser negativo/crédito)
   const billAmountColor = currentBillAmount > 0 
     ? "balance-negative" 
     : currentBillAmount < 0 
     ? "balance-positive" 
     : "text-muted-foreground";
   
-  // Determina o rótulo com base no valor
   const billLabel = currentBillAmount < 0 
     ? "Crédito na Fatura" 
     : `Fatura Atual (Vence dia ${due_date || 'N/A'})`;
@@ -75,8 +89,9 @@ export function CreditCardBillCard({ account, billDetails, onPayBill }: CreditCa
           <Badge variant={isClosed ? 'secondary' : 'outline'}>
             {isClosed ? 'Fechada' : 'Aberta'}
           </Badge>
-          <Badge variant={isPaid ? 'default' : 'destructive'}>
-            {isPaid ? 'Paga' : 'Pendente'}
+          {/* Badge de Pago/Pendente agora se baseia se existem pagamentos */}
+          <Badge variant={hasPayments ? 'default' : 'destructive'}>
+            {hasPayments ? 'Pago' : 'Pendente'}
           </Badge>
         </div>
       </CardHeader>
@@ -110,17 +125,28 @@ export function CreditCardBillCard({ account, billDetails, onPayBill }: CreditCa
         </div>
       </CardContent>
       
-      <CardFooter>
+      {/* --- NOVO: Botões de Ação --- */}
+      <CardFooter className="flex gap-2">
+        {canReverse && (
+          <Button 
+            variant="outline" 
+            className="flex-1" 
+            onClick={onReversePayment}
+          >
+            <RotateCcw className="h-4 w-4 mr-2" />
+            Estornar
+          </Button>
+        )}
+        
         <Button 
-          className="w-full" 
+          className="flex-1" 
           onClick={onPayBill} 
-          // Desabilita apenas se não houver DÍVIDA TOTAL (Limite Utilizado)
-          disabled={totalBalance <= 0}
+          disabled={isFullyPaid} // Desabilita se o saldo devedor total for 0
         >
-          {/* Muda o texto se a fatura atual for 0 ou paga, mas ainda houver dívida total */}
-          {isPaid && totalBalance > 0 ? "Pagar Valor Avulso" : "Pagar Fatura"}
+          {isBillPaid && !isFullyPaid ? "Pagar Avulso" : "Pagar Fatura"}
         </Button>
       </CardFooter>
+      {/* --- FIM DO NOVO --- */}
     </Card>
   );
 }

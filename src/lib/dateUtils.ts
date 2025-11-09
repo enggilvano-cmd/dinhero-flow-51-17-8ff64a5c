@@ -73,6 +73,17 @@ export function calculateBillDetails(
   transactions: AppTransaction[], // Aceita AppTransaction (com datas corretas)
   account: Account
 ) {
+  // Retorna vazio se a conta não for de crédito
+  if (!account.closing_date || !account.due_date) {
+    return {
+      currentBillAmount: 0,
+      nextBillAmount: 0,
+      totalBalance: 0,
+      availableLimit: 0,
+      paymentTransactions: [], // <-- ADICIONADO
+    };
+  }
+  
   const today = new Date();
   const closingDate = account.closing_date || 1; 
 
@@ -131,6 +142,7 @@ export function calculateBillDetails(
   let currentBillAmount = 0;
   let nextBillAmount = 0;
   let newTotalBalance = 0; // Saldo devedor total (limite utilizado)
+  const paymentTransactions: AppTransaction[] = []; // <-- ADICIONADO
 
   for (const t of transactions) {
     const tDate = t.date; // t.date agora é um Objeto Date
@@ -154,6 +166,7 @@ export function calculateBillDetails(
         // CORREÇÃO: Subtrai o pagamento do valor da fatura atual.
         // Isso permite que currentBillAmount fique negativo (crédito).
         currentBillAmount -= t.amount;
+        paymentTransactions.push(t); // <-- ADICIONADO
       }
     }
     // 3. Calcula a Próxima Fatura (nextBillAmount)
@@ -175,5 +188,6 @@ export function calculateBillDetails(
     nextBillAmount,    // Próxima Fatura (apenas despesas)
     totalBalance,      // Limite Utilizado (saldo devedor total)
     availableLimit,    // Limite Disponível
+    paymentTransactions, // <-- ADICIONADO
   };
 }

@@ -49,6 +49,12 @@ export interface Transaction {
   installments?: number; // Number of installments for installment transactions
   current_installment?: number; // Current installment number (1-based)
   parent_transaction_id?: string; // ID linking installment transactions together
+  linked_transaction_id?: string; // <-- ADICIONADO: Para vincular pagamentos/transferências
+}
+
+// Para o store, garantindo que a data seja um objeto Date
+export interface AppTransaction extends Omit<Transaction, 'date'> {
+  date: Date;
 }
 
 export const PREDEFINED_COLORS = [

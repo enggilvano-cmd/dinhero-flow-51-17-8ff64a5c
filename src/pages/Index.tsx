@@ -27,7 +27,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { MigrationWarning } from "@/components/MigrationWarning";
 import { createDateFromString } from "@/lib/dateUtils";
 import { useAccountStore } from "@/stores/AccountStore";
-import { useTransactionStore } from "@/stores/TransactionStore";
+import { useTransactionStore, AppTransaction } from "@/stores/TransactionStore"; // Importa AppTransaction
 import { Account, Transaction } from "@/types";
 
 const PlaniFlowApp = () => {
@@ -157,11 +157,8 @@ const PlaniFlowApp = () => {
         const formattedTransactions = (transactionsData || []).map(
           (trans) => ({
             ...trans,
-            accountId: trans.account_id,
-            category: trans.category_id,
-            currentInstallment: trans.current_installment,
-            parentTransactionId: trans.parent_transaction_id,
-            toAccountId: trans.to_account_id,
+            // Mantém os nomes de colunas do DB
+            // A conversão para camelCase é feita na store ou no componente
             date: createDateFromString(trans.date),
           })
         );
@@ -431,9 +428,12 @@ const PlaniFlowApp = () => {
       }
 
       // --- CORREÇÃO: REMOVER parent_transaction_id DE TRANSFERÊNCIAS ---
+      // E ADICIONAR linked_transaction_id
+      
+      // 1. Transação de Saída (Expense)
       const outgoingTransaction = {
         description: `Transferência para ${toAccount.name}`,
-        amount,
+        amount: Math.abs(amount), // Garante positivo
         date: date.toISOString().split("T")[0],
         type: "expense" as const,
         category_id: null,
@@ -441,12 +441,20 @@ const PlaniFlowApp = () => {
         to_account_id: toAccountId,
         status: "completed" as const,
         user_id: user.id,
-        // parent_transaction_id: parentId, // REMOVIDO
       };
 
+      const { data: newOutgoingTransaction, error: outgoingError } = await supabase
+        .from("transactions")
+        .insert(outgoingTransaction)
+        .select()
+        .single();
+        
+      if (outgoingError) throw outgoingError;
+
+      // 2. Transação de Entrada (Income)
       const incomingTransaction = {
         description: `Transferência de ${fromAccount.name}`,
-        amount,
+        amount: Math.abs(amount), // Garante positivo
         date: date.toISOString().split("T")[0],
         type: "income" as const,
         category_id: null,
@@ -454,18 +462,22 @@ const PlaniFlowApp = () => {
         to_account_id: fromAccountId,
         status: "completed" as const,
         user_id: user.id,
-        // parent_transaction_id: parentId, // REMOVIDO
+        linked_transaction_id: newOutgoingTransaction.id, // <-- VINCULA A TRANSAÇÃO
       };
-      // --- FIM DA CORREÇÃO ---
-
-      const { data: newTransactions, error } = await supabase
+      
+      const { data: newIncomingTransaction, error: incomingError } = await supabase
         .from("transactions")
-        .insert([outgoingTransaction, incomingTransaction])
-        .select();
+        .insert(incomingTransaction)
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (incomingError) {
+        // Reverte a primeira transação
+        await supabase.from("transactions").delete().eq("id", newOutgoingTransaction.id);
+        throw incomingError;
+      }
 
-      addGlobalTransactions(newTransactions as Transaction[]);
+      addGlobalTransactions([newOutgoingTransaction as Transaction, newIncomingTransaction as Transaction]);
 
       await Promise.all([
         supabase
@@ -825,7 +837,7 @@ const PlaniFlowApp = () => {
     setEditAccountModalOpen(true);
   };
 
-  // --- INÍCIO DA CORREÇÃO DO ERRO F-KEY ---
+  // --- FUNÇÃO DE PAGAMENTO DE CRÉDITO (VERSÃO CORRIGIDA ÚNICA) ---
   const handleCreditPayment = async ({
     creditCardAccountId,
     debitAccountId,
@@ -854,12 +866,12 @@ const PlaniFlowApp = () => {
         throw new Error("Conta de crédito ou conta bancária não encontrada.");
       }
 
-      // --- CORREÇÃO: Inserir a transação de DÉBITO (saída) primeiro ---
+      // 1. Transação de DÉBITO (saída do banco)
       const bankTransaction = {
         description: `Pagamento fatura ${
           creditAccount?.name || "cartão de crédito"
         }`,
-        amount,
+        amount: Math.abs(amount), // Assegura que é positivo (lógica de saldo trata o resto)
         date: paymentDate,
         type: "expense" as const,
         category_id: paymentCategory?.id || null,
@@ -867,7 +879,6 @@ const PlaniFlowApp = () => {
         to_account_id: creditCardAccountId, // Indica que é uma transferência para o cartão
         status: "completed" as const,
         user_id: user.id,
-        parent_transaction_id: null, // Não é uma parcela
       };
       
       const { data: newBankTransaction, error: bankError } = await supabase
@@ -881,13 +892,10 @@ const PlaniFlowApp = () => {
         throw new Error(`A transação (banco) falhou: ${bankError.message}`);
       }
 
-      // --- CORREÇÃO: Inserir a transação de CRÉDITO (entrada) em segundo,
-      // referenciando a primeira transação ---
+      // 2. Transação de CRÉDITO (entrada no cartão)
       const creditTransaction = {
-        description: `Pagamento fatura ${
-          creditAccount?.name || "cartão de crédito"
-        }`,
-        amount,
+        description: `Pagamento recebido de ${bankAccount.name}`, // Descrição mais clara
+        amount: Math.abs(amount), // Assegura que é positivo
         date: paymentDate,
         type: "income" as const,
         category_id: paymentCategory?.id || null,
@@ -895,8 +903,7 @@ const PlaniFlowApp = () => {
         to_account_id: debitAccountId, // Indica que veio do banco
         status: "completed" as const,
         user_id: user.id,
-        // Define o 'parent_transaction_id' como o ID da transação de débito
-        parent_transaction_id: newBankTransaction.id, 
+        linked_transaction_id: newBankTransaction.id, // <-- CORREÇÃO: Usa linked_id
       };
 
       const { data: newCreditTransaction, error: creditError } = await supabase
@@ -916,8 +923,10 @@ const PlaniFlowApp = () => {
       addGlobalTransactions([newBankTransaction as Transaction, newCreditTransaction as Transaction]);
 
       // Update account balances
-      const newCreditBalance = creditAccount.balance + amount;
-      const newBankBalance = bankAccount.balance - amount;
+      // Saldo do cartão AUMENTA (dívida diminui)
+      const newCreditBalance = creditAccount.balance + Math.abs(amount);
+      // Saldo do banco DIMINUI
+      const newBankBalance = bankAccount.balance - Math.abs(amount);
 
       await Promise.all([
         supabase
@@ -949,7 +958,103 @@ const PlaniFlowApp = () => {
       throw error;
     }
   };
-  // --- FIM DA CORREÇÃO ---
+  // --- FIM DA FUNÇÃO DE PAGAMENTO ---
+
+  // --- NOVA FUNÇÃO DE ESTORNO ---
+  const handleReversePayment = async (paymentsToReverse: AppTransaction[]) => {
+    if (!user || !paymentsToReverse || paymentsToReverse.length === 0) {
+      toast({ title: "Nenhum pagamento para estornar", variant: "destructive" });
+      return;
+    }
+
+    toast({ title: "Estornando pagamento..." });
+
+    try {
+      // Pega o estado mais atual dos stores
+      const allTransactions = useTransactionStore.getState().transactions;
+      const allAccounts = useAccountStore.getState().accounts;
+
+      const transactionsToDelete_ids: string[] = [];
+      const accountsToUpdate = new Map<string, number>(); // Map<accountId, balanceChange>
+
+      for (const payment of paymentsToReverse) {
+        transactionsToDelete_ids.push(payment.id);
+
+        // 1. Reverte o saldo do Cartão de Crédito (aumenta a dívida / remove o 'income')
+        const creditAccountId = payment.account_id;
+        // Subtrai o valor do pagamento (ex: balance += -500)
+        const creditAccBalanceChange = -payment.amount; 
+        
+        accountsToUpdate.set(
+          creditAccountId,
+          (accountsToUpdate.get(creditAccountId) || 0) + creditAccBalanceChange
+        );
+
+        // 2. Encontra e reverte o saldo da Conta Bancária (devolve o dinheiro)
+        // Procura pela transação de 'expense' vinculada
+        const linkedExpense = allTransactions.find(
+          (t) => t.id === payment.linked_transaction_id || // Novo método de vínculo
+          (t.parent_transaction_id === payment.id && t.type === 'expense') // Método antigo (fallback)
+        );
+          
+        if (linkedExpense) {
+          transactionsToDelete_ids.push(linkedExpense.id);
+          
+          const debitAccountId = linkedExpense.account_id;
+          // Adiciona o valor de volta (ex: balance += -(-500))
+          const debitAccBalanceChange = -linkedExpense.amount; 
+          
+          accountsToUpdate.set(
+            debitAccountId,
+            (accountsToUpdate.get(debitAccountId) || 0) + debitAccBalanceChange
+          );
+        } else {
+            console.warn(`Transação de débito vinculada ao pagamento ${payment.id} não encontrada no store.`);
+        }
+      }
+
+      // 3. Deleta todas as transações (income e expense) do DB
+      const { error: deleteError } = await supabase
+        .from("transactions")
+        .delete()
+        .in("id", transactionsToDelete_ids)
+        .eq("user_id", user.id);
+
+      if (deleteError) throw deleteError;
+
+      // 4. Atualiza os saldos das contas no DB
+      const updatedAccountsList: Account[] = [];
+
+      for (const [accountId, balanceChange] of accountsToUpdate.entries()) {
+        const account = allAccounts.find((acc) => acc.id === accountId);
+        if (account) {
+          const newBalance = account.balance + balanceChange;
+          const { error: updateError } = await supabase
+            .from("accounts")
+            .update({ balance: newBalance })
+            .eq("id", accountId)
+            .eq("user_id", user.id);
+
+          if (updateError) throw updateError;
+          updatedAccountsList.push({ ...account, balance: newBalance });
+        }
+      }
+
+      // 5. Atualiza o estado global (stores)
+      removeGlobalTransactions(transactionsToDelete_ids);
+      updateGlobalAccounts(updatedAccountsList);
+
+      toast({ title: "Pagamento estornado com sucesso!" });
+    } catch (error) {
+      console.error("Erro ao estornar pagamento:", error);
+      toast({
+        title: "Erro ao estornar",
+        description: (error as Error).message,
+        variant: "destructive",
+      });
+    }
+  };
+  // --- FIM DA NOVA FUNÇÃO ---
 
   const openEditTransaction = (transaction: any) => {
     setEditingTransaction(transaction);
@@ -983,7 +1088,10 @@ const PlaniFlowApp = () => {
           />
         );
       case "credit-bills":
-        return <CreditBillsPage onPayCreditCard={openCreditPayment} />;
+        return <CreditBillsPage 
+                  onPayCreditCard={openCreditPayment} 
+                  onReversePayment={handleReversePayment} // <-- ADICIONADO
+               />;
       case "transactions":
         return (
           <TransactionsPage

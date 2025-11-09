@@ -13,7 +13,7 @@ import { useAccountStore } from "@/stores/AccountStore";
 // CORREÇÃO: Importar AppTransaction
 import { useTransactionStore, AppTransaction } from "@/stores/TransactionStore"; 
 import { calculateBillDetails } from "@/lib/dateUtils";
-import { CreditCardBillCard } from "./CreditCardBillCard";
+import { CreditCardBillCard } from "@/components/CreditCardBillCard";
 import { Account } from "@/types";
 import { cn } from "@/lib/utils";
 
@@ -30,12 +30,13 @@ interface CreditBillsPageProps {
     account: Account,
     currentBillAmount: number,
     nextBillAmount: number,
-    // BUGFIX: Adicionar totalBalance ao handler
     totalBalance: number 
   ) => void;
+  // Prop para o estorno (será adicionada no Index.tsx)
+  onReversePayment: (paymentsToReverse: AppTransaction[]) => void; // <-- ADICIONADO
 }
 
-export function CreditBillsPage({ onPayCreditCard }: CreditBillsPageProps) {
+export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBillsPageProps) { // <-- ADICIONADO
   const allAccounts = useAccountStore((state) => state.accounts);
   // allTransactions agora é do tipo AppTransaction[]
   const allTransactions = useTransactionStore((state) => state.transactions); 
@@ -77,7 +78,7 @@ export function CreditBillsPage({ onPayCreditCard }: CreditBillsPageProps) {
 
       return {
         account,
-        ...details,
+        ...details, // 'details' agora inclui 'paymentTransactions'
       };
     });
   }, [filteredCreditAccounts, allTransactions]);
@@ -225,17 +226,17 @@ export function CreditBillsPage({ onPayCreditCard }: CreditBillsPageProps) {
           {billDetails.map((details) => (
             <CreditCardBillCard
               key={details.account.id}
-              account={details.account}
-              billDetails={details}
+              account={details.account} 
+              billDetails={details}      
               onPayBill={() =>
-                // BUGFIX: Passar o details.totalBalance (dívida total)
                 onPayCreditCard(
                   details.account,
                   details.currentBillAmount,
                   details.nextBillAmount,
-                  details.totalBalance // Passa o saldo devedor total calculado
+                  details.totalBalance 
                 )
               }
+              onReversePayment={() => onReversePayment(details.paymentTransactions)} // <-- ADICIONADO
             />
           ))}
         </div>
