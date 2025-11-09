@@ -186,12 +186,25 @@ export function Dashboard({ accounts, transactions, categories, onTransfer, onAd
       const sortedEntries = Object.entries(dailyTotals)
         .sort(([a], [b]) => a.localeCompare(b));
       
-      let saldoAcumulado = 0;
+      // CORREÇÃO: Iniciar o saldo acumulado com o saldo total das contas (exceto crédito)
+      // para que o gráfico reflita o saldo real no início do período,
+      // alinhando-se com os valores dos cards.
+      const saldoInicial = accounts
+        .filter(acc => acc.type !== 'credit')
+        .reduce((sum, acc) => sum + acc.balance, 0);
+
       const sortedDays = sortedEntries.map(([dateKey, data]) => {
         const saldoDaily = data.income - data.expenses;
         saldoAcumulado += saldoDaily;
         
+        // Ajuste para calcular o saldo acumulado corretamente
+        // A lógica anterior reiniciava o saldo a cada renderização.
+        // Esta abordagem é mais complexa e pode ser simplificada.
+        // A melhor abordagem é calcular o saldo acumulado a partir de um ponto inicial fixo.
+        // Vamos recalcular o saldo acumulado de forma mais simples e correta.
         const [year, month, day] = dateKey.split('-').map(num => parseInt(num, 10));
+        
+        // A lógica de cálculo do saldo acumulado foi movida para ser mais declarativa.
         
         return {
           month: format(new Date(year, month - 1, day), 'dd/MM', { locale: ptBR }),
@@ -204,7 +217,21 @@ export function Dashboard({ accounts, transactions, categories, onTransfer, onAd
         };
       });
 
-      return sortedDays;
+      // RE-CÁLCULO CORRETO:
+      // Vamos usar o saldo inicial e somar as movimentações diárias.
+      let saldoAcumulado = saldoInicial;
+      const finalChartData = sortedEntries.map(([dateKey, data]) => {
+        saldoAcumulado = saldoAcumulado + data.income - data.expenses;
+        const [year, month, day] = dateKey.split('-').map(num => parseInt(num, 10));
+        return {
+          month: format(new Date(year, month - 1, day), 'dd/MM', { locale: ptBR }),
+          receitas: data.income,
+          despesas: data.expenses,
+          saldo: saldoAcumulado,
+        };
+      });
+
+      return finalChartData;
     } else {
       // Dados mensais baseados no ano e mês específicos
       const monthlyTotals = transactions.reduce((acc, transaction) => {

@@ -147,22 +147,18 @@ export default function AnalyticsPage({ transactions, accounts }: AnalyticsPageP
 
   const getTransactionCategory = (transaction: Transaction) => {
     // Check if it's a transfer
-    if (transaction.to_account_id) {
+    if (transaction.type === 'transfer' || transaction.to_account_id) {
       return 'Transferência';
     }
-    
-    // Debug log to identify the problematic transaction
-    if (transaction.category && typeof transaction.category === 'string' && transaction.category.includes('-')) {
-      console.log('Transaction with category ID instead of name:', transaction);
-    }
-    
+
+    // Prioritize category_id for more reliable mapping
     if (transaction.category_id) {
       const category = categories.find(cat => cat.id === transaction.category_id);
-      return category?.name || 'Categoria não encontrada';
+      return category?.name || 'Sem categoria';
     }
     
-    // If transaction.category exists and it's not an ID, use it
-    if (transaction.category && !transaction.category.includes('-')) {
+    // Fallback to transaction.category if it exists and is not an ID-like string
+    if (transaction.category && typeof transaction.category === 'string' && !transaction.category.match(/^[0-9a-f-]{36}$/i)) {
       return transaction.category;
     }
     

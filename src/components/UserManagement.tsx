@@ -75,10 +75,15 @@ export function UserManagement() {
 
   const fetchAuditLogs = async () => {
     try {
-      // Simplified query without join since we'll handle profile lookup differently
       const { data, error } = await supabase
         .from('audit_logs')
-        .select('*')
+        .select(`
+          *,
+          profiles (
+            email,
+            full_name
+          )
+        `)
         .order('created_at', { ascending: false })
         .limit(100);
 
@@ -86,14 +91,7 @@ export function UserManagement() {
         console.error('Error fetching audit logs:', error);
         return;
       }
-      
-      // Transform data to match expected interface
-      const logsWithProfiles = data?.map(log => ({
-        ...log,
-        profiles: null // We'll display user_id instead of profile info for now
-      })) || [];
-      
-      setAuditLogs(logsWithProfiles);
+      setAuditLogs(data || []);
     } catch (error) {
       console.error('Error fetching audit logs:', error);
       toast({
@@ -452,12 +450,14 @@ export function UserManagement() {
                 {auditLogs.map((log) => (
                   <TableRow key={log.id}>
                      <TableCell>
-                       <div>
-                         <p className="font-medium">Sistema</p>
-                         <p className="text-sm text-muted-foreground">
-                           ID: {log.user_id}
-                         </p>
-                       </div>
+                      <div>
+                        <p className="font-medium">
+                          {log.profiles?.full_name || log.profiles?.email || 'Sistema'}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          ID: {log.user_id.substring(0, 8)}...
+                        </p>
+                      </div>
                      </TableCell>
                     <TableCell>
                       <Badge variant="outline">
