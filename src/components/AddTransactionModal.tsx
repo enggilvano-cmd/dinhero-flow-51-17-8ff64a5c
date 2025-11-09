@@ -56,12 +56,9 @@ interface Account {
 interface AddTransactionModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAddTransaction: (
-    transaction: Omit<
-      Transaction,
-      "id" | "createdAt" | "currentInstallment" | "parentTransactionId"
-    >
-  ) => void;
+  // CORREÇÃO: A tipagem agora permite que todas as propriedades de uma transação,
+  // exceto as geradas pelo DB, sejam passadas. Isso corrige o bug do parcelamento.
+  onAddTransaction: (transaction: Omit<Transaction, "id" | "createdAt">) => void;
   onAddInstallmentTransactions?: (
     transactions: Omit<Transaction, "id" | "createdAt">[]
   ) => void; // Mantém a estrutura completa para parcelas
@@ -202,12 +199,16 @@ export function AddTransactionModal({
 
     try {
       if (isInstallment) {
+        const parentId = crypto.randomUUID(); // <-- 1. GERAR O ID AQUI
+
         // Cenário 1: Parcelamento no Cartão de Crédito
         // Lógica: Lançar UMA transação pelo valor TOTAL para reconciliação
         if (selectedAccount.type === "credit" && onAddTransaction) {
           const transaction = {
             description: `${description} (Compra Total em ${installments}x)`, // Descrição mais clara para o cartão
-            amount: numericAmount, // Valor já está em centavos
+            // CORREÇÃO: Aplicar o sinal negativo aqui para despesas.
+            // Isso garante que o objeto passado para 'onAddTransaction' já tenha o sinal correto.
+            amount: type === "expense" ? -Math.abs(numericAmount) : numericAmount,
             date: createDateFromString(date), // Já é um objeto Date
             type: type as "income" | "expense",
             category_id: category_id,
@@ -215,7 +216,7 @@ export function AddTransactionModal({
             status: status,
             installments: installments, // Metadata: total de parcelas
             currentInstallment: 1, // Metadata: parcela atual
-            parentTransactionId: crypto.randomUUID(), // ID único para agrupar
+            parentTransactionId: parentId, // <-- 2. USAR O ID GERADO
           };
 
           // DEBUG: Log do objeto enviado
@@ -242,8 +243,7 @@ export function AddTransactionModal({
           const remainderCents = numericAmount % installments;
 
           const transactions = [];
-          const baseDate = createDateFromString(date);
-          const parentId = crypto.randomUUID();
+          const baseDate = createDateFromString(date);          
           const todayStr = getTodayString();
 
           for (let i = 0; i < installments; i++) {

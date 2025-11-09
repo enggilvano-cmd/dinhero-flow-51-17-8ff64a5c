@@ -194,7 +194,9 @@ const PlaniFlowApp = () => {
     try {
       const mappedData = {
         description: transactionData.description,
-        amount: transactionData.amount,
+        // CORREÇÃO: O 'amount' já vem com o sinal correto do modal.
+        // Não é mais necessário aplicar a lógica de sinal aqui.
+        amount: transactionData.amount, 
         date: transactionData.date.toISOString().split("T")[0],
         type: transactionData.type,
         account_id: transactionData.account_id,
@@ -203,7 +205,7 @@ const PlaniFlowApp = () => {
         user_id: user.id,
         installments: transactionData.installments,
         current_installment: transactionData.currentInstallment,
-        parent_transaction_id: transactionData.parentTransactionId,
+        parent_transaction_id: transactionData.parentTransactionId, // <-- GARANTIR QUE ESTE CAMPO SEJA MAPEADO
       };
 
       const { data, error } = await supabase
@@ -217,10 +219,9 @@ const PlaniFlowApp = () => {
 
       // Atualizar saldo da conta (apenas se 'completed')
       if (transactionData.status === 'completed') {
-        const balanceChange =
-          transactionData.type === "income"
-            ? transactionData.amount
-            : -transactionData.amount;
+        // CORREÇÃO: O 'amount' já tem o sinal correto (+ para income, - para expense).
+        // Apenas somamos este valor ao saldo existente.
+        const balanceChange = transactionData.amount;
         const account = accounts.find(
           (acc) => acc.id === transactionData.account_id
         );
