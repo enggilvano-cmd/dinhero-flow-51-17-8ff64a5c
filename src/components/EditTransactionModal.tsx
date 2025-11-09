@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Input } from "@/components/ui/input"; // Input é usado para Descrição
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
@@ -15,14 +15,14 @@ import { Transaction, Account } from "@/types";
 import { useCategories } from "@/hooks/useCategories";
 import { createDateFromString } from "@/lib/dateUtils";
 import { InstallmentEditScopeDialog, EditScope } from "./InstallmentEditScopeDialog";
-import { CurrencyInput } from "@/components/forms/CurrencyInput";
+import { CurrencyInput } from "@/components/forms/CurrencyInput"; // Importa o CurrencyInput
 
 interface EditTransactionModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onEditTransaction: (transaction: Transaction, editScope?: EditScope) => void;
   transaction: Transaction | null;
-  accounts: Account[]; // Adicionado para receber a lista de contas
+  accounts: Account[];
 }
 
 export function EditTransactionModal({
@@ -34,7 +34,7 @@ export function EditTransactionModal({
 }: EditTransactionModalProps) {
   const [formData, setFormData] = useState({
     description: "",
-    amountInCents: 0,
+    amountInCents: 0, // Usar 'amountInCents' como número
     date: new Date(),
     type: "expense" as "income" | "expense",
     category_id: "",
@@ -46,18 +46,23 @@ export function EditTransactionModal({
   const { categories } = useCategories();
 
   useEffect(() => {
-    // Apenas atualize o formulário quando o modal for aberto ou a transação real mudar.
-    // Depender de `transaction.id` previne re-execuções desnecessárias.
     if (open && transaction) {
-      // Use createDateFromString para evitar problemas de fuso horário
       const transactionDate = typeof transaction.date === 'string' ? 
         createDateFromString(transaction.date.split('T')[0]) : 
         transaction.date;
-      // Only allow income/expense types in edit modal, transfers should be handled separately
+      
       const transactionType = transaction.type === "transfer" ? "expense" : transaction.type;
+      
       setFormData({
         description: transaction.description,
+        
+        // =================================================================
+        // CORREÇÃO CHAVE (que o seu código já tem):
+        // Usar Math.abs() para garantir que o valor no formulário
+        // seja sempre positivo, evitando o bug de sinal duplo.
+        // =================================================================
         amountInCents: Math.abs(transaction.amount),
+        
         date: transactionDate,
         type: transactionType as "income" | "expense",
         category_id: transaction.category_id,
@@ -65,7 +70,7 @@ export function EditTransactionModal({
         status: transaction.status
       });
     }
-  }, [open, transaction?.id]); // Depende de `open` e `transaction.id`
+  }, [open, transaction]); // Depender do objeto 'transaction' é seguro aqui
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,7 +86,6 @@ export function EditTransactionModal({
       return;
     }
 
-    // Category is required for income/expense transactions
     if (!formData.category_id) {
       toast({
         title: "Erro",
@@ -91,32 +95,32 @@ export function EditTransactionModal({
       return;
     }
 
-    // Check if this is an installment transaction
     const isInstallment = transaction.installments && transaction.installments > 1;
     
     if (isInstallment) {
-      // Open scope selection dialog for installment transactions
       setScopeDialogOpen(true);
       return;
     }
 
-    // Process single transaction edit immediately
     processEdit("current");
   };
 
   const processEdit = (editScope: EditScope) => {
     if (!transaction) return;
 
+    // =================================================================
+    // LÓGICA DE SALVAMENTO (Correta):
+    // Na hora de salvar, aplicamos o negativo de volta se for 'expense'
+    // =================================================================
+    const finalAmount = formData.type === 'income' 
+      ? formData.amountInCents 
+      : -Math.abs(formData.amountInCents);
+
     const updatedTransaction: Transaction = {
       ...transaction,
       description: formData.description.trim(),
-      amount: formData.type === 'income' ? formData.amountInCents : -Math.abs(formData.amountInCents),
-      // A data da transação não deve ser alterada automaticamente. 
-      // A fatura a que pertence é uma consequência da data, e não o contrário.
-      // A seleção de fatura deve servir apenas para mover a transação para outra fatura,
-      // o que implica em alterar sua data, mas isso deve ser uma ação explícita do usuário.
-      // Por agora, vamos manter a data que o usuário definiu no formulário.
-      date: formData.date, // A data já é um objeto Date, o backend deve formatá-la corretamente.
+      amount: finalAmount, // Salva o valor com o sinal correto
+      date: formData.date,
       type: formData.type,
       category_id: formData.category_id,
       account_id: formData.account_id,
@@ -126,9 +130,8 @@ export function EditTransactionModal({
     onEditTransaction(updatedTransaction, editScope);
     
     const scopeDescription = editScope === "current" ? "A transação" : 
-                           editScope === "all" ? "Todas as parcelas" :
-                           editScope === "current-and-previous" ? "As parcelas selecionadas" :
-                           "As parcelas restantes";
+                             editScope === "all" ? "Todas as parcelas" :
+                             "As parcelas selecionadas";
     
     toast({
       title: "Transação atualizada",
@@ -136,7 +139,7 @@ export function EditTransactionModal({
     });
 
     onOpenChange(false);
-    setScopeDialogOpen(false); // Garante que o diálogo de escopo seja fechado
+    setScopeDialogOpen(false);
   };
 
   const filteredCategories = categories.filter(cat => 
@@ -144,7 +147,7 @@ export function EditTransactionModal({
   );
 
   const isInstallment = transaction?.installments && transaction.installments > 1;
-  const selectedAccount = accounts.find(acc => acc.id === formData.account_id);
+
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -176,6 +179,10 @@ export function EditTransactionModal({
 
           <div className="space-y-2">
             <Label htmlFor="amount">Valor</Label>
+            {/* USO CORRETO DO CURRENCY INPUT:
+              Ele lida com a formatação e garante que 'amountInCents'
+              seja sempre um número positivo.
+            */}
             <CurrencyInput
               id="amount"
               value={formData.amountInCents}

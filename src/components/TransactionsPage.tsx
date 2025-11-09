@@ -313,8 +313,6 @@ export function TransactionsPage({
   };
 
   // Configure table columns
-  // Nenhuma correção necessária aqui, pois usará a função 'formatCurrency' local
-  // que agora está corrigida.
   const tableColumns = [
     {
       key: 'info',
@@ -389,6 +387,9 @@ export function TransactionsPage({
       )
     },
     {
+      // =================================================================
+      // CORREÇÃO 3: Usar Math.abs() aqui para evitar sinal duplo
+      // =================================================================
       key: 'amount',
       header: 'Valor',
       mobileLabel: 'Valor',
@@ -397,7 +398,8 @@ export function TransactionsPage({
         <div className={`font-bold text-sm sm:text-base ${
           transaction.type === "income" ? "balance-positive" : "balance-negative"
         }`}>
-          {transaction.type === "income" ? "+" : "-"}{formatCurrency(transaction.amount)}
+          {/* Adiciona o sinal com base no tipo E usa Math.abs() */}
+          {transaction.type === "income" ? "+" : "-"}{formatCurrency(Math.abs(transaction.amount))}
         </div>
       )
     },
@@ -469,7 +471,7 @@ export function TransactionsPage({
         </div>
       </div>
 
-      {/* Summary Cards */}
+      {/* Summary Cards (Usarão a 'formatCurrency' local corrigida) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="financial-card">
           <CardContent className="p-3">
