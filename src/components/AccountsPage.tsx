@@ -143,10 +143,10 @@ export function AccountsPage({
     <div className="spacing-responsive-lg fade-in">
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <div>
-          <h1 className="text-title-1">Contas</h1>
-          <p className="text-body text-muted-foreground">
-            Gerencie suas contas bancárias e cartões de crédito
+        <div className="min-w-0">
+          <h1 className="text-title-1 truncate">Contas</h1>
+          <p className="text-body text-muted-foreground truncate">
+            Gerencie suas contas bancárias e cartões de crédito.
           </p>
         </div>
         <div className="flex gap-3">
