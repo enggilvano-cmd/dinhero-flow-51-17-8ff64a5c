@@ -252,7 +252,8 @@ const PlaniFlowApp = () => {
         date: data.date.toISOString().split("T")[0],
         type: data.type,
         account_id: data.account_id,
-        category_id: data.category_au,
+        category_id: data.category_id,
+        status: data.status,
         installments: data.installments,
         current_installment: data.currentInstallment,
         parent_transaction_id: data.parentTransactionId,
@@ -290,6 +291,8 @@ const PlaniFlowApp = () => {
       }
     } catch (error) {
       console.error("Error adding installment transactions:", error);
+      // Lança o erro para que o modal possa tratá-lo (ex: exibir toast de erro e não fechar)
+      // Isso garante que o `catch` no `AddTransactionModal` seja acionado.
       throw error;
     }
   };

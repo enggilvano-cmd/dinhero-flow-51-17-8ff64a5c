@@ -238,7 +238,7 @@ export function AddTransactionModal({
               type: type as "income" | "expense",
               category_id: category_id,
               account_id: account_id,
-              status: installmentStatus as "completed" | "pending",
+              status: installmentStatus,
               installments: installments,
               currentInstallment: i + 1,
               parentTransactionId: parentId,
