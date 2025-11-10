@@ -245,20 +245,23 @@ const PlaniFlowApp = () => {
   const handleAddInstallmentTransactions = async (transactionsData: any[]) => {
     if (!user) return;
     try {
-      const transactionsToInsert = transactionsData.map((data) => ({
-        description: data.description,
-        // Aplica o sinal negativo se for uma despesa
-        amount: data.type === 'expense' ? -Math.abs(data.amount) : Math.abs(data.amount),
-        date: data.date.toISOString().split("T")[0],
-        type: data.type,
-        account_id: data.account_id,
-        category_id: data.category_id,
-        status: data.status,
-        installments: data.installments,
-        current_installment: data.currentInstallment,
-        parent_transaction_id: data.parentTransactionId,
-        user_id: user.id,
-      }));
+      const transactionsToInsert = transactionsData.map((data) => {
+        const amount = data.type === 'expense' ? -Math.abs(data.amount) : Math.abs(data.amount);
+        
+        return {
+          description: data.description,
+          amount: amount,
+          date: data.date.toISOString().split("T")[0],
+          type: data.type,
+          account_id: data.account_id,
+          category_id: data.category_id,
+          status: data.status,
+          installments: data.installments,
+          current_installment: data.currentInstallment,
+          parent_transaction_id: data.parentTransactionId,
+          user_id: user.id,
+        };
+      });
 
       const { data: newTransactions, error } = await supabase
         .from("transactions")
