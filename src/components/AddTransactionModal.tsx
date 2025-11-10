@@ -217,6 +217,13 @@ export function AddTransactionModal({
           // O saldo do cartão só é afetado pelas transações 'completed'.
           const baseInstallmentCents = Math.floor(numericAmount / installments);
           const remainderCents = numericAmount % installments;
+          
+          console.log('DEBUG Parcelamento Cartão:', {
+            valorTotal: numericAmount,
+            parcelas: installments,
+            valorParcela: baseInstallmentCents,
+            resto: remainderCents
+          });
 
           for (let i = 0; i < installments; i++) {
             const installmentAmount =

@@ -67,7 +67,7 @@ export const useTransactionStore = create<TransactionStoreState>((set) => ({
         t.id, 
         { 
           ...t, 
-          date: createDateFromString(updatedTransaction.date) // Converte
+          date: createDateFromString(t.date) // Converte
         }
       ])
     );
