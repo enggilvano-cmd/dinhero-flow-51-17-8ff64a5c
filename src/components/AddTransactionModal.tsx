@@ -203,7 +203,6 @@ export function AddTransactionModal({
           throw new Error("A função onAddInstallmentTransactions não foi fornecida.");
         }
 
-        const parentId = crypto.randomUUID();
         const baseDate = createDateFromString(date);
         const todayStr = getTodayString();
         const transactionsToCreate = [];
@@ -217,13 +216,6 @@ export function AddTransactionModal({
           // O saldo do cartão só é afetado pelas transações 'completed'.
           const baseInstallmentCents = Math.floor(numericAmount / installments);
           const remainderCents = numericAmount % installments;
-          
-          console.log('DEBUG Parcelamento Cartão:', {
-            valorTotal: numericAmount,
-            parcelas: installments,
-            valorParcela: baseInstallmentCents,
-            resto: remainderCents
-          });
 
           for (let i = 0; i < installments; i++) {
             const installmentAmount =
@@ -248,7 +240,7 @@ export function AddTransactionModal({
               status: installmentStatus,
               installments: installments,
               currentInstallment: i + 1,
-              parentTransactionId: parentId,
+              parentTransactionId: null,
             };
             transactionsToCreate.push(transaction);
           }
@@ -266,7 +258,7 @@ export function AddTransactionModal({
             status: status, // Usa o status geral do formulário (completed/pending)
             installments: installments,
             currentInstallment: 1,
-            parentTransactionId: parentId,
+            parentTransactionId: null,
           };
           // Para contas comuns, usamos onAddTransaction para criar uma única entrada.
           await onAddTransaction(transaction);

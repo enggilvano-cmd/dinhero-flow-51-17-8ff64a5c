@@ -245,11 +245,8 @@ const PlaniFlowApp = () => {
   const handleAddInstallmentTransactions = async (transactionsData: any[]) => {
     if (!user) return;
     try {
-      console.log('DEBUG handleAddInstallmentTransactions - Dados recebidos:', transactionsData);
-      
       const transactionsToInsert = transactionsData.map((data) => {
         const amount = data.type === 'expense' ? -Math.abs(data.amount) : Math.abs(data.amount);
-        console.log(`DEBUG Parcela ${data.currentInstallment}: valor original=${data.amount}, valor com sinal=${amount}`);
         
         return {
           description: data.description,
