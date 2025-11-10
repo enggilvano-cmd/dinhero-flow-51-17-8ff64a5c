@@ -389,7 +389,7 @@ export default function AnalyticsPage({
           locale: ptBR,
         }),
         receitas: data.income,
-        despesas: data.expenses,
+        despesas: Math.abs(data.expenses), // Exibir despesas como valor positivo para comparação
         saldo: saldoAcumulado,
         income: data.income,
         expenses: data.expenses,

@@ -256,8 +256,8 @@ export function Dashboard({
       // RE-CÁLCULO CORRETO:
       // Vamos usar o saldo inicial e somar as movimentações diárias.
       let saldoAcumulado = saldoInicial;
-      const finalChartData = sortedEntries.map(([dateKey, data]) => {
-        saldoAcumulado = saldoAcumulado + data.income - data.expenses;
+      const finalChartData = sortedEntries.map(([dateKey, data]) => { // data.expenses já é negativo
+        saldoAcumulado = saldoAcumulado + data.income + data.expenses; // Saldo líquido correto
         const [year, month, day] = dateKey
           .split("-")
           .map((num) => parseInt(num, 10));
@@ -265,8 +265,8 @@ export function Dashboard({
           month: format(new Date(year, month - 1, day), "dd/MM", {
             locale: ptBR,
           }),
-          receitas: data.income,
-          despesas: data.expenses,
+          receitas: data.income, // Receitas são positivas
+          despesas: Math.abs(data.expenses), // Despesas como valor positivo para comparação
           saldo: saldoAcumulado,
         };
       });
@@ -311,8 +311,8 @@ export function Dashboard({
 
       let saldoAcumulado = 0;
       const chartMonths = monthsToShow.map((monthKey) => {
-        const data = monthlyTotals[monthKey] || { income: 0, expenses: 0 };
-        const saldoMensal = data.income - data.expenses;
+        const data = monthlyTotals[monthKey] || { income: 0, expenses: 0 }; // data.expenses já é negativo
+        const saldoMensal = data.income + data.expenses; // Saldo líquido correto
         saldoAcumulado += saldoMensal;
 
         // Parse year and month from monthKey
@@ -323,7 +323,7 @@ export function Dashboard({
         return {
           month: format(new Date(year, month - 1, 1), "MMM", { locale: ptBR }),
           receitas: data.income,
-          despesas: data.expenses,
+          despesas: Math.abs(data.expenses), // Despesas como valor positivo para comparação
           saldo: saldoAcumulado,
           income: data.income,
           expenses: data.expenses,
