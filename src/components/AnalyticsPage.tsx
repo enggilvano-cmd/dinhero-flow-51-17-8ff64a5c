@@ -377,12 +377,17 @@ export default function AnalyticsPage({
       .sort(([a], [b]) => a.localeCompare(b))
       .slice(-6); // Últimos 6 meses
 
-    let saldoAcumulado = 0;
-    const sortedMonths = sortedEntries.map(([monthKey, data]) => {
-      const saldoMensal = data.income - data.expenses;
-      saldoAcumulado += saldoMensal;
+    // CORREÇÃO: Iniciar o saldo acumulado com o saldo total das contas (exceto crédito)
+    // para que o gráfico reflita o saldo real no início do período,
+    // alinhando-se com os valores dos cards do Dashboard.
+    const saldoInicial = accounts
+      .filter((acc) => acc.type !== "credit")
+      .reduce((sum, acc) => sum + acc.balance, 0);
 
+    let saldoAcumulado = saldoInicial;
+    const sortedMonths = sortedEntries.map(([monthKey, data]) => {
       // Parse year and month from monthKey to avoid timezone issues
+      saldoAcumulado = saldoAcumulado + data.income + data.expenses;
       const [year, month] = monthKey
         .split("-")
         .map((num) => parseInt(num, 10));
@@ -401,7 +406,7 @@ export default function AnalyticsPage({
     });
 
     return sortedMonths;
-  }, [filteredTransactions]);
+  }, [filteredTransactions, accounts]);
 
   const totalsByType = useMemo(() => {
     return filteredTransactions.reduce(
