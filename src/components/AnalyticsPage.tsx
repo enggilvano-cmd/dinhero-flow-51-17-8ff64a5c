@@ -351,7 +351,8 @@ export default function AnalyticsPage({
   }, [filteredTransactions, categoryChartType, categories]);
 
   const monthlyData = useMemo(() => {
-    // Criar relatório manual sem depender da lib/reports
+    // O gráfico agora obedece aos filtros da página.
+    // Usamos 'filteredTransactions' em vez de 'transactions'.
     const monthlyTotals = filteredTransactions.reduce((acc, transaction) => {
       const transactionDate =
         typeof transaction.date === "string"
@@ -372,41 +373,31 @@ export default function AnalyticsPage({
       return acc;
     }, {} as Record<string, { income: number; expenses: number }>);
 
-    // Converter para array e ordenar
-    const sortedEntries = Object.entries(monthlyTotals)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .slice(-6); // Últimos 6 meses
+    const sortedEntries = Object.entries(monthlyTotals).sort(([a], [b]) =>
+      a.localeCompare(b)
+    );
 
-    // CORREÇÃO: Iniciar o saldo acumulado com o saldo total das contas (exceto crédito)
-    // para que o gráfico reflita o saldo real no início do período,
-    // alinhando-se com os valores dos cards do Dashboard.
-    const saldoInicial = accounts
-      .filter((acc) => acc.type !== "credit")
-      .reduce((sum, acc) => sum + acc.balance, 0);
+    let saldoAcumulado = 0;
 
-    let saldoAcumulado = saldoInicial;
     const sortedMonths = sortedEntries.map(([monthKey, data]) => {
-      // Parse year and month from monthKey to avoid timezone issues
-      saldoAcumulado = saldoAcumulado + data.income + data.expenses;
+      const saldoMensal = data.income + data.expenses; // expenses já são negativas
+      saldoAcumulado += saldoMensal;
       const [year, month] = monthKey
         .split("-")
         .map((num) => parseInt(num, 10));
 
       return {
-        month: format(new Date(year, month - 1, 1), "MMM yyyy", {
+        month: format(new Date(year, month - 1, 1), "MMM/yy", {
           locale: ptBR,
         }),
         receitas: data.income,
         despesas: Math.abs(data.expenses), // Exibir despesas como valor positivo para comparação
         saldo: saldoAcumulado,
-        income: data.income,
-        expenses: data.expenses,
-        balance: saldoAcumulado,
       };
     });
 
     return sortedMonths;
-  }, [filteredTransactions, accounts]);
+  }, [filteredTransactions]);
 
   const totalsByType = useMemo(() => {
     return filteredTransactions.reduce(
