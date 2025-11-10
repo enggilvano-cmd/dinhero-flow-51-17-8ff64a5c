@@ -316,7 +316,10 @@ export default function AnalyticsPage({
         if (!acc[categoryName]) {
           acc[categoryName] = { amount: 0, color: categoryColor };
         }
-        acc[categoryName].amount += transaction.amount;
+        // CORREÇÃO: Usar o valor absoluto para despesas, pois o gráfico de pizza
+        // não lida com valores negativos. O valor original é negativo.
+        const value = categoryChartType === 'expense' ? Math.abs(transaction.amount) : transaction.amount;
+        acc[categoryName].amount += value;
 
         return acc;
       },
