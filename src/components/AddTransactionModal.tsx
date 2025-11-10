@@ -203,7 +203,6 @@ export function AddTransactionModal({
           throw new Error("A função onAddInstallmentTransactions não foi fornecida.");
         }
 
-        const parentId = crypto.randomUUID();
         const baseDate = createDateFromString(date);
         const todayStr = getTodayString();
         const transactionsToCreate = [];
@@ -241,35 +240,41 @@ export function AddTransactionModal({
               status: installmentStatus,
               installments: installments,
               currentInstallment: i + 1,
-              parentTransactionId: parentId,
+              parentTransactionId: null,
             };
             transactionsToCreate.push(transaction);
           }
         } else {
-          // **Cenário 2: Parcelamento em Contas Comuns (Débito, etc.)**
-          // Lança UMA transação pelo valor total, com metadados de parcelamento.
-          // O saldo é debitado imediatamente. As parcelas são apenas informativas.
-          const transaction = {
-            description: `${description} (1/${installments})`,
-            amount: numericAmount, // O valor total é debitado de uma vez.
-            date: baseDate,
-            type: type as "income" | "expense",
-            category_id: category_id,
-            account_id: account_id,
-            status: status, // Usa o status geral do formulário (completed/pending)
-            installments: installments,
-            currentInstallment: 1,
-            parentTransactionId: parentId,
-          };
-          // Para contas comuns, usamos onAddTransaction para criar uma única entrada.
-          await onAddTransaction(transaction);
-          toast({
-            title: "Sucesso",
-            description: `Transação parcelada adicionada com sucesso!`,
-            variant: "default",
-          });
-          // Como a transação já foi adicionada, podemos pular o resto da lógica.
-          return; // Retorna para evitar a chamada duplicada abaixo.
+          // Cenário 2: Parcelamento em contas comuns (débito, etc.) - criar N lançamentos também
+          const baseInstallmentCents = Math.floor(numericAmount / installments);
+          const remainderCents = numericAmount % installments;
+
+          for (let i = 0; i < installments; i++) {
+            const installmentAmount =
+              i === 0
+                ? baseInstallmentCents + remainderCents
+                : baseInstallmentCents;
+            const installmentDate = addMonthsToDate(baseDate, i);
+            const installmentDateStr = installmentDate.toISOString().split("T")[0];
+
+            // Para contas comuns, seguimos a mesma regra de status
+            const installmentStatus =
+              i === 0 && installmentDateStr <= todayStr ? status : "pending";
+
+            const transaction = {
+              description: `${description} (${i + 1}/${installments})`,
+              amount: installmentAmount,
+              date: installmentDate,
+              type: type as "income" | "expense",
+              category_id: category_id,
+              account_id: account_id,
+              status: installmentStatus,
+              installments: installments,
+              currentInstallment: i + 1,
+              parentTransactionId: null,
+            };
+            transactionsToCreate.push(transaction);
+          }
         }
 
         await onAddInstallmentTransactions(transactionsToCreate);
