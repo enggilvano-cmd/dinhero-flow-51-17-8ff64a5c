@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Upload, FileSpreadsheet, AlertCircle, CheckCircle2, X } from "lucide-react";
+import { Upload, FileSpreadsheet, AlertCircle, CheckCircle2, X, MoreVertical, Copy, AlertTriangle, PlusCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import * as XLSX from 'xlsx';
 import { format, parse, isValid } from "date-fns";
@@ -20,7 +21,7 @@ interface Account {
   color: string;
 }
 
-interface Transaction {
+interface AppTransaction {
   id?: string;
   description: string;
   amount: number;
@@ -38,8 +39,9 @@ interface Transaction {
 interface ImportTransactionsModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  transactions: AppTransaction[];
   accounts: Account[];
-  onImportTransactions: (transactions: any[]) => void; // Mudança temporária para evitar conflito de tipos
+  onImportTransactions: (transactions: any[], transactionsToReplace: string[]) => void;
 }
 
 interface ImportedTransaction {
@@ -50,26 +52,28 @@ interface ImportedTransaction {
   conta: string;
   valor: number;
   status?: string;
-  parcelas?: string;
+  parcelas?: string; // Mantido como string para leitura inicial
   isValid: boolean;
   errors: string[];
   accountId?: string;
   parsedDate?: Date;
   parsedType?: 'income' | 'expense' | 'transfer';
   parsedStatus?: 'completed' | 'pending';
+  isDuplicate: boolean;
+  existingTransactionId?: string;
+  resolution: 'skip' | 'add' | 'replace'; // Ação para duplicatas
 }
 
 export function ImportTransactionsModal({ 
   open, 
   onOpenChange, 
+  transactions,
   accounts, 
   onImportTransactions 
 }: ImportTransactionsModalProps) {
   const [file, setFile] = useState<File | null>(null);
   const [importedData, setImportedData] = useState<ImportedTransaction[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [validTransactions, setValidTransactions] = useState(0);
-  const [invalidTransactions, setInvalidTransactions] = useState(0);
   const { toast } = useToast();
 
   const validateTransactionType = (tipo: string): 'income' | 'expense' | 'transfer' | null => {
@@ -120,7 +124,7 @@ export function ImportTransactionsModal({
     return isValid(autoDate) ? autoDate : null;
   };
 
-  const validateTransaction = (row: any): ImportedTransaction => {
+  const validateAndCheckDuplicate = (row: any): ImportedTransaction => {
     const errors: string[] = [];
     let isValid = true;
 
@@ -162,7 +166,7 @@ export function ImportTransactionsModal({
       isValid = false;
     }
 
-    // Validações específicas
+    // Validações específicas (Bloco único e corrigido)
     const parsedDate = parseDate(data);
     if (!parsedDate) {
       errors.push('Formato de data inválido');
@@ -176,6 +180,7 @@ export function ImportTransactionsModal({
     }
 
     const account = findAccountByName(conta);
+    const accountId = account?.id; // Definir accountId aqui
     if (!account) {
       errors.push('Conta não encontrada');
       isValid = false;
@@ -188,21 +193,46 @@ export function ImportTransactionsModal({
       isValid = false;
     }
 
+    // Verificação de duplicata
+    let isDuplicate = false;
+    let existingTransactionId: string | undefined;
+    if (isValid && parsedDate && accountId) { // Agora accountId está disponível
+      const existingTx = transactions.find(tx => {
+        const txDate = new Date(tx.date);
+        return (
+          tx.accountId === accountId &&
+          txDate.getFullYear() === parsedDate.getFullYear() &&
+          txDate.getMonth() === parsedDate.getMonth() &&
+          txDate.getDate() === parsedDate.getDate() &&
+          Math.abs(tx.amount) === Math.abs(valor) && // Compara valores absolutos
+          tx.description.trim().toLowerCase() === descricao.trim().toLowerCase() // Compara descrição
+        );
+      });
+
+      if (existingTx) {
+        isDuplicate = true;
+        existingTransactionId = existingTx.id;
+      }
+    }
+
     return {
       data,
       descricao,
       categoria,
       tipo,
       conta,
-      valor,
+      valor: valor,
       status,
       parcelas: row.Parcelas || row.parcelas || '',
       isValid,
       errors,
-      accountId: account?.id,
-      parsedDate: parsedDate || undefined,
-      parsedType: parsedType || undefined,
-      parsedStatus: parsedStatus || undefined
+      accountId: accountId,
+      parsedDate,
+      parsedType,
+      parsedStatus,
+      isDuplicate,
+      existingTransactionId,
+      resolution: isDuplicate ? 'skip' : 'add',
     };
   };
 
@@ -241,32 +271,21 @@ export function ImportTransactionsModal({
 
       // Validar cada transação
       const validatedData = rawData.map((row, index) => {
-        try {
-          return validateTransaction(row);
-        } catch (error) {
-          console.error(`Erro ao validar linha ${index + 1}:`, error);
-          return {
-            data: '',
-            descricao: '',
-            categoria: '',
-            tipo: '',
-            conta: '',
-            valor: 0,
-            isValid: false,
-            errors: ['Erro ao processar linha']
-          } as ImportedTransaction;
-        }
+        return validateAndCheckDuplicate(row);
       });
-      const valid = validatedData.filter(t => t.isValid).length;
-      const invalid = validatedData.filter(t => !t.isValid).length;
 
       setImportedData(validatedData);
-      setValidTransactions(valid);
-      setInvalidTransactions(invalid);
+
+      const summary = validatedData.reduce((acc, t) => {
+        if (!t.isValid) acc.invalid++;
+        else if (t.isDuplicate) acc.duplicates++;
+        else acc.new++;
+        return acc;
+      }, { new: 0, duplicates: 0, invalid: 0 });
 
       toast({
         title: "Arquivo processado",
-        description: `${valid} transações válidas, ${invalid} com erros`,
+        description: `${summary.new} novas, ${summary.duplicates} duplicadas, ${summary.invalid} com erros.`,
       });
 
     } catch (error) {
@@ -280,43 +299,44 @@ export function ImportTransactionsModal({
     setIsProcessing(false);
   };
 
-  const handleImport = () => {
-    const validTransactionsToImport = importedData
-      .filter(t => t.isValid && t.parsedType && t.accountId && t.parsedDate && t.parsedStatus)
+  const handleImport = () => {    
+    const transactionsToAdd = importedData
+      .filter(t => t.isValid && (!t.isDuplicate || t.resolution === 'add' || t.resolution === 'replace'))
       .map(t => ({
-        description: t.descricao,
-        amount: t.valor,
-        category: t.categoria, // Manter category como string - será tratado no backend
+        description: t.descricao,        
+        // CORREÇÃO: Multiplicar por 100 para converter para centavos e aplicar sinal negativo para despesas.
+        amount: t.parsedType === 'expense' ? -Math.abs(t.valor * 100) : Math.abs(t.valor * 100),
+        category: t.categoria,
         type: t.parsedType as 'income' | 'expense' | 'transfer',
         account_id: t.accountId as string,
         date: t.parsedDate?.toISOString().split('T')[0] as string,
         status: t.parsedStatus as 'completed' | 'pending',
         installments: t.parcelas && t.parcelas.includes('/') ? 
-          parseInt(t.parcelas.split('/')[1]) || undefined : undefined,
+          parseInt(t.parcelas.split('/')[1], 10) || undefined : undefined,
         current_installment: t.parcelas && t.parcelas.includes('/') ? 
-          parseInt(t.parcelas.split('/')[0]) || undefined : undefined
+          parseInt(t.parcelas.split('/')[0], 10) || undefined : undefined
       }));
 
-    onImportTransactions(validTransactionsToImport);
+    const transactionsToReplaceIds = importedData
+      .filter(t => t.isValid && t.isDuplicate && t.resolution === 'replace' && t.existingTransactionId)
+      .map(t => t.existingTransactionId!);
+
+    onImportTransactions(transactionsToAdd, transactionsToReplaceIds);
     
     toast({
       title: "Transações importadas",
-      description: `${validTransactionsToImport.length} transações foram adicionadas com sucesso`,
+      description: `${transactionsToAdd.length} transações foram processadas com sucesso.`,
     });
 
     // Reset
     setFile(null);
     setImportedData([]);
-    setValidTransactions(0);
-    setInvalidTransactions(0);
     onOpenChange(false);
   };
 
   const handleCancel = () => {
     setFile(null);
     setImportedData([]);
-    setValidTransactions(0);
-    setInvalidTransactions(0);
     onOpenChange(false);
   };
 
@@ -378,6 +398,20 @@ export function ImportTransactionsModal({
       description: "Use este arquivo como exemplo para importar suas transações.",
     });
   };
+
+  const summary = useMemo(() => {
+    return importedData.reduce((acc, t) => {
+      if (!t.isValid) acc.invalid++;
+      else if (t.isDuplicate) acc.duplicates++;
+      else acc.new++;
+      return acc;
+    }, { new: 0, duplicates: 0, invalid: 0 });
+  }, [importedData]);
+
+  const transactionsToImportCount = useMemo(() => {
+    return importedData.filter(t => t.isValid && (!t.isDuplicate || t.resolution === 'add' || t.resolution === 'replace')).length;
+  }, [importedData]);
+
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -448,17 +482,17 @@ export function ImportTransactionsModal({
 
           {/* Summary Stats */}
           {importedData.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Card>
                 <CardContent className="pt-6">
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-success" />
+                    <PlusCircle className="h-5 w-5 text-primary" />
                     <div>
-                      <div className="text-2xl font-bold text-success">
-                        {validTransactions}
+                      <div className="text-2xl font-bold text-primary">
+                        {summary.new}
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        Transações válidas
+                        Novas Transações
                       </p>
                     </div>
                   </div>
@@ -468,13 +502,29 @@ export function ImportTransactionsModal({
               <Card>
                 <CardContent className="pt-6">
                   <div className="flex items-center gap-2">
-                    <X className="h-5 w-5 text-destructive" />
+                    <Copy className="h-5 w-5 text-amber-500" />
                     <div>
-                      <div className="text-2xl font-bold text-destructive">
-                        {invalidTransactions}
+                      <div className="text-2xl font-bold text-amber-500">
+                        {summary.duplicates}
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        Com erros
+                        Duplicatas Encontradas
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="h-5 w-5 text-destructive" />
+                    <div>
+                      <div className="text-2xl font-bold text-destructive">
+                        {summary.invalid}
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Transações com Erros
                       </p>
                     </div>
                   </div>
@@ -501,16 +551,20 @@ export function ImportTransactionsModal({
                         <TableHead>Tipo</TableHead>
                         <TableHead>Conta</TableHead>
                         <TableHead>Valor</TableHead>
-                        <TableHead>Erros</TableHead>
+                        <TableHead>Detalhes/Ação</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {importedData.slice(0, 10).map((transaction, index) => (
                         <TableRow key={index}>
                           <TableCell>
-                            <Badge variant={transaction.isValid ? "default" : "destructive"}>
-                              {transaction.isValid ? "Válida" : "Erro"}
-                            </Badge>
+                            {!transaction.isValid ? (
+                              <Badge variant="destructive">Erro</Badge>
+                            ) : transaction.isDuplicate ? (
+                              <Badge variant="secondary" className="bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300">Duplicata</Badge>
+                            ) : (
+                              <Badge variant="default" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300">Nova</Badge>
+                            )}
                           </TableCell>
                           <TableCell>{transaction.data}</TableCell>
                           <TableCell>{transaction.descricao}</TableCell>
@@ -518,8 +572,8 @@ export function ImportTransactionsModal({
                           <TableCell>{transaction.tipo}</TableCell>
                           <TableCell>{transaction.conta}</TableCell>
                           <TableCell>R$ {transaction.valor.toFixed(2)}</TableCell>
-                          <TableCell>
-                            {transaction.errors.length > 0 && (
+                          <TableCell className="w-[200px]">
+                            {!transaction.isValid ? (
                               <div className="space-y-1">
                                 {transaction.errors.map((error, i) => (
                                   <div key={i} className="text-xs text-destructive">
@@ -527,6 +581,26 @@ export function ImportTransactionsModal({
                                   </div>
                                 ))}
                               </div>
+                            ) : transaction.isDuplicate ? (
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="outline" size="sm" className="text-xs h-7">
+                                    {transaction.resolution === 'skip' && 'Ignorar'}
+                                    {transaction.resolution === 'add' && 'Adicionar Mesmo Assim'}
+                                    {transaction.resolution === 'replace' && 'Substituir'}
+                                    <MoreVertical className="h-3 w-3 ml-2" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                  <DropdownMenuItem onClick={() => handleResolutionChange(index, 'skip')}>Ignorar (Manter existente)</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleResolutionChange(index, 'add')}>Adicionar como Nova</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleResolutionChange(index, 'replace')} className="text-destructive">Substituir existente</DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            ) : (
+                              <span className="text-xs text-muted-foreground italic">
+                                Será importada
+                              </span>
                             )}
                           </TableCell>
                         </TableRow>
@@ -551,9 +625,9 @@ export function ImportTransactionsModal({
           </Button>
           <Button 
             onClick={handleImport}
-            disabled={validTransactions === 0 || isProcessing}
+            disabled={transactionsToImportCount === 0 || isProcessing}
           >
-            Importar {validTransactions} Transações
+            Importar {transactionsToImportCount} Transações
           </Button>
         </div>
       </DialogContent>

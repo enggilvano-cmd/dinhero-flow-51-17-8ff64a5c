@@ -68,7 +68,7 @@ interface TransactionsPageProps {
   onAddTransaction: () => void;
   onEditTransaction: (transaction: any) => void;
   onDeleteTransaction: (transactionId: string) => void;
-  onImportTransactions: (transactions: any[]) => void;
+  onImportTransactions: (transactions: any[], transactionsToReplace: string[]) => void;
   initialFilterType?: "income" | "expense" | "transfer" | "all";
   initialFilterStatus?: "all" | "pending" | "completed";
   initialDateFilter?: "all" | "current_month" | "month_picker" | "custom";
@@ -1036,6 +1036,7 @@ export function TransactionsPage({
         open={importModalOpen}
         onOpenChange={setImportModalOpen}
         accounts={accounts}
+        transactions={transactions}
         onImportTransactions={onImportTransactions}
       />
     </div>
