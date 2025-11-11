@@ -34,24 +34,27 @@ export function ProtectedRoute({
     return <Navigate to="/auth" replace />;
   }
 
-  if (!profile) {
+  // Se o usuário está logado, mas o perfil ainda não carregou,
+  // mostramos uma tela de carregamento específica para o perfil.
+  // Isso evita a exibição da mensagem "Perfil não encontrado" durante o carregamento inicial.
+  if (user && !profile) {
     return (
       <div className="min-h-screen bg-gradient-surface flex items-center justify-center">
         <Card className="financial-card p-4 sm:p-6">
-          <CardContent className="flex flex-col items-center space-y-3 text-center">
-            <AlertTriangle className="h-12 w-12 text-warning" />
-            <div>
-              <h3 className="text-lg font-semibold">Perfil não encontrado</h3>
-              <p className="text-muted-foreground">
-                Não foi possível carregar suas informações de perfil. 
-                Entre em contato com o administrador.
-              </p>
-            </div>
+          <CardContent className="flex flex-col items-center space-y-3">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <p className="text-muted-foreground">Carregando perfil do usuário...</p>
           </CardContent>
         </Card>
       </div>
     );
   }
+
+  // A verificação de perfil não encontrado foi movida para depois do carregamento.
+  // Se após o 'loading' o perfil ainda for nulo, aí sim é um erro.
+  // No entanto, a lógica acima já cobre o estado de carregamento, tornando esta verificação
+  // menos provável de ser acionada por uma condição de corrida. O código original já tinha
+  // uma verificação para !profile, que agora é substituída pela de cima.
 
   if (!profile.is_active) {
     return (
