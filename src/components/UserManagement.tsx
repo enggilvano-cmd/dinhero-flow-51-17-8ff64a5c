@@ -10,7 +10,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { Users, UserPlus, Shield, Activity, Trash2, Settings } from 'lucide-react';
+import { Users, Shield, Activity, Trash2 } from 'lucide-react';
 
 interface Profile {
   id: string;
@@ -60,7 +60,13 @@ export function UserManagement() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setUsers(data || []);
+      setUsers((data || []).map(user => ({
+        ...user,
+        full_name: user.full_name ?? undefined,
+        avatar_url: user.avatar_url ?? undefined,
+        whatsapp: user.whatsapp ?? undefined,
+        trial_expires_at: user.trial_expires_at ?? undefined,
+      })));
     } catch (error) {
       console.error('Error fetching users:', error);
       toast({
@@ -77,13 +83,7 @@ export function UserManagement() {
     try {
       const { data, error } = await supabase
         .from('audit_logs')
-        .select(`
-          *,
-          profiles (
-            email,
-            full_name
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false })
         .limit(100);
 
@@ -91,7 +91,11 @@ export function UserManagement() {
         console.error('Error fetching audit logs:', error);
         return;
       }
-      setAuditLogs(data || []);
+      setAuditLogs((data || []).map(log => ({
+        ...log,
+        user_id: log.user_id || '',
+        profiles: undefined,
+      })));
     } catch (error) {
       console.error('Error fetching audit logs:', error);
       toast({
@@ -121,7 +125,7 @@ export function UserManagement() {
       // Log the activity
       try {
         await supabase.rpc('log_user_activity', {
-          p_user_id: profile?.user_id,
+          p_user_id: profile?.user_id || '',
           p_action: 'user_role_updated',
           p_resource_type: 'profile',
           p_resource_id: userId,
@@ -140,11 +144,11 @@ export function UserManagement() {
         title: 'Sucesso',
         description: 'Função do usuário atualizada com sucesso.',
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating user role:', error);
       toast({
         title: 'Erro',
-        description: `Não foi possível atualizar a função do usuário: ${error.message}`,
+        description: `Não foi possível atualizar a função do usuário: ${error?.message || 'Erro desconhecido'}`,
         variant: 'destructive',
       });
     }
@@ -161,7 +165,7 @@ export function UserManagement() {
 
       // Log the activity
       await supabase.rpc('log_user_activity', {
-        p_user_id: profile?.user_id,
+        p_user_id: profile?.user_id || '',
         p_action: isActive ? 'user_activated' : 'user_deactivated',
         p_resource_type: 'profile',
         p_resource_id: userId
@@ -189,7 +193,7 @@ export function UserManagement() {
     try {
       // Log the activity before deletion
       await supabase.rpc('log_user_activity', {
-        p_user_id: profile?.user_id,
+        p_user_id: profile?.user_id || '',
         p_action: 'user_deleted',
         p_resource_type: 'profile',
         p_resource_id: userId

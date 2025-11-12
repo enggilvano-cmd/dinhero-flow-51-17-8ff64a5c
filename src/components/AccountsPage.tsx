@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -25,7 +25,6 @@ import {
 import { useToast } from "@/hooks/use-toast";
 // 1. IMPORTAR O STORE
 import { useAccountStore } from "@/stores/AccountStore";
-import { Account } from "@/types"; // Importar o tipo
 
 interface AccountsPageProps {
   // 2. REMOVER 'accounts' DAS PROPS
@@ -379,14 +378,14 @@ export function AccountsPage({
                     </div>
 
                     {/* Informações do Limite - Layout responsivo */}
-                    {account.limit_amount > 0 && (
+                    {account.limit_amount && account.limit_amount > 0 && (
                       <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
                         <div className="flex items-center justify-between sm:justify-start gap-2">
                           <span className="text-xs sm:text-sm text-muted-foreground">
                             Limite:
                           </span>
                           <span className="text-xs sm:text-sm font-medium">
-                            {formatCents(account.limit_amount)}
+                            {formatCents(account.limit_amount || 0)}
                           </span>
                         </div>
 
@@ -404,11 +403,11 @@ export function AccountsPage({
                                   Math.max(
                                     account.type === "credit"
                                       ? (Math.abs(account.balance) /
-                                          account.limit_amount) *
+                                          (account.limit_amount || 1)) *
                                         100
                                       : account.balance < 0
                                       ? (Math.abs(account.balance) /
-                                          account.limit_amount) *
+                                          (account.limit_amount || 1)) *
                                         100
                                       : 0,
                                     0
@@ -422,11 +421,11 @@ export function AccountsPage({
                             {Math.round(
                               account.type === "credit"
                                 ? (Math.abs(account.balance) /
-                                    account.limit_amount) *
+                                    (account.limit_amount || 1)) *
                                   100
                                 : account.balance < 0
                                 ? (Math.abs(account.balance) /
-                                    account.limit_amount) *
+                                    (account.limit_amount || 1)) *
                                   100
                                 : 0
                             )}

@@ -7,10 +7,10 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Upload, FileSpreadsheet, AlertCircle, CheckCircle2, X, MoreVertical, Copy, AlertTriangle, PlusCircle } from "lucide-react";
+import { Upload, FileSpreadsheet, AlertCircle, MoreVertical, Copy, AlertTriangle, PlusCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import * as XLSX from 'xlsx';
-import { format, parse, isValid } from "date-fns";
+import { parse, isValid } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 interface Account {
@@ -227,9 +227,9 @@ export function ImportTransactionsModal({
       isValid,
       errors,
       accountId: accountId,
-      parsedDate,
-      parsedType,
-      parsedStatus,
+      parsedDate: parsedDate || undefined,
+      parsedType: parsedType || undefined,
+      parsedStatus: parsedStatus || undefined,
       isDuplicate,
       existingTransactionId,
       resolution: isDuplicate ? 'skip' : 'add',
@@ -270,7 +270,7 @@ export function ImportTransactionsModal({
       }
 
       // Validar cada transação
-      const validatedData = rawData.map((row, index) => {
+      const validatedData = rawData.map((row) => {
         return validateAndCheckDuplicate(row);
       });
 
@@ -338,6 +338,12 @@ export function ImportTransactionsModal({
     setFile(null);
     setImportedData([]);
     onOpenChange(false);
+  };
+
+  const handleResolutionChange = (rowIndex: number, resolution: 'skip' | 'add' | 'replace') => {
+    setImportedData(prev => prev.map((row, idx) => 
+      idx === rowIndex ? { ...row, resolution } : row
+    ));
   };
 
   const downloadTemplate = () => {
