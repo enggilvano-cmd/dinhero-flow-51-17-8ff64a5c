@@ -257,7 +257,7 @@ export function AddTransactionModal({
 
             // No cartão, a primeira parcela afeta o saldo se a data for hoje ou no passado.
             // As demais são sempre pendentes para aparecerem nas faturas futuras.
-            const installmentStatus = (i === 0 && installmentDateStr <= todayStr) ? "completed" : "pending";
+            const installmentStatus: "completed" | "pending" = (i === 0 && installmentDateStr <= todayStr) ? "completed" : "pending";
 
             const transaction = {
               description: `${description} (${i + 1}/${installments})`,
@@ -270,7 +270,7 @@ export function AddTransactionModal({
               status: installmentStatus,
               installments: installments,
               currentInstallment: i + 1,
-              parentTransactionId: null,
+              parentTransactionId: undefined,
             };
             transactionsToCreate.push(transaction);
           }
@@ -288,7 +288,7 @@ export function AddTransactionModal({
             const installmentDateStr = installmentDate.toISOString().split("T")[0];
 
             // Para contas comuns, seguimos a mesma regra de status
-            const installmentStatus =
+            const installmentStatus: "completed" | "pending" =
               i === 0 && installmentDateStr <= todayStr ? status : "pending";
 
             const transaction = {
@@ -301,7 +301,7 @@ export function AddTransactionModal({
               status: installmentStatus,
               installments: installments,
               currentInstallment: i + 1,
-              parentTransactionId: null,
+              parentTransactionId: undefined,
             };
             transactionsToCreate.push(transaction);
           }
@@ -363,9 +363,19 @@ export function AddTransactionModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Adicionar Nova Transação</DialogTitle>
+          <DialogTitle>
+            {initialType === "income" 
+              ? "Adicionar Receita" 
+              : initialType === "expense" 
+              ? "Adicionar Despesa" 
+              : "Adicionar Nova Transação"}
+          </DialogTitle>
           <DialogDescription>
-            Registre uma nova receita ou despesa, com opção de parcelamento.
+            {initialType === "income" 
+              ? "Registre uma nova receita" 
+              : initialType === "expense" 
+              ? "Registre uma nova despesa, com opção de parcelamento" 
+              : "Registre uma nova receita ou despesa, com opção de parcelamento"}
           </DialogDescription>
         </DialogHeader>
 
@@ -394,8 +404,9 @@ export function AddTransactionModal({
                     category_id: "",
                   }))
                 }
+                disabled={!!initialType}
               >
-                <SelectTrigger>
+                <SelectTrigger disabled={!!initialType}>
                   <SelectValue placeholder="Tipo" />
                 </SelectTrigger>
                 <SelectContent>
