@@ -24,7 +24,6 @@ import { useTransactionStore, AppTransaction } from "@/stores/TransactionStore";
 import { calculateBillDetails, calculateInvoiceMonthByDue } from "@/lib/dateUtils";
 import { CreditCardBillCard } from "@/components/CreditCardBillCard";
 import { CreditBillDetailsModal } from "@/components/CreditBillDetailsModal";
-import { InvoiceMonthDebugger } from "@/components/InvoiceMonthDebugger";
 import { Account } from "@/types";
 import { cn } from "@/lib/utils";
 import { format, addMonths, isPast } from "date-fns";
@@ -504,9 +503,6 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
           onClose={() => setSelectedBillForDetails(null)}
         />
       )}
-
-      {/* Debug Invoice Month - Remover em produção */}
-      <InvoiceMonthDebugger />
     </div>
   );
 }
