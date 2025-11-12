@@ -527,8 +527,12 @@ const PlaniFlowApp = () => {
           category_id: updatedTransaction.category_id,
           account_id: updatedTransaction.account_id,
           status: updatedTransaction.status || "completed",
-          invoice_month: updatedTransaction.invoice_month || null,
-          invoice_month_overridden: updatedTransaction.invoice_month ? true : false,
+          ...(updatedTransaction.invoice_month !== undefined
+            ? {
+                invoice_month: updatedTransaction.invoice_month || null,
+                invoice_month_overridden: updatedTransaction.invoice_month ? true : false,
+              }
+            : {}),
         };
 
         const { error } = await supabase
@@ -604,14 +608,25 @@ const PlaniFlowApp = () => {
       const cleanTransactionData = {
         description: updatedTransaction.description,
         amount: updatedTransaction.amount,
+        // Aplicar a nova data para todas as parcelas conforme o escopo
+        date:
+          typeof updatedTransaction.date === "string"
+            ? updatedTransaction.date
+            : updatedTransaction.date.toISOString().split("T")[0],
         type: updatedTransaction.type,
         category_id: updatedTransaction.category_id,
         account_id: updatedTransaction.account_id,
         status: updatedTransaction.status,
-        invoice_month: updatedTransaction.invoice_month || null,
-        invoice_month_overridden: updatedTransaction.invoice_month ? true : false,
+        ...(updatedTransaction.invoice_month !== undefined
+          ? {
+              invoice_month: updatedTransaction.invoice_month || null,
+              invoice_month_overridden: updatedTransaction.invoice_month ? true : false,
+            }
+          : {}),
       };
 
+      // Evitar duplicar o sufixo (x/y) ao propagar a descrição
+      const baseDescription = cleanTransactionData.description.replace(/\s*\(\d+\/\d+\)\s*$/, "");
 
       let queryBuilder = supabase
         .from("transactions")
@@ -635,7 +650,7 @@ const PlaniFlowApp = () => {
       const updates = targetTransactions.map((transaction) => {
         const updatedData = {
           ...cleanTransactionData,
-          description: `${cleanTransactionData.description} (${transaction.current_installment}/${transaction.installments})`,
+          description: `${baseDescription} (${transaction.current_installment}/${transaction.installments})`,
         };
         return supabase
           .from("transactions")

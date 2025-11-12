@@ -54,22 +54,8 @@ export function EditTransactionModal({
       
       const transactionType = transaction.type === "transfer" ? "expense" : transaction.type;
       
-      // Calcula o mês da fatura baseado na data de fechamento se for cartão de crédito
-      let defaultInvoiceMonth = "";
-      const currentAccount = accounts.find(acc => acc.id === transaction.account_id);
-      if (currentAccount && currentAccount.type === "credit" && currentAccount.closing_date) {
-        const today = new Date();
-        const currentDay = today.getDate();
-        const closingDay = currentAccount.closing_date;
-        
-        // Se hoje é depois do dia de fechamento, a fatura é do próximo mês
-        let invoiceDate = new Date(today);
-        if (currentDay > closingDay) {
-          invoiceDate.setMonth(invoiceDate.getMonth() + 1);
-        }
-        
-        defaultInvoiceMonth = `${invoiceDate.getFullYear()}-${String(invoiceDate.getMonth() + 1).padStart(2, '0')}`;
-      }
+      // NÃO definir mês da fatura por padrão ao editar
+      // Para evitar overrides involuntários, só setamos invoiceMonth se já houver override manual
       
       setFormData({
         description: transaction.description,
@@ -86,7 +72,7 @@ export function EditTransactionModal({
         category_id: transaction.category_id,
         account_id: transaction.account_id,
         status: transaction.status,
-        invoiceMonth: transaction.invoice_month || defaultInvoiceMonth,
+        invoiceMonth: transaction.invoice_month_overridden ? (transaction.invoice_month || "") : "",
       });
     }
   }, [open, transaction, accounts]); // Depender do objeto 'transaction' é seguro aqui
