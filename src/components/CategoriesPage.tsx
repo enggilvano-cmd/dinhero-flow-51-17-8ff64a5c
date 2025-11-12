@@ -6,13 +6,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Plus, Edit, Trash2, Search, Tag, TrendingUp, TrendingDown, ArrowUpDown } from "lucide-react";
+import { Plus, Edit, Trash2, Search, Tag, TrendingUp, TrendingDown, ArrowUpDown, FileDown, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { AddCategoryModal } from "@/components/AddCategoryModal";
 import { EditCategoryModal } from "@/components/EditCategoryModal";
+import { ImportCategoriesModal } from "@/components/ImportCategoriesModal";
 import { useChartResponsive } from "@/hooks/useChartResponsive";
+import * as XLSX from 'xlsx';
 
 interface CategoriesPageProps {}
 
@@ -23,6 +25,7 @@ export function CategoriesPage({}: CategoriesPageProps) {
   const [filterType, setFilterType] = useState<"all" | "income" | "expense" | "both">("all");
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [importModalOpen, setImportModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
@@ -195,6 +198,100 @@ export function CategoriesPage({}: CategoriesPageProps) {
     setEditModalOpen(true);
   };
 
+  const handleImportCategories = async (categoriesToAdd: any[], categoriesToReplaceIds: string[]) => {
+    if (!user) return;
+
+    try {
+      // Deletar categorias que serão substituídas
+      if (categoriesToReplaceIds.length > 0) {
+        const { error: deleteError } = await supabase
+          .from('categories')
+          .delete()
+          .in('id', categoriesToReplaceIds)
+          .eq('user_id', user.id);
+
+        if (deleteError) {
+          console.error('Error deleting categories:', deleteError);
+          toast({
+            title: "Erro",
+            description: "Erro ao substituir categorias.",
+            variant: "destructive"
+          });
+          return;
+        }
+      }
+
+      // Inserir novas categorias
+      if (categoriesToAdd.length > 0) {
+        const { data, error } = await supabase
+          .from('categories')
+          .insert(categoriesToAdd.map(cat => ({
+            ...cat,
+            user_id: user.id
+          })))
+          .select();
+
+        if (error) {
+          console.error('Error importing categories:', error);
+          toast({
+            title: "Erro",
+            description: "Erro ao importar categorias.",
+            variant: "destructive"
+          });
+          return;
+        }
+
+        // Atualizar lista local
+        setCategories(prev => {
+          const filtered = prev.filter(cat => !categoriesToReplaceIds.includes(cat.id));
+          return [...filtered, ...(data || [])];
+        });
+
+        toast({
+          title: "Sucesso",
+          description: `${categoriesToAdd.length} categorias importadas com sucesso!`,
+        });
+      }
+    } catch (error) {
+      console.error('Error importing categories:', error);
+      toast({
+        title: "Erro",
+        description: "Erro inesperado ao importar categorias.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const exportToExcel = () => {
+    const dataToExport = filteredCategories.map((category) => ({
+      Nome: category.name,
+      Tipo: getTypeLabel(category.type),
+      Cor: category.color,
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(dataToExport);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Categorias");
+
+    const colWidths = [
+      { wch: 30 }, // Nome
+      { wch: 15 }, // Tipo
+      { wch: 15 }, // Cor
+    ];
+    ws['!cols'] = colWidths;
+
+    let fileName = "categorias";
+    if (filterType !== "all") fileName += `_${filterType}`;
+    fileName += ".xlsx";
+
+    XLSX.writeFile(wb, fileName);
+
+    toast({
+      title: "Exportação concluída",
+      description: `${filteredCategories.length} categorias exportadas para Excel.`,
+    });
+  };
+
   const filteredCategories = categories.filter(category => {
     const matchesSearch = category.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = filterType === "all" || category.type === filterType;
@@ -255,10 +352,29 @@ export function CategoriesPage({}: CategoriesPageProps) {
             Gerencie as categorias das suas transações
           </p>
         </div>
-        <Button onClick={() => setAddModalOpen(true)} className="gap-2 apple-interaction">
-          <Plus className="h-4 w-4" />
-          <span>{isMobile ? "Nova" : "Nova Categoria"}</span>
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            onClick={exportToExcel}
+            className="gap-2 apple-interaction"
+            disabled={categories.length === 0}
+          >
+            <FileDown className="h-4 w-4" />
+            <span className="hidden sm:inline">Exportar</span>
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={() => setImportModalOpen(true)}
+            className="gap-2 apple-interaction"
+          >
+            <Upload className="h-4 w-4" />
+            <span className="hidden sm:inline">Importar</span>
+          </Button>
+          <Button onClick={() => setAddModalOpen(true)} className="gap-2 apple-interaction">
+            <Plus className="h-4 w-4" />
+            <span>{isMobile ? "Nova" : "Nova Categoria"}</span>
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -468,6 +584,13 @@ export function CategoriesPage({}: CategoriesPageProps) {
         onOpenChange={setEditModalOpen}
         onEditCategory={handleEditCategory}
         category={editingCategory}
+      />
+
+      <ImportCategoriesModal
+        open={importModalOpen}
+        onOpenChange={setImportModalOpen}
+        categories={categories}
+        onImportCategories={handleImportCategories}
       />
     </div>
   );
