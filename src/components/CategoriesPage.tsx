@@ -13,7 +13,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { AddCategoryModal } from "@/components/AddCategoryModal";
 import { EditCategoryModal } from "@/components/EditCategoryModal";
 import { ImportCategoriesModal } from "@/components/ImportCategoriesModal";
-import { useChartResponsive } from "@/hooks/useChartResponsive";
 import * as XLSX from 'xlsx';
 
 interface CategoriesPageProps {}
@@ -29,7 +28,6 @@ export function CategoriesPage({}: CategoriesPageProps) {
   const [editingCategory, setEditingCategory] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  const { isMobile } = useChartResponsive();
 
   useEffect(() => {
     if (!user) return;
@@ -352,27 +350,27 @@ export function CategoriesPage({}: CategoriesPageProps) {
             Gerencie as categorias das suas transações
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="grid grid-cols-2 gap-2 w-full sm:flex sm:flex-wrap sm:gap-2 sm:w-auto">
           <Button 
             variant="outline" 
             onClick={exportToExcel}
-            className="gap-2 apple-interaction"
+            className="gap-2 apple-interaction h-9 text-xs sm:text-sm sm:flex-1 sm:flex-none"
             disabled={categories.length === 0}
           >
-            <FileDown className="h-4 w-4" />
-            <span className="hidden sm:inline">Exportar</span>
+            <FileDown className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <span>Exportar</span>
           </Button>
           <Button 
             variant="outline" 
             onClick={() => setImportModalOpen(true)}
-            className="gap-2 apple-interaction"
+            className="gap-2 apple-interaction h-9 text-xs sm:text-sm sm:flex-1 sm:flex-none"
           >
-            <Upload className="h-4 w-4" />
-            <span className="hidden sm:inline">Importar</span>
+            <Upload className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <span>Importar</span>
           </Button>
-          <Button onClick={() => setAddModalOpen(true)} className="gap-2 apple-interaction">
-            <Plus className="h-4 w-4" />
-            <span>{isMobile ? "Nova" : "Nova Categoria"}</span>
+          <Button onClick={() => setAddModalOpen(true)} className="gap-2 apple-interaction h-9 text-xs sm:text-sm sm:flex-1 sm:flex-none col-span-2 sm:col-span-1">
+            <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <span>Nova Categoria</span>
           </Button>
         </div>
       </div>
