@@ -17,17 +17,17 @@ function createFallbackDate(invalidInput?: any): Date {
 /**
  * Calcula o mês de fatura (YYYY-MM) baseado na DATA DA COMPRA e DIA DE FECHAMENTO.
  * 
- * Regra: Uma compra feita ANTES ou NO dia do fechamento entra na fatura que vence no mesmo mês.
- *        Uma compra feita DEPOIS do fechamento entra na fatura que vence no mês seguinte.
+ * Regra: O mês da fatura é o mês de VENCIMENTO, não de fechamento.
+ *        Normalmente a fatura vence alguns dias APÓS o fechamento.
  * 
- * Exemplo: Fechamento dia 8
- * - Compra em 07/11 → Fatura de nov/2025 → invoice_month = "2025-11"
- * - Compra em 09/11 → Fatura de dez/2025 → invoice_month = "2025-12"
+ * Exemplo: Fechamento dia 30, Vencimento dia 10
+ * - Compra em 12/11 → Fecha em 30/11 → Vence em 10/12 → Mês da fatura = "2025-12" (dezembro)
+ * - Compra em 05/12 → Fecha em 30/12 → Vence em 10/01 → Mês da fatura = "2026-01" (janeiro)
  */
 export function calculateInvoiceMonthByDue(
   transactionDate: Date,
   closingDate: number,
-  _dueDate?: number // Mantém compatibilidade mas não usa
+  dueDate: number = 10 // Dia de vencimento padrão
 ): string {
   // Normaliza a data da transação para UTC meio-dia
   const txDate = new Date(Date.UTC(
@@ -41,30 +41,52 @@ export function calculateInvoiceMonthByDue(
   const txMonth = txDate.getUTCMonth();
   const txYear = txDate.getUTCFullYear();
 
-  // Determina se a compra entra na fatura do mês corrente ou do próximo
+  // Determina o mês de FECHAMENTO da fatura
+  let closingMonth: number;
+  let closingYear: number;
+
+  if (txDay <= closingDate) {
+    // Compra ANTES ou NO dia do fechamento → fecha no mês corrente
+    closingMonth = txMonth;
+    closingYear = txYear;
+  } else {
+    // Compra DEPOIS do fechamento → fecha no próximo mês
+    closingMonth = txMonth + 1;
+    closingYear = txYear;
+    
+    // Ajusta ano se necessário
+    if (closingMonth > 11) {
+      closingMonth = 0;
+      closingYear++;
+    }
+  }
+
+  // Calcula o mês de VENCIMENTO (que é o "mês da fatura")
+  // Se vencimento <= fechamento, vence no mês seguinte ao fechamento
+  // Se vencimento > fechamento, vence no mesmo mês do fechamento
   let invoiceMonth: number;
   let invoiceYear: number;
 
-  if (txDay <= closingDate) {
-    // Compra ANTES ou NO dia do fechamento → fatura do mês corrente
-    invoiceMonth = txMonth;
-    invoiceYear = txYear;
-    console.log(`[calculateInvoiceMonthByDue] Compra ${txDay}/${txMonth+1}/${txYear} ANTES/NO fechamento (${closingDate}) → Fatura ${txYear}-${String(txMonth + 1).padStart(2, '0')}`);
-  } else {
-    // Compra DEPOIS do fechamento → fatura do próximo mês
-    invoiceMonth = txMonth + 1;
-    invoiceYear = txYear;
+  if (dueDate <= closingDate) {
+    // Vence no mês seguinte ao fechamento
+    invoiceMonth = closingMonth + 1;
+    invoiceYear = closingYear;
     
-    // Ajusta ano se necessário
     if (invoiceMonth > 11) {
       invoiceMonth = 0;
       invoiceYear++;
     }
-    console.log(`[calculateInvoiceMonthByDue] Compra ${txDay}/${txMonth+1}/${txYear} DEPOIS fechamento (${closingDate}) → Fatura ${invoiceYear}-${String(invoiceMonth + 1).padStart(2, '0')}`);
+  } else {
+    // Vence no mesmo mês do fechamento (caso raro)
+    invoiceMonth = closingMonth;
+    invoiceYear = closingYear;
   }
 
-  // Retorna o mês da fatura no formato YYYY-MM
-  return `${invoiceYear}-${String(invoiceMonth + 1).padStart(2, '0')}`;
+  const result = `${invoiceYear}-${String(invoiceMonth + 1).padStart(2, '0')}`;
+  
+  console.info(`[calculateInvoiceMonthByDue] Compra ${format(txDate, 'dd/MM/yyyy')} | Fecha ${closingDate}/${closingMonth+1} | Vence ${dueDate}/${invoiceMonth+1} → Fatura ${result}`);
+
+  return result;
 }
 
 /**
