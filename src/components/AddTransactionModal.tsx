@@ -144,6 +144,9 @@ export function AddTransactionModal({
     if (initialAccountType === "credit") {
       return accounts.filter((acc) => acc.type === "credit");
     }
+    if (initialAccountType === "checking") {
+      return accounts.filter((acc) => acc.type !== "credit");
+    }
     return accounts;
   }, [accounts, initialAccountType]);
 

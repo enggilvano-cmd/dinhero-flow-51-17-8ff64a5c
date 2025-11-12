@@ -1155,13 +1155,13 @@ const PlaniFlowApp = () => {
             }}
             onAddExpense={() => {
               setTransactionInitialType("expense");
-              setTransactionInitialAccountType("");
+              setTransactionInitialAccountType("checking");
               setTransactionLockType(true);
               setAddTransactionModalOpen(true);
             }}
             onAddIncome={() => {
               setTransactionInitialType("income");
-              setTransactionInitialAccountType("");
+              setTransactionInitialAccountType("checking");
               setTransactionLockType(true);
               setAddTransactionModalOpen(true);
             }}
@@ -1224,13 +1224,13 @@ const PlaniFlowApp = () => {
             }}
             onAddExpense={() => {
               setTransactionInitialType("expense");
-              setTransactionInitialAccountType("");
+              setTransactionInitialAccountType("checking");
               setTransactionLockType(true);
               setAddTransactionModalOpen(true);
             }}
             onAddIncome={() => {
               setTransactionInitialType("income");
-              setTransactionInitialAccountType("");
+              setTransactionInitialAccountType("checking");
               setTransactionLockType(true);
               setAddTransactionModalOpen(true);
             }}
@@ -1301,13 +1301,13 @@ const PlaniFlowApp = () => {
             }}
             onAddExpense={() => {
               setTransactionInitialType("expense");
-              setTransactionInitialAccountType("");
+              setTransactionInitialAccountType("checking");
               setTransactionLockType(true);
               setAddTransactionModalOpen(true);
             }}
             onAddIncome={() => {
               setTransactionInitialType("income");
-              setTransactionInitialAccountType("");
+              setTransactionInitialAccountType("checking");
               setTransactionLockType(true);
               setAddTransactionModalOpen(true);
             }}
