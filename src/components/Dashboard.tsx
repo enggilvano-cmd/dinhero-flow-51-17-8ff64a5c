@@ -444,18 +444,18 @@ export function Dashboard({
   return (
     <div className="space-y-3 sm:space-y-4 fade-in max-w-screen-2xl mx-auto px-2 sm:px-0">
       {/* Header ultra compacto */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div className="min-w-0 w-full sm:w-auto">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div className="min-w-0 w-full md:w-auto">
           <h1 className="text-xl sm:text-2xl font-bold leading-tight">Painel</h1>
           <p className="text-sm text-muted-foreground leading-tight">
             Visão geral das suas finanças
           </p>
         </div>
-        <div className="grid grid-cols-2 gap-2 w-full sm:flex sm:flex-wrap sm:gap-2 sm:w-auto">
+        <div className="grid grid-cols-2 gap-2 w-full md:flex md:flex-nowrap md:gap-2 md:w-auto">
           <Button
             onClick={onTransfer}
             variant="outline"
-            className="gap-2 apple-interaction h-9 text-xs sm:text-sm sm:flex-1 sm:flex-none"
+            className="gap-2 apple-interaction h-9 text-xs sm:text-sm"
           >
             <ArrowRightLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             <span>Transferir</span>
@@ -463,7 +463,7 @@ export function Dashboard({
           <Button
             onClick={onAddExpense || onAddTransaction}
             variant="destructive"
-            className="gap-2 apple-interaction h-9 text-xs sm:text-sm sm:flex-1 sm:flex-none"
+            className="gap-2 apple-interaction h-9 text-xs sm:text-sm"
           >
             <TrendingDown className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             <span>Despesa</span>
@@ -471,7 +471,7 @@ export function Dashboard({
           <Button
             onClick={onAddIncome || onAddTransaction}
             variant="default"
-            className="gap-2 apple-interaction h-9 text-xs sm:text-sm bg-success hover:bg-success/90 sm:flex-1 sm:flex-none"
+            className="gap-2 apple-interaction h-9 text-xs sm:text-sm bg-success hover:bg-success/90"
           >
             <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             <span>Receita</span>
@@ -479,7 +479,7 @@ export function Dashboard({
           <Button
             onClick={onAddCreditExpense || onAddTransaction}
             variant="outline"
-            className="gap-2 apple-interaction h-9 text-xs sm:text-sm border-warning text-warning hover:bg-warning hover:text-warning-foreground sm:flex-1 sm:flex-none"
+            className="gap-2 apple-interaction h-9 text-xs sm:text-sm border-warning text-warning hover:bg-warning hover:text-warning-foreground"
           >
             <CreditCard className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             <span>Cartão</span>
