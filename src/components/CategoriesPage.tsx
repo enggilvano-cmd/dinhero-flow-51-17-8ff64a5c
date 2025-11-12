@@ -506,17 +506,17 @@ export function CategoriesPage({}: CategoriesPageProps) {
           filteredCategories.map((category) => (
             <Card key={category.id} className="financial-card apple-interaction group">
               <CardHeader className="pb-3">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-3">
                     <div 
                       className="w-4 h-4 rounded-full flex-shrink-0"
                       style={{ backgroundColor: category.color }}
                     />
-                    <CardTitle className="text-headline truncate">{category.name}</CardTitle>
+                    <CardTitle className="text-headline">{category.name}</CardTitle>
                   </div>
-                  <Badge variant={getTypeVariant(category.type)} className="gap-1 flex-shrink-0">
+                  <Badge variant={getTypeVariant(category.type)} className="gap-1 w-fit">
                     {getTypeIcon(category.type)}
-                    <span className="hidden sm:inline">{getTypeLabel(category.type)}</span>
+                    <span>{getTypeLabel(category.type)}</span>
                   </Badge>
                 </div>
               </CardHeader>
@@ -532,14 +532,14 @@ export function CategoriesPage({}: CategoriesPageProps) {
                     className="gap-1 touch-target apple-interaction flex-1 sm:flex-initial"
                   >
                     <Edit className="h-3 w-3" />
-                    <span className="hidden sm:inline">Editar</span>
+                    <span className="sm:inline">Editar</span>
                   </Button>
                   
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button variant="outline" size="sm" className="gap-1 touch-target text-destructive hover:text-destructive flex-1 sm:flex-initial">
                         <Trash2 className="h-3 w-3" />
-                        <span className="hidden sm:inline">Excluir</span>
+                        <span className="sm:inline">Excluir</span>
                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
