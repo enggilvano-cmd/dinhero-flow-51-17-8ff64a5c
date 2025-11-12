@@ -451,22 +451,21 @@ export function Dashboard({
             Visão geral das suas finanças
           </p>
         </div>
-        <div className="flex gap-2 w-full sm:w-auto flex-wrap sm:flex-nowrap">
+        <div className="grid grid-cols-2 gap-2 w-full sm:max-w-md">
           <Button
             onClick={onTransfer}
             variant="outline"
             size="sm"
-            className="gap-1.5 h-8 flex-1 sm:flex-none text-xs sm:text-sm"
+            className="gap-1.5 h-9 text-xs sm:text-sm"
           >
             <ArrowRightLeft className="h-3.5 w-3.5" />
-            <span className="hidden xs:inline">Transferir</span>
-            <span className="xs:hidden">Transfer</span>
+            <span>Transferir</span>
           </Button>
           <Button
             onClick={onAddExpense || onAddTransaction}
             variant="destructive"
             size="sm"
-            className="gap-1.5 h-8 flex-1 sm:flex-none text-xs sm:text-sm"
+            className="gap-1.5 h-9 text-xs sm:text-sm"
           >
             <TrendingDown className="h-3.5 w-3.5" />
             <span>Despesa</span>
@@ -475,7 +474,7 @@ export function Dashboard({
             onClick={onAddIncome || onAddTransaction}
             variant="default"
             size="sm"
-            className="gap-1.5 h-8 flex-1 sm:flex-none text-xs sm:text-sm bg-success hover:bg-success/90"
+            className="gap-1.5 h-9 text-xs sm:text-sm bg-success hover:bg-success/90"
           >
             <TrendingUp className="h-3.5 w-3.5" />
             <span>Receita</span>
@@ -484,11 +483,10 @@ export function Dashboard({
             onClick={onAddCreditExpense || onAddTransaction}
             variant="outline"
             size="sm"
-            className="gap-1.5 h-8 flex-1 sm:flex-none text-xs sm:text-sm border-warning text-warning hover:bg-warning hover:text-warning-foreground"
+            className="gap-1.5 h-9 text-xs sm:text-sm border-warning text-warning hover:bg-warning hover:text-warning-foreground"
           >
             <CreditCard className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Cartão</span>
-            <span className="sm:hidden">Cart</span>
+            <span>Cartão</span>
           </Button>
         </div>
       </div>
