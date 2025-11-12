@@ -309,8 +309,8 @@ export function AccountsPage({
       {/* Filters */}
       <Card>
         <CardContent className="p-2 sm:p-3">
-          <div className="flex flex-col gap-4 sm:flex-row">
-            <div className="flex-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="lg:col-span-2">
               <Label htmlFor="search" className="text-caption">Buscar contas</Label>
               <div className="relative mt-2">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -323,10 +323,10 @@ export function AccountsPage({
                 />
               </div>
             </div>
-            <div className="sm:w-48">
+            <div>
               <Label htmlFor="filter" className="text-caption">Filtrar por tipo</Label>
               <Select value={filterType} onValueChange={(value: any) => setFilterType(value)}>
-                <SelectTrigger className="touch-target mt-2">
+                <SelectTrigger id="filter" className="touch-target mt-2">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
