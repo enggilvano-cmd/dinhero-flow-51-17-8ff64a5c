@@ -4,8 +4,7 @@ import { Progress } from "@/components/ui/progress";
 import { Account, AppTransaction } from "@/types"; // Importa AppTransaction
 import { CreditCard, RotateCcw, FileText } from "lucide-react"; // Importa RotateCcw e FileText
 import { cn } from "@/lib/utils";
-import { format, isPast } from 'date-fns';
-import { ptBR } from 'date-fns/locale'; 
+import { isPast } from 'date-fns';
 import { Badge } from "@/components/ui/badge";
 
 // Helper para formatar moeda
@@ -147,7 +146,16 @@ export function CreditCardBillCard({
           
         <Button 
           className="flex-1" 
-          onClick={onPayBill} 
+          onClick={() => {
+            console.log('DEBUG: Botão Pagar Fatura clicado', { 
+              account: account.name, 
+              isFullyPaid, 
+              currentBillAmount, 
+              totalBalance,
+              canClickButton: !isFullyPaid
+            });
+            onPayBill();
+          }} 
           disabled={isFullyPaid}
         >
           {isBillPaid && !isFullyPaid ? "Pagar Avulso" : "Pagar Fatura"}

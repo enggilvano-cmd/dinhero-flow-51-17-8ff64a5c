@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { Account } from "@/types";
-import { createDateFromString, getTodayString } from "@/lib/dateUtils";
+import { getTodayString } from "@/lib/dateUtils";
 import { getAvailableBalance } from "@/lib/formatters"; // Remove formatCurrency se não for usado
 import { AccountBalanceDetails } from "./AccountBalanceDetails";
 import { useAccountStore } from "@/stores/AccountStore";
