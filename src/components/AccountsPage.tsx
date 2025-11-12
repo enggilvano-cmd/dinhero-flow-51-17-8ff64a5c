@@ -3,6 +3,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Plus,
   Search,
@@ -304,37 +306,41 @@ export function AccountsPage({
         </Card>
       </div>
 
-      {/* Filtros - Layout compacto */}
-      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar contas..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 h-10"
-          />
-        </div>
-        <div className="flex gap-2 flex-wrap sm:flex-nowrap">
-          {[
-            { value: "all", label: "Todas" },
-            { value: "checking", label: "Corrente" },
-            { value: "savings", label: "Poupança" },
-            { value: "credit", label: "Cartão" },
-            { value: "investment", label: "Investimento" },
-          ].map((filter) => (
-            <Button
-              key={filter.value}
-              variant={filterType === filter.value ? "default" : "outline"}
-              size="sm"
-              onClick={() => setFilterType(filter.value as any)}
-              className="apple-interaction h-10 whitespace-nowrap"
-            >
-              {filter.label}
-            </Button>
-          ))}
-        </div>
-      </div>
+      {/* Filters */}
+      <Card>
+        <CardContent className="p-2 sm:p-3">
+          <div className="flex flex-col gap-4 sm:flex-row">
+            <div className="flex-1">
+              <Label htmlFor="search" className="text-caption">Buscar contas</Label>
+              <div className="relative mt-2">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="search"
+                  placeholder="Digite o nome da conta..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 touch-target"
+                />
+              </div>
+            </div>
+            <div className="sm:w-48">
+              <Label htmlFor="filter" className="text-caption">Filtrar por tipo</Label>
+              <Select value={filterType} onValueChange={(value: any) => setFilterType(value)}>
+                <SelectTrigger className="touch-target mt-2">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas</SelectItem>
+                  <SelectItem value="checking">Conta Corrente</SelectItem>
+                  <SelectItem value="savings">Poupança</SelectItem>
+                  <SelectItem value="credit">Cartão de Crédito</SelectItem>
+                  <SelectItem value="investment">Investimento</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Accounts Grid */}
       {filteredAccounts.length === 0 ? (
