@@ -17,7 +17,8 @@ export function CreditBillDetailsModal({ bill, onClose }: CreditBillDetailsModal
   const paidAmount = bill.paid_amount
   const remainingAmount = bill.total_amount - paidAmount
   const isClosed = isPast(new Date(bill.closing_date))
-  const isPaid = remainingAmount <= 0
+  const amountDue = Math.max(0, bill.total_amount)
+  const isPaid = isClosed && paidAmount >= amountDue
 
   return (
     <Dialog open={!!bill} onOpenChange={(open) => !open && onClose()}>

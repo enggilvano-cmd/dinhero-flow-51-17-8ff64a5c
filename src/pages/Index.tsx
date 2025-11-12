@@ -1085,18 +1085,11 @@ const PlaniFlowApp = () => {
     nextBill: number,
     totalBalance: number
   ) => {
-    console.log('DEBUG: openCreditPayment chamado', { 
-      account: account.name, 
-      currentBill, 
-      nextBill, 
-      totalBalance 
-    });
     setPayingCreditAccount(account);
     setCurrentInvoiceValue(currentBill);
     setNextInvoiceValue(nextBill);
     setPayingTotalDebt(totalBalance);
     setCreditPaymentModalOpen(true);
-    console.log('DEBUG: Modal deve estar aberto agora');
   };
 
   const renderCurrentPage = () => {

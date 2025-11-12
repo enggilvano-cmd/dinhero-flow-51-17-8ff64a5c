@@ -149,15 +149,7 @@ export function CreditCardBillCard({
         <Button 
           type="button"
           className="flex-1" 
-          onClick={() => {
-            console.log('DEBUG: Botão Pagar Fatura clicado', { 
-              account: account.name, 
-              isFullyPaid, 
-              currentBillAmount, 
-              totalBalance,
-            });
-            onPayBill();
-          }} 
+          onClick={onPayBill} 
         >
           {isBillPaid && !isFullyPaid ? "Pagar Avulso" : "Pagar Fatura"}
         </Button>
