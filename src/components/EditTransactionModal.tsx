@@ -39,7 +39,8 @@ export function EditTransactionModal({
     type: "expense" as "income" | "expense",
     category_id: "",
     account_id: "",
-    status: "completed" as "pending" | "completed"
+    status: "completed" as "pending" | "completed",
+    invoiceMonth: "", // Mês da fatura (YYYY-MM)
   });
   const [scopeDialogOpen, setScopeDialogOpen] = useState(false);
   const { toast } = useToast();
@@ -52,6 +53,23 @@ export function EditTransactionModal({
         transaction.date;
       
       const transactionType = transaction.type === "transfer" ? "expense" : transaction.type;
+      
+      // Calcula o mês da fatura baseado na data de fechamento se for cartão de crédito
+      let defaultInvoiceMonth = "";
+      const currentAccount = accounts.find(acc => acc.id === transaction.account_id);
+      if (currentAccount && currentAccount.type === "credit" && currentAccount.closing_date) {
+        const today = new Date();
+        const currentDay = today.getDate();
+        const closingDay = currentAccount.closing_date;
+        
+        // Se hoje é depois do dia de fechamento, a fatura é do próximo mês
+        let invoiceDate = new Date(today);
+        if (currentDay > closingDay) {
+          invoiceDate.setMonth(invoiceDate.getMonth() + 1);
+        }
+        
+        defaultInvoiceMonth = `${invoiceDate.getFullYear()}-${String(invoiceDate.getMonth() + 1).padStart(2, '0')}`;
+      }
       
       setFormData({
         description: transaction.description,
@@ -67,10 +85,11 @@ export function EditTransactionModal({
         type: transactionType as "income" | "expense",
         category_id: transaction.category_id,
         account_id: transaction.account_id,
-        status: transaction.status
+        status: transaction.status,
+        invoiceMonth: defaultInvoiceMonth,
       });
     }
-  }, [open, transaction]); // Depender do objeto 'transaction' é seguro aqui
+  }, [open, transaction, accounts]); // Depender do objeto 'transaction' é seguro aqui
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -303,6 +322,44 @@ export function EditTransactionModal({
               </SelectContent>
             </Select>
           </div>
+
+          {/* Invoice Month Selection for Credit Cards */}
+          {formData.account_id && 
+           accounts.find(acc => acc.id === formData.account_id)?.type === "credit" && (
+            <div className="space-y-2 border-t pt-4">
+              <Label htmlFor="invoiceMonth">Mês da Fatura</Label>
+              <Select
+                value={formData.invoiceMonth}
+                onValueChange={(value) =>
+                  setFormData((prev) => ({ ...prev, invoiceMonth: value }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o mês" />
+                </SelectTrigger>
+                <SelectContent>
+                  {(() => {
+                    const months = [];
+                    const today = new Date();
+                    for (let i = -2; i <= 12; i++) {
+                      const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+                      const value = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                      const label = date.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+                      months.push(
+                        <SelectItem key={value} value={value}>
+                          {label.charAt(0).toUpperCase() + label.slice(1)}
+                        </SelectItem>
+                      );
+                    }
+                    return months;
+                  })()}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Selecione em qual fatura esta compra será lançada
+              </p>
+            </div>
+          )}
 
           <div className="flex gap-3 pt-4">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
