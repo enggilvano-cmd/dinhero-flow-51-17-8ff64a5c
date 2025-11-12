@@ -514,55 +514,53 @@ export function CategoriesPage({}: CategoriesPageProps) {
                     />
                     <CardTitle className="text-headline truncate">{category.name}</CardTitle>
                   </div>
-                  <Badge variant={getTypeVariant(category.type)} className="gap-1 flex-shrink-0 ml-2">
+                  <Badge variant={getTypeVariant(category.type)} className="gap-1 flex-shrink-0">
                     {getTypeIcon(category.type)}
                     <span className="hidden sm:inline">{getTypeLabel(category.type)}</span>
                   </Badge>
                 </div>
               </CardHeader>
-              <CardContent className="pt-0">
-                <div className="space-y-3">
-                  <p className="text-caption text-muted-foreground">
-                    Criada em {new Date(category.created_at).toLocaleDateString('pt-BR')}
-                  </p>
-                  <div className="flex gap-2 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => openEditModal(category)}
-                      className="gap-1 touch-target apple-interaction flex-1 sm:flex-initial"
-                    >
-                      <Edit className="h-3 w-3" />
-                      <span className="hidden sm:inline">Editar</span>
-                    </Button>
-                    
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="outline" size="sm" className="gap-1 touch-target text-destructive hover:text-destructive flex-1 sm:flex-initial">
-                          <Trash2 className="h-3 w-3" />
-                          <span className="hidden sm:inline">Excluir</span>
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Tem certeza que deseja excluir a categoria "{category.name}"? 
-                            Esta ação não pode ser desfeita.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => handleDeleteCategory(category.id)}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                          >
-                            Excluir
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
+              <CardContent className="pt-0 space-y-3">
+                <p className="text-caption text-muted-foreground">
+                  Criada em {new Date(category.created_at).toLocaleDateString('pt-BR')}
+                </p>
+                <div className="flex gap-2 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => openEditModal(category)}
+                    className="gap-1 touch-target apple-interaction flex-1 sm:flex-initial"
+                  >
+                    <Edit className="h-3 w-3" />
+                    <span className="hidden sm:inline">Editar</span>
+                  </Button>
+                  
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="outline" size="sm" className="gap-1 touch-target text-destructive hover:text-destructive flex-1 sm:flex-initial">
+                        <Trash2 className="h-3 w-3" />
+                        <span className="hidden sm:inline">Excluir</span>
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Tem certeza que deseja excluir a categoria "{category.name}"? 
+                          Esta ação não pode ser desfeita.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => handleDeleteCategory(category.id)}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          Excluir
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               </CardContent>
             </Card>
