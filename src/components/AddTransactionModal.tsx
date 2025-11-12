@@ -51,6 +51,9 @@ interface Account {
   type: "checking" | "savings" | "credit" | "investment";
   balance: number;
   color: string;
+  closing_date?: number;
+  due_date?: number;
+  limit_amount?: number;
 }
 
 interface AddTransactionModalProps {
@@ -89,6 +92,7 @@ export function AddTransactionModal({
     status: "completed" as "pending" | "completed",
     isInstallment: false,
     installments: "2", // Padrão de 2 se parcelado
+    invoiceMonth: "", // Mês da fatura (YYYY-MM)
   });
   const { toast } = useToast();
   const { categories } = useCategories();
@@ -96,6 +100,25 @@ export function AddTransactionModal({
   // Atualiza o tipo inicial quando o modal é aberto e reseta quando fechar
   useEffect(() => {
     if (open) {
+      // Calcula o mês da fatura baseado na data de fechamento
+      let defaultInvoiceMonth = "";
+      if (initialAccountType === "credit" && accounts.length > 0) {
+        const creditAccount = accounts.find(acc => acc.type === "credit");
+        if (creditAccount && creditAccount.closing_date) {
+          const today = new Date();
+          const currentDay = today.getDate();
+          const closingDay = creditAccount.closing_date;
+          
+          // Se hoje é depois do dia de fechamento, a fatura é do próximo mês
+          let invoiceDate = new Date(today);
+          if (currentDay > closingDay) {
+            invoiceDate.setMonth(invoiceDate.getMonth() + 1);
+          }
+          
+          defaultInvoiceMonth = `${invoiceDate.getFullYear()}-${String(invoiceDate.getMonth() + 1).padStart(2, '0')}`;
+        }
+      }
+      
       // Reseta o formulário quando abre
       setFormData({
         description: "",
@@ -107,6 +130,7 @@ export function AddTransactionModal({
         status: "completed",
         isInstallment: false,
         installments: "2",
+        invoiceMonth: defaultInvoiceMonth,
       });
       
       // Pré-seleciona a conta se um tipo de conta foi especificado
@@ -359,6 +383,7 @@ export function AddTransactionModal({
         status: "completed",
         isInstallment: false,
         installments: "2",
+        invoiceMonth: "",
       });
       onOpenChange(false);
     } catch (error) {
@@ -537,6 +562,44 @@ export function AddTransactionModal({
               </Select>
             </div>
           </div>
+
+          {/* Invoice Month Selection for Credit Cards */}
+          {formData.account_id && 
+           accounts.find(acc => acc.id === formData.account_id)?.type === "credit" && (
+            <div className="space-y-2 border-t pt-4">
+              <Label htmlFor="invoiceMonth">Mês da Fatura</Label>
+              <Select
+                value={formData.invoiceMonth}
+                onValueChange={(value) =>
+                  setFormData((prev) => ({ ...prev, invoiceMonth: value }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o mês" />
+                </SelectTrigger>
+                <SelectContent>
+                  {(() => {
+                    const months = [];
+                    const today = new Date();
+                    for (let i = -2; i <= 12; i++) {
+                      const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+                      const value = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                      const label = date.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+                      months.push(
+                        <SelectItem key={value} value={value}>
+                          {label.charAt(0).toUpperCase() + label.slice(1)}
+                        </SelectItem>
+                      );
+                    }
+                    return months;
+                  })()}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Selecione em qual fatura esta compra será lançada
+              </p>
+            </div>
+          )}
 
           {/* Installment Options */}
           <div className="space-y-4 border-t pt-4">
