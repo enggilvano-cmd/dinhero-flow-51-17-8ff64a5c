@@ -43,14 +43,14 @@ export function CreditBillDetailsModal({ bill, onClose }: CreditBillDetailsModal
             Vencimento em {format(new Date(bill.due_date), 'dd/MM/yyyy', { locale: ptBR })} | Fechamento em {format(new Date(bill.closing_date), 'dd/MM/yyyy', { locale: ptBR })}
           </DialogDescription>
         </DialogHeader>
-        <div className="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
+        <div className="flex justify-between items-center p-4 bg-muted/50 rounded-lg border">
           <div>
-            <div className="text-sm text-gray-500">Valor Total</div>
-            <div className="text-2xl font-bold">{formatCurrency(bill.total_amount)}</div>
+            <div className="text-sm text-muted-foreground">Valor Total</div>
+            <div className="text-2xl font-bold text-foreground">{formatCurrency(bill.total_amount)}</div>
           </div>
           <div className="text-right">
-            <div className="text-sm text-green-600">Pago: {formatCurrency(paidAmount)}</div>
-            <div className="text-sm text-red-600">Restante: {formatCurrency(remainingAmount)}</div>
+            <div className="text-sm font-medium text-green-600 dark:text-green-500">Pago: {formatCurrency(paidAmount)}</div>
+            <div className="text-sm font-medium text-red-600 dark:text-red-500">Restante: {formatCurrency(remainingAmount)}</div>
           </div>
         </div>
         <div className="max-h-[400px] overflow-y-auto">
