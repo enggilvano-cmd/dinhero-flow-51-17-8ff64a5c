@@ -244,7 +244,7 @@ export function AccountsPage({
       </div>
 
       {/* Summary Cards - Layout otimizado */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         <Card className="financial-card">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
@@ -285,7 +285,7 @@ export function AccountsPage({
           </CardContent>
         </Card>
 
-        <Card className="financial-card sm:col-span-2 md:col-span-1">
+        <Card className="financial-card sm:col-span-2 lg:col-span-1">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center flex-shrink-0">

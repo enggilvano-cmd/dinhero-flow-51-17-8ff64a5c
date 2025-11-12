@@ -59,7 +59,7 @@ function AppSidebar({ currentPage, onPageChange }: { currentPage: string; onPage
           ? "fixed inset-y-0 left-0 w-[280px] max-w-[85vw] z-50" 
           : isCollapsed 
             ? "w-[72px]" 
-            : "w-64 xl:w-72"
+            : "w-56 lg:w-64 xl:w-72"
       )}
       collapsible={isMobile ? "offcanvas" : "icon"}
       variant={isMobile ? "floating" : "sidebar"}
@@ -378,7 +378,7 @@ export function Layout({ children, currentPage, onPageChange }: LayoutProps) {
               "w-full h-full",
               isMobile 
                 ? "px-3 py-4" 
-                : "px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10"
+                : "px-3 py-5 sm:px-5 sm:py-6 lg:px-8 lg:py-10"
             )}>
               <div className={cn(
                 "mx-auto w-full",
