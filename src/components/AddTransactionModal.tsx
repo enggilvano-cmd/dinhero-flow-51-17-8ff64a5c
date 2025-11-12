@@ -138,6 +138,13 @@ export function AddTransactionModal({
     );
   }, [categories, formData.type]);
 
+  const filteredAccounts = useMemo(() => {
+    if (initialAccountType === "credit") {
+      return accounts.filter((acc) => acc.type === "credit");
+    }
+    return accounts;
+  }, [accounts, initialAccountType]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -486,7 +493,7 @@ export function AddTransactionModal({
                   <SelectValue placeholder="Selecione a conta" />
                 </SelectTrigger>
                 <SelectContent>
-                  {accounts.map((account) => (
+                  {filteredAccounts.map((account) => (
                     <SelectItem key={account.id} value={account.id}>
                       <div className="flex items-center gap-2">
                         <div
@@ -532,7 +539,7 @@ export function AddTransactionModal({
                 <Label htmlFor="installment">Compra Parcelada</Label>
                 <p className="text-sm text-muted-foreground">
                   {formData.account_id &&
-                  accounts.find((acc) => acc.id === formData.account_id)
+                  filteredAccounts.find((acc) => acc.id === formData.account_id)
                     ?.type === "credit" ? "Lançar parcelas na fatura do cartão."
                     : "Dividir esta transação em parcelas mensais"}
                 </p>
@@ -562,14 +569,14 @@ export function AddTransactionModal({
                     <SelectValue placeholder="Selecione" />
                   </SelectTrigger>
                   <SelectContent>
-                    {Array.from({ length: 59 }, (_, i) => i + 2).map((num) => (
+                        {Array.from({ length: 59 }, (_, i) => i + 2).map((num) => (
                       <SelectItem key={num} value={num.toString()}>
                         {num}x
                         {(() => {
                           const numericAmount = formData.amount;
                           return numericAmount > 0 &&
                             formData.account_id &&
-                            accounts.find(
+                            filteredAccounts.find(
                               (acc) => acc.id === formData.account_id
                             )?.type !== "credit"
                             ? ` de ${new Intl.NumberFormat("pt-BR", {
