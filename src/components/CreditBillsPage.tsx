@@ -24,6 +24,7 @@ import { useTransactionStore, AppTransaction } from "@/stores/TransactionStore";
 import { calculateBillDetails, calculateInvoiceMonthByDue } from "@/lib/dateUtils";
 import { CreditCardBillCard } from "@/components/CreditCardBillCard";
 import { CreditBillDetailsModal } from "@/components/CreditBillDetailsModal";
+import { InvoiceMonthDebugger } from "@/components/InvoiceMonthDebugger";
 import { Account } from "@/types";
 import { cn } from "@/lib/utils";
 import { format, addMonths, isPast } from "date-fns";
@@ -432,7 +433,7 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
           bill={{
             id: selectedBillForDetails.account.id,
             account_id: selectedBillForDetails.account.id,
-            billing_cycle: format(selectedMonthDate, "MM/yyyy", { locale: ptBR }),
+            billing_cycle: selectedBillForDetails.billDetails.currentInvoiceMonth || format(selectedMonthDate, "MM/yyyy", { locale: ptBR }),
             due_date: new Date(
               selectedMonthDate.getFullYear(),
               selectedMonthDate.getMonth(),
@@ -460,24 +461,19 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
             })(),
             minimum_payment: selectedBillForDetails.billDetails.currentBillAmount * 0.15,
             late_fee: 0,
+            // CORREÇÃO: As transações já foram filtradas corretamente no onViewDetails
             transactions: selectedBillForDetails.transactions.filter((t) => {
-              const billStart = new Date(
-                selectedMonthDate.getFullYear(),
-                selectedMonthDate.getMonth() - 1,
-                (selectedBillForDetails.account.closing_date || 1) + 1
-              );
-              const billEnd = new Date(
-                selectedMonthDate.getFullYear(),
-                selectedMonthDate.getMonth(),
-                selectedBillForDetails.account.closing_date || 1
-              );
-              return t.type === "expense" && t.date >= billStart && t.date <= billEnd;
+              // Garante que são apenas despesas (compras) - pagamentos não aparecem aqui
+              return t.type === 'expense' && t.category_id;
             }),
             account: selectedBillForDetails.account,
           }}
           onClose={() => setSelectedBillForDetails(null)}
         />
       )}
+
+      {/* Debug Invoice Month - Remover em produção */}
+      <InvoiceMonthDebugger />
     </div>
   );
 }
