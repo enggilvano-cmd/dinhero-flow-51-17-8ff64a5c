@@ -1,7 +1,15 @@
 import { useState, useMemo } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   CreditCard,
   CalendarDays,
@@ -115,43 +123,13 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
 
   return (
     <div className="spacing-responsive-lg fade-in">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+      {/* Header */}
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
           <h1 className="text-title-1">Faturas de Cartão</h1>
           <p className="text-body text-muted-foreground">
             Acompanhe o vencimento e o limite dos seus cartões de crédito.
           </p>
-        </div>
-        
-        {/* Seletor de Mês */}
-        <div className="flex items-center gap-2 sm:gap-3">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setSelectedMonthOffset(selectedMonthOffset - 1)}
-            className="h-9 w-9 apple-interaction"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <div className="min-w-[180px] text-center">
-            <p className="text-sm font-semibold capitalize">
-              {selectedMonthLabel}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {selectedMonthOffset === 0 ? "Fatura Atual" : 
-               selectedMonthOffset === 1 ? "Próxima Fatura" :
-               selectedMonthOffset > 1 ? `+${selectedMonthOffset} meses` :
-               `${selectedMonthOffset} meses`}
-            </p>
-          </div>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setSelectedMonthOffset(selectedMonthOffset + 1)}
-            className="h-9 w-9 apple-interaction"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
         </div>
       </div>
 
@@ -224,39 +202,85 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
       </div>
 
       {/* SEÇÃO DE FILTROS */}
-      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar cartão..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 h-10"
-          />
-        </div>
-        <div className="flex gap-2 flex-wrap sm:flex-nowrap overflow-x-auto pb-2">
-          <Button
-            key="all"
-            variant={selectedAccountId === "all" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setSelectedAccountId("all")}
-            className="apple-interaction h-10 whitespace-nowrap"
-          >
-            Todos
-          </Button>
-          {creditAccounts.map((account) => (
-            <Button
-              key={account.id}
-              variant={selectedAccountId === account.id ? "default" : "outline"}
-              size="sm"
-              onClick={() => setSelectedAccountId(account.id)}
-              className="apple-interaction h-10 whitespace-nowrap"
-            >
-              {account.name}
-            </Button>
-          ))}
-        </div>
-      </div>
+      <Card className="financial-card">
+        <CardHeader className="px-4 sm:px-6">
+          <CardTitle className="text-lg sm:text-xl">Filtros</CardTitle>
+        </CardHeader>
+        <CardContent className="py-4 sm:pt-0">
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* Cartão */}
+              <div className="space-y-1.5">
+                <Label htmlFor="filterCard">Cartão</Label>
+                <Select value={selectedAccountId} onValueChange={setSelectedAccountId}>
+                  <SelectTrigger className="h-9 text-xs sm:text-sm" id="filterCard">
+                    <SelectValue placeholder="Selecione um cartão" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos os Cartões</SelectItem>
+                    {creditAccounts.map((account) => (
+                      <SelectItem key={account.id} value={account.id}>
+                        <div className="flex items-center gap-2">
+                          <div
+                            className="w-2 h-2 sm:w-3 sm:h-3 rounded-full flex-shrink-0"
+                            style={{
+                              backgroundColor: account.color || "#6b7280",
+                            }}
+                          />
+                          <span className="truncate">{account.name}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Período/Mês */}
+              <div className="space-y-1.5">
+                <Label>Período</Label>
+                <div className="flex items-center gap-1 h-9 px-3 border border-input rounded-md bg-background">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedMonthOffset(selectedMonthOffset - 1)}
+                    className="h-6 w-6 p-0 flex-shrink-0"
+                  >
+                    <ChevronLeft className="h-3 w-3" />
+                  </Button>
+                  <div className="flex-1 text-center">
+                    <p className="text-xs sm:text-sm font-medium capitalize truncate">
+                      {selectedMonthLabel}
+                    </p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedMonthOffset(selectedMonthOffset + 1)}
+                    className="h-6 w-6 p-0 flex-shrink-0"
+                  >
+                    <ChevronRight className="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
+
+              {/* Busca */}
+              <div className="space-y-1.5 col-span-1 sm:col-span-2 lg:col-span-1">
+                <Label htmlFor="search">Buscar</Label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="search"
+                    placeholder="Buscar cartão..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 h-9"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* RENDERIZAÇÃO DOS CARDS */}
       {billDetails.length === 0 ? (
