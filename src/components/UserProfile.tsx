@@ -9,7 +9,18 @@ import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { User, Shield, Key, Activity } from 'lucide-react';
+import { User, Shield, Key, Activity, ShieldCheck, ShieldOff } from 'lucide-react';
+import { TwoFactorSetup } from './TwoFactorSetup';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface AuditLog {
   id: string;
@@ -23,6 +34,9 @@ export function UserProfile() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [recentActivities, setRecentActivities] = useState<AuditLog[]>([]);
+  const [mfaEnabled, setMfaEnabled] = useState(false);
+  const [showMfaSetup, setShowMfaSetup] = useState(false);
+  const [showDisableMfaDialog, setShowDisableMfaDialog] = useState(false);
   const [formData, setFormData] = useState({
     fullName: profile?.full_name || '',
     email: profile?.email || '',
@@ -35,6 +49,7 @@ export function UserProfile() {
         email: profile.email || '',
       });
       fetchRecentActivities();
+      checkMfaStatus();
     }
   }, [profile]);
 
@@ -53,6 +68,51 @@ export function UserProfile() {
       setRecentActivities(data || []);
     } catch (error) {
       console.error('Error fetching activities:', error);
+    }
+  };
+
+  const checkMfaStatus = async () => {
+    try {
+      const { data, error } = await supabase.auth.mfa.listFactors();
+      if (error) throw error;
+      
+      const hasMfa = data?.totp && data.totp.length > 0;
+      setMfaEnabled(hasMfa);
+    } catch (error) {
+      console.error('Error checking MFA status:', error);
+    }
+  };
+
+  const handleDisableMfa = async () => {
+    setLoading(true);
+    try {
+      const { data: factors, error: listError } = await supabase.auth.mfa.listFactors();
+      if (listError) throw listError;
+
+      const totpFactor = factors?.totp?.[0];
+      if (!totpFactor) {
+        throw new Error('Fator MFA não encontrado');
+      }
+
+      const { error } = await supabase.auth.mfa.unenroll({ factorId: totpFactor.id });
+      if (error) throw error;
+
+      setMfaEnabled(false);
+      setShowDisableMfaDialog(false);
+      
+      toast({
+        title: '2FA Desativado',
+        description: 'A autenticação em dois fatores foi desativada.',
+      });
+    } catch (error: any) {
+      console.error('Error disabling MFA:', error);
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível desativar o 2FA.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -256,13 +316,43 @@ export function UserProfile() {
               </div>
 
               <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div>
-                  <h4 className="font-medium">Autenticação de Dois Fatores</h4>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-medium">Autenticação de Dois Fatores</h4>
+                    {mfaEnabled ? (
+                      <Badge variant="default" className="gap-1">
+                        <ShieldCheck className="h-3 w-3" />
+                        Ativo
+                      </Badge>
+                    ) : (
+                      <Badge variant="secondary" className="gap-1">
+                        <ShieldOff className="h-3 w-3" />
+                        Inativo
+                      </Badge>
+                    )}
+                  </div>
                   <p className="text-sm text-muted-foreground">
-                    Adicione uma camada extra de segurança
+                    {mfaEnabled 
+                      ? 'Sua conta está protegida com 2FA'
+                      : 'Adicione uma camada extra de segurança'
+                    }
                   </p>
                 </div>
-                <Badge variant="secondary">Em breve</Badge>
+                {mfaEnabled ? (
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setShowDisableMfaDialog(true)}
+                  >
+                    Desativar
+                  </Button>
+                ) : (
+                  <Button 
+                    variant="default" 
+                    onClick={() => setShowMfaSetup(true)}
+                  >
+                    Ativar 2FA
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -354,6 +444,40 @@ export function UserProfile() {
           </Card>
         </div>
       </div>
+
+      {/* Dialog para configurar 2FA */}
+      <AlertDialog open={showMfaSetup} onOpenChange={setShowMfaSetup}>
+        <AlertDialogContent className="max-w-2xl">
+          <TwoFactorSetup 
+            onComplete={() => {
+              setShowMfaSetup(false);
+              checkMfaStatus();
+            }}
+          />
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Dialog para desativar 2FA */}
+      <AlertDialog open={showDisableMfaDialog} onOpenChange={setShowDisableMfaDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Desativar Autenticação em Dois Fatores?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Isso tornará sua conta menos segura. Você não precisará mais de um código do app autenticador para fazer login.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDisableMfa}
+              disabled={loading}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {loading ? 'Desativando...' : 'Desativar 2FA'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

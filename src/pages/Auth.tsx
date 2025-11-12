@@ -8,6 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/hooks/useAuth';
 import { Lock, User, Mail, Eye, EyeOff, BarChart3, Phone } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { TwoFactorVerify } from '@/components/TwoFactorVerify';
 
 export default function Auth() {
   const { signIn, signUp, resetPassword, user, loading } = useAuth();
@@ -15,6 +17,7 @@ export default function Auth() {
   
   const [activeTab, setActiveTab] = useState('signin');
   const [showPassword, setShowPassword] = useState(false);
+  const [needsMfaVerification, setNeedsMfaVerification] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -76,6 +79,13 @@ export default function Auth() {
     try {
       if (activeTab === 'signin') {
         await signIn(formData.email, formData.password);
+        
+        // Verificar se o usuário tem MFA habilitado
+        const { data: factors } = await supabase.auth.mfa.listFactors();
+        if (factors?.totp && factors.totp.length > 0) {
+          setNeedsMfaVerification(true);
+          return;
+        }
       } else {
         await signUp(formData.email, formData.password, formData.fullName, formData.whatsapp);
       }
@@ -130,6 +140,22 @@ export default function Auth() {
       <div className="min-h-screen bg-gradient-surface flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
+    );
+  }
+
+  // Mostrar verificação 2FA se necessário
+  if (needsMfaVerification) {
+    return (
+      <TwoFactorVerify
+        onVerified={() => {
+          setNeedsMfaVerification(false);
+          navigate('/');
+        }}
+        onCancel={async () => {
+          await supabase.auth.signOut();
+          setNeedsMfaVerification(false);
+        }}
+      />
     );
   }
 
