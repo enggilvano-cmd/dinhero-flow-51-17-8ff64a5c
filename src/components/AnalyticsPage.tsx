@@ -762,11 +762,11 @@ export default function AnalyticsPage({
       </div>
 
       {/* Charts Grid */}
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-1 gap-3 sm:gap-4 mt-6">
         {/* Category Pie Chart */}
         <Card className="financial-card">
           {/* 2. BOTÕES DE ALTERNÂNCIA ATUALIZADOS COM CORES */}
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3 pt-3 sm:px-4 sm:pt-4">
             <CardTitle className="flex items-center gap-2 text-sm sm:text-base font-medium">
               <PieChart className="h-4 w-4 sm:h-5 sm:w-5" />
               {categoryChartType === "income" ? "Receitas" : "Despesas"} por
@@ -780,7 +780,7 @@ export default function AnalyticsPage({
                   categoryChartType === "expense" ? "destructive" : "ghost"
                 }
                 onClick={() => setCategoryChartType("expense")}
-                className="h-7 px-3 text-xs"
+                className="h-6 px-2 text-xs sm:h-7 sm:px-3"
               >
                 Despesas
               </Button>
@@ -789,7 +789,7 @@ export default function AnalyticsPage({
                 variant={categoryChartType === "income" ? "default" : "ghost"}
                 onClick={() => setCategoryChartType("income")}
                 className={cn(
-                  "h-7 px-3 text-xs",
+                  "h-6 px-2 text-xs sm:h-7 sm:px-3",
                   categoryChartType === "income" &&
                     "bg-success text-success-foreground hover:bg-success/90"
                 )}
@@ -857,7 +857,7 @@ export default function AnalyticsPage({
 
         {/* Account Balances */}
         <Card className="financial-card">
-          <CardHeader>
+          <CardHeader className="px-3 pt-3 pb-2 sm:px-4 sm:pt-4">
             <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
               <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5" />
               Saldos por Conta
@@ -903,7 +903,7 @@ export default function AnalyticsPage({
 
         {/* Monthly Trend */}
         <Card className="financial-card">
-          <CardHeader>
+          <CardHeader className="px-3 pt-3 pb-2 sm:px-4 sm:pt-4">
             <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
               <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5" />
               Evolução Mensal - Receitas vs Despesas
