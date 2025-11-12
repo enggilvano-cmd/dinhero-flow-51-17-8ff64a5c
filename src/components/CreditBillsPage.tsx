@@ -57,6 +57,7 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
   const [selectedMonthOffset, setSelectedMonthOffset] = useState(0); // 0 = mês atual, 1 = próximo, -1 = anterior
   const [filterBillStatus, setFilterBillStatus] = useState<"all" | "open" | "closed">("all");
   const [filterPaymentStatus, setFilterPaymentStatus] = useState<"all" | "paid" | "pending">("all");
+  const [periodFilter, setPeriodFilter] = useState<"current_month" | "month_picker">("current_month");
   const [selectedBillForDetails, setSelectedBillForDetails] = useState<{
     account: Account;
     transactions: AppTransaction[];
@@ -82,13 +83,12 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
 
   // Calcula a data base para o mês selecionado
   const selectedMonthDate = useMemo(() => {
-    return addMonths(new Date(), selectedMonthOffset);
-  }, [selectedMonthOffset]);
-
-  // Formata o nome do mês para exibição
-  const selectedMonthLabel = useMemo(() => {
-    return format(selectedMonthDate, "MMMM 'de' yyyy", { locale: ptBR });
-  }, [selectedMonthDate]);
+    if (periodFilter === "current_month") {
+      return new Date(); // Mês atual
+    } else {
+      return addMonths(new Date(), selectedMonthOffset); // Navegação por mês
+    }
+  }, [periodFilter, selectedMonthOffset]);
 
   // Memo para calcular os detalhes da fatura do mês selecionado (SEM filtros)
   const allBillDetails = useMemo(() => {
@@ -295,30 +295,24 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
 
               {/* Período/Mês */}
               <div className="space-y-1.5">
-                <Label>Período</Label>
-                <div className="flex items-center gap-1 h-9 px-3 border border-input rounded-md bg-background">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setSelectedMonthOffset(selectedMonthOffset - 1)}
-                    className="h-6 w-6 p-0 flex-shrink-0"
-                  >
-                    <ChevronLeft className="h-3 w-3" />
-                  </Button>
-                  <div className="flex-1 text-center">
-                    <p className="text-xs sm:text-sm font-medium capitalize truncate">
-                      {selectedMonthLabel}
-                    </p>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setSelectedMonthOffset(selectedMonthOffset + 1)}
-                    className="h-6 w-6 p-0 flex-shrink-0"
-                  >
-                    <ChevronRight className="h-3 w-3" />
-                  </Button>
-                </div>
+                <Label htmlFor="periodFilter">Período</Label>
+                <Select
+                  value={periodFilter}
+                  onValueChange={(value: any) => {
+                    setPeriodFilter(value);
+                    if (value === "current_month") {
+                      setSelectedMonthOffset(0);
+                    }
+                  }}
+                >
+                  <SelectTrigger className="h-9 text-xs sm:text-sm" id="periodFilter">
+                    <SelectValue placeholder="Período" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="current_month">Mês Atual</SelectItem>
+                    <SelectItem value="month_picker">Navegar por Mês</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Busca */}
@@ -336,6 +330,33 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
                 </div>
               </div>
             </div>
+
+            {/* Controle de navegação de mês - mostrar apenas quando necessário */}
+            {periodFilter === "month_picker" && (
+              <div className="border-t border-border pt-4">
+                <div className="flex items-center gap-1 h-9 px-3 border border-input rounded-md bg-background max-w-xs mx-auto">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedMonthOffset(selectedMonthOffset - 1)}
+                    className="h-6 w-6 p-0 flex-shrink-0"
+                  >
+                    <ChevronLeft className="h-3 w-3" />
+                  </Button>
+                  <span className="flex-1 text-center text-sm font-medium">
+                    {format(selectedMonthDate, "MMMM 'de' yyyy", { locale: ptBR })}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedMonthOffset(selectedMonthOffset + 1)}
+                    className="h-6 w-6 p-0 flex-shrink-0"
+                  >
+                    <ChevronRight className="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
