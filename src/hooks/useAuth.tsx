@@ -117,17 +117,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await supabase.rpc('initialize_default_categories', { p_user_id: user.id });
       }
 
-      // Initialize default settings if none exist
-      const { data: settings } = await supabase
+      // Initialize default settings if none exist (using upsert to avoid race conditions)
+      await supabase
         .from('user_settings')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
-
-      if (!settings) {
-        console.log('Initializing default settings');
-        await supabase.rpc('initialize_default_settings', { p_user_id: user.id });
-      }
+        .upsert({
+          user_id: user.id,
+          currency: 'BRL',
+          theme: 'system',
+          notifications: true,
+          auto_backup: false,
+          language: 'pt-BR'
+        }, { onConflict: 'user_id', ignoreDuplicates: true });
       
       console.log('User data initialization completed');
     } catch (error) {

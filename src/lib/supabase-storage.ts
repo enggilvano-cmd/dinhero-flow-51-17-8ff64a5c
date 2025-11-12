@@ -461,18 +461,24 @@ export async function getSettings(): Promise<AppSettings> {
 
     if (error && error.code !== 'PGRST116') throw error;
 
-    // If no settings exist, initialize with defaults
+    // If no settings exist, initialize with defaults using upsert to avoid race conditions
     if (!data) {
-      await supabase.rpc('initialize_default_settings', { p_user_id: user.user.id });
-      
-      // Fetch the newly created settings
-      const { data: newData, error: newError } = await supabase
+      const defaultSettings = {
+        user_id: user.user.id,
+        currency: 'BRL',
+        theme: 'system',
+        notifications: true,
+        auto_backup: false,
+        language: 'pt-BR'
+      };
+
+      const { data: newData, error: upsertError } = await supabase
         .from('user_settings')
-        .select('*')
-        .eq('user_id', user.user.id)
+        .upsert(defaultSettings, { onConflict: 'user_id' })
+        .select()
         .single();
 
-      if (newError) throw newError;
+      if (upsertError) throw upsertError;
       
       return {
         currency: newData.currency,
