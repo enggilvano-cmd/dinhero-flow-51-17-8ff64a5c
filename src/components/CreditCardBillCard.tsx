@@ -55,7 +55,10 @@ export function CreditCardBillCard({
   // Calcula o percentual de limite usado
   const limitUsedPercentage = limit_amount > 0 ? (totalBalance / limit_amount) * 100 : 0;
   
-  // Lógica de Status - usa o mês selecionado para determinar se a fatura está fechada
+  // Lógica de Status - calcula a data de fechamento do mês da fatura
+  // billDetails já vem filtrado pelo mês correto (currentInvoiceMonth)
+  // Precisamos usar esse mês para calcular se está fechada
+  // selectedMonth é o mês que o usuário está visualizando (pode ser passado, atual, futuro)
   const closingDate = closing_date 
     ? new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), closing_date) 
     : selectedMonth;
@@ -64,10 +67,21 @@ export function CreditCardBillCard({
   // --- LÓGICA DE PAGO ATUALIZADA ---
   const paidAmount = (paymentTransactions?.reduce((sum, t) => sum + Math.abs(t.amount), 0)) || 0;
   const amountDue = Math.max(0, currentBillAmount);
-  const isPaid = paidAmount >= amountDue || amountDue === 0;
+  // Uma fatura só está "Paga" se: está fechada E o valor pago >= valor devido
+  const isPaid = isClosed && (paidAmount >= amountDue || amountDue === 0);
   const isBillPaid = isPaid;
   const isFullyPaid = isPaid && totalBalance <= 0;
   const canReverse = paymentTransactions && paymentTransactions.length > 0;
+  
+  console.info("[CreditCardBillCard] Status", {
+    account: account.name,
+    selectedMonth: selectedMonth.toISOString().split('T')[0],
+    closingDate: closingDate.toISOString().split('T')[0],
+    isClosed,
+    paidAmount,
+    amountDue,
+    isPaid,
+  });
   // --- FIM DA LÓGICA ---
 
   const billAmountColor = currentBillAmount > 0 
@@ -97,8 +111,8 @@ export function CreditCardBillCard({
             {isClosed ? 'Fechada' : 'Aberta'}
           </Badge>
           {/* Badge de Pago/Pendente baseado no fechamento + pagamentos */}
-          <Badge variant={isClosed && isPaid ? 'default' : 'destructive'}>
-            {isClosed && isPaid ? 'Pago' : 'Pendente'}
+          <Badge variant={isPaid ? 'default' : 'destructive'}>
+            {isPaid ? 'Pago' : 'Pendente'}
           </Badge>
         </div>
       </CardHeader>

@@ -153,10 +153,15 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
   // Memo para aplicar os filtros de status
   const billDetails = useMemo(() => {
     return allBillDetails.filter((details) => {
-      // Calcula se a fatura está fechada
+      // Calcula se a fatura está fechada baseado no mês da fatura (não no mês selecionado)
+      // Ex: Se estamos vendo a fatura de nov/2025 e hoje é dez/2025, precisa verificar se 08/nov já passou
+      const targetMonth = details.currentInvoiceMonth; // Ex: "2025-11"
+      const [year, month] = targetMonth.split('-').map(Number);
+      
       const closingDate = details.account.closing_date 
-        ? new Date(selectedMonthDate.getFullYear(), selectedMonthDate.getMonth(), details.account.closing_date) 
-        : selectedMonthDate;
+        ? new Date(year, month - 1, details.account.closing_date) 
+        : new Date(year, month - 1, 1);
+      
       const isClosed = isPast(closingDate);
 
       // Filtro de status da fatura (aberta/fechada)
@@ -168,13 +173,23 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
       const amountDue = Math.max(0, details.currentBillAmount);
       const isPaid = isClosed && paidAmount >= amountDue;
 
+      console.info("[CreditBillsPage] Status check", {
+        account: details.account.name,
+        targetMonth,
+        closingDate: format(closingDate, 'dd/MM/yyyy'),
+        isClosed,
+        paidAmount,
+        amountDue,
+        isPaid,
+      });
+
       // Filtro de status de pagamento
       if (filterPaymentStatus === "paid" && !isPaid) return false;
       if (filterPaymentStatus === "pending" && isPaid) return false;
 
       return true;
     });
-  }, [allBillDetails, filterBillStatus, filterPaymentStatus, selectedMonthDate]);
+  }, [allBillDetails, filterBillStatus, filterPaymentStatus]);
 
   // Memo para os TOTAIS (baseado nos cartões filtrados)
   const totalSummary = useMemo(() => {
@@ -474,31 +489,35 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
           bill={{
             id: selectedBillForDetails.account.id,
             account_id: selectedBillForDetails.account.id,
-            billing_cycle: selectedBillForDetails.billDetails.currentInvoiceMonth || format(selectedMonthDate, "MM/yyyy", { locale: ptBR }),
-            due_date: new Date(
-              selectedMonthDate.getFullYear(),
-              selectedMonthDate.getMonth(),
-              selectedBillForDetails.account.due_date || 1
-            ),
-            closing_date: new Date(
-              selectedMonthDate.getFullYear(),
-              selectedMonthDate.getMonth(),
-              selectedBillForDetails.account.closing_date || 1
-            ),
+            billing_cycle: selectedBillForDetails.billDetails.currentInvoiceMonth || format(selectedMonthDate, "yyyy-MM"),
+            due_date: (() => {
+              // Calcular a data de vencimento correta baseada no mês da fatura
+              const invoiceMonth = selectedBillForDetails.billDetails.currentInvoiceMonth || format(selectedMonthDate, "yyyy-MM");
+              const [year, month] = invoiceMonth.split('-').map(Number);
+              return new Date(year, month - 1, selectedBillForDetails.account.due_date || 1);
+            })(),
+            closing_date: (() => {
+              // Calcular a data de fechamento correta baseada no mês da fatura
+              const invoiceMonth = selectedBillForDetails.billDetails.currentInvoiceMonth || format(selectedMonthDate, "yyyy-MM");
+              const [year, month] = invoiceMonth.split('-').map(Number);
+              return new Date(year, month - 1, selectedBillForDetails.account.closing_date || 1);
+            })(),
             total_amount: selectedBillForDetails.billDetails.currentBillAmount,
             paid_amount: selectedBillForDetails.billDetails.paymentTransactions.reduce(
               (sum, t) => sum + Math.abs(t.amount),
               0
             ),
             status: (() => {
+              // Recalcular status correto baseado na data de fechamento do mês da fatura
+              const invoiceMonth = selectedBillForDetails.billDetails.currentInvoiceMonth || format(selectedMonthDate, "yyyy-MM");
+              const [year, month] = invoiceMonth.split('-').map(Number);
+              const closingDateOfBill = new Date(year, month - 1, selectedBillForDetails.account.closing_date || 1);
+              const isClosed = isPast(closingDateOfBill);
+              
               const due = Math.max(0, selectedBillForDetails.billDetails.currentBillAmount);
               const paid = selectedBillForDetails.billDetails.paymentTransactions.reduce((s, t) => s + Math.abs(t.amount), 0);
-              const closed = isPast(new Date(
-                selectedMonthDate.getFullYear(),
-                selectedMonthDate.getMonth(),
-                selectedBillForDetails.account.closing_date || 1
-              ));
-              return closed && paid >= due ? "paid" : "pending";
+              
+              return isClosed && paid >= due ? "paid" : "pending";
             })(),
             minimum_payment: selectedBillForDetails.billDetails.currentBillAmount * 0.15,
             late_fee: 0,

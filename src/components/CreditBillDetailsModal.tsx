@@ -16,9 +16,32 @@ export function CreditBillDetailsModal({ bill, onClose }: CreditBillDetailsModal
 
   const paidAmount = bill.paid_amount
   const remainingAmount = bill.total_amount - paidAmount
-  const isClosed = isPast(new Date(bill.closing_date))
+  
+  // Calcular se está fechada baseado no mês da fatura
+  // billing_cycle pode estar em formato "MM/yyyy" ou "yyyy-MM"
+  let billMonth = bill.billing_cycle;
+  if (billMonth.includes('/')) {
+    // Converter "11/2025" para "2025-11"
+    const [m, y] = billMonth.split('/');
+    billMonth = `${y}-${m.padStart(2, '0')}`;
+  }
+  
+  const [year, month] = billMonth.split('-').map(Number);
+  const closingDay = new Date(bill.closing_date).getDate();
+  const closingDateOfBill = new Date(year, month - 1, closingDay);
+  const isClosed = isPast(closingDateOfBill);
+  
   const amountDue = Math.max(0, bill.total_amount)
   const isPaid = isClosed && paidAmount >= amountDue
+
+  console.info("[CreditBillDetailsModal] Status", {
+    billMonth,
+    closingDateOfBill: format(closingDateOfBill, 'dd/MM/yyyy'),
+    isClosed,
+    paidAmount,
+    amountDue,
+    isPaid,
+  });
 
   return (
     <Dialog open={!!bill} onOpenChange={(open) => !open && onClose()}>
