@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Input, InputProps } from "@/components/ui/input";
+import { useState, useEffect, useCallback, InputHTMLAttributes } from 'react';
+import { Input } from "@/components/ui/input";
 
 const BRL_FORMATTER = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2 });
-interface CurrencyInputProps extends Omit<InputProps, 'onChange' | 'value'> {
+interface CurrencyInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'value'> {
   value: number; // Valor em centavos
   onValueChange: (value: number) => void; // Retorna o valor em centavos
 }

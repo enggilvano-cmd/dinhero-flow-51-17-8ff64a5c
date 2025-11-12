@@ -94,6 +94,7 @@ export function UserManagement() {
       setAuditLogs((data || []).map(log => ({
         ...log,
         user_id: log.user_id || '',
+        resource_id: log.resource_id ?? undefined,
         profiles: undefined,
       })));
     } catch (error) {

@@ -63,7 +63,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       
       console.log('Profile fetched:', data);
-      setProfile(data);
+      setProfile(data ? {
+        ...data,
+        full_name: data.full_name ?? undefined,
+        avatar_url: data.avatar_url ?? undefined,
+        whatsapp: data.whatsapp ?? undefined,
+        trial_expires_at: data.trial_expires_at ?? undefined,
+      } : null);
     } catch (error) {
       console.error('Error fetching profile:', error);
       toast({

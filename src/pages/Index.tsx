@@ -14,13 +14,10 @@ import { AddAccountModal } from "@/components/AddAccountModal";
 import { AddTransactionModal } from "@/components/AddTransactionModal";
 import { EditAccountModal } from "@/components/EditAccountModal";
 import { EditTransactionModal } from "@/components/EditTransactionModal";
-import {
-  InstallmentEditScopeDialog,
-  EditScope,
-} from "@/components/InstallmentEditScopeDialog";
+import { EditScope } from "@/components/InstallmentEditScopeDialog";
 import { TransferModal } from "@/components/TransferModal";
 import { CreditPaymentModal } from "@/components/CreditPaymentModal";
-import { SettingsProvider, useSettings } from "@/context/SettingsContext";
+import { useSettings } from "@/context/SettingsContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -53,12 +50,6 @@ const PlaniFlowApp = () => {
   );
   const updateGlobalTransaction = useTransactionStore(
     (state) => state.updateTransaction
-  );
-  const updateGlobalTransactions = useTransactionStore(
-    (state) => state.updateTransactions
-  );
-  const removeGlobalTransaction = useTransactionStore(
-    (state) => state.removeTransaction
   );
   const removeGlobalTransactions = useTransactionStore(
     (state) => state.removeTransactions
@@ -111,12 +102,6 @@ const PlaniFlowApp = () => {
   const [transactionCustomEndDate, setTransactionCustomEndDate] = useState<
     Date | undefined
   >(undefined);
-
-  const resetTransactionFilters = () => {
-    setTransactionSelectedMonth(undefined);
-    setTransactionCustomStartDate(undefined);
-    setTransactionCustomEndDate(undefined);
-  };
 
   // Load data from Supabase
   useEffect(() => {
@@ -374,7 +359,7 @@ const PlaniFlowApp = () => {
         accountBalanceChanges
       )) {
         const account = accounts.find((acc) => acc.id === accountId);
-        if (account && balanceChange) {
+        if (account && typeof balanceChange === 'number') {
           const newBalance = account.balance + balanceChange;
           await supabase
             .from("accounts")
@@ -635,7 +620,7 @@ const PlaniFlowApp = () => {
         .eq("user_id", user.id)
         .eq("parent_transaction_id", oldTransaction.parent_transaction_id);
 
-      if (editScope === "current-and-previous") {
+      if (editScope === "current_and_previous") {
         queryBuilder = queryBuilder.lte(
           "current_installment",
           oldTransaction.current_installment
@@ -781,7 +766,12 @@ const PlaniFlowApp = () => {
 
         if (installmentTransactions && installmentTransactions.length > 0) {
           for (const installment of installmentTransactions) {
-            transactionsToDelete.push(installment);
+            transactionsToDelete.push({
+              ...installment,
+              date: typeof installment.date === 'string' 
+                ? createDateFromString(installment.date) 
+                : installment.date
+            });
             accountsToRecalculate.add(installment.account_id);
           }
         }
@@ -1444,12 +1434,4 @@ const PlaniFlowApp = () => {
   );
 };
 
-const Index = () => {
-  return (
-    <SettingsProvider>
-      <PlaniFlowApp />
-    </SettingsProvider>
-  );
-};
-
-export default Index;
+export default PlaniFlowApp;

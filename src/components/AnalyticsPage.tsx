@@ -11,7 +11,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
@@ -39,9 +38,7 @@ import {
 } from "@/components/ui/chart";
 import {
   formatCurrencyForAxis,
-  getPieChartProps,
   getBarChartAxisProps,
-  getLineChartProps,
   getComposedChartMargins,
 } from "@/lib/chartUtils";
 import {
@@ -54,14 +51,9 @@ import {
   XAxis,
   YAxis,
   Line,
-  LineChart,
-  Area,
-  AreaChart,
   ComposedChart,
 } from "recharts";
 import {
-  generateCategoryReport,
-  generateMonthlyReport,
   exportToCSV,
   exportToPDF,
 } from "@/lib/reports";
@@ -152,8 +144,6 @@ export default function AnalyticsPage({
   const {
     chartConfig: responsiveConfig,
     isMobile,
-    isTablet,
-    isDesktop,
   } = useChartResponsive();
   const { categories } = useCategories();
 
@@ -166,33 +156,6 @@ export default function AnalyticsPage({
       style: "currency",
       currency: "BRL",
     }).format(value); // Esta função espera o valor em REAIS
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "pending":
-        return "destructive";
-      case "completed":
-        return "default";
-      default:
-        return "default";
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case "pending":
-        return "Pendente";
-      case "completed":
-        return "Concluída";
-      default:
-        return status;
-    }
-  };
-
-  const getAccountName = (accountId: string) => {
-    const account = accounts.find((acc) => acc.id === accountId);
-    return account?.name || "Conta não encontrada";
   };
 
   const getTransactionAccountId = (transaction: Transaction) => {
@@ -1137,7 +1100,7 @@ export default function AnalyticsPage({
                   </tr>
                 </thead>
                 <tbody>
-                  {categoryData.map((item, index) => (
+                  {categoryData.map((item) => (
                     <tr key={item.category} className="border-b last:border-b-0">
                       <td className="py-2 sm:py-3">
                         <div className="flex items-center gap-2 sm:gap-3">

@@ -15,16 +15,12 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import {
-  Plus,
   TrendingUp,
   TrendingDown,
   CreditCard,
   DollarSign,
   CalendarIcon,
-  Filter,
   ArrowRightLeft,
-  ArrowDown,
-  ArrowUp,
   ChevronLeft,
   ChevronRight,
   Clock,
@@ -38,10 +34,6 @@ import {
   isWithinInterval,
   addMonths,
   subMonths,
-  startOfDay,
-  endOfDay,
-  isAfter,
-  isBefore,
 } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -57,13 +49,10 @@ import {
 import {
   formatCurrencyForAxis,
   getBarChartAxisProps,
-  getLineChartProps,
-  getComposedChartMargins,
 } from "@/lib/chartUtils";
 import {
   Bar,
   Line,
-  LineChart,
   ComposedChart,
   XAxis,
   YAxis,
@@ -122,7 +111,6 @@ interface DashboardProps {
 export function Dashboard({
   accounts,
   transactions,
-  categories,
   onTransfer,
   onAddTransaction,
   onAddExpense,
@@ -286,7 +274,6 @@ export function Dashboard({
             ? createDateFromString(transaction.date)
             : transaction.date;
         const transactionYear = transactionDate.getFullYear();
-        const transactionMonth = transactionDate.getMonth() + 1;
 
         // Filtrar transações do ano específico
         if (transactionYear === chartYear) {
@@ -391,14 +378,6 @@ export function Dashboard({
   const pendingIncome = filteredTransactions
     .filter((t) => t.type === "income" && t.status === "pending")
     .reduce((sum, t) => sum + t.amount, 0);
-
-  const pendingExpensesCount = filteredTransactions.filter(
-    (t) => t.type === "expense" && t.status === "pending"
-  ).length;
-
-  const pendingIncomeCount = filteredTransactions.filter(
-    (t) => t.type === "income" && t.status === "pending"
-  ).length;
 
   const getPeriodLabel = () => {
     if (dateFilter === "all") {

@@ -2,7 +2,7 @@ import { ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent } from '@/components/ui/card';
-import { Shield, AlertTriangle } from 'lucide-react';
+import { Shield } from 'lucide-react';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -52,9 +52,24 @@ export function ProtectedRoute({
 
   // A verificação de perfil não encontrado foi movida para depois do carregamento.
   // Se após o 'loading' o perfil ainda for nulo, aí sim é um erro.
-  // No entanto, a lógica acima já cobre o estado de carregamento, tornando esta verificação
-  // menos provável de ser acionada por uma condição de corrida. O código original já tinha
-  // uma verificação para !profile, que agora é substituída pela de cima.
+  // Check if profile exists and is active
+  if (!profile) {
+    return (
+      <div className="min-h-screen bg-gradient-surface flex items-center justify-center">
+        <Card className="financial-card p-4 sm:p-6">
+          <CardContent className="flex flex-col items-center space-y-3 text-center">
+            <Shield className="h-12 w-12 text-warning" />
+            <div>
+              <h3 className="text-lg font-semibold">Carregando Perfil</h3>
+              <p className="text-muted-foreground">
+                Aguarde enquanto carregamos suas informações...
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (!profile.is_active) {
     return (

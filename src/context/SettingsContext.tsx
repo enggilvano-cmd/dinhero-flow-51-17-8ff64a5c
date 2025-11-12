@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { AppSettings, getSettings, updateSettings as saveSettings } from '@/lib/supabase-storage';
 import { useAuth } from '@/hooks/useAuth';
 

@@ -8,13 +8,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { Settings, Save, Shield } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
-interface SystemSetting {
-  id: string;
-  setting_key: string;
-  setting_value: string;
-  description: string;
-}
-
 export default function SystemSettings() {
   const [trialDays, setTrialDays] = useState<string>('7');
   const [loading, setLoading] = useState(false);

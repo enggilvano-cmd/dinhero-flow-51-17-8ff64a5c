@@ -26,7 +26,7 @@ interface LayoutProps {
   onPageChange: (page: string) => void;
 }
 
-const getMenuItems = (isAdmin: boolean) => [
+const getMenuItems = () => [
   { id: "dashboard", label: "Painel", icon: Home },
   { id: "accounts", label: "Contas", icon: CreditCard },
   { id: "credit-bills", label: "Faturas Cartão", icon: Receipt },
@@ -37,10 +37,10 @@ const getMenuItems = (isAdmin: boolean) => [
 
 function AppSidebar({ currentPage, onPageChange }: { currentPage: string; onPageChange: (page: string) => void }) {
   const { profile, isAdmin, signOut } = useAuth();
-  const { state: sidebarState, setOpenMobile, toggleSidebar } = useSidebar();
+  const { state: sidebarState, setOpenMobile } = useSidebar();
   const isMobile = useIsMobile();
   const isCollapsed = sidebarState === "collapsed";
-  const menuItems = getMenuItems(isAdmin());
+  const menuItems = getMenuItems();
 
   const handlePageChange = (page: string) => {
     onPageChange(page);

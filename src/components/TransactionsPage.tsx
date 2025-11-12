@@ -22,7 +22,6 @@ import { Label } from "@/components/ui/label"; // Importação adicionada
 import {
   Plus,
   Search,
-  Filter,
   TrendingUp,
   TrendingDown,
   ArrowLeftRight,
@@ -46,7 +45,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { ResponsiveTable } from "@/components/ui/responsive-table";
-import { useChartResponsive } from "@/hooks/useChartResponsive";
 // Interfaces moved to be inline as we're using Supabase types
 import {
   format,
@@ -124,7 +122,6 @@ export function TransactionsPage({
   const [importModalOpen, setImportModalOpen] = useState(false);
 
   const { toast } = useToast();
-  const { isMobile, isTablet } = useChartResponsive();
 
   // =================================================================
   // CORREÇÃO 1: A função 'formatCurrency' local deve dividir por 100
@@ -221,7 +218,6 @@ export function TransactionsPage({
 
       // Check transaction type - transfers are now stored as income/expense with to_account_id
       const isTransfer = transaction.to_account_id != null;
-      const transactionType = isTransfer ? "transfer" : transaction.type;
 
       const matchesType =
         filterType === "all" ||
@@ -374,7 +370,7 @@ export function TransactionsPage({
       { wch: 20 }, // Categoria
       { wch: 15 }, // Tipo
       { wch: 25 }, // Conta
-      { wch: 15, z: "R$ #,##0.00" }, // Valor (com formatação)
+      { wch: 15 }, // Valor
       { wch: 12 }, // Status
       { wch: 12 }, // Parcelas
     ];

@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/hooks/useAuth';
-import { Shield, Lock, User, Mail, Eye, EyeOff, BarChart3, Phone } from 'lucide-react';
+import { Lock, User, Mail, Eye, EyeOff, BarChart3, Phone } from 'lucide-react';
 
 export default function Auth() {
   const { signIn, signUp, resetPassword, user, loading } = useAuth();

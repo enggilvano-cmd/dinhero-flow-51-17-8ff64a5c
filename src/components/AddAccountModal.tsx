@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Account, PREDEFINED_COLORS, ACCOUNT_TYPE_LABELS } from "@/types";
+import { PREDEFINED_COLORS, ACCOUNT_TYPE_LABELS } from "@/types";
 import { ColorPicker } from "./forms/ColorPicker";
 import { CurrencyInput } from "@/components/forms/CurrencyInput";
 import { useAccountStore } from "@/stores/AccountStore";
