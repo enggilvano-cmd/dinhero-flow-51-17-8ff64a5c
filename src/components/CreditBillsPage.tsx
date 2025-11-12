@@ -55,6 +55,8 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedAccountId, setSelectedAccountId] = useState("all");
   const [selectedMonthOffset, setSelectedMonthOffset] = useState(0); // 0 = mês atual, 1 = próximo, -1 = anterior
+  const [filterBillStatus, setFilterBillStatus] = useState<"all" | "open" | "closed">("all");
+  const [filterPaymentStatus, setFilterPaymentStatus] = useState<"all" | "paid" | "pending">("all");
   const [selectedBillForDetails, setSelectedBillForDetails] = useState<{
     account: Account;
     transactions: AppTransaction[];
@@ -88,8 +90,8 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
     return format(selectedMonthDate, "MMMM 'de' yyyy", { locale: ptBR });
   }, [selectedMonthDate]);
 
-  // Memo para calcular os detalhes da fatura do mês selecionado
-  const billDetails = useMemo(() => {
+  // Memo para calcular os detalhes da fatura do mês selecionado (SEM filtros)
+  const allBillDetails = useMemo(() => {
     return filteredCreditAccounts.map((account) => {
       const accountTransactions = allTransactions.filter(
         (t) => t.account_id === account.id
@@ -107,6 +109,32 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
       };
     });
   }, [filteredCreditAccounts, allTransactions, selectedMonthOffset]);
+
+  // Memo para aplicar os filtros de status
+  const billDetails = useMemo(() => {
+    return allBillDetails.filter((details) => {
+      // Calcula se a fatura está fechada
+      const closingDate = details.account.closing_date 
+        ? new Date(selectedMonthDate.getFullYear(), selectedMonthDate.getMonth(), details.account.closing_date) 
+        : selectedMonthDate;
+      const isClosed = isPast(closingDate);
+
+      // Filtro de status da fatura (aberta/fechada)
+      if (filterBillStatus === "open" && isClosed) return false;
+      if (filterBillStatus === "closed" && !isClosed) return false;
+
+      // Calcula se está paga
+      const paidAmount = details.paymentTransactions.reduce((sum, t) => sum + Math.abs(t.amount), 0);
+      const amountDue = Math.max(0, details.currentBillAmount);
+      const isPaid = isClosed && paidAmount >= amountDue;
+
+      // Filtro de status de pagamento
+      if (filterPaymentStatus === "paid" && !isPaid) return false;
+      if (filterPaymentStatus === "pending" && isPaid) return false;
+
+      return true;
+    });
+  }, [allBillDetails, filterBillStatus, filterPaymentStatus, selectedMonthDate]);
 
   // Memo para os TOTAIS (baseado nos cartões filtrados)
   const totalSummary = useMemo(() => {
@@ -208,7 +236,7 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
         </CardHeader>
         <CardContent className="py-4 sm:pt-0">
           <div className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
               {/* Cartão */}
               <div className="space-y-1.5">
                 <Label htmlFor="filterCard">Cartão</Label>
@@ -231,6 +259,36 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
                         </div>
                       </SelectItem>
                     ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Status da Fatura (Aberta/Fechada) */}
+              <div className="space-y-1.5">
+                <Label htmlFor="filterBillStatus">Status da Fatura</Label>
+                <Select value={filterBillStatus} onValueChange={(value: any) => setFilterBillStatus(value)}>
+                  <SelectTrigger className="h-9 text-xs sm:text-sm" id="filterBillStatus">
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas</SelectItem>
+                    <SelectItem value="open">Aberta</SelectItem>
+                    <SelectItem value="closed">Fechada</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Status de Pagamento */}
+              <div className="space-y-1.5">
+                <Label htmlFor="filterPaymentStatus">Status de Pagamento</Label>
+                <Select value={filterPaymentStatus} onValueChange={(value: any) => setFilterPaymentStatus(value)}>
+                  <SelectTrigger className="h-9 text-xs sm:text-sm" id="filterPaymentStatus">
+                    <SelectValue placeholder="Pagamento" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos</SelectItem>
+                    <SelectItem value="paid">Pago</SelectItem>
+                    <SelectItem value="pending">Pendente</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
