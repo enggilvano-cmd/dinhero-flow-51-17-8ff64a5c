@@ -68,10 +68,12 @@ export function createDateFromString(dateInput: any): Date {
 /**
  * Calcula os valores da fatura atual e da próxima fatura
  * com base nas transações e datas do cartão.
+ * @param monthOffset - Offset de meses (0 = atual, 1 = próximo, -1 = anterior)
  */
 export function calculateBillDetails(
-  transactions: AppTransaction[], // Aceita AppTransaction (com datas corretas)
-  account: Account
+  transactions: AppTransaction[],
+  account: Account,
+  monthOffset: number = 0
 ) {
   // Retorna vazio se a conta não for de crédito
   if (!account.closing_date || !account.due_date) {
@@ -87,11 +89,14 @@ export function calculateBillDetails(
   const today = new Date();
   const closingDate = account.closing_date || 1; 
 
+  // Aplica o offset de meses à data de referência
+  const referenceDate = addMonths(today, monthOffset);
+  
   const todayNormalized = new Date(
     Date.UTC(
-      today.getUTCFullYear(),
-      today.getUTCMonth(),
-      today.getUTCDate(),
+      referenceDate.getUTCFullYear(),
+      referenceDate.getUTCMonth(),
+      referenceDate.getUTCDate(),
       12, 0, 0
     )
   );

@@ -8,14 +8,17 @@ import {
   TrendingUp,
   DollarSign,
   Search,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { useAccountStore } from "@/stores/AccountStore";
-// CORREÇÃO: Importar AppTransaction
 import { useTransactionStore, AppTransaction } from "@/stores/TransactionStore"; 
 import { calculateBillDetails } from "@/lib/dateUtils";
 import { CreditCardBillCard } from "@/components/CreditCardBillCard";
 import { Account } from "@/types";
 import { cn } from "@/lib/utils";
+import { format, addMonths } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 // Helper para formatar moeda
 const formatCents = (valueInCents: number) => {
@@ -36,13 +39,13 @@ interface CreditBillsPageProps {
   onReversePayment: (paymentsToReverse: AppTransaction[]) => void; // <-- ADICIONADO
 }
 
-export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBillsPageProps) { // <-- ADICIONADO
+export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBillsPageProps) {
   const allAccounts = useAccountStore((state) => state.accounts);
-  // allTransactions agora é do tipo AppTransaction[]
   const allTransactions = useTransactionStore((state) => state.transactions); 
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedAccountId, setSelectedAccountId] = useState("all");
+  const [selectedMonthOffset, setSelectedMonthOffset] = useState(0); // 0 = mês atual, 1 = próximo, -1 = anterior
 
   const creditAccounts = useMemo(() => {
     return allAccounts
@@ -61,27 +64,35 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
     });
   }, [creditAccounts, searchTerm, selectedAccountId]);
 
-  // Memo para calcular os detalhes da fatura
+  // Calcula a data base para o mês selecionado
+  const selectedMonthDate = useMemo(() => {
+    return addMonths(new Date(), selectedMonthOffset);
+  }, [selectedMonthOffset]);
+
+  // Formata o nome do mês para exibição
+  const selectedMonthLabel = useMemo(() => {
+    return format(selectedMonthDate, "MMMM 'de' yyyy", { locale: ptBR });
+  }, [selectedMonthDate]);
+
+  // Memo para calcular os detalhes da fatura do mês selecionado
   const billDetails = useMemo(() => {
     return filteredCreditAccounts.map((account) => {
       const accountTransactions = allTransactions.filter(
         (t) => t.account_id === account.id
       );
 
-      // --- CORREÇÃO: Passar o tipo correto ---
-      // Passa AppTransaction[] (com 'date' como objeto Date)
       const details = calculateBillDetails(
-        accountTransactions as AppTransaction[], // Passa o tipo correto
-        account
+        accountTransactions as AppTransaction[],
+        account,
+        selectedMonthOffset // Passa o offset do mês selecionado
       );
-      // --- FIM DA CORREÇÃO ---
 
       return {
         account,
-        ...details, // 'details' agora inclui 'paymentTransactions'
+        ...details,
       };
     });
-  }, [filteredCreditAccounts, allTransactions]);
+  }, [filteredCreditAccounts, allTransactions, selectedMonthOffset]);
 
   // Memo para os TOTAIS (baseado nos cartões filtrados)
   const totalSummary = useMemo(() => {
@@ -98,10 +109,45 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
 
   return (
     <div className="spacing-responsive-lg fade-in">
-      <h1 className="text-title-1">Faturas de Cartão</h1>
-      <p className="text-body text-muted-foreground">
-        Acompanhe o vencimento e o limite dos seus cartões de crédito.
-      </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+        <div>
+          <h1 className="text-title-1">Faturas de Cartão</h1>
+          <p className="text-body text-muted-foreground">
+            Acompanhe o vencimento e o limite dos seus cartões de crédito.
+          </p>
+        </div>
+        
+        {/* Seletor de Mês */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setSelectedMonthOffset(selectedMonthOffset - 1)}
+            className="h-9 w-9 apple-interaction"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <div className="min-w-[180px] text-center">
+            <p className="text-sm font-semibold capitalize">
+              {selectedMonthLabel}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {selectedMonthOffset === 0 ? "Fatura Atual" : 
+               selectedMonthOffset === 1 ? "Próxima Fatura" :
+               selectedMonthOffset > 1 ? `+${selectedMonthOffset} meses` :
+               `${selectedMonthOffset} meses`}
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setSelectedMonthOffset(selectedMonthOffset + 1)}
+            className="h-9 w-9 apple-interaction"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
 
       {/* CARDS DE TOTAIS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
