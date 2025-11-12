@@ -65,8 +65,8 @@ export function CreditCardBillCard({
   // --- LÓGICA DE PAGO ATUALIZADA ---
   const hasPayments = paymentTransactions && paymentTransactions.length > 0;
   const isBillPaid = currentBillAmount <= 0;
-  const isFullyPaid = totalBalance <= 0;
-  const canReverse = hasPayments; // <-- Lógica do Estorno
+  const isFullyPaid = currentBillAmount <= 0 && totalBalance <= 0;
+  const canReverse = hasPayments;
   // --- FIM DA LÓGICA ---
 
   const billAmountColor = currentBillAmount > 0 
@@ -147,11 +147,8 @@ export function CreditCardBillCard({
           
         <Button 
           className="flex-1" 
-          onClick={() => {
-            console.log('Botão Pagar Fatura clicado', { isFullyPaid, isBillPaid, account });
-            onPayBill();
-          }} 
-          disabled={isFullyPaid} // Desabilita se o saldo devedor total for 0
+          onClick={onPayBill} 
+          disabled={isFullyPaid}
         >
           {isBillPaid && !isFullyPaid ? "Pagar Avulso" : "Pagar Fatura"}
         </Button>
