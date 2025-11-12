@@ -511,6 +511,12 @@ const PlaniFlowApp = () => {
       );
       if (!oldTransaction) return;
 
+      console.info("[EditTransaction] scope=", editScope, {
+        txId: updatedTransaction.id,
+        isInstallment: Boolean(oldTransaction.parent_transaction_id),
+        hasInvoiceMonth: updatedTransaction.invoice_month !== undefined,
+      });
+
       if (
         !editScope ||
         editScope === "current" ||
@@ -605,6 +611,7 @@ const PlaniFlowApp = () => {
   ) => {
     if (!user || !oldTransaction.parent_transaction_id) return;
     try {
+      console.info("[InstallmentScopeEdit] start", { editScope, parentId: oldTransaction.parent_transaction_id });
       const cleanTransactionData = {
         description: updatedTransaction.description,
         amount: updatedTransaction.amount,
