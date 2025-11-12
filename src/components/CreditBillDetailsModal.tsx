@@ -14,8 +14,8 @@ interface CreditBillDetailsModalProps {
 export function CreditBillDetailsModal({ bill, onClose }: CreditBillDetailsModalProps) {
   if (!bill) return null
 
-  const paidAmount = bill.transactions.filter((t) => t.type === 'expense' && t.category_id).reduce((acc, t) => acc + t.amount, 0)
-  const remainingAmount = bill.amount - paidAmount
+  const paidAmount = bill.paid_amount
+  const remainingAmount = bill.total_amount - paidAmount
   const isClosed = isPast(new Date(bill.closing_date))
   const isPaid = remainingAmount <= 0
 
@@ -45,7 +45,7 @@ export function CreditBillDetailsModal({ bill, onClose }: CreditBillDetailsModal
         <div className="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
           <div>
             <div className="text-sm text-gray-500">Valor Total</div>
-            <div className="text-2xl font-bold">{formatCurrency(bill.amount)}</div>
+            <div className="text-2xl font-bold">{formatCurrency(bill.total_amount)}</div>
           </div>
           <div className="text-right">
             <div className="text-sm text-green-600">Pago: {formatCurrency(paidAmount)}</div>

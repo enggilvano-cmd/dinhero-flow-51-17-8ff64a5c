@@ -15,6 +15,7 @@ import { useAccountStore } from "@/stores/AccountStore";
 import { useTransactionStore, AppTransaction } from "@/stores/TransactionStore"; 
 import { calculateBillDetails } from "@/lib/dateUtils";
 import { CreditCardBillCard } from "@/components/CreditCardBillCard";
+import { CreditBillDetailsModal } from "@/components/CreditBillDetailsModal";
 import { Account } from "@/types";
 import { cn } from "@/lib/utils";
 import { format, addMonths } from "date-fns";
@@ -46,6 +47,11 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedAccountId, setSelectedAccountId] = useState("all");
   const [selectedMonthOffset, setSelectedMonthOffset] = useState(0); // 0 = mês atual, 1 = próximo, -1 = anterior
+  const [selectedBillForDetails, setSelectedBillForDetails] = useState<{
+    account: Account;
+    transactions: AppTransaction[];
+    billDetails: ReturnType<typeof calculateBillDetails>;
+  } | null>(null);
 
   const creditAccounts = useMemo(() => {
     return allAccounts
@@ -269,23 +275,83 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-          {billDetails.map((details) => (
-            <CreditCardBillCard
-              key={details.account.id}
-              account={details.account} 
-              billDetails={details}      
-              onPayBill={() =>
-                onPayCreditCard(
-                  details.account,
-                  details.currentBillAmount,
-                  details.nextBillAmount,
-                  details.totalBalance 
-                )
-              }
-              onReversePayment={() => onReversePayment(details.paymentTransactions)} // <-- ADICIONADO
-            />
-          ))}
+          {billDetails.map((details) => {
+            const accountTransactions = allTransactions.filter(
+              (t) => t.account_id === details.account.id
+            ) as AppTransaction[];
+
+            return (
+              <CreditCardBillCard
+                key={details.account.id}
+                account={details.account} 
+                billDetails={details}      
+                onPayBill={() =>
+                  onPayCreditCard(
+                    details.account,
+                    details.currentBillAmount,
+                    details.nextBillAmount,
+                    details.totalBalance 
+                  )
+                }
+                onReversePayment={() => onReversePayment(details.paymentTransactions)}
+                onViewDetails={() =>
+                  setSelectedBillForDetails({
+                    account: details.account,
+                    transactions: accountTransactions,
+                    billDetails: details,
+                  })
+                }
+              />
+            );
+          })}
         </div>
+      )}
+
+      {/* Modal de Detalhes da Fatura */}
+      {selectedBillForDetails && (
+        <CreditBillDetailsModal
+          bill={{
+            id: selectedBillForDetails.account.id,
+            account_id: selectedBillForDetails.account.id,
+            billing_cycle: format(selectedMonthDate, "MM/yyyy", { locale: ptBR }),
+            due_date: new Date(
+              selectedMonthDate.getFullYear(),
+              selectedMonthDate.getMonth(),
+              selectedBillForDetails.account.due_date || 1
+            ),
+            closing_date: new Date(
+              selectedMonthDate.getFullYear(),
+              selectedMonthDate.getMonth(),
+              selectedBillForDetails.account.closing_date || 1
+            ),
+            total_amount: selectedBillForDetails.billDetails.currentBillAmount,
+            paid_amount: selectedBillForDetails.billDetails.paymentTransactions.reduce(
+              (sum, t) => sum + t.amount,
+              0
+            ),
+            status:
+              selectedBillForDetails.billDetails.currentBillAmount <= 0
+                ? "paid"
+                : "pending",
+            minimum_payment: selectedBillForDetails.billDetails.currentBillAmount * 0.15,
+            late_fee: 0,
+            transactions: selectedBillForDetails.transactions.filter((t) => {
+              const billStart = new Date(
+                selectedMonthDate.getFullYear(),
+                selectedMonthDate.getMonth() - 1,
+                (selectedBillForDetails.account.closing_date || 1) + 1
+              );
+              const billEnd = new Date(
+                selectedMonthDate.getFullYear(),
+                selectedMonthDate.getMonth(),
+                selectedBillForDetails.account.closing_date || 1
+              );
+              return t.type === "expense" && t.date >= billStart && t.date <= billEnd;
+            }),
+            account: selectedBillForDetails.account,
+          }}
+          onClose={() => setSelectedBillForDetails(null)}
+        />
       )}
     </div>
   );

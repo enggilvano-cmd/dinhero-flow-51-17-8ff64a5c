@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/componen
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Account, AppTransaction } from "@/types"; // Importa AppTransaction
-import { CreditCard, RotateCcw } from "lucide-react"; // Importa RotateCcw
+import { CreditCard, RotateCcw, FileText } from "lucide-react"; // Importa RotateCcw e FileText
 import { cn } from "@/lib/utils";
 import { format, isPast } from 'date-fns';
 import { ptBR } from 'date-fns/locale'; 
@@ -27,13 +27,15 @@ interface CreditCardBillCardProps {
   };
   onPayBill: () => void;
   onReversePayment: () => void; // <-- Prop ADICIONADA
+  onViewDetails: () => void; // <-- Prop ADICIONADA
 }
 
 export function CreditCardBillCard({ 
   account, 
   billDetails, 
   onPayBill, 
-  onReversePayment // <-- Prop ADICIONADA
+  onReversePayment, // <-- Prop ADICIONADA
+  onViewDetails // <-- Prop ADICIONADA
 }: CreditCardBillCardProps) {
   
   if (!account || !billDetails) {
@@ -126,24 +128,35 @@ export function CreditCardBillCard({
       </CardContent>
       
       {/* --- NOVO: Botões de Ação --- */}
-      <CardFooter className="flex gap-2">
-        {canReverse && (
+      <CardFooter className="flex flex-col gap-2">
+        <div className="flex gap-2 w-full">
+          {canReverse && (
+            <Button 
+              variant="outline" 
+              className="flex-1" 
+              onClick={onReversePayment}
+            >
+              <RotateCcw className="h-4 w-4 mr-2" />
+              Estornar
+            </Button>
+          )}
+          
           <Button 
-            variant="outline" 
             className="flex-1" 
-            onClick={onReversePayment}
+            onClick={onPayBill} 
+            disabled={isFullyPaid} // Desabilita se o saldo devedor total for 0
           >
-            <RotateCcw className="h-4 w-4 mr-2" />
-            Estornar
+            {isBillPaid && !isFullyPaid ? "Pagar Avulso" : "Pagar Fatura"}
           </Button>
-        )}
+        </div>
         
         <Button 
-          className="flex-1" 
-          onClick={onPayBill} 
-          disabled={isFullyPaid} // Desabilita se o saldo devedor total for 0
+          variant="secondary" 
+          className="w-full" 
+          onClick={onViewDetails}
         >
-          {isBillPaid && !isFullyPaid ? "Pagar Avulso" : "Pagar Fatura"}
+          <FileText className="h-4 w-4 mr-2" />
+          Ver Detalhes da Fatura
         </Button>
       </CardFooter>
       {/* --- FIM DO NOVO --- */}
