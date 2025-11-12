@@ -470,30 +470,30 @@ export default function AnalyticsPage({
   return (
     <div className="spacing-responsive-lg fade-in">
       {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <div>
+      <div className="flex flex-col gap-3">
+        <div className="min-w-0 w-full">
           <h1 className="text-title-1">Análises</h1>
           <p className="text-body text-muted-foreground">
             Relatórios e gráficos financeiros detalhados
           </p>
         </div>
 
-        <div className="flex gap-3">
+        <div className="grid grid-cols-2 gap-2 w-full md:grid-cols-2 lg:flex lg:flex-nowrap lg:gap-2 lg:w-auto lg:ml-auto">
           <Button
             variant="outline"
             onClick={handleExportCSV}
-            className="gap-2 apple-interaction"
+            className="gap-2 apple-interaction h-9 text-xs sm:text-sm"
           >
-            <Download className="h-4 w-4" />
-            Exportar CSV
+            <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <span>Exportar CSV</span>
           </Button>
           <Button
             variant="outline"
             onClick={handleExportPDF}
-            className="gap-2 apple-interaction"
+            className="gap-2 apple-interaction h-9 text-xs sm:text-sm"
           >
-            <Download className="h-4 w-4" />
-            Exportar PDF
+            <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <span>Exportar PDF</span>
           </Button>
         </div>
       </div>
