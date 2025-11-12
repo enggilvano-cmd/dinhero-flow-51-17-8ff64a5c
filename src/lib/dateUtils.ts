@@ -211,9 +211,9 @@ export function calculateBillDetails(
     // 1. Calcula o Saldo Total (Limite Utilizado)
     // Soma despesas (aumenta dívida) e subtrai pagamentos (diminui dívida)
     if (t.type === 'expense') {
-      newTotalBalance += t.amount;
+      newTotalBalance += Math.abs(t.amount);
     } else if (t.type === 'income') {
-      newTotalBalance -= t.amount; // Subtrai pagamentos
+      newTotalBalance -= Math.abs(t.amount); // Subtrai pagamentos
     }
 
     // 2. Calcula o Saldo da Fatura Atual (currentBillAmount)
@@ -226,14 +226,15 @@ export function calculateBillDetails(
 
     if (belongsToCurrentBill) {
       if (t.type === 'expense') {
-        currentBillAmount += t.amount;
-        console.log(`  Added to current bill: ${t.amount}, new total: ${currentBillAmount}`);
+        // Usa Math.abs() porque o amount já vem negativo do banco
+        currentBillAmount += Math.abs(t.amount);
+        console.log(`  Added to current bill: ${Math.abs(t.amount)}, new total: ${currentBillAmount}`);
       } else if (t.type === 'income') {
         // CORREÇÃO: Subtrai o pagamento do valor da fatura atual.
         // Isso permite que currentBillAmount fique negativo (crédito).
-        currentBillAmount -= t.amount;
+        currentBillAmount -= Math.abs(t.amount);
         paymentTransactions.push(t); // <-- ADICIONADO
-        console.log(`  Payment subtracted from current bill: ${t.amount}, new total: ${currentBillAmount}`);
+        console.log(`  Payment subtracted from current bill: ${Math.abs(t.amount)}, new total: ${currentBillAmount}`);
       }
     }
     // 3. Calcula a Próxima Fatura (nextBillAmount)
@@ -244,8 +245,9 @@ export function calculateBillDetails(
         : (tDate >= nextBillStart && tDate <= nextBillEnd);
 
       if (belongsToNextBill && t.type === 'expense') {
-        nextBillAmount += t.amount;
-        console.log(`  Added to next bill: ${t.amount}, new total: ${nextBillAmount}`);
+        // Usa Math.abs() porque o amount já vem negativo do banco
+        nextBillAmount += Math.abs(t.amount);
+        console.log(`  Added to next bill: ${Math.abs(t.amount)}, new total: ${nextBillAmount}`);
       }
     }
   }
