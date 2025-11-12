@@ -345,20 +345,19 @@ export function TransactionsPage({
       const isTransfer = transaction.to_account_id != null;
       const transactionType = isTransfer ? "transfer" : transaction.type;
 
-      // =================================================================
-      // CORREÇÃO 2: Exportar o valor em Reais (dividido por 100)
-      // =================================================================
+      // Exportar valor sempre positivo em Reais (dividido por 100)
+      // O tipo (Receita/Despesa) define se é entrada ou saída
       return {
         Data: format(transactionDate, "dd/MM/yyyy", { locale: ptBR }),
         Descrição: transaction.description,
         Categoria: getCategoryName(transaction.category_id, isTransfer),
         Tipo: getTransactionTypeLabel(transactionType),
         Conta: getAccountName(transaction.account_id),
-        Valor: transaction.amount / 100, // Dividido por 100
+        Valor: Math.abs(transaction.amount / 100), // Sempre positivo
         Status: getStatusLabel(transaction.status),
         Parcelas: transaction.installments
           ? `${transaction.current_installment}/${transaction.installments}`
-          : "N/A",
+          : "",
       };
     });
 

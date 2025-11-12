@@ -196,17 +196,22 @@ export function ImportTransactionsModal({
     // Verificação de duplicata
     let isDuplicate = false;
     let existingTransactionId: string | undefined;
-    if (isValid && parsedDate && accountId) { // Agora accountId está disponível
+    if (isValid && parsedDate && accountId) {
+      // Converter valor importado para centavos para comparação
+      const valorInCents = Math.round(Math.abs(valor) * 100);
+      
       const existingTx = transactions.find(tx => {
         const txDate = new Date(tx.date);
-        return (
-          tx.accountId === accountId &&
+        const isSameDate = 
           txDate.getFullYear() === parsedDate.getFullYear() &&
           txDate.getMonth() === parsedDate.getMonth() &&
-          txDate.getDate() === parsedDate.getDate() &&
-          Math.abs(tx.amount) === Math.abs(valor) && // Compara valores absolutos
-          tx.description.trim().toLowerCase() === descricao.trim().toLowerCase() // Compara descrição
-        );
+          txDate.getDate() === parsedDate.getDate();
+        
+        const isSameAmount = Math.abs(tx.amount) === valorInCents;
+        const isSameDescription = tx.description.trim().toLowerCase() === descricao.trim().toLowerCase();
+        const isSameAccount = tx.accountId === accountId;
+        
+        return isSameAccount && isSameDate && isSameAmount && isSameDescription;
       });
 
       if (existingTx) {
@@ -302,20 +307,26 @@ export function ImportTransactionsModal({
   const handleImport = () => {    
     const transactionsToAdd = importedData
       .filter(t => t.isValid && (!t.isDuplicate || t.resolution === 'add' || t.resolution === 'replace'))
-      .map(t => ({
-        description: t.descricao,        
-        // CORREÇÃO: Multiplicar por 100 para converter para centavos e aplicar sinal negativo para despesas.
-        amount: t.parsedType === 'expense' ? -Math.abs(t.valor * 100) : Math.abs(t.valor * 100),
-        category: t.categoria,
-        type: t.parsedType as 'income' | 'expense' | 'transfer',
-        account_id: t.accountId as string,
-        date: t.parsedDate?.toISOString().split('T')[0] as string,
-        status: t.parsedStatus as 'completed' | 'pending',
-        installments: t.parcelas && t.parcelas.includes('/') ? 
-          parseInt(t.parcelas.split('/')[1], 10) || undefined : undefined,
-        current_installment: t.parcelas && t.parcelas.includes('/') ? 
-          parseInt(t.parcelas.split('/')[0], 10) || undefined : undefined
-      }));
+      .map(t => {
+        // Converter para centavos (multiplicar por 100)
+        // Valores são sempre positivos no arquivo, o tipo define se é entrada ou saída
+        const amountInCents = Math.round(Math.abs(t.valor) * 100);
+        
+        return {
+          description: t.descricao.trim(),        
+          // Despesas são negativas, receitas são positivas
+          amount: t.parsedType === 'expense' ? -amountInCents : amountInCents,
+          category: t.categoria.trim(),
+          type: t.parsedType as 'income' | 'expense' | 'transfer',
+          account_id: t.accountId as string,
+          date: t.parsedDate?.toISOString().split('T')[0] as string,
+          status: t.parsedStatus as 'completed' | 'pending',
+          installments: t.parcelas && t.parcelas.trim() && t.parcelas.includes('/') ? 
+            parseInt(t.parcelas.split('/')[1], 10) || undefined : undefined,
+          current_installment: t.parcelas && t.parcelas.trim() && t.parcelas.includes('/') ? 
+            parseInt(t.parcelas.split('/')[0], 10) || undefined : undefined
+        };
+      });
 
     const transactionsToReplaceIds = importedData
       .filter(t => t.isValid && t.isDuplicate && t.resolution === 'replace' && t.existingTransactionId)
@@ -354,7 +365,7 @@ export function ImportTransactionsModal({
         'Categoria': 'Salário',
         'Tipo': 'Receita',
         'Conta': accounts[0]?.name || 'Conta Corrente',
-        'Valor': 5000,
+        'Valor': 5000.00,
         'Status': 'Concluída',
         'Parcelas': ''
       },
@@ -370,13 +381,33 @@ export function ImportTransactionsModal({
       },
       {
         'Data': '17/03/2024',
-        'Descrição': 'Compra parcelada',
-        'Categoria': 'Compras',
+        'Descrição': 'Notebook',
+        'Categoria': 'Eletrônicos',
         'Tipo': 'Despesa',
         'Conta': accounts.find(acc => acc.type === 'credit')?.name || 'Cartão de Crédito',
-        'Valor': 300,
+        'Valor': 400.00,
         'Status': 'Pendente',
         'Parcelas': '1/3'
+      },
+      {
+        'Data': '17/03/2024',
+        'Descrição': 'Notebook',
+        'Categoria': 'Eletrônicos',
+        'Tipo': 'Despesa',
+        'Conta': accounts.find(acc => acc.type === 'credit')?.name || 'Cartão de Crédito',
+        'Valor': 400.00,
+        'Status': 'Pendente',
+        'Parcelas': '2/3'
+      },
+      {
+        'Data': '17/03/2024',
+        'Descrição': 'Notebook',
+        'Categoria': 'Eletrônicos',
+        'Tipo': 'Despesa',
+        'Conta': accounts.find(acc => acc.type === 'credit')?.name || 'Cartão de Crédito',
+        'Valor': 400.00,
+        'Status': 'Pendente',
+        'Parcelas': '3/3'
       }
     ];
 
