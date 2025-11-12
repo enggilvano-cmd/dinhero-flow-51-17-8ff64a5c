@@ -706,7 +706,7 @@ export default function AnalyticsPage({
       </Card>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-8">
         <Card className="financial-card">
           <CardContent className="p-3 overflow-hidden">
             <div className="grid grid-cols-[2.5rem_1fr] gap-x-3 gap-y-1 items-center">
