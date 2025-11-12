@@ -481,6 +481,7 @@ export function AddTransactionModal({
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, date: e.target.value }))
                 }
+                className="[color-scheme:light] dark:[color-scheme:dark]"
               />
             </div>
           </div>
