@@ -91,25 +91,58 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
     }
   }, [periodFilter, selectedMonthOffset]);
 
-  // Memo para calcular os detalhes da fatura do mês selecionado (SEM filtros)
+  // Memo para calcular os detalhes da fatura do mês selecionado (alinhado ao mês exibido)
   const allBillDetails = useMemo(() => {
+    const targetMonth = format(selectedMonthDate, 'yyyy-MM');
+    const nextMonth = format(addMonths(selectedMonthDate, 1), 'yyyy-MM');
+
     return filteredCreditAccounts.map((account) => {
       const accountTransactions = allTransactions.filter(
         (t) => t.account_id === account.id
+      ) as AppTransaction[];
+
+      // Base (limite, pagamentos, etc.)
+      const base = calculateBillDetails(
+        accountTransactions,
+        account,
+        selectedMonthOffset
       );
 
-      const details = calculateBillDetails(
-        accountTransactions as AppTransaction[],
-        account,
-        selectedMonthOffset // Passa o offset do mês selecionado
-      );
+      // Recalcular valores alinhados ao mês exibido
+      const effectiveMonth = (d: Date) => account.closing_date
+        ? calculateInvoiceMonthByDue(d, account.closing_date, account.due_date || 1)
+        : format(d, 'yyyy-MM');
+
+      let currentBillAmount = 0;
+      let nextBillAmount = 0;
+      const paymentTransactions: AppTransaction[] = [];
+
+      for (const t of accountTransactions) {
+        const d = typeof t.date === 'string' ? new Date(t.date) : t.date;
+        if (!d || isNaN(d.getTime())) continue;
+        const eff = effectiveMonth(d);
+        if (eff === targetMonth) {
+          if (t.type === 'expense') currentBillAmount += Math.abs(t.amount);
+          else if (t.type === 'income') {
+            currentBillAmount -= Math.abs(t.amount);
+            paymentTransactions.push(t);
+          }
+        } else if (eff === nextMonth && t.type === 'expense') {
+          nextBillAmount += Math.abs(t.amount);
+        }
+      }
 
       return {
         account,
-        ...details,
+        ...base,
+        currentBillAmount,
+        nextBillAmount,
+        paymentTransactions,
+        currentInvoiceMonth: targetMonth,
+        nextInvoiceMonth: nextMonth,
       };
     });
-  }, [filteredCreditAccounts, allTransactions, selectedMonthOffset]);
+  }, [filteredCreditAccounts, allTransactions, selectedMonthDate, selectedMonthOffset]);
 
   // Memo para aplicar os filtros de status
   const billDetails = useMemo(() => {
