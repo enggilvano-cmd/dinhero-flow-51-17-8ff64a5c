@@ -284,7 +284,8 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
               <CreditCardBillCard
                 key={details.account.id}
                 account={details.account} 
-                billDetails={details}      
+                billDetails={details}
+                selectedMonth={selectedMonthDate}
                 onPayBill={() =>
                   onPayCreditCard(
                     details.account,

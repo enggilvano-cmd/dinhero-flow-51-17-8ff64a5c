@@ -23,19 +23,21 @@ interface CreditCardBillCardProps {
     nextBillAmount: number;
     totalBalance: number; 
     availableLimit: number;
-    paymentTransactions: AppTransaction[]; // <-- Prop ADICIONADA
+    paymentTransactions: AppTransaction[];
   };
+  selectedMonth: Date; // <-- Prop ADICIONADA para o mês selecionado
   onPayBill: () => void;
-  onReversePayment: () => void; // <-- Prop ADICIONADA
-  onViewDetails: () => void; // <-- Prop ADICIONADA
+  onReversePayment: () => void;
+  onViewDetails: () => void;
 }
 
 export function CreditCardBillCard({ 
   account, 
-  billDetails, 
+  billDetails,
+  selectedMonth, // <-- Prop ADICIONADA
   onPayBill, 
-  onReversePayment, // <-- Prop ADICIONADA
-  onViewDetails // <-- Prop ADICIONADA
+  onReversePayment,
+  onViewDetails
 }: CreditCardBillCardProps) {
   
   if (!account || !billDetails) {
@@ -54,8 +56,10 @@ export function CreditCardBillCard({
   // Calcula o percentual de limite usado
   const limitUsedPercentage = limit_amount > 0 ? (totalBalance / limit_amount) * 100 : 0;
   
-  // Lógica de Status
-  const closingDate = closing_date ? new Date(new Date().getFullYear(), new Date().getMonth(), closing_date) : new Date();
+  // Lógica de Status - usa o mês selecionado para determinar se a fatura está fechada
+  const closingDate = closing_date 
+    ? new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), closing_date) 
+    : selectedMonth;
   const isClosed = isPast(closingDate);
   
   // --- LÓGICA DE PAGO ATUALIZADA ---
