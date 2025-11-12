@@ -15,6 +15,34 @@ function createFallbackDate(invalidInput?: any): Date {
 }
 
 /**
+ * Calcula o mês da fatura (invoice_month) para uma transação de cartão de crédito
+ * baseado na data da transação e na data de fechamento do cartão.
+ * @param transactionDate - Data da transação
+ * @param closingDate - Dia do fechamento da fatura (1-31)
+ * @returns O mês da fatura no formato "YYYY-MM"
+ */
+export function calculateInvoiceMonth(
+  transactionDate: Date,
+  closingDate: number
+): string {
+  const txDate = new Date(transactionDate);
+  const txDay = txDate.getDate();
+  const txMonth = txDate.getMonth();
+  const txYear = txDate.getFullYear();
+
+  // Se a transação ocorre APÓS o fechamento do mês atual,
+  // ela vai para a fatura do PRÓXIMO mês
+  if (txDay > closingDate) {
+    const nextMonth = new Date(txYear, txMonth + 1, 1);
+    return format(nextMonth, "yyyy-MM");
+  }
+
+  // Caso contrário, vai para a fatura do mês atual
+  const currentMonth = new Date(txYear, txMonth, 1);
+  return format(currentMonth, "yyyy-MM");
+}
+
+/**
  * Retorna a data de hoje como uma string no formato "YYYY-MM-DD".
  */
 export function getTodayString(): string {
@@ -196,17 +224,6 @@ export function calculateBillDetails(
   let newTotalBalance = 0; // Saldo devedor total (limite utilizado)
   const paymentTransactions: AppTransaction[] = []; // <-- ADICIONADO
 
-  console.log('=== DEBUG calculateBillDetails ===');
-  console.log('Account:', account.name);
-  console.log('Month Offset:', monthOffset);
-  console.log('Today Normalized:', todayNormalized);
-  console.log('Closing Date:', closingDate);
-  console.log('Current Invoice Month:', currentInvoiceMonth);
-  console.log('Next Invoice Month:', nextInvoiceMonth);
-  console.log('Current Bill Period:', currentBillStart, 'to', currentBillEnd);
-  console.log('Next Bill Period:', nextBillStart, 'to', nextBillEnd);
-  console.log('Total Transactions:', transactions.length);
-
   for (const t of transactions) {
     const tDate = t.date; // t.date agora é um Objeto Date
     
@@ -215,19 +232,12 @@ export function calculateBillDetails(
       continue; // Pula datas inválidas
     }
 
-    console.log(`Processing Transaction: ${t.description}`);
-    console.log(`  ID: ${t.id}, Date: ${tDate.toISOString()}, Amount: ${t.amount}, Type: ${t.type}`);
-    console.log(`  Invoice Month: ${t.invoice_month || 'not set'}`);
-    console.log(`  Date Range Check: ${tDate.toISOString()} between ${currentBillStart.toISOString()} and ${currentBillEnd.toISOString()}`);
-
     // 1. Calcula o Saldo Total (Limite Utilizado)
     // Soma despesas (aumenta dívida) e subtrai pagamentos (diminui dívida)
     if (t.type === 'expense') {
       newTotalBalance += Math.abs(t.amount);
-      console.log(`  Added to total balance (expense): ${Math.abs(t.amount)}, new total: ${newTotalBalance}`);
     } else if (t.type === 'income') {
       newTotalBalance -= Math.abs(t.amount); // Subtrai pagamentos
-      console.log(`  Subtracted from total balance (income): ${Math.abs(t.amount)}, new total: ${newTotalBalance}`);
     }
 
     // 2. Calcula o Saldo da Fatura Atual (currentBillAmount)
@@ -236,19 +246,15 @@ export function calculateBillDetails(
       ? t.invoice_month === currentInvoiceMonth
       : (tDate >= currentBillStart && tDate <= currentBillEnd);
 
-    console.log(`Transaction: ${t.description}, invoice_month: ${t.invoice_month}, amount: ${t.amount}, belongsToCurrentBill: ${belongsToCurrentBill}`);
-
     if (belongsToCurrentBill) {
       if (t.type === 'expense') {
         // Usa Math.abs() porque o amount já vem negativo do banco
         currentBillAmount += Math.abs(t.amount);
-        console.log(`  Added to current bill: ${Math.abs(t.amount)}, new total: ${currentBillAmount}`);
       } else if (t.type === 'income') {
         // CORREÇÃO: Subtrai o pagamento do valor da fatura atual.
         // Isso permite que currentBillAmount fique negativo (crédito).
         currentBillAmount -= Math.abs(t.amount);
         paymentTransactions.push(t); // <-- ADICIONADO
-        console.log(`  Payment subtracted from current bill: ${Math.abs(t.amount)}, new total: ${currentBillAmount}`);
       }
     }
     // 3. Calcula a Próxima Fatura (nextBillAmount)
@@ -261,14 +267,9 @@ export function calculateBillDetails(
       if (belongsToNextBill && t.type === 'expense') {
         // Usa Math.abs() porque o amount já vem negativo do banco
         nextBillAmount += Math.abs(t.amount);
-        console.log(`  Added to next bill: ${Math.abs(t.amount)}, new total: ${nextBillAmount}`);
       }
     }
   }
-
-  console.log('Final current bill amount:', currentBillAmount);
-  console.log('Final next bill amount:', nextBillAmount);
-  console.log('=== END DEBUG ===');
 
   // 4. Usa os novos valores calculados
   const totalBalance = newTotalBalance; // Saldo devedor total (correto)

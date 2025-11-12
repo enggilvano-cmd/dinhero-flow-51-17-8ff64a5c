@@ -22,6 +22,7 @@ import {
   createDateFromString,
   getTodayString,
   addMonthsToDate,
+  calculateInvoiceMonth,
 } from "@/lib/dateUtils";
 import { useCategories } from "@/hooks/useCategories";
 // 1. IMPORTAR O COMPONENTE DE MOEDA CORRETO
@@ -295,6 +296,11 @@ export function AddTransactionModal({
             // As demais são sempre pendentes para aparecerem nas faturas futuras.
             const installmentStatus: "completed" | "pending" = (i === 0 && installmentDateStr <= todayStr) ? "completed" : "pending";
 
+            // CORREÇÃO: Calcular o invoice_month para cada parcela baseado na sua data
+            const invoiceMonth = selectedAccount.closing_date
+              ? calculateInvoiceMonth(installmentDate, selectedAccount.closing_date)
+              : undefined;
+
             const transaction = {
               description: `${description} (${i + 1}/${installments})`,
               // O valor é sempre positivo aqui. O backend aplicará o sinal.
@@ -307,7 +313,7 @@ export function AddTransactionModal({
               installments: installments,
               currentInstallment: i + 1,
               parentTransactionId: undefined,
-              invoiceMonth: formData.invoiceMonth || undefined,
+              invoiceMonth: invoiceMonth,
             };
             transactionsToCreate.push(transaction);
           }
