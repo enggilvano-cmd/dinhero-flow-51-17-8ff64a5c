@@ -378,7 +378,7 @@ export function Layout({ children, currentPage, onPageChange }: LayoutProps) {
               "w-full h-full",
               isMobile 
                 ? "px-3 py-4" 
-                : "px-12 py-5 md:px-6 md:py-4 lg:px-12 lg:py-12"
+                : "px-12 py-5 md:px-6 md:py-4 lg:pl-16 lg:pr-10 lg:py-12"
             )}>
               <div className={cn(
                 "mx-auto w-full",
