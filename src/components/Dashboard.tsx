@@ -104,6 +104,9 @@ interface DashboardProps {
   categories: Category[];
   onTransfer: () => void;
   onAddTransaction: () => void;
+  onAddExpense?: () => void;
+  onAddIncome?: () => void;
+  onAddCreditExpense?: () => void;
   onNavigateToAccounts?: (filterType?: "credit") => void;
   onNavigateToTransactions?: (
     filterType?: "income" | "expense",
@@ -122,6 +125,9 @@ export function Dashboard({
   categories,
   onTransfer,
   onAddTransaction,
+  onAddExpense,
+  onAddIncome,
+  onAddCreditExpense,
   onNavigateToAccounts,
   onNavigateToTransactions,
 }: DashboardProps) {
@@ -478,13 +484,32 @@ export function Dashboard({
             <span className="xs:hidden">Transfer</span>
           </Button>
           <Button
-            onClick={onAddTransaction}
+            onClick={onAddExpense || onAddTransaction}
+            variant="destructive"
             size="sm"
             className="gap-1.5 h-8 flex-1 sm:flex-none text-xs sm:text-sm"
           >
-            <Plus className="h-3.5 w-3.5" />
-            <span className="hidden xs:inline">Adicionar</span>
-            <span className="xs:hidden">Novo</span>
+            <TrendingDown className="h-3.5 w-3.5" />
+            <span>Despesa</span>
+          </Button>
+          <Button
+            onClick={onAddIncome || onAddTransaction}
+            variant="default"
+            size="sm"
+            className="gap-1.5 h-8 flex-1 sm:flex-none text-xs sm:text-sm bg-success hover:bg-success/90"
+          >
+            <TrendingUp className="h-3.5 w-3.5" />
+            <span>Receita</span>
+          </Button>
+          <Button
+            onClick={onAddCreditExpense || onAddTransaction}
+            variant="outline"
+            size="sm"
+            className="gap-1.5 h-8 flex-1 sm:flex-none text-xs sm:text-sm border-warning text-warning hover:bg-warning hover:text-warning-foreground"
+          >
+            <CreditCard className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Cartão</span>
+            <span className="sm:hidden">Cart</span>
           </Button>
         </div>
       </div>

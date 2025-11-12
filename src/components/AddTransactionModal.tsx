@@ -63,6 +63,8 @@ interface AddTransactionModalProps {
     transactions: Omit<Transaction, "id" | "createdAt">[]
   ) => void; // Mantém a estrutura completa para parcelas
   accounts: Account[];
+  initialType?: "income" | "expense" | ""; // Tipo inicial pré-selecionado
+  initialAccountType?: "credit" | "checking" | ""; // Tipo de conta inicial
 }
 
 export function AddTransactionModal({
@@ -71,13 +73,15 @@ export function AddTransactionModal({
   onAddTransaction,
   onAddInstallmentTransactions,
   accounts,
+  initialType = "",
+  initialAccountType = "",
 }: AddTransactionModalProps) {
   const [formData, setFormData] = useState({
     description: "",
     // 3. ALTERAR O ESTADO 'amount' PARA NÚMERO (CENTAVOS)
     amount: 0,
     date: getTodayString(),
-    type: "" as "income" | "expense" | "transfer" | "",
+    type: initialType as "income" | "expense" | "transfer" | "",
     category_id: "",
     account_id: "",
     status: "completed" as "pending" | "completed",
@@ -86,6 +90,32 @@ export function AddTransactionModal({
   });
   const { toast } = useToast();
   const { categories } = useCategories();
+
+  // Atualiza o tipo inicial quando o modal é aberto e reseta quando fechar
+  useEffect(() => {
+    if (open) {
+      // Reseta o formulário quando abre
+      setFormData({
+        description: "",
+        amount: 0,
+        date: getTodayString(),
+        type: initialType || "",
+        category_id: "",
+        account_id: "",
+        status: "completed",
+        isInstallment: false,
+        installments: "2",
+      });
+      
+      // Pré-seleciona a conta se um tipo de conta foi especificado
+      if (initialAccountType && accounts.length > 0) {
+        const accountOfType = accounts.find(acc => acc.type === initialAccountType);
+        if (accountOfType) {
+          setFormData((prev) => ({ ...prev, account_id: accountOfType.id }));
+        }
+      }
+    }
+  }, [open, initialType, initialAccountType, accounts]);
 
   // Automatically set status based on transaction date
   useEffect(() => {
