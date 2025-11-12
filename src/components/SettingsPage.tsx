@@ -14,10 +14,12 @@ import {
   Bell,
   Database,
   FileText,
-  Shield
+  Shield,
+  RefreshCw
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { AppSettings, exportData, importData } from "@/lib/supabase-storage";
+import { recalculateInvoiceMonthsForUser } from "@/lib/fixes/recalculateInvoiceMonths";
 
 interface SettingsPageProps {
   settings: AppSettings;
@@ -29,6 +31,7 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
   const [localSettings, setLocalSettings] = useState(settings);
   const [isImporting, setIsImporting] = useState(false);
   const [clearDataConfirmation, setClearDataConfirmation] = useState("");
+  const [isFixing, setIsFixing] = useState(false);
   const { toast } = useToast();
 
   // Sync local settings when props change
@@ -204,6 +207,31 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
     };
     
     reader.readAsText(file);
+  };
+
+  const handleRecalculateInvoiceMonths = async () => {
+    if (!window.confirm(
+      "Esta ação irá recalcular o invoice_month das suas transações de cartão com base nas regras de fechamento e vencimento. Deseja continuar?"
+    )) {
+      return;
+    }
+    setIsFixing(true);
+    try {
+      const res = await recalculateInvoiceMonthsForUser();
+      toast({
+        title: "Correção concluída",
+        description: `Escaneadas: ${res.scanned} • Elegíveis: ${res.eligible} • Atualizadas: ${res.updated}`,
+      });
+    } catch (error) {
+      console.error('Fix error:', error);
+      toast({
+        title: "Erro na correção",
+        description: "Não foi possível recalcular as faturas. Tente novamente.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsFixing(false);
+    }
   };
 
   const handleClearData = () => {
@@ -383,6 +411,17 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
                   Selecione um arquivo JSON de backup válido (máx. 10MB)
                 </p>
               </div>
+            </div>
+
+            <div className="space-y-3">
+              <h4 className="font-medium">Correções de Faturas</h4>
+              <p className="text-sm text-muted-foreground">
+                Recalcula o mês de fatura (invoice_month) das parcelas de cartões com base em fechamento e vencimento.
+              </p>
+              <Button onClick={handleRecalculateInvoiceMonths} className="gap-2 w-full" disabled={isFixing} variant="outline">
+                <RefreshCw className={`h-4 w-4 ${isFixing ? 'animate-spin' : ''}`} />
+                {isFixing ? 'Recalculando...' : 'Recalcular invoice_month'}
+              </Button>
             </div>
 
             <Separator />
