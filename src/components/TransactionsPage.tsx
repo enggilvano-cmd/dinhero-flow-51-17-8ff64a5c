@@ -579,29 +579,29 @@ export function TransactionsPage({
             Histórico completo de receitas, despesas e transferências
           </p>
         </div>
-        <div className="flex flex-row gap-3">
+        <div className="grid grid-cols-2 gap-2 w-full sm:flex sm:flex-wrap sm:gap-2 sm:w-auto">
           <Button
             variant="outline"
             onClick={() => setImportModalOpen(true)}
-            className="gap-2 apple-interaction"
+            className="gap-2 apple-interaction h-9 text-xs sm:text-sm sm:flex-1 sm:flex-none"
           >
-            <Upload className="h-4 w-4" />
+            <Upload className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             <span>Importar</span>
           </Button>
           <Button
             variant="outline"
             onClick={exportToExcel}
-            className="gap-2 apple-interaction"
+            className="gap-2 apple-interaction h-9 text-xs sm:text-sm sm:flex-1 sm:flex-none"
             disabled={filteredAndSortedTransactions.length === 0}
           >
-            <Download className="h-4 w-4" />
+            <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             <span>Exportar</span>
           </Button>
           <Button
             onClick={onAddTransaction}
-            className="gap-2 apple-interaction"
+            className="gap-2 apple-interaction h-9 text-xs sm:text-sm sm:flex-1 sm:flex-none col-span-2 sm:col-span-1"
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             <span>Adicionar</span>
           </Button>
         </div>
