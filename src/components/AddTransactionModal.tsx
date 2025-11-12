@@ -658,11 +658,7 @@ export function AddTransactionModal({
                         {num}x
                         {(() => {
                           const numericAmount = formData.amount;
-                          return numericAmount > 0 &&
-                            formData.account_id &&
-                            filteredAccounts.find(
-                              (acc) => acc.id === formData.account_id
-                            )?.type !== "credit"
+                          return numericAmount > 0
                             ? ` de ${new Intl.NumberFormat("pt-BR", {
                                 style: "currency",
                                 currency: "BRL",
