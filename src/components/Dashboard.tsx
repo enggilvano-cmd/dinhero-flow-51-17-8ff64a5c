@@ -878,36 +878,36 @@ export function Dashboard({
                   Evolução {chartScale === "daily" ? "Diária" : "Mensal"} -
                   Receitas vs Despesas
                 </CardTitle>
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-                  {/* Controles de escala */}
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant={chartScale === "monthly" ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setChartScale("monthly")}
-                      className="h-7 px-2 text-xs"
-                    >
-                      <BarChart3 className="h-3 w-3 mr-1" />
-                      Mensal
-                    </Button>
-                    <Button
-                      variant={chartScale === "daily" ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setChartScale("daily")}
-                      className="h-7 px-2 text-xs"
-                    >
-                      <BarChart3 className="h-3 w-3 mr-1" />
-                      Diário
-                    </Button>
-                  </div>
+                <div className={cn(
+                  "w-full gap-2",
+                  chartScale === "monthly" ? "grid grid-cols-3" : "grid grid-cols-2",
+                  "sm:flex sm:flex-row sm:items-center sm:w-auto"
+                )}>
+                  <Button
+                    variant={chartScale === "monthly" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setChartScale("monthly")}
+                    className="h-7 px-2 text-xs w-full sm:w-auto"
+                  >
+                    <BarChart3 className="h-3 w-3 mr-1" />
+                    Mensal
+                  </Button>
+                  <Button
+                    variant={chartScale === "daily" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setChartScale("daily")}
+                    className="h-7 px-2 text-xs w-full sm:w-auto"
+                  >
+                    <BarChart3 className="h-3 w-3 mr-1" />
+                    Diário
+                  </Button>
 
-                  {/* Controle de ano (apenas para escala mensal) */}
                   {chartScale === "monthly" && (
                     <Select
                       value={chartYear.toString()}
                       onValueChange={(value) => setChartYear(parseInt(value))}
                     >
-                      <SelectTrigger className="h-7 w-20 text-xs">
+                      <SelectTrigger className="h-7 w-full text-xs sm:w-20">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
