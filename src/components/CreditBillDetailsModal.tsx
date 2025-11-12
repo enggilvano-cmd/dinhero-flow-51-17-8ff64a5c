@@ -32,12 +32,14 @@ export function CreditBillDetailsModal({ bill, onClose }: CreditBillDetailsModal
   const isClosed = isPast(closingDateOfBill);
   
   const amountDue = Math.max(0, bill.total_amount)
-  const isPaid = isClosed && paidAmount >= amountDue
+  // Uma fatura está "Paga" se não há valor a pagar OU se está fechada e foi paga
+  const isPaid = amountDue <= 0 || (isClosed && paidAmount >= amountDue);
 
   console.info("[CreditBillDetailsModal] Status", {
     billMonth,
     closingDateOfBill: format(closingDateOfBill, 'dd/MM/yyyy'),
     isClosed,
+    totalAmount: bill.total_amount,
     paidAmount,
     amountDue,
     isPaid,

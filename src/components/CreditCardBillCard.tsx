@@ -67,8 +67,11 @@ export function CreditCardBillCard({
   // --- LÓGICA DE PAGO ATUALIZADA ---
   const paidAmount = (paymentTransactions?.reduce((sum, t) => sum + Math.abs(t.amount), 0)) || 0;
   const amountDue = Math.max(0, currentBillAmount);
-  // Uma fatura só está "Paga" se: está fechada E o valor pago >= valor devido
-  const isPaid = isClosed && (paidAmount >= amountDue || amountDue === 0);
+  
+  // Uma fatura está "Paga" se:
+  // 1. Não há valor a pagar (amountDue <= 0, ou seja, crédito ou zero)
+  // 2. OU está fechada E o valor pago >= valor devido
+  const isPaid = amountDue <= 0 || (isClosed && paidAmount >= amountDue);
   const isBillPaid = isPaid;
   const isFullyPaid = isPaid && totalBalance <= 0;
   const canReverse = paymentTransactions && paymentTransactions.length > 0;
@@ -78,6 +81,7 @@ export function CreditCardBillCard({
     selectedMonth: selectedMonth.toISOString().split('T')[0],
     closingDate: closingDate.toISOString().split('T')[0],
     isClosed,
+    currentBillAmount,
     paidAmount,
     amountDue,
     isPaid,

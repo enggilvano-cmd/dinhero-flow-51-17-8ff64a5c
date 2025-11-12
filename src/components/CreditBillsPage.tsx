@@ -171,13 +171,15 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
       // Calcula se está paga
       const paidAmount = details.paymentTransactions.reduce((sum, t) => sum + Math.abs(t.amount), 0);
       const amountDue = Math.max(0, details.currentBillAmount);
-      const isPaid = isClosed && paidAmount >= amountDue;
+      // Uma fatura está "Paga" se não há valor a pagar (crédito) OU se está fechada e foi paga
+      const isPaid = amountDue <= 0 || (isClosed && paidAmount >= amountDue);
 
       console.info("[CreditBillsPage] Status check", {
         account: details.account.name,
         targetMonth,
         closingDate: format(closingDate, 'dd/MM/yyyy'),
         isClosed,
+        currentBillAmount: details.currentBillAmount,
         paidAmount,
         amountDue,
         isPaid,
@@ -517,7 +519,8 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
               const due = Math.max(0, selectedBillForDetails.billDetails.currentBillAmount);
               const paid = selectedBillForDetails.billDetails.paymentTransactions.reduce((s, t) => s + Math.abs(t.amount), 0);
               
-              return isClosed && paid >= due ? "paid" : "pending";
+              // Pago se não há valor a pagar OU se está fechada e foi paga
+              return due <= 0 || (isClosed && paid >= due) ? "paid" : "pending";
             })(),
             minimum_payment: selectedBillForDetails.billDetails.currentBillAmount * 0.15,
             late_fee: 0,
