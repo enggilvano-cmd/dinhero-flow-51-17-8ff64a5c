@@ -326,7 +326,8 @@ export function TransactionsPage({
           if (transaction.type === "income") {
             acc.income += transaction.amount;
           } else if (transaction.type === "expense") {
-            acc.expenses += transaction.amount;
+            // Despesas vêm negativas do banco, então usar Math.abs para somar positivo
+            acc.expenses += Math.abs(transaction.amount);
           }
         }
         return acc;
