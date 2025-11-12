@@ -208,37 +208,37 @@ export function AccountsPage({
             Gerencie suas contas bancárias e cartões de crédito.
           </p>
         </div>
-        <div className="flex gap-2 flex-wrap sm:flex-nowrap">
+        <div className="grid grid-cols-2 gap-2 w-full sm:flex sm:flex-wrap sm:gap-2 sm:w-auto">
           <Button
             onClick={exportToExcel}
             variant="outline"
-            className="gap-2 apple-interaction"
+            className="gap-2 apple-interaction h-9 text-xs sm:text-sm sm:flex-1 sm:flex-none"
             disabled={accounts.length === 0}
           >
-            <FileDown className="h-4 w-4" />
-            <span className="hidden sm:inline">Exportar</span>
+            <FileDown className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <span>Exportar</span>
           </Button>
           <Button
             onClick={() => setImportModalOpen(true)}
             variant="outline"
-            className="gap-2 apple-interaction"
+            className="gap-2 apple-interaction h-9 text-xs sm:text-sm sm:flex-1 sm:flex-none"
           >
-            <Upload className="h-4 w-4" />
-            <span className="hidden sm:inline">Importar</span>
+            <Upload className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <span>Importar</span>
           </Button>
           {onTransfer && (
             <Button
               onClick={onTransfer}
               variant="outline"
-              className="gap-2 apple-interaction"
+              className="gap-2 apple-interaction h-9 text-xs sm:text-sm sm:flex-1 sm:flex-none"
             >
-              <ArrowRight className="h-4 w-4" />
-              <span className="hidden sm:inline">Transferir</span>
+              <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <span>Transferir</span>
             </Button>
           )}
-          <Button onClick={onAddAccount} className="gap-2 apple-interaction">
-            <Plus className="h-4 w-4" />
-            <span className="hidden sm:inline">Nova Conta</span>
+          <Button onClick={onAddAccount} className="gap-2 apple-interaction h-9 text-xs sm:text-sm sm:flex-1 sm:flex-none">
+            <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <span>Nova Conta</span>
           </Button>
         </div>
       </div>
