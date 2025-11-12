@@ -18,7 +18,7 @@ import { CreditCardBillCard } from "@/components/CreditCardBillCard";
 import { CreditBillDetailsModal } from "@/components/CreditBillDetailsModal";
 import { Account } from "@/types";
 import { cn } from "@/lib/utils";
-import { format, addMonths } from "date-fns";
+import { format, addMonths, isPast } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 // Helper para formatar moeda
@@ -333,7 +333,12 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
             status: (() => {
               const due = Math.max(0, selectedBillForDetails.billDetails.currentBillAmount);
               const paid = selectedBillForDetails.billDetails.paymentTransactions.reduce((s, t) => s + Math.abs(t.amount), 0);
-              return paid >= due ? "paid" : "pending";
+              const closed = isPast(new Date(
+                selectedMonthDate.getFullYear(),
+                selectedMonthDate.getMonth(),
+                selectedBillForDetails.account.closing_date || 1
+              ));
+              return closed && paid >= due ? "paid" : "pending";
             })(),
             minimum_payment: selectedBillForDetails.billDetails.currentBillAmount * 0.15,
             late_fee: 0,

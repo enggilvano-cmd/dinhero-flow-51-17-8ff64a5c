@@ -96,9 +96,9 @@ export function CreditCardBillCard({
           <Badge variant={isClosed ? 'secondary' : 'outline'}>
             {isClosed ? 'Fechada' : 'Aberta'}
           </Badge>
-          {/* Badge de Pago/Pendente baseado no valor devido vs. pagamentos */}
-          <Badge variant={isPaid ? 'default' : 'destructive'}>
-            {isPaid ? 'Pago' : 'Pendente'}
+          {/* Badge de Pago/Pendente baseado no fechamento + pagamentos */}
+          <Badge variant={isClosed && isPaid ? 'default' : 'destructive'}>
+            {isClosed && isPaid ? 'Pago' : 'Pendente'}
           </Badge>
         </div>
       </CardHeader>
