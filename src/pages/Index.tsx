@@ -738,6 +738,62 @@ const PlaniFlowApp = () => {
     }
   };
 
+  const handleImportAccounts = async (accountsToAdd: any[], accountsToReplaceIds: string[]) => {
+    if (!user) return;
+    
+    try {
+      // Deletar contas que serão substituídas
+      if (accountsToReplaceIds.length > 0) {
+        const { error: deleteError } = await supabase
+          .from("accounts")
+          .delete()
+          .in("id", accountsToReplaceIds)
+          .eq("user_id", user.id);
+
+        if (deleteError) throw deleteError;
+
+        // Remover do store local
+        accountsToReplaceIds.forEach(id => removeGlobalAccount(id));
+      }
+
+      // Inserir novas contas
+      if (accountsToAdd.length > 0) {
+        const { data, error } = await supabase
+          .from("accounts")
+          .insert(accountsToAdd.map(acc => ({
+            ...acc,
+            user_id: user.id
+          })))
+          .select();
+
+        if (error) throw error;
+
+        // Atualizar store local
+        if (data) {
+          const accountsWithDefaults = data.map(acc => ({
+            ...acc,
+            limit_amount: acc.limit_amount || 0,
+            due_date: acc.due_date || undefined,
+            closing_date: acc.closing_date || undefined,
+          }));
+          updateGlobalAccounts([...accounts.filter(acc => !accountsToReplaceIds.includes(acc.id)), ...accountsWithDefaults]);
+        }
+
+        toast({
+          title: "Sucesso",
+          description: `${accountsToAdd.length} contas importadas com sucesso!`,
+        });
+      }
+    } catch (error) {
+      console.error("Error importing accounts:", error);
+      toast({
+        title: "Erro",
+        description: "Erro ao importar contas.",
+        variant: "destructive"
+      });
+    }
+  };
+
   const handleDeleteTransaction = async (transactionId: string) => {
     if (!user) return;
 
@@ -1122,6 +1178,7 @@ const PlaniFlowApp = () => {
             onDeleteAccount={handleDeleteAccount}
             onPayCreditCard={(account) => openCreditPayment(account, 0, 0, account.balance < 0 ? Math.abs(account.balance) : 0)} 
             onTransfer={() => setTransferModalOpen(true)}
+            onImportAccounts={handleImportAccounts}
             initialFilterType={accountFilterType}
           />
         );

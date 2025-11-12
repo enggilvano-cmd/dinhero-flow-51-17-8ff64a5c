@@ -15,6 +15,8 @@ import {
   ArrowRight,
   DollarSign,
   TrendingUp,
+  FileDown,
+  Upload,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -23,36 +25,36 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
-// 1. IMPORTAR O STORE
 import { useAccountStore } from "@/stores/AccountStore";
+import { ImportAccountsModal } from "@/components/ImportAccountsModal";
+import * as XLSX from 'xlsx';
 
 interface AccountsPageProps {
-  // 2. REMOVER 'accounts' DAS PROPS
-  // accounts: any[]; 
   onAddAccount: () => void;
   onEditAccount: (account: any) => void;
   onDeleteAccount: (accountId: string) => void;
   onPayCreditCard?: (account: any) => void;
   onTransfer?: () => void;
+  onImportAccounts?: (accounts: any[], accountsToReplace: string[]) => void;
   initialFilterType?: "all" | "checking" | "savings" | "credit" | "investment";
 }
 
 export function AccountsPage({
-  // 3. REMOVER 'accounts' DAS PROPS
   onAddAccount,
   onEditAccount,
   onDeleteAccount,
   onPayCreditCard,
   onTransfer,
+  onImportAccounts,
   initialFilterType = "all",
 }: AccountsPageProps) {
-  // 4. LER AS CONTAS DIRETAMENTE DO STORE
   const accounts = useAccountStore((state) => state.accounts);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<
     "all" | "checking" | "savings" | "credit" | "investment"
   >(initialFilterType);
+  const [importModalOpen, setImportModalOpen] = useState(false);
   const { toast } = useToast();
 
   const formatCurrency = (value: number) => {
@@ -138,6 +140,64 @@ export function AccountsPage({
     .filter((acc) => acc.type === "credit")
     .reduce((sum, acc) => sum + Math.abs(acc.balance), 0);
 
+  const exportToExcel = () => {
+    const dataToExport = filteredAccounts.map((account) => ({
+      Nome: account.name,
+      Tipo: getAccountTypeLabel(account.type),
+      Saldo: account.balance / 100, // Converter para Reais
+      Limite: account.limit_amount ? account.limit_amount / 100 : 0,
+      Fechamento: account.closing_date || '',
+      Vencimento: account.due_date || '',
+      Cor: account.color,
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(dataToExport);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Contas");
+
+    const colWidths = [
+      { wch: 30 }, // Nome
+      { wch: 20 }, // Tipo
+      { wch: 15 }, // Saldo
+      { wch: 15 }, // Limite
+      { wch: 12 }, // Fechamento
+      { wch: 12 }, // Vencimento
+      { wch: 12 }, // Cor
+    ];
+    ws['!cols'] = colWidths;
+
+    // Formatar colunas de valores como moeda
+    for (let i = 2; i <= dataToExport.length + 1; i++) {
+      const saldoCell = `C${i}`;
+      const limiteCell = `D${i}`;
+      if (ws[saldoCell]) {
+        ws[saldoCell].t = "n";
+        ws[saldoCell].z = "R$ #,##0.00";
+      }
+      if (ws[limiteCell]) {
+        ws[limiteCell].t = "n";
+        ws[limiteCell].z = "R$ #,##0.00";
+      }
+    }
+
+    let fileName = "contas";
+    if (filterType !== "all") fileName += `_${filterType}`;
+    fileName += ".xlsx";
+
+    XLSX.writeFile(wb, fileName);
+
+    toast({
+      title: "Exportação concluída",
+      description: `${filteredAccounts.length} contas exportadas para Excel.`,
+    });
+  };
+
+  const handleImportAccounts = (accountsToAdd: any[], accountsToReplaceIds: string[]) => {
+    if (onImportAccounts) {
+      onImportAccounts(accountsToAdd, accountsToReplaceIds);
+    }
+  };
+
   return (
     <div className="spacing-responsive-lg fade-in">
       {/* Header */}
@@ -148,7 +208,24 @@ export function AccountsPage({
             Gerencie suas contas bancárias e cartões de crédito.
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-2 flex-wrap sm:flex-nowrap">
+          <Button
+            onClick={exportToExcel}
+            variant="outline"
+            className="gap-2 apple-interaction"
+            disabled={accounts.length === 0}
+          >
+            <FileDown className="h-4 w-4" />
+            <span className="hidden sm:inline">Exportar</span>
+          </Button>
+          <Button
+            onClick={() => setImportModalOpen(true)}
+            variant="outline"
+            className="gap-2 apple-interaction"
+          >
+            <Upload className="h-4 w-4" />
+            <span className="hidden sm:inline">Importar</span>
+          </Button>
           {onTransfer && (
             <Button
               onClick={onTransfer}
@@ -156,12 +233,12 @@ export function AccountsPage({
               className="gap-2 apple-interaction"
             >
               <ArrowRight className="h-4 w-4" />
-              Transferir
+              <span className="hidden sm:inline">Transferir</span>
             </Button>
           )}
           <Button onClick={onAddAccount} className="gap-2 apple-interaction">
             <Plus className="h-4 w-4" />
-            Nova Conta
+            <span className="hidden sm:inline">Nova Conta</span>
           </Button>
         </div>
       </div>
@@ -441,6 +518,14 @@ export function AccountsPage({
           ))}
         </div>
       )}
+
+      {/* Import Modal */}
+      <ImportAccountsModal
+        open={importModalOpen}
+        onOpenChange={setImportModalOpen}
+        accounts={accounts}
+        onImportAccounts={handleImportAccounts}
+      />
     </div>
   );
 }
