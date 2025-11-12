@@ -167,7 +167,38 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Prevent zoom on input focus (iOS Safari) */
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+
+  @media (min-width: 768px) {
+    input,
+    select,
+    textarea {
+      font-size: 14px !important;
+    }
+  }
+
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+    overflow-x: hidden;
+  }
+
+  /* Responsive container queries support */
+  @supports (container-type: inline-size) {
+    .container-query {
+      container-type: inline-size;
+    }
   }
 }
 
@@ -552,20 +583,54 @@
     @apply max-w-sm sm:max-w-lg md:max-w-2xl lg:max-w-4xl xl:max-w-6xl 2xl:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
   }
 
-  /* System status bar spacing (iOS) */
+  /* System status bar spacing (iOS/Android safe areas) */
   .safe-top {
-    padding-top: env(safe-area-inset-top);
+    padding-top: max(env(safe-area-inset-top), 0px);
   }
 
   .safe-bottom {
-    padding-bottom: env(safe-area-inset-bottom);
+    padding-bottom: max(env(safe-area-inset-bottom), 0px);
   }
 
   .safe-left {
-    padding-left: env(safe-area-inset-left);
+    padding-left: max(env(safe-area-inset-left), 0px);
   }
 
   .safe-right {
-    padding-right: env(safe-area-inset-right);
+    padding-right: max(env(safe-area-inset-right), 0px);
+  }
+
+  /* Responsive viewport height for mobile browsers */
+  .min-h-screen-mobile {
+    min-height: 100vh;
+    min-height: 100dvh; /* Dynamic viewport height for mobile */
+  }
+
+  /* Prevent horizontal scroll on small screens */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Responsive table wrapper */
+  .table-responsive {
+    @apply w-full overflow-x-auto -mx-2 px-2 sm:mx-0 sm:px-0;
+  }
+
+  /* Breakpoint-specific utilities */
+  @media (max-width: 640px) {
+    .compact-mobile {
+      @apply text-sm px-2 py-1;
+    }
+  }
+
+  @media (min-width: 1536px) {
+    .wide-desktop {
+      @apply max-w-[1800px];
+    }
   }
 }

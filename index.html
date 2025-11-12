@@ -2,7 +2,7 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, minimum-scale=1.0, viewport-fit=cover, user-scalable=yes" />
     <title>PlaniFlow - Gestão Financeira Pessoal</title>
     <meta name="description" content="Aplicativo completo para gestão financeira pessoal - controle suas contas, cartões e investimentos" />
     <meta name="author" content="PlaniFlow" />
@@ -10,12 +10,13 @@
     <!-- Apple Web App Meta Tags -->
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="PlaniFlow" />
     
     <!-- Theme Colors -->
-    <meta name="theme-color" content="#3b82f6" />
-    <meta name="msapplication-TileColor" content="#3b82f6" />
+    <meta name="theme-color" content="#1469B6" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0ea5e9" media="(prefers-color-scheme: dark)" />
+    <meta name="msapplication-TileColor" content="#1469B6" />
 
     <meta property="og:title" content="PlaniFlow - Gestão Financeira Pessoal" />
     <meta property="og:description" content="Aplicativo completo para gestão financeira pessoal - controle suas contas, cartões e investimentos" />
@@ -30,6 +31,18 @@
     <style>
       body {
         font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', 'Roboto', system-ui, sans-serif;
+        overscroll-behavior-y: none;
+      }
+      
+      /* Prevent rubber-band scrolling on iOS */
+      html {
+        overscroll-behavior-y: none;
+        height: 100%;
+      }
+      
+      #root {
+        min-height: 100vh;
+        min-height: 100dvh;
       }
     </style>
   </head>
