@@ -73,6 +73,7 @@ export function ImportTransactionsModal({
 }: ImportTransactionsModalProps) {
   const [file, setFile] = useState<File | null>(null);
   const [importedData, setImportedData] = useState<ImportedTransaction[]>([]);
+  const [excludedIndexes, setExcludedIndexes] = useState<Set<number>>(new Set());
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
 
@@ -306,7 +307,11 @@ export function ImportTransactionsModal({
 
   const handleImport = () => {    
     const transactionsToAdd = importedData
-      .filter(t => t.isValid && (!t.isDuplicate || t.resolution === 'add' || t.resolution === 'replace'))
+      .filter((t, index) => 
+        !excludedIndexes.has(index) && 
+        t.isValid && 
+        (!t.isDuplicate || t.resolution === 'add' || t.resolution === 'replace')
+      )
       .map(t => {
         // Converter para centavos (multiplicar por 100)
         // Valores são sempre positivos no arquivo, o tipo define se é entrada ou saída
@@ -329,7 +334,13 @@ export function ImportTransactionsModal({
       });
 
     const transactionsToReplaceIds = importedData
-      .filter(t => t.isValid && t.isDuplicate && t.resolution === 'replace' && t.existingTransactionId)
+      .filter((t, index) => 
+        !excludedIndexes.has(index) && 
+        t.isValid && 
+        t.isDuplicate && 
+        t.resolution === 'replace' && 
+        t.existingTransactionId
+      )
       .map(t => t.existingTransactionId!);
 
     onImportTransactions(transactionsToAdd, transactionsToReplaceIds);
@@ -342,13 +353,27 @@ export function ImportTransactionsModal({
     // Reset
     setFile(null);
     setImportedData([]);
+    setExcludedIndexes(new Set());
     onOpenChange(false);
   };
 
   const handleCancel = () => {
     setFile(null);
     setImportedData([]);
+    setExcludedIndexes(new Set());
     onOpenChange(false);
+  };
+
+  const handleToggleExclude = (index: number) => {
+    setExcludedIndexes(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(index)) {
+        newSet.delete(index);
+      } else {
+        newSet.add(index);
+      }
+      return newSet;
+    });
   };
 
   const handleResolutionChange = (rowIndex: number, resolution: 'skip' | 'add' | 'replace') => {
@@ -437,17 +462,27 @@ export function ImportTransactionsModal({
   };
 
   const summary = useMemo(() => {
-    return importedData.reduce((acc, t) => {
-      if (!t.isValid) acc.invalid++;
-      else if (t.isDuplicate) acc.duplicates++;
-      else acc.new++;
+    return importedData.reduce((acc, t, index) => {
+      if (excludedIndexes.has(index)) {
+        acc.excluded++;
+      } else if (!t.isValid) {
+        acc.invalid++;
+      } else if (t.isDuplicate) {
+        acc.duplicates++;
+      } else {
+        acc.new++;
+      }
       return acc;
-    }, { new: 0, duplicates: 0, invalid: 0 });
-  }, [importedData]);
+    }, { new: 0, duplicates: 0, invalid: 0, excluded: 0 });
+  }, [importedData, excludedIndexes]);
 
   const transactionsToImportCount = useMemo(() => {
-    return importedData.filter(t => t.isValid && (!t.isDuplicate || t.resolution === 'add' || t.resolution === 'replace')).length;
-  }, [importedData]);
+    return importedData.filter((t, index) => 
+      !excludedIndexes.has(index) && 
+      t.isValid && 
+      (!t.isDuplicate || t.resolution === 'add' || t.resolution === 'replace')
+    ).length;
+  }, [importedData, excludedIndexes]);
 
 
   return (
@@ -519,7 +554,7 @@ export function ImportTransactionsModal({
 
           {/* Summary Stats */}
           {importedData.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <Card>
                 <CardContent className="pt-6">
                   <div className="flex items-center gap-2">
@@ -561,7 +596,23 @@ export function ImportTransactionsModal({
                         {summary.invalid}
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        Transações com Erros
+                        Com Erros
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="h-5 w-5 text-muted-foreground" />
+                    <div>
+                      <div className="text-2xl font-bold text-muted-foreground">
+                        {summary.excluded}
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Excluídas
                       </p>
                     </div>
                   </div>
@@ -574,81 +625,92 @@ export function ImportTransactionsModal({
           {importedData.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle>Prévia das Transações</CardTitle>
+                <CardTitle>Prévia das Transações ({importedData.length} total)</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="max-h-60 overflow-auto">
+                <div className="max-h-96 overflow-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Status</TableHead>
+                        <TableHead className="w-[100px]">Status</TableHead>
                         <TableHead>Data</TableHead>
                         <TableHead>Descrição</TableHead>
                         <TableHead>Categoria</TableHead>
                         <TableHead>Tipo</TableHead>
                         <TableHead>Conta</TableHead>
                         <TableHead>Valor</TableHead>
-                        <TableHead>Detalhes/Ação</TableHead>
+                        <TableHead className="w-[180px]">Ação</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {importedData.slice(0, 10).map((transaction, index) => (
-                        <TableRow key={index}>
-                          <TableCell>
-                            {!transaction.isValid ? (
-                              <Badge variant="destructive">Erro</Badge>
-                            ) : transaction.isDuplicate ? (
-                              <Badge variant="secondary" className="bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300">Duplicata</Badge>
-                            ) : (
-                              <Badge variant="default" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300">Nova</Badge>
-                            )}
-                          </TableCell>
-                          <TableCell>{transaction.data}</TableCell>
-                          <TableCell>{transaction.descricao}</TableCell>
-                          <TableCell>{transaction.categoria}</TableCell>
-                          <TableCell>{transaction.tipo}</TableCell>
-                          <TableCell>{transaction.conta}</TableCell>
-                          <TableCell>R$ {transaction.valor.toFixed(2)}</TableCell>
-                          <TableCell className="w-[200px]">
-                            {!transaction.isValid ? (
-                              <div className="space-y-1">
-                                {transaction.errors.map((error, i) => (
-                                  <div key={i} className="text-xs text-destructive">
-                                    {error}
+                      {importedData.map((transaction, index) => {
+                        const isExcluded = excludedIndexes.has(index);
+                        
+                        return (
+                          <TableRow 
+                            key={index} 
+                            className={isExcluded ? "opacity-50 bg-muted/50" : ""}
+                          >
+                            <TableCell>
+                              {isExcluded ? (
+                                <Badge variant="outline" className="bg-muted">Excluída</Badge>
+                              ) : !transaction.isValid ? (
+                                <Badge variant="destructive">Erro</Badge>
+                              ) : transaction.isDuplicate ? (
+                                <Badge variant="secondary" className="bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300">Duplicata</Badge>
+                              ) : (
+                                <Badge variant="default" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300">Nova</Badge>
+                              )}
+                            </TableCell>
+                            <TableCell>{transaction.data}</TableCell>
+                            <TableCell>{transaction.descricao}</TableCell>
+                            <TableCell>{transaction.categoria}</TableCell>
+                            <TableCell>{transaction.tipo}</TableCell>
+                            <TableCell>{transaction.conta}</TableCell>
+                            <TableCell>R$ {transaction.valor.toFixed(2)}</TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  variant={isExcluded ? "outline" : "ghost"}
+                                  size="sm"
+                                  onClick={() => handleToggleExclude(index)}
+                                  className="h-7 text-xs"
+                                >
+                                  {isExcluded ? "Incluir" : "Excluir"}
+                                </Button>
+                                
+                                {!isExcluded && !transaction.isValid && (
+                                  <div className="text-xs text-destructive space-y-1">
+                                    {transaction.errors.map((error, i) => (
+                                      <div key={i}>{error}</div>
+                                    ))}
                                   </div>
-                                ))}
+                                )}
+                                
+                                {!isExcluded && transaction.isDuplicate && transaction.isValid && (
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button variant="outline" size="sm" className="text-xs h-7">
+                                        {transaction.resolution === 'skip' && 'Ignorar'}
+                                        {transaction.resolution === 'add' && 'Adicionar'}
+                                        {transaction.resolution === 'replace' && 'Substituir'}
+                                        <MoreVertical className="h-3 w-3 ml-1" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent>
+                                      <DropdownMenuItem onClick={() => handleResolutionChange(index, 'skip')}>Ignorar</DropdownMenuItem>
+                                      <DropdownMenuItem onClick={() => handleResolutionChange(index, 'add')}>Adicionar como Nova</DropdownMenuItem>
+                                      <DropdownMenuItem onClick={() => handleResolutionChange(index, 'replace')} className="text-destructive">Substituir</DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                )}
                               </div>
-                            ) : transaction.isDuplicate ? (
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="outline" size="sm" className="text-xs h-7">
-                                    {transaction.resolution === 'skip' && 'Ignorar'}
-                                    {transaction.resolution === 'add' && 'Adicionar Mesmo Assim'}
-                                    {transaction.resolution === 'replace' && 'Substituir'}
-                                    <MoreVertical className="h-3 w-3 ml-2" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                  <DropdownMenuItem onClick={() => handleResolutionChange(index, 'skip')}>Ignorar (Manter existente)</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleResolutionChange(index, 'add')}>Adicionar como Nova</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleResolutionChange(index, 'replace')} className="text-destructive">Substituir existente</DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            ) : (
-                              <span className="text-xs text-muted-foreground italic">
-                                Será importada
-                              </span>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
                     </TableBody>
                   </Table>
-                  {importedData.length > 10 && (
-                    <p className="text-sm text-muted-foreground mt-2 text-center">
-                      Mostrando 10 de {importedData.length} transações
-                    </p>
-                  )}
                 </div>
               </CardContent>
             </Card>
