@@ -444,14 +444,14 @@ export function Dashboard({
   return (
     <div className="space-y-3 sm:space-y-4 fade-in max-w-screen-2xl mx-auto px-2 sm:px-0">
       {/* Header ultra compacto */}
-      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-start sm:items-center justify-between">
-        <div className="min-w-0 flex-1">
+      <div className="flex flex-col gap-3">
+        <div className="min-w-0 w-full">
           <h1 className="text-xl sm:text-2xl font-bold leading-tight">Painel</h1>
           <p className="text-sm text-muted-foreground leading-tight">
             Visão geral das suas finanças
           </p>
         </div>
-        <div className="flex gap-2 w-full sm:w-auto">
+        <div className="flex gap-2 w-full sm:w-auto flex-wrap sm:flex-nowrap">
           <Button
             onClick={onTransfer}
             variant="outline"
