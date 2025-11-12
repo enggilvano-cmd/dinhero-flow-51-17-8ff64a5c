@@ -499,106 +499,126 @@ export default function AnalyticsPage({
       </div>
 
       {/* Filters */}
-      <Card className="financial-card">
-        <CardHeader>
-          <CardTitle className="text-headline">Filtros</CardTitle>
-        </CardHeader>
-        <CardContent className="spacing-responsive-sm">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar transações..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
+      <Card>
+        <CardContent className="p-2 sm:p-3">
+          <div className="flex flex-col gap-4 sm:flex-row">
+            <div className="flex-1">
+              <label htmlFor="search" className="text-caption">Buscar transações</label>
+              <div className="relative mt-2">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="search"
+                  placeholder="Digite para buscar..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 touch-target"
+                />
+              </div>
+            </div>
+            <div className="sm:w-48">
+              <label htmlFor="filter-type" className="text-caption">Tipo</label>
+              <Select
+                value={filterType}
+                onValueChange={(value: any) => setFilterType(value)}
+              >
+                <SelectTrigger id="filter-type" className="touch-target mt-2">
+                  <SelectValue placeholder="Tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os tipos</SelectItem>
+                  <SelectItem value="income">Receitas</SelectItem>
+                  <SelectItem value="expense">Despesas</SelectItem>
+                  <SelectItem value="transfer">Transferências</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+            <div>
+              <label htmlFor="filter-account" className="text-caption">Conta</label>
+              <Select value={filterAccount} onValueChange={setFilterAccount}>
+                <SelectTrigger id="filter-account" className="touch-target mt-2">
+                  <SelectValue placeholder="Conta" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas as contas</SelectItem>
+                  {accounts.map((account) => (
+                    <SelectItem key={account.id} value={account.id}>
+                      {account.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
-            <Select
-              value={filterType}
-              onValueChange={(value: any) => setFilterType(value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Tipo" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos os tipos</SelectItem>
-                <SelectItem value="income">Receitas</SelectItem>
-                <SelectItem value="expense">Despesas</SelectItem>
-                <SelectItem value="transfer">Transferências</SelectItem>
-              </SelectContent>
-            </Select>
+            <div>
+              <label htmlFor="filter-category" className="text-caption">Categoria</label>
+              <Select value={filterCategory} onValueChange={setFilterCategory}>
+                <SelectTrigger id="filter-category" className="touch-target mt-2">
+                  <SelectValue placeholder="Categoria" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas as categorias</SelectItem>
+                  {categories.map((category) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="w-3 h-3 rounded-full"
+                          style={{
+                            backgroundColor: category.color || "#6b7280",
+                          }}
+                        />
+                        {category.name}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-            <Select value={filterAccount} onValueChange={setFilterAccount}>
-              <SelectTrigger>
-                <SelectValue placeholder="Conta" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas as contas</SelectItem>
-                {accounts.map((account) => (
-                  <SelectItem key={account.id} value={account.id}>
-                    {account.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div>
+              <label htmlFor="filter-status" className="text-caption">Status</label>
+              <Select
+                value={filterStatus}
+                onValueChange={(value: any) => setFilterStatus(value)}
+              >
+                <SelectTrigger id="filter-status" className="touch-target mt-2">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os status</SelectItem>
+                  <SelectItem value="completed">Concluídas</SelectItem>
+                  <SelectItem value="pending">Pendentes</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-            <Select value={filterCategory} onValueChange={setFilterCategory}>
-              <SelectTrigger>
-                <SelectValue placeholder="Categoria" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas as categorias</SelectItem>
-                {categories.map((category) => (
-                  <SelectItem key={category.id} value={category.id}>
-                    <div className="flex items-center gap-2">
-                      <div
-                        className="w-3 h-3 rounded-full"
-                        style={{
-                          backgroundColor: category.color || "#6b7280",
-                        }}
-                      />
-                      {category.name}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div>
+              <label htmlFor="filter-date" className="text-caption">Período</label>
+              <Select
+                value={dateFilter}
+                onValueChange={(
+                  value: "all" | "current_month" | "month_picker" | "custom"
+                ) => setDateFilter(value)}
+              >
+                <SelectTrigger id="filter-date" className="touch-target mt-2">
+                  <SelectValue placeholder="Período" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os períodos</SelectItem>
+                  <SelectItem value="current_month">Mês Atual</SelectItem>
+                  <SelectItem value="month_picker">Navegar por Mês</SelectItem>
+                  <SelectItem value="custom">Período Personalizado</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
-            <Select
-              value={filterStatus}
-              onValueChange={(value: any) => setFilterStatus(value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos os status</SelectItem>
-                <SelectItem value="completed">Concluídas</SelectItem>
-                <SelectItem value="pending">Pendentes</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select
-              value={dateFilter}
-              onValueChange={(
-                value: "all" | "current_month" | "month_picker" | "custom"
-              ) => setDateFilter(value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Período" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos os períodos</SelectItem>
-                <SelectItem value="current_month">Mês Atual</SelectItem>
-                <SelectItem value="month_picker">Navegar por Mês</SelectItem>
-                <SelectItem value="custom">Período Personalizado</SelectItem>
-              </SelectContent>
-            </Select>
-
-            {dateFilter === "month_picker" && (
-              <div className="flex items-center gap-2 border border-input rounded-md px-3 py-2">
+          {dateFilter === "month_picker" && (
+            <div className="mt-4">
+              <label className="text-caption">Selecionar mês</label>
+              <div className="flex items-center gap-2 border border-input rounded-md px-3 py-2 mt-2">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -619,23 +639,26 @@ export default function AnalyticsPage({
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
-            )}
+            </div>
+          )}
 
-            {dateFilter === "custom" && (
-              <>
+          {dateFilter === "custom" && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+              <div>
+                <label className="text-caption">Data início</label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
                       className={cn(
-                        "justify-start text-left font-normal",
+                        "w-full justify-start text-left font-normal mt-2",
                         !customStartDate && "text-muted-foreground"
                       )}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
                       {customStartDate
                         ? format(customStartDate, "dd/MM/yyyy")
-                        : "Data início"}
+                        : "Selecione a data"}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
@@ -648,20 +671,23 @@ export default function AnalyticsPage({
                     />
                   </PopoverContent>
                 </Popover>
+              </div>
 
+              <div>
+                <label className="text-caption">Data fim</label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
                       className={cn(
-                        "justify-start text-left font-normal",
+                        "w-full justify-start text-left font-normal mt-2",
                         !customEndDate && "text-muted-foreground"
                       )}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
                       {customEndDate
                         ? format(customEndDate, "dd/MM/yyyy")
-                        : "Data fim"}
+                        : "Selecione a data"}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
@@ -674,9 +700,9 @@ export default function AnalyticsPage({
                     />
                   </PopoverContent>
                 </Popover>
-              </>
-            )}
-          </div>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
