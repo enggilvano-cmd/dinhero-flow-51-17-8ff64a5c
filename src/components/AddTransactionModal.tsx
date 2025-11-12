@@ -95,6 +95,7 @@ export function AddTransactionModal({
     installments: "2", // Padrão de 2 se parcelado
     invoiceMonth: "", // Mês da fatura (YYYY-MM)
   });
+  const [customInstallments, setCustomInstallments] = useState("");
   const { toast } = useToast();
   const { categories } = useCategories();
 
@@ -114,6 +115,7 @@ export function AddTransactionModal({
         installments: "2",
         invoiceMonth: "", // Será calculado pelo próximo useEffect
       });
+      setCustomInstallments("");
       
       // Pré-seleciona a conta se um tipo de conta foi especificado
       if (initialAccountType && accounts.length > 0) {
@@ -242,14 +244,14 @@ export function AddTransactionModal({
       return;
     }
 
-    const installments = parseInt(installmentsString);
+    const installments = parseInt(installmentsString === "custom" ? customInstallments : installmentsString);
     if (
       isInstallment &&
-      (isNaN(installments) || installments < 2 || installments > 60)
+      (isNaN(installments) || installments < 2 || installments > 360)
     ) {
       toast({
         title: "Erro",
-        description: "O número de parcelas deve ser entre 2 e 60.",
+        description: "O número de parcelas deve ser entre 2 e 360.",
         variant: "destructive",
       });
       return;
@@ -400,6 +402,7 @@ export function AddTransactionModal({
         installments: "2",
         invoiceMonth: "",
       });
+      setCustomInstallments("");
       onOpenChange(false);
     } catch (error) {
       console.error("Error creating transaction(s):", error);
@@ -645,9 +648,12 @@ export function AddTransactionModal({
                 <Label htmlFor="installments">Número de Parcelas</Label>
                 <Select
                   value={formData.installments}
-                  onValueChange={(value) =>
-                    setFormData((prev) => ({ ...prev, installments: value }))
-                  }
+                  onValueChange={(value) => {
+                    setFormData((prev) => ({ ...prev, installments: value }));
+                    if (value !== "custom") {
+                      setCustomInstallments("");
+                    }
+                  }}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione" />
@@ -667,8 +673,33 @@ export function AddTransactionModal({
                         })()}
                       </SelectItem>
                     ))}
+                    <SelectItem value="custom">Personalizar (acima de 60x)</SelectItem>
                   </SelectContent>
                 </Select>
+                
+                {formData.installments === "custom" && (
+                  <div className="space-y-2 pt-2">
+                    <Label htmlFor="customInstallments">Número personalizado de parcelas</Label>
+                    <Input
+                      id="customInstallments"
+                      type="number"
+                      min="61"
+                      max="360"
+                      placeholder="Ex: 72"
+                      value={customInstallments}
+                      onChange={(e) => setCustomInstallments(e.target.value)}
+                    />
+                    {customInstallments && parseInt(customInstallments) > 0 && formData.amount > 0 && (
+                      <p className="text-sm text-muted-foreground">
+                        {parseInt(customInstallments)}x de{" "}
+                        {new Intl.NumberFormat("pt-BR", {
+                          style: "currency",
+                          currency: "BRL",
+                        }).format((formData.amount / 100) / parseInt(customInstallments))}
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>
