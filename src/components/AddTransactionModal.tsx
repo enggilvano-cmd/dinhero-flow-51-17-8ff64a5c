@@ -65,6 +65,7 @@ interface AddTransactionModalProps {
   accounts: Account[];
   initialType?: "income" | "expense" | ""; // Tipo inicial pré-selecionado
   initialAccountType?: "credit" | "checking" | ""; // Tipo de conta inicial
+  lockType?: boolean; // Se true, trava o campo de tipo
 }
 
 export function AddTransactionModal({
@@ -75,6 +76,7 @@ export function AddTransactionModal({
   accounts,
   initialType = "",
   initialAccountType = "",
+  lockType = false,
 }: AddTransactionModalProps) {
   const [formData, setFormData] = useState({
     description: "",
@@ -411,9 +413,9 @@ export function AddTransactionModal({
                     category_id: "",
                   }))
                 }
-                disabled={!!initialType}
+                disabled={lockType}
               >
-                <SelectTrigger disabled={!!initialType}>
+                <SelectTrigger disabled={lockType}>
                   <SelectValue placeholder="Tipo" />
                 </SelectTrigger>
                 <SelectContent>

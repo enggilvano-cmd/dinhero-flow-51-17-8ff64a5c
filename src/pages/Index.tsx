@@ -1149,21 +1149,25 @@ const PlaniFlowApp = () => {
             onAddTransaction={() => {
               setTransactionInitialType("");
               setTransactionInitialAccountType("");
+              setTransactionLockType(false);
               setAddTransactionModalOpen(true);
             }}
             onAddExpense={() => {
               setTransactionInitialType("expense");
               setTransactionInitialAccountType("");
+              setTransactionLockType(true);
               setAddTransactionModalOpen(true);
             }}
             onAddIncome={() => {
               setTransactionInitialType("income");
               setTransactionInitialAccountType("");
+              setTransactionLockType(true);
               setAddTransactionModalOpen(true);
             }}
             onAddCreditExpense={() => {
               setTransactionInitialType("expense");
               setTransactionInitialAccountType("credit");
+              setTransactionLockType(false);
               setAddTransactionModalOpen(true);
             }}
             onNavigateToAccounts={(filterType) => {
@@ -1214,21 +1218,25 @@ const PlaniFlowApp = () => {
             onAddTransaction={() => {
               setTransactionInitialType("");
               setTransactionInitialAccountType("");
+              setTransactionLockType(false);
               setAddTransactionModalOpen(true);
             }}
             onAddExpense={() => {
               setTransactionInitialType("expense");
               setTransactionInitialAccountType("");
+              setTransactionLockType(true);
               setAddTransactionModalOpen(true);
             }}
             onAddIncome={() => {
               setTransactionInitialType("income");
               setTransactionInitialAccountType("");
+              setTransactionLockType(true);
               setAddTransactionModalOpen(true);
             }}
             onAddCreditExpense={() => {
               setTransactionInitialType("expense");
               setTransactionInitialAccountType("credit");
+              setTransactionLockType(false);
               setAddTransactionModalOpen(true);
             }}
             onNavigateToAccounts={(filterType) => {
@@ -1287,21 +1295,25 @@ const PlaniFlowApp = () => {
             onAddTransaction={() => {
               setTransactionInitialType("");
               setTransactionInitialAccountType("");
+              setTransactionLockType(false);
               setAddTransactionModalOpen(true);
             }}
             onAddExpense={() => {
               setTransactionInitialType("expense");
               setTransactionInitialAccountType("");
+              setTransactionLockType(true);
               setAddTransactionModalOpen(true);
             }}
             onAddIncome={() => {
               setTransactionInitialType("income");
               setTransactionInitialAccountType("");
+              setTransactionLockType(true);
               setAddTransactionModalOpen(true);
             }}
             onAddCreditExpense={() => {
               setTransactionInitialType("expense");
               setTransactionInitialAccountType("credit");
+              setTransactionLockType(false);
               setAddTransactionModalOpen(true);
             }}
             onNavigateToAccounts={(filterType) => {
@@ -1381,6 +1393,7 @@ const PlaniFlowApp = () => {
             // Limpa os tipos iniciais quando o modal fechar
             setTransactionInitialType("");
             setTransactionInitialAccountType("");
+            setTransactionLockType(false);
           }
         }}
         onAddTransaction={handleAddTransaction}
@@ -1388,6 +1401,7 @@ const PlaniFlowApp = () => {
         accounts={accounts}
         initialType={transactionInitialType}
         initialAccountType={transactionInitialAccountType}
+        lockType={transactionLockType}
       />
 
       <EditAccountModal
