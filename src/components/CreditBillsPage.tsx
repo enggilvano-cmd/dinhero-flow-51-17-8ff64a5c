@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { useAccountStore } from "@/stores/AccountStore";
 import { useTransactionStore, AppTransaction } from "@/stores/TransactionStore"; 
-import { calculateBillDetails } from "@/lib/dateUtils";
+import { calculateBillDetails, calculateInvoiceMonthByDue } from "@/lib/dateUtils";
 import { CreditCardBillCard } from "@/components/CreditCardBillCard";
 import { CreditBillDetailsModal } from "@/components/CreditBillDetailsModal";
 import { Account } from "@/types";
@@ -398,13 +398,28 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
                   )
                 }
                 onReversePayment={() => onReversePayment(details.paymentTransactions)}
-                onViewDetails={() =>
+                onViewDetails={() => {
+                  // Filtrar transações apenas da fatura corrente calculada (YYYY-MM)
+                  const currentMonth = details.currentInvoiceMonth || '';
+                  const filtered = accountTransactions.filter((t) => {
+                    const tDate = typeof t.date === 'string' ? new Date(t.date) : t.date;
+                    if (!tDate || isNaN(tDate.getTime())) return false;
+                    const eff = details.account.closing_date
+                      ? calculateInvoiceMonthByDue(
+                          tDate,
+                          details.account.closing_date,
+                          details.account.due_date || 1
+                        )
+                      : (t.invoice_month || '');
+                    return t.type === 'expense' && eff === currentMonth;
+                  });
+
                   setSelectedBillForDetails({
                     account: details.account,
-                    transactions: accountTransactions,
+                    transactions: filtered as AppTransaction[],
                     billDetails: details,
-                  })
-                }
+                  });
+                }}
               />
             );
           })}

@@ -266,5 +266,7 @@ export function calculateBillDetails(
     totalBalance,      // Limite Utilizado (saldo devedor total)
     availableLimit,    // Limite Disponível
     paymentTransactions, // <-- ADICIONADO
+    currentInvoiceMonth, // <-- ADICIONADO: mês (YYYY-MM) da fatura atual
+    nextInvoiceMonth,    // <-- ADICIONADO: mês (YYYY-MM) da próxima fatura
   };
 }
