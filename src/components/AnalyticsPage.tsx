@@ -709,19 +709,18 @@ export default function AnalyticsPage({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
         <Card className="financial-card">
           <CardContent className="p-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3 min-w-0 flex-1">
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center flex-shrink-0">
                   <TrendingUp className="h-5 w-5 text-success" />
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-caption font-medium">
-                    Receitas - Período Filtrado
-                  </p>
-                  <div className="text-responsive-xl font-bold balance-positive leading-tight">
-                    {formatCurrency(totalsByType.income / 100)}
-                  </div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold">Receitas</p>
+                  <p className="text-xs text-muted-foreground">Período Filtrado</p>
                 </div>
+              </div>
+              <div className="text-responsive-xl font-bold balance-positive leading-tight pl-13">
+                {formatCurrency(totalsByType.income / 100)}
               </div>
             </div>
           </CardContent>
@@ -729,19 +728,18 @@ export default function AnalyticsPage({
 
         <Card className="financial-card">
           <CardContent className="p-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3 min-w-0 flex-1">
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center flex-shrink-0">
                   <TrendingDown className="h-5 w-5 text-destructive" />
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-caption font-medium">
-                    Despesas - Período Filtrado
-                  </p>
-                  <div className="text-responsive-xl font-bold balance-negative leading-tight">
-                    {formatCurrency(totalsByType.expenses / 100)}
-                  </div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold">Despesas</p>
+                  <p className="text-xs text-muted-foreground">Período Filtrado</p>
                 </div>
+              </div>
+              <div className="text-responsive-xl font-bold balance-negative leading-tight pl-13">
+                {formatCurrency(totalsByType.expenses / 100)}
               </div>
             </div>
           </CardContent>
@@ -749,27 +747,26 @@ export default function AnalyticsPage({
 
         <Card className="financial-card">
           <CardContent className="p-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3 min-w-0 flex-1">
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                   <BarChart3 className="h-5 w-5 text-primary" />
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-caption font-medium">
-                    Saldo Líquido - Período Filtrado
-                  </p>
-                  <div
-                    className={`text-responsive-xl font-bold leading-tight ${
-                      totalsByType.income - totalsByType.expenses >= 0
-                        ? "balance-positive"
-                        : "balance-negative"
-                    }`}
-                  >
-                    {formatCurrency(
-                      (totalsByType.income - totalsByType.expenses) / 100
-                    )}
-                  </div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold">Saldo Líquido</p>
+                  <p className="text-xs text-muted-foreground">Período Filtrado</p>
                 </div>
+              </div>
+              <div
+                className={`text-responsive-xl font-bold leading-tight pl-13 ${
+                  totalsByType.income - totalsByType.expenses >= 0
+                    ? "balance-positive"
+                    : "balance-negative"
+                }`}
+              >
+                {formatCurrency(
+                  (totalsByType.income - totalsByType.expenses) / 100
+                )}
               </div>
             </div>
           </CardContent>
