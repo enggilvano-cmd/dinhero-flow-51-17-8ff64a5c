@@ -143,9 +143,52 @@ export function calculateBillDetails(
     )
   );
 
-  // Calcula o mês da fatura atual e próxima no formato YYYY-MM
-  const currentInvoiceMonth = format(currentBillEnd, "yyyy-MM");
-  const nextInvoiceMonth = format(nextBillEnd, "yyyy-MM");
+  // Calcula a data de vencimento para cada fatura
+  const dueDate = account.due_date || 1;
+  
+  // Data de vencimento da fatura atual
+  let currentDueDate = new Date(
+    Date.UTC(
+      currentBillEnd.getUTCFullYear(),
+      currentBillEnd.getUTCMonth(),
+      dueDate, 12, 0, 0
+    )
+  );
+  
+  // Se a data de vencimento for antes do fechamento, o vencimento é no mês seguinte
+  if (dueDate <= closingDate) {
+    currentDueDate = new Date(
+      Date.UTC(
+        currentBillEnd.getUTCFullYear(),
+        currentBillEnd.getUTCMonth() + 1,
+        dueDate, 12, 0, 0
+      )
+    );
+  }
+  
+  // Data de vencimento da próxima fatura
+  let nextDueDate = new Date(
+    Date.UTC(
+      nextBillEnd.getUTCFullYear(),
+      nextBillEnd.getUTCMonth(),
+      dueDate, 12, 0, 0
+    )
+  );
+  
+  // Se a data de vencimento for antes do fechamento, o vencimento é no mês seguinte
+  if (dueDate <= closingDate) {
+    nextDueDate = new Date(
+      Date.UTC(
+        nextBillEnd.getUTCFullYear(),
+        nextBillEnd.getUTCMonth() + 1,
+        dueDate, 12, 0, 0
+      )
+    );
+  }
+
+  // Calcula o mês da fatura baseado na data de VENCIMENTO no formato YYYY-MM
+  const currentInvoiceMonth = format(currentDueDate, "yyyy-MM");
+  const nextInvoiceMonth = format(nextDueDate, "yyyy-MM");
 
   // --- INÍCIO DA CORREÇÃO (Saldo Credor e Saldo Parcial) ---
   let currentBillAmount = 0;
