@@ -101,25 +101,6 @@ export function AddTransactionModal({
   // Atualiza o tipo inicial quando o modal é aberto e reseta quando fechar
   useEffect(() => {
     if (open) {
-      // Calcula o mês da fatura baseado na data de fechamento
-      let defaultInvoiceMonth = "";
-      if (initialAccountType === "credit" && accounts.length > 0) {
-        const creditAccount = accounts.find(acc => acc.type === "credit");
-        if (creditAccount && creditAccount.closing_date) {
-          const today = new Date();
-          const currentDay = today.getDate();
-          const closingDay = creditAccount.closing_date;
-          
-          // Se hoje é depois do dia de fechamento, a fatura é do próximo mês
-          let invoiceDate = new Date(today);
-          if (currentDay > closingDay) {
-            invoiceDate.setMonth(invoiceDate.getMonth() + 1);
-          }
-          
-          defaultInvoiceMonth = `${invoiceDate.getFullYear()}-${String(invoiceDate.getMonth() + 1).padStart(2, '0')}`;
-        }
-      }
-      
       // Reseta o formulário quando abre
       setFormData({
         description: "",
@@ -131,7 +112,7 @@ export function AddTransactionModal({
         status: "completed",
         isInstallment: false,
         installments: "2",
-        invoiceMonth: defaultInvoiceMonth,
+        invoiceMonth: "", // Será calculado pelo próximo useEffect
       });
       
       // Pré-seleciona a conta se um tipo de conta foi especificado
@@ -143,6 +124,28 @@ export function AddTransactionModal({
       }
     }
   }, [open, initialType, initialAccountType, accounts]);
+
+  // Recalcula o mês da fatura quando a data ou conta mudam
+  useEffect(() => {
+    if (!formData.account_id || !formData.date) return;
+    
+    const selectedAccount = accounts.find(acc => acc.id === formData.account_id);
+    if (!selectedAccount || selectedAccount.type !== "credit" || !selectedAccount.closing_date) {
+      // Não é cartão de crédito ou não tem data de fechamento
+      setFormData(prev => ({ ...prev, invoiceMonth: "" }));
+      return;
+    }
+    
+    // Usa a data da transação (não hoje) para calcular o mês da fatura
+    const transactionDate = createDateFromString(formData.date);
+    const calculatedMonth = calculateInvoiceMonthByDue(
+      transactionDate,
+      selectedAccount.closing_date,
+      selectedAccount.due_date || 1
+    );
+    
+    setFormData(prev => ({ ...prev, invoiceMonth: calculatedMonth }));
+  }, [formData.date, formData.account_id, accounts]);
 
   // Automatically set status based on transaction date
   useEffect(() => {
@@ -346,7 +349,8 @@ export function AddTransactionModal({
               installments: installments,
               currentInstallment: i + 1,
               parentTransactionId: undefined,
-              invoiceMonth: formData.invoiceMonth || undefined,
+              invoiceMonth: undefined, // Contas comuns não usam invoice_month
+              invoiceMonthOverridden: false,
             };
             transactionsToCreate.push(transaction);
           }
