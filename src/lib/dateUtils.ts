@@ -198,22 +198,36 @@ export function calculateBillDetails(
 
   console.log('=== DEBUG calculateBillDetails ===');
   console.log('Account:', account.name);
+  console.log('Month Offset:', monthOffset);
+  console.log('Today Normalized:', todayNormalized);
+  console.log('Closing Date:', closingDate);
   console.log('Current Invoice Month:', currentInvoiceMonth);
   console.log('Next Invoice Month:', nextInvoiceMonth);
   console.log('Current Bill Period:', currentBillStart, 'to', currentBillEnd);
   console.log('Next Bill Period:', nextBillStart, 'to', nextBillEnd);
+  console.log('Total Transactions:', transactions.length);
 
   for (const t of transactions) {
     const tDate = t.date; // t.date agora é um Objeto Date
     
-    if (!tDate || isNaN(tDate.getTime())) continue; // Pula datas inválidas
+    if (!tDate || isNaN(tDate.getTime())) {
+      console.warn('Transação com data inválida:', t.id, t.description);
+      continue; // Pula datas inválidas
+    }
+
+    console.log(`Processing Transaction: ${t.description}`);
+    console.log(`  ID: ${t.id}, Date: ${tDate.toISOString()}, Amount: ${t.amount}, Type: ${t.type}`);
+    console.log(`  Invoice Month: ${t.invoice_month || 'not set'}`);
+    console.log(`  Date Range Check: ${tDate.toISOString()} between ${currentBillStart.toISOString()} and ${currentBillEnd.toISOString()}`);
 
     // 1. Calcula o Saldo Total (Limite Utilizado)
     // Soma despesas (aumenta dívida) e subtrai pagamentos (diminui dívida)
     if (t.type === 'expense') {
       newTotalBalance += Math.abs(t.amount);
+      console.log(`  Added to total balance (expense): ${Math.abs(t.amount)}, new total: ${newTotalBalance}`);
     } else if (t.type === 'income') {
       newTotalBalance -= Math.abs(t.amount); // Subtrai pagamentos
+      console.log(`  Subtracted from total balance (income): ${Math.abs(t.amount)}, new total: ${newTotalBalance}`);
     }
 
     // 2. Calcula o Saldo da Fatura Atual (currentBillAmount)

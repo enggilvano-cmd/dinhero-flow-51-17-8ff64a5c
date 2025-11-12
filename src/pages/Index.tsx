@@ -760,6 +760,12 @@ const PlaniFlowApp = () => {
             transactionsToDelete.push({
               ...installment,
               category_id: installment.category_id || "",
+              to_account_id: installment.to_account_id || undefined,
+              installments: installment.installments || undefined,
+              current_installment: installment.current_installment || undefined,
+              parent_transaction_id: installment.parent_transaction_id || undefined,
+              linked_transaction_id: installment.linked_transaction_id || undefined,
+              invoice_month: installment.invoice_month || undefined,
               date: typeof installment.date === 'string' 
                 ? createDateFromString(installment.date) 
                 : installment.date
