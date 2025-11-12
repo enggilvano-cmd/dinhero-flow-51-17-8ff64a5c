@@ -444,8 +444,8 @@ export function Dashboard({
   return (
     <div className="space-y-3 sm:space-y-4 fade-in max-w-screen-2xl mx-auto px-2 sm:px-0">
       {/* Header ultra compacto */}
-      <div className="flex flex-col gap-3">
-        <div className="min-w-0 w-full">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="min-w-0 w-full sm:w-auto">
           <h1 className="text-xl sm:text-2xl font-bold leading-tight">Painel</h1>
           <p className="text-sm text-muted-foreground leading-tight">
             Visão geral das suas finanças
