@@ -455,37 +455,33 @@ export function Dashboard({
           <Button
             onClick={onTransfer}
             variant="outline"
-            size="sm"
-            className="gap-1.5 h-9 text-xs sm:text-sm sm:flex-1 sm:flex-none"
+            className="gap-2 apple-interaction h-9 text-xs sm:text-sm sm:flex-1 sm:flex-none"
           >
-            <ArrowRightLeft className="h-3.5 w-3.5" />
+            <ArrowRightLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             <span>Transferir</span>
           </Button>
           <Button
             onClick={onAddExpense || onAddTransaction}
             variant="destructive"
-            size="sm"
-            className="gap-1.5 h-9 text-xs sm:text-sm sm:flex-1 sm:flex-none"
+            className="gap-2 apple-interaction h-9 text-xs sm:text-sm sm:flex-1 sm:flex-none"
           >
-            <TrendingDown className="h-3.5 w-3.5" />
+            <TrendingDown className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             <span>Despesa</span>
           </Button>
           <Button
             onClick={onAddIncome || onAddTransaction}
             variant="default"
-            size="sm"
-            className="gap-1.5 h-9 text-xs sm:text-sm bg-success hover:bg-success/90 sm:flex-1 sm:flex-none"
+            className="gap-2 apple-interaction h-9 text-xs sm:text-sm bg-success hover:bg-success/90 sm:flex-1 sm:flex-none"
           >
-            <TrendingUp className="h-3.5 w-3.5" />
+            <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             <span>Receita</span>
           </Button>
           <Button
             onClick={onAddCreditExpense || onAddTransaction}
             variant="outline"
-            size="sm"
-            className="gap-1.5 h-9 text-xs sm:text-sm border-warning text-warning hover:bg-warning hover:text-warning-foreground sm:flex-1 sm:flex-none"
+            className="gap-2 apple-interaction h-9 text-xs sm:text-sm border-warning text-warning hover:bg-warning hover:text-warning-foreground sm:flex-1 sm:flex-none"
           >
-            <CreditCard className="h-3.5 w-3.5" />
+            <CreditCard className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             <span>Cartão</span>
           </Button>
         </div>
