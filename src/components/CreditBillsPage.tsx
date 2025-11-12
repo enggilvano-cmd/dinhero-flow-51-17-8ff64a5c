@@ -108,9 +108,11 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
       );
 
       // Recalcular valores alinhados ao mês exibido
-      const effectiveMonth = (d: Date) => account.closing_date
-        ? calculateInvoiceMonthByDue(d, account.closing_date, account.due_date || 1)
-        : format(d, 'yyyy-MM');
+      // Prioriza o invoice_month editado manualmente, senão calcula pela data
+      const effectiveMonth = (d: Date, savedInvoiceMonth?: string | null) => 
+        savedInvoiceMonth || (account.closing_date
+          ? calculateInvoiceMonthByDue(d, account.closing_date, account.due_date || 1)
+          : format(d, 'yyyy-MM'));
 
       let currentBillAmount = 0;
       let nextBillAmount = 0;
@@ -119,7 +121,7 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
       for (const t of accountTransactions) {
         const d = typeof t.date === 'string' ? new Date(t.date) : t.date;
         if (!d || isNaN(d.getTime())) continue;
-        const eff = effectiveMonth(d);
+        const eff = effectiveMonth(d, t.invoice_month);
         if (eff === targetMonth) {
           if (t.type === 'expense') currentBillAmount += Math.abs(t.amount);
           else if (t.type === 'income') {
