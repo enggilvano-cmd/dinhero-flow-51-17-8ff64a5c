@@ -439,13 +439,15 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
                   const filtered = accountTransactions.filter((t) => {
                     const tDate = typeof t.date === 'string' ? new Date(t.date) : t.date;
                     if (!tDate || isNaN(tDate.getTime())) return false;
-                    const eff = details.account.closing_date
-                      ? calculateInvoiceMonthByDue(
-                          tDate,
-                          details.account.closing_date,
-                          details.account.due_date || 1
-                        )
-                      : (t.invoice_month || '');
+                    const eff = (t.invoice_month && t.invoice_month.length > 0)
+                      ? t.invoice_month
+                      : (details.account.closing_date
+                          ? calculateInvoiceMonthByDue(
+                              tDate,
+                              details.account.closing_date,
+                              details.account.due_date || 1
+                            )
+                          : format(tDate, 'yyyy-MM'));
                     return t.type === 'expense' && eff === currentMonth;
                   });
 

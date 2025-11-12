@@ -86,7 +86,7 @@ export function EditTransactionModal({
         category_id: transaction.category_id,
         account_id: transaction.account_id,
         status: transaction.status,
-        invoiceMonth: defaultInvoiceMonth,
+        invoiceMonth: transaction.invoice_month || defaultInvoiceMonth,
       });
     }
   }, [open, transaction, accounts]); // Depender do objeto 'transaction' é seguro aqui
