@@ -327,13 +327,14 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
             ),
             total_amount: selectedBillForDetails.billDetails.currentBillAmount,
             paid_amount: selectedBillForDetails.billDetails.paymentTransactions.reduce(
-              (sum, t) => sum + t.amount,
+              (sum, t) => sum + Math.abs(t.amount),
               0
             ),
-            status:
-              selectedBillForDetails.billDetails.currentBillAmount <= 0
-                ? "paid"
-                : "pending",
+            status: (() => {
+              const due = Math.max(0, selectedBillForDetails.billDetails.currentBillAmount);
+              const paid = selectedBillForDetails.billDetails.paymentTransactions.reduce((s, t) => s + Math.abs(t.amount), 0);
+              return paid >= due ? "paid" : "pending";
+            })(),
             minimum_payment: selectedBillForDetails.billDetails.currentBillAmount * 0.15,
             late_fee: 0,
             transactions: selectedBillForDetails.transactions.filter((t) => {

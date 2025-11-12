@@ -62,10 +62,12 @@ export function CreditCardBillCard({
   const isClosed = isPast(closingDate);
   
   // --- LÓGICA DE PAGO ATUALIZADA ---
-  const hasPayments = paymentTransactions && paymentTransactions.length > 0;
-  const isBillPaid = currentBillAmount <= 0;
-  const isFullyPaid = currentBillAmount <= 0 && totalBalance <= 0;
-  const canReverse = hasPayments;
+  const paidAmount = (paymentTransactions?.reduce((sum, t) => sum + Math.abs(t.amount), 0)) || 0;
+  const amountDue = Math.max(0, currentBillAmount);
+  const isPaid = paidAmount >= amountDue || amountDue === 0;
+  const isBillPaid = isPaid;
+  const isFullyPaid = isPaid && totalBalance <= 0;
+  const canReverse = paymentTransactions && paymentTransactions.length > 0;
   // --- FIM DA LÓGICA ---
 
   const billAmountColor = currentBillAmount > 0 
@@ -94,9 +96,9 @@ export function CreditCardBillCard({
           <Badge variant={isClosed ? 'secondary' : 'outline'}>
             {isClosed ? 'Fechada' : 'Aberta'}
           </Badge>
-          {/* Badge de Pago/Pendente agora se baseia se existem pagamentos */}
-          <Badge variant={hasPayments ? 'default' : 'destructive'}>
-            {hasPayments ? 'Pago' : 'Pendente'}
+          {/* Badge de Pago/Pendente baseado no valor devido vs. pagamentos */}
+          <Badge variant={isPaid ? 'default' : 'destructive'}>
+            {isPaid ? 'Pago' : 'Pendente'}
           </Badge>
         </div>
       </CardHeader>
