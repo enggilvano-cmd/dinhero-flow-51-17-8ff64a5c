@@ -130,13 +130,6 @@ export function calculateBillDetails(
   );
 
   // --- Lógica de data (sem alterações) ---
-  let currentBillStart = new Date(
-    Date.UTC(
-      todayNormalized.getUTCFullYear(),
-      todayNormalized.getUTCMonth() - 1,
-      closingDate + 1, 12, 0, 0
-    )
-  );
   let currentBillEnd = new Date(
     Date.UTC(
       todayNormalized.getUTCFullYear(),
@@ -146,13 +139,6 @@ export function calculateBillDetails(
   );
 
   if (todayNormalized.getUTCDate() > closingDate) {
-    currentBillStart = new Date(
-      Date.UTC(
-        todayNormalized.getUTCFullYear(),
-        todayNormalized.getUTCMonth(),
-        closingDate + 1, 12, 0, 0
-      )
-    );
     currentBillEnd = new Date(
       Date.UTC(
         todayNormalized.getUTCFullYear(),
@@ -241,31 +227,25 @@ export function calculateBillDetails(
     }
 
     // 2. Calcula o Saldo da Fatura Atual (currentBillAmount)
-    // Prioriza invoice_month, senão usa a data da transação
-    const belongsToCurrentBill = t.invoice_month 
-      ? t.invoice_month === currentInvoiceMonth
-      : (tDate >= currentBillStart && tDate <= currentBillEnd);
+    // Usa SEMPRE o mês efetivo calculado a partir da data + closing_date
+    const effectiveInvoiceMonth = account.closing_date
+      ? calculateInvoiceMonth(tDate, account.closing_date)
+      : (t.invoice_month || format(tDate, "yyyy-MM"));
+
+    const belongsToCurrentBill = effectiveInvoiceMonth === currentInvoiceMonth;
 
     if (belongsToCurrentBill) {
       if (t.type === 'expense') {
-        // Usa Math.abs() porque o amount já vem negativo do banco
         currentBillAmount += Math.abs(t.amount);
       } else if (t.type === 'income') {
-        // CORREÇÃO: Subtrai o pagamento do valor da fatura atual.
-        // Isso permite que currentBillAmount fique negativo (crédito).
         currentBillAmount -= Math.abs(t.amount);
-        paymentTransactions.push(t); // <-- ADICIONADO
+        paymentTransactions.push(t);
       }
     }
     // 3. Calcula a Próxima Fatura (nextBillAmount)
-    // Prioriza invoice_month, senão usa a data da transação
     else {
-      const belongsToNextBill = t.invoice_month
-        ? t.invoice_month === nextInvoiceMonth
-        : (tDate >= nextBillStart && tDate <= nextBillEnd);
-
+      const belongsToNextBill = effectiveInvoiceMonth === nextInvoiceMonth;
       if (belongsToNextBill && t.type === 'expense') {
-        // Usa Math.abs() porque o amount já vem negativo do banco
         nextBillAmount += Math.abs(t.amount);
       }
     }
