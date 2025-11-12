@@ -451,12 +451,12 @@ export function Dashboard({
             Visão geral das suas finanças
           </p>
         </div>
-        <div className="grid grid-cols-2 gap-2 w-full sm:max-w-md">
+        <div className="grid grid-cols-2 gap-2 w-full sm:flex sm:flex-wrap sm:gap-2 sm:w-auto">
           <Button
             onClick={onTransfer}
             variant="outline"
             size="sm"
-            className="gap-1.5 h-9 text-xs sm:text-sm"
+            className="gap-1.5 h-9 text-xs sm:text-sm sm:flex-1 sm:flex-none"
           >
             <ArrowRightLeft className="h-3.5 w-3.5" />
             <span>Transferir</span>
@@ -465,7 +465,7 @@ export function Dashboard({
             onClick={onAddExpense || onAddTransaction}
             variant="destructive"
             size="sm"
-            className="gap-1.5 h-9 text-xs sm:text-sm"
+            className="gap-1.5 h-9 text-xs sm:text-sm sm:flex-1 sm:flex-none"
           >
             <TrendingDown className="h-3.5 w-3.5" />
             <span>Despesa</span>
@@ -474,7 +474,7 @@ export function Dashboard({
             onClick={onAddIncome || onAddTransaction}
             variant="default"
             size="sm"
-            className="gap-1.5 h-9 text-xs sm:text-sm bg-success hover:bg-success/90"
+            className="gap-1.5 h-9 text-xs sm:text-sm bg-success hover:bg-success/90 sm:flex-1 sm:flex-none"
           >
             <TrendingUp className="h-3.5 w-3.5" />
             <span>Receita</span>
@@ -483,7 +483,7 @@ export function Dashboard({
             onClick={onAddCreditExpense || onAddTransaction}
             variant="outline"
             size="sm"
-            className="gap-1.5 h-9 text-xs sm:text-sm border-warning text-warning hover:bg-warning hover:text-warning-foreground"
+            className="gap-1.5 h-9 text-xs sm:text-sm border-warning text-warning hover:bg-warning hover:text-warning-foreground sm:flex-1 sm:flex-none"
           >
             <CreditCard className="h-3.5 w-3.5" />
             <span>Cartão</span>
