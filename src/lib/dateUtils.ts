@@ -15,31 +15,35 @@ function createFallbackDate(invalidInput?: any): Date {
 }
 
 /**
- * Calcula o mês da fatura (invoice_month) para uma transação de cartão de crédito
- * baseado na data da transação e na data de fechamento do cartão.
- * @param transactionDate - Data da transação
- * @param closingDate - Dia do fechamento da fatura (1-31)
- * @returns O mês da fatura no formato "YYYY-MM"
+ * Calcula o mês de fatura (YYYY-MM) baseado na DATA DA COMPRA, DIA DE FECHAMENTO e DIA DE VENCIMENTO.
+ * A compra pertence ao ciclo que fecha no 'closingDate' imediatamente após a data da compra.
+ * O mês da fatura é o mês do vencimento desse ciclo.
  */
-export function calculateInvoiceMonth(
+export function calculateInvoiceMonthByDue(
   transactionDate: Date,
-  closingDate: number
+  closingDate: number,
+  dueDate: number
 ): string {
-  const txDate = new Date(transactionDate);
-  const txDay = txDate.getDate();
-  const txMonth = txDate.getMonth();
-  const txYear = txDate.getFullYear();
+  const d = new Date(Date.UTC(
+    transactionDate.getUTCFullYear(),
+    transactionDate.getUTCMonth(),
+    transactionDate.getUTCDate(),
+    12, 0, 0
+  ));
 
-  // Se a transação ocorre APÓS o fechamento do mês atual,
-  // ela vai para a fatura do PRÓXIMO mês
-  if (txDay > closingDate) {
-    const nextMonth = new Date(txYear, txMonth + 1, 1);
-    return format(nextMonth, "yyyy-MM");
+  // Fechamento do ciclo da compra
+  let cycleEnd = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), closingDate, 12, 0, 0));
+  if (d.getUTCDate() > closingDate) {
+    cycleEnd = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, closingDate, 12, 0, 0));
   }
 
-  // Caso contrário, vai para a fatura do mês atual
-  const currentMonth = new Date(txYear, txMonth, 1);
-  return format(currentMonth, "yyyy-MM");
+  // Mês do vencimento para esse ciclo
+  let due = new Date(Date.UTC(cycleEnd.getUTCFullYear(), cycleEnd.getUTCMonth(), dueDate, 12, 0, 0));
+  if (dueDate <= closingDate) {
+    due = new Date(Date.UTC(cycleEnd.getUTCFullYear(), cycleEnd.getUTCMonth() + 1, dueDate, 12, 0, 0));
+  }
+
+  return format(due, "yyyy-MM");
 }
 
 /**
@@ -229,7 +233,7 @@ export function calculateBillDetails(
     // 2. Calcula o Saldo da Fatura Atual (currentBillAmount)
     // Usa SEMPRE o mês efetivo calculado a partir da data + closing_date
     const effectiveInvoiceMonth = account.closing_date
-      ? calculateInvoiceMonth(tDate, account.closing_date)
+      ? calculateInvoiceMonthByDue(tDate, account.closing_date, account.due_date || 1)
       : (t.invoice_month || format(tDate, "yyyy-MM"));
 
     const belongsToCurrentBill = effectiveInvoiceMonth === currentInvoiceMonth;

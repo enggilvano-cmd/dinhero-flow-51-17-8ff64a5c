@@ -22,7 +22,7 @@ import {
   createDateFromString,
   getTodayString,
   addMonthsToDate,
-  calculateInvoiceMonth,
+  calculateInvoiceMonthByDue,
 } from "@/lib/dateUtils";
 import { useCategories } from "@/hooks/useCategories";
 // 1. IMPORTAR O COMPONENTE DE MOEDA CORRETO
@@ -296,9 +296,9 @@ export function AddTransactionModal({
             // As demais são sempre pendentes para aparecerem nas faturas futuras.
             const installmentStatus: "completed" | "pending" = (i === 0 && installmentDateStr <= todayStr) ? "completed" : "pending";
 
-            // CORREÇÃO: Calcular o invoice_month para cada parcela baseado na sua data
-            const invoiceMonth = selectedAccount.closing_date
-              ? calculateInvoiceMonth(installmentDate, selectedAccount.closing_date)
+            // CORREÇÃO: Calcular o invoice_month para cada parcela baseado na sua data e regras de fechamento/vencimento
+            const invoiceMonth = (selectedAccount.closing_date && selectedAccount.due_date)
+              ? calculateInvoiceMonthByDue(installmentDate, selectedAccount.closing_date, selectedAccount.due_date)
               : undefined;
 
             const transaction = {
