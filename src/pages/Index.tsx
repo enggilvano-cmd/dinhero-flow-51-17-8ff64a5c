@@ -71,6 +71,7 @@ const PlaniFlowApp = () => {
   const [addTransactionModalOpen, setAddTransactionModalOpen] = useState(false);
   const [transactionInitialType, setTransactionInitialType] = useState<"income" | "expense" | "">("");
   const [transactionInitialAccountType, setTransactionInitialAccountType] = useState<"credit" | "checking" | "">("");
+  const [transactionLockType, setTransactionLockType] = useState(false);
   const [editAccountModalOpen, setEditAccountModalOpen] = useState(false);
   const [editTransactionModalOpen, setEditTransactionModalOpen] = useState(false);
   const [transferModalOpen, setTransferModalOpen] = useState(false);
