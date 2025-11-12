@@ -145,13 +145,16 @@ export function CreditCardBillCard({
             </Button>
           )}
           
-          <Button 
-            className="flex-1" 
-            onClick={onPayBill} 
-            disabled={isFullyPaid} // Desabilita se o saldo devedor total for 0
-          >
-            {isBillPaid && !isFullyPaid ? "Pagar Avulso" : "Pagar Fatura"}
-          </Button>
+        <Button 
+          className="flex-1" 
+          onClick={() => {
+            console.log('Botão Pagar Fatura clicado', { isFullyPaid, isBillPaid, account });
+            onPayBill();
+          }} 
+          disabled={isFullyPaid} // Desabilita se o saldo devedor total for 0
+        >
+          {isBillPaid && !isFullyPaid ? "Pagar Avulso" : "Pagar Fatura"}
+        </Button>
         </div>
         
         <Button 

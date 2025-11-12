@@ -1085,11 +1085,13 @@ const PlaniFlowApp = () => {
     nextBill: number, // Recebe o valor da próxima fatura
     totalBalance: number // Recebe o totalBalance
   ) => {
+    console.log('openCreditPayment chamado:', { account, currentBill, nextBill, totalBalance });
     setPayingCreditAccount(account);
     setCurrentInvoiceValue(currentBill); // Armazena no estado
     setNextInvoiceValue(nextBill); // Armazena no estado
     setPayingTotalDebt(totalBalance); // Armazena a dívida total
     setCreditPaymentModalOpen(true);
+    console.log('Modal de pagamento deve estar aberto agora');
   };
 
   const renderCurrentPage = () => {
