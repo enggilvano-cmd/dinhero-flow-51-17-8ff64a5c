@@ -51,6 +51,7 @@ export interface Transaction {
   parent_transaction_id?: string; // ID linking installment transactions together
   linked_transaction_id?: string; // <-- ADICIONADO: Para vincular pagamentos/transferências
   invoice_month?: string; // Month of credit card invoice (YYYY-MM)
+  invoice_month_overridden?: boolean; // True when user manually sets invoice month
 }
 
 // Para o store, garantindo que a data seja um objeto Date

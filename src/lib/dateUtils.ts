@@ -252,10 +252,12 @@ export function calculateBillDetails(
     }
 
     // 2. Calcula o Saldo da Fatura Atual (currentBillAmount)
-    // Prioriza o invoice_month editado manualmente, senão calcula pela data
-    const effectiveInvoiceMonth = t.invoice_month || (account.closing_date
-      ? calculateInvoiceMonthByDue(tDate, account.closing_date, account.due_date || 1)
-      : format(tDate, "yyyy-MM"));
+    // Se o usuário marcou override manual, usa o invoice_month salvo; caso contrário calcula
+    const effectiveInvoiceMonth = (t as any).invoice_month_overridden && t.invoice_month
+      ? t.invoice_month
+      : (account.closing_date
+          ? calculateInvoiceMonthByDue(tDate, account.closing_date, account.due_date || 1)
+          : format(tDate, "yyyy-MM"));
 
     const belongsToCurrentBill = effectiveInvoiceMonth === currentInvoiceMonth;
 

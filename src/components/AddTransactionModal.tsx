@@ -314,6 +314,7 @@ export function AddTransactionModal({
               currentInstallment: i + 1,
               parentTransactionId: undefined,
               invoiceMonth: invoiceMonth,
+              invoiceMonthOverridden: false,
             };
             transactionsToCreate.push(transaction);
           }
@@ -370,6 +371,7 @@ export function AddTransactionModal({
           account_id: account_id,
           status: status,
           invoiceMonth: formData.invoiceMonth || undefined,
+          invoiceMonthOverridden: Boolean(formData.invoiceMonth),
         };
 
         await onAddTransaction(transactionPayload);

@@ -145,6 +145,7 @@ export function EditTransactionModal({
       account_id: formData.account_id,
       status: formData.status,
       invoice_month: formData.invoiceMonth || undefined,
+      invoice_month_overridden: Boolean(formData.invoiceMonth),
     };
 
     onEditTransaction(updatedTransaction, editScope);

@@ -108,11 +108,16 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
       );
 
       // Recalcular valores alinhados ao mês exibido
-      // Prioriza o invoice_month editado manualmente, senão calcula pela data
-      const effectiveMonth = (d: Date, savedInvoiceMonth?: string | null) => 
-        savedInvoiceMonth || (account.closing_date
-          ? calculateInvoiceMonthByDue(d, account.closing_date, account.due_date || 1)
-          : format(d, 'yyyy-MM'));
+      // Usa invoice_month salvo apenas se for override manual; senão calcula pela data
+      const effectiveMonth = (
+        d: Date,
+        savedInvoiceMonth?: string | null,
+        overridden?: boolean | null
+      ) => (overridden && savedInvoiceMonth)
+          ? savedInvoiceMonth
+          : (account.closing_date
+              ? calculateInvoiceMonthByDue(d, account.closing_date, account.due_date || 1)
+              : format(d, 'yyyy-MM'));
 
       let currentBillAmount = 0;
       let nextBillAmount = 0;
@@ -121,7 +126,7 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
       for (const t of accountTransactions) {
         const d = typeof t.date === 'string' ? new Date(t.date) : t.date;
         if (!d || isNaN(d.getTime())) continue;
-        const eff = effectiveMonth(d, t.invoice_month);
+        const eff = effectiveMonth(d, t.invoice_month, t.invoice_month_overridden);
         if (eff === targetMonth) {
           if (t.type === 'expense') currentBillAmount += Math.abs(t.amount);
           else if (t.type === 'income') {
@@ -439,7 +444,7 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
                   const filtered = accountTransactions.filter((t) => {
                     const tDate = typeof t.date === 'string' ? new Date(t.date) : t.date;
                     if (!tDate || isNaN(tDate.getTime())) return false;
-                    const eff = (t.invoice_month && t.invoice_month.length > 0)
+                    const eff = (t.invoice_month_overridden && t.invoice_month)
                       ? t.invoice_month
                       : (details.account.closing_date
                           ? calculateInvoiceMonthByDue(

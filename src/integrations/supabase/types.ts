@@ -206,6 +206,7 @@ export type Database = {
           id: string
           installments: number | null
           invoice_month: string | null
+          invoice_month_overridden: boolean
           is_recurring: boolean | null
           linked_transaction_id: string | null
           parent_transaction_id: string | null
@@ -228,6 +229,7 @@ export type Database = {
           id?: string
           installments?: number | null
           invoice_month?: string | null
+          invoice_month_overridden?: boolean
           is_recurring?: boolean | null
           linked_transaction_id?: string | null
           parent_transaction_id?: string | null
@@ -252,6 +254,7 @@ export type Database = {
           id?: string
           installments?: number | null
           invoice_month?: string | null
+          invoice_month_overridden?: boolean
           is_recurring?: boolean | null
           linked_transaction_id?: string | null
           parent_transaction_id?: string | null

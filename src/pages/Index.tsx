@@ -193,6 +193,7 @@ const PlaniFlowApp = () => {
         current_installment: transactionData.currentInstallment,
         parent_transaction_id: transactionData.parentTransactionId,
         invoice_month: transactionData.invoiceMonth || null,
+        invoice_month_overridden: (transactionData.invoiceMonthOverridden ?? Boolean(transactionData.invoiceMonth)) || false,
       };
 
       const { data, error } = await supabase
@@ -527,6 +528,7 @@ const PlaniFlowApp = () => {
           account_id: updatedTransaction.account_id,
           status: updatedTransaction.status || "completed",
           invoice_month: updatedTransaction.invoice_month || null,
+          invoice_month_overridden: updatedTransaction.invoice_month ? true : false,
         };
 
         const { error } = await supabase
@@ -607,6 +609,7 @@ const PlaniFlowApp = () => {
         account_id: updatedTransaction.account_id,
         status: updatedTransaction.status,
         invoice_month: updatedTransaction.invoice_month || null,
+        invoice_month_overridden: updatedTransaction.invoice_month ? true : false,
       };
 
 

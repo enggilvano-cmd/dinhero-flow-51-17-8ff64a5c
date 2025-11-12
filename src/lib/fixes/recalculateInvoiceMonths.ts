@@ -45,7 +45,7 @@ export async function recalculateInvoiceMonthsForUser(): Promise<RecalcResult> {
   const { data: txs, error: txError } = await supabase
     .from("transactions")
     .select(
-      "id, account_id, date, type, invoice_month, amount, description, user_id, category_id, status, installments, current_installment, parent_transaction_id"
+      "id, account_id, date, type, invoice_month, invoice_month_overridden, amount, description, user_id, category_id, status, installments, current_installment, parent_transaction_id"
     )
     .eq("user_id", user.id);
   if (txError) throw txError;
@@ -67,7 +67,7 @@ export async function recalculateInvoiceMonthsForUser(): Promise<RecalcResult> {
     const accCfg = accountMap.get(t.account_id!)!;
     const dateObj = createDateFromString(t.date);
     const newMonth = calculateInvoiceMonthByDue(dateObj, accCfg.closing, accCfg.due);
-    if (t.invoice_month !== newMonth) {
+    if (!t.invoice_month_overridden && t.invoice_month !== newMonth) {
       updates.push({ id: t.id, invoice_month: newMonth });
     }
   }
