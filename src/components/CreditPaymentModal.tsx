@@ -78,19 +78,22 @@ export function CreditPaymentModal({
     [accounts]
   );
 
+  // Normalização: garantir valores positivos em centavos
+  const normalizeCents = (v: number) => Math.max(0, Math.abs(v || 0));
+  const invoiceValueNorm = normalizeCents(invoiceValueInCents);
+  const nextInvoiceValueNorm = normalizeCents(nextInvoiceValueInCents);
+  const totalDebtNorm = normalizeCents(totalDebtInCentsProp);
+
   useEffect(() => {
     if (open) {
-      // BUGFIX: Usar a prop totalDebtInCentsProp em vez de recalcular
-      const totalDebtInCents = totalDebtInCentsProp;
-      
       let initialAmount = 0;
       let initialPaymentType: "invoice" | "total_balance" | "partial" = "partial";
-      
-      if (invoiceValueInCents > 0) {
-        initialAmount = invoiceValueInCents;
+
+      if (invoiceValueNorm > 0) {
+        initialAmount = invoiceValueNorm;
         initialPaymentType = "invoice";
-      } else if (totalDebtInCents > 0) {
-        initialAmount = totalDebtInCents;
+      } else if (totalDebtNorm > 0) {
+        initialAmount = totalDebtNorm;
         initialPaymentType = "total_balance";
       }
 
@@ -101,8 +104,7 @@ export function CreditPaymentModal({
         date: getTodayString(),
       });
     }
-    // BUGFIX: Adicionar totalDebtInCentsProp às dependências
-  }, [open, invoiceValueInCents, creditAccount, totalDebtInCentsProp]); 
+  }, [open, invoiceValueNorm, totalDebtNorm]); 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -136,15 +138,14 @@ export function CreditPaymentModal({
       }
     }
 
-    // BUGFIX: Usar a prop totalDebtInCentsProp para validação
-    const totalDebtInCents = totalDebtInCentsProp;
+    // Validação contra a dívida total normalizada (valor absoluto)
+    const totalDebtInCents = totalDebtNorm;
     
     // Pequena margem de 1 centavo para erros de arredondamento
     if (amountInCents > totalDebtInCents + 1) { 
       toast({
         title: "Valor Inválido",
-        description: `O valor do pagamento (${formatBRL(amountInCents
-        )}) não pode ser maior que a dívida total de ${formatBRL(
+        description: `O valor do pagamento (${formatBRL(amountInCents)}) não pode ser maior que a dívida total de ${formatBRL(
           totalDebtInCents
         )}.`,
         variant: "destructive",
@@ -179,8 +180,8 @@ export function CreditPaymentModal({
     }
   };
 
-  // BUGFIX: Usar a prop totalDebtInCentsProp para exibição
-  const totalDebtInCents = totalDebtInCentsProp;
+  // Exibição: dívida total normalizada (valor absoluto)
+  const totalDebtInCents = totalDebtNorm;
 
   const handlePaymentTypeChange = (
     type: "invoice" | "total_balance" | "partial"
@@ -189,10 +190,9 @@ export function CreditPaymentModal({
       let newAmountInCents = prev.amountInCents; 
 
       if (type === "invoice") {
-        newAmountInCents = invoiceValueInCents;
+        newAmountInCents = invoiceValueNorm;
       } else if (type === "total_balance") {
-        // BUGFIX: Usar a prop totalDebtInCentsProp
-        newAmountInCents = totalDebtInCentsProp;
+        newAmountInCents = totalDebtNorm;
       }
       // Se 'partial', mantém o valor que o usuário digitou
       
@@ -222,14 +222,13 @@ export function CreditPaymentModal({
                 <p className="flex justify-between">
                   <span className="text-muted-foreground">Fatura Fechada:</span>
                   <span className="font-medium balance-negative">
-                    {/* BUGFIX: Usar Math.max para não mostrar valor negativo (crédito) aqui */}
-                    {formatBRL(Math.max(0, invoiceValueInCents))}
+                    {formatBRL(invoiceValueNorm)}
                   </span>
                 </p>
                 <p className="flex justify-between">
                   <span className="text-muted-foreground">Fatura Aberta:</span>
                   <span className="font-medium text-muted-foreground">
-                    {formatBRL(nextInvoiceValueInCents)}
+                    {formatBRL(nextInvoiceValueNorm)}
                   </span>
                 </p>
                 <p className="flex justify-between text-base font-semibold border-t pt-1 mt-1">
