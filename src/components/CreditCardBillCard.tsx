@@ -129,6 +129,10 @@ export function CreditCardBillCard({
               {formatCents(availableLimit)}
             </span>
           </div>
+          <div className="flex justify-between text-xs border-t pt-2 mt-2">
+            <span className="text-muted-foreground">Fechamento</span>
+            <span className="font-medium">Dia {closing_date || 'N/A'}</span>
+          </div>
         </div>
       </CardContent>
       
