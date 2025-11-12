@@ -371,9 +371,9 @@ export function AccountsPage({
             >
               <CardContent className="p-3 sm:p-4">
                 {/* Layout Mobile vs Desktop */}
-                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                <div className="space-y-3">
                   {/* Header com Ícone, Nome e Menu */}
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <div className="flex items-center gap-3">
                     {/* Ícone da Conta */}
                     <div
                       className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center text-white flex-shrink-0 shadow-sm"
@@ -384,66 +384,62 @@ export function AccountsPage({
 
                     {/* Nome e Badge */}
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <div className="min-w-0 flex-1">
-                          <h3 className="text-sm sm:text-base font-semibold truncate mb-1">
-                            {account.name}
-                          </h3>
-                          <Badge
-                            variant={getAccountTypeBadge(account.type)}
-                            className="text-xs h-5 px-2 inline-flex"
-                          >
-                            {getAccountTypeLabel(account.type)}
-                          </Badge>
-                        </div>
+                      <h3 className="text-sm sm:text-base font-semibold truncate mb-1">
+                        {account.name}
+                      </h3>
+                      <Badge
+                        variant={getAccountTypeBadge(account.type)}
+                        className="text-xs h-5 px-2 inline-flex"
+                      >
+                        {getAccountTypeLabel(account.type)}
+                      </Badge>
+                    </div>
 
-                        {/* Menu de Ações - sempre visível no mobile */}
-                        <div className="flex-shrink-0 ml-2">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 sm:h-7 sm:w-7 sm:opacity-70 sm:group-hover:opacity-100 transition-opacity"
-                              >
-                                <MoreVertical className="h-4 w-4 sm:h-3 sm:w-3" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
+                    {/* Menu de Ações */}
+                    <div className="flex-shrink-0">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 sm:opacity-70 sm:group-hover:opacity-100 transition-opacity"
+                          >
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={() => onEditAccount(account)}
+                          >
+                            <Edit className="h-4 w-4 mr-2" />
+                            Editar
+                          </DropdownMenuItem>
+                          {account.type === "credit" &&
+                            account.balance < 0 &&
+                            onPayCreditCard && (
                               <DropdownMenuItem
-                                onClick={() => onEditAccount(account)}
+                                onClick={() => onPayCreditCard(account)}
                               >
-                                <Edit className="h-4 w-4 mr-2" />
-                                Editar
+                                <DollarSign className="h-4 w-4 mr-2" />
+                                Pagar Fatura
                               </DropdownMenuItem>
-                              {account.type === "credit" &&
-                                account.balance < 0 &&
-                                onPayCreditCard && (
-                                  <DropdownMenuItem
-                                    onClick={() => onPayCreditCard(account)}
-                                  >
-                                    <DollarSign className="h-4 w-4 mr-2" />
-                                    Pagar Fatura
-                                  </DropdownMenuItem>
-                                )}
-                              <DropdownMenuItem
-                                onClick={() => handleDeleteAccount(account)}
-                                className="text-destructive"
-                              >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Excluir
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </div>
+                            )}
+                          <DropdownMenuItem
+                            onClick={() => handleDeleteAccount(account)}
+                            className="text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Excluir
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </div>
 
                   {/* Saldo e Informações Financeiras */}
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 sm:flex-shrink-0">
+                  <div className="flex flex-col gap-2">
                     {/* Saldo */}
-                    <div className="flex items-center justify-between sm:justify-start gap-2">
+                    <div className="flex items-center justify-between">
                       <span className="text-xs sm:text-sm text-muted-foreground font-medium">
                         Saldo:
                       </span>
@@ -460,10 +456,10 @@ export function AccountsPage({
                       </span>
                     </div>
 
-                    {/* Informações do Limite - Layout responsivo */}
+                    {/* Informações do Limite */}
                     {account.limit_amount && account.limit_amount > 0 && (
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-                        <div className="flex items-center justify-between sm:justify-start gap-2">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
                           <span className="text-xs sm:text-sm text-muted-foreground">
                             Limite:
                           </span>
@@ -474,9 +470,9 @@ export function AccountsPage({
 
                         {/* Barra de progresso */}
                         <div className="flex items-center gap-2">
-                          <div className="w-20 sm:w-16 bg-muted rounded-full h-2 sm:h-1">
+                          <div className="flex-1 bg-muted rounded-full h-2">
                             <div
-                              className={`h-2 sm:h-1 rounded-full transition-all duration-300 ${
+                              className={`h-2 rounded-full transition-all duration-300 ${
                                 account.type === "credit"
                                   ? "bg-destructive"
                                   : "bg-warning"
