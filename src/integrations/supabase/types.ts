@@ -61,7 +61,7 @@ export type Database = {
           action: string
           created_at: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           new_values: Json | null
           old_values: Json | null
           resource_id: string | null
@@ -73,7 +73,7 @@ export type Database = {
           action: string
           created_at?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           new_values?: Json | null
           old_values?: Json | null
           resource_id?: string | null
@@ -85,7 +85,7 @@ export type Database = {
           action?: string
           created_at?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           new_values?: Json | null
           old_values?: Json | null
           resource_id?: string | null
@@ -205,7 +205,9 @@ export type Database = {
           description: string
           id: string
           installments: number | null
+          invoice_month: string | null
           is_recurring: boolean | null
+          linked_transaction_id: string | null
           parent_transaction_id: string | null
           recurrence_end_date: string | null
           recurrence_type: Database["public"]["Enums"]["recurrence_type"] | null
@@ -225,7 +227,9 @@ export type Database = {
           description: string
           id?: string
           installments?: number | null
+          invoice_month?: string | null
           is_recurring?: boolean | null
+          linked_transaction_id?: string | null
           parent_transaction_id?: string | null
           recurrence_end_date?: string | null
           recurrence_type?:
@@ -247,7 +251,9 @@ export type Database = {
           description?: string
           id?: string
           installments?: number | null
+          invoice_month?: string | null
           is_recurring?: boolean | null
+          linked_transaction_id?: string | null
           parent_transaction_id?: string | null
           recurrence_end_date?: string | null
           recurrence_type?:
@@ -272,6 +278,13 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_linked_transaction_id_fkey"
+            columns: ["linked_transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
             referencedColumns: ["id"]
           },
           {
@@ -331,14 +344,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      deactivate_expired_trials: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      get_system_setting: {
-        Args: { p_setting_key: string }
-        Returns: string
-      }
+      deactivate_expired_trials: { Args: never; Returns: undefined }
+      get_system_setting: { Args: { p_setting_key: string }; Returns: string }
       get_user_role: {
         Args: { user_id: string }
         Returns: Database["public"]["Enums"]["user_role"]
@@ -358,14 +365,8 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: undefined
       }
-      is_admin: {
-        Args: { check_user_id: string }
-        Returns: boolean
-      }
-      is_trial_active: {
-        Args: { check_user_id: string }
-        Returns: boolean
-      }
+      is_admin: { Args: { check_user_id: string }; Returns: boolean }
+      is_trial_active: { Args: { check_user_id: string }; Returns: boolean }
       log_user_activity: {
         Args: {
           p_action: string

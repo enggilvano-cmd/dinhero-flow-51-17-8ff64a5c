@@ -207,6 +207,7 @@ const PlaniFlowApp = () => {
         installments: transactionData.installments,
         current_installment: transactionData.currentInstallment,
         parent_transaction_id: transactionData.parentTransactionId,
+        invoice_month: transactionData.invoiceMonth || null,
       };
 
       const { data, error } = await supabase
@@ -263,6 +264,7 @@ const PlaniFlowApp = () => {
           current_installment: data.currentInstallment,
           parent_transaction_id: data.parentTransactionId,
           user_id: user.id,
+          invoice_month: data.invoiceMonth || null,
         };
       });
 
@@ -539,6 +541,7 @@ const PlaniFlowApp = () => {
           category_id: updatedTransaction.category_id,
           account_id: updatedTransaction.account_id,
           status: updatedTransaction.status || "completed",
+          invoice_month: updatedTransaction.invoice_month || null,
         };
 
         const { error } = await supabase
@@ -618,6 +621,7 @@ const PlaniFlowApp = () => {
         category_id: updatedTransaction.category_id,
         account_id: updatedTransaction.account_id,
         status: updatedTransaction.status,
+        invoice_month: updatedTransaction.invoice_month || null,
       };
 
       const baseDescription = oldTransaction.description.replace(

@@ -143,7 +143,8 @@ export function EditTransactionModal({
       type: formData.type,
       category_id: formData.category_id,
       account_id: formData.account_id,
-      status: formData.status
+      status: formData.status,
+      invoice_month: formData.invoiceMonth || undefined,
     };
 
     onEditTransaction(updatedTransaction, editScope);

@@ -307,6 +307,7 @@ export function AddTransactionModal({
               installments: installments,
               currentInstallment: i + 1,
               parentTransactionId: undefined,
+              invoiceMonth: formData.invoiceMonth || undefined,
             };
             transactionsToCreate.push(transaction);
           }
@@ -338,6 +339,7 @@ export function AddTransactionModal({
               installments: installments,
               currentInstallment: i + 1,
               parentTransactionId: undefined,
+              invoiceMonth: formData.invoiceMonth || undefined,
             };
             transactionsToCreate.push(transaction);
           }
@@ -361,6 +363,7 @@ export function AddTransactionModal({
           category_id: category_id,
           account_id: account_id,
           status: status,
+          invoiceMonth: formData.invoiceMonth || undefined,
         };
 
         await onAddTransaction(transactionPayload);

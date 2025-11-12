@@ -50,6 +50,7 @@ export interface Transaction {
   current_installment?: number; // Current installment number (1-based)
   parent_transaction_id?: string; // ID linking installment transactions together
   linked_transaction_id?: string; // <-- ADICIONADO: Para vincular pagamentos/transferências
+  invoice_month?: string; // Month of credit card invoice (YYYY-MM)
 }
 
 // Para o store, garantindo que a data seja um objeto Date

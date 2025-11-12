@@ -143,6 +143,10 @@ export function calculateBillDetails(
     )
   );
 
+  // Calcula o mês da fatura atual e próxima no formato YYYY-MM
+  const currentInvoiceMonth = format(currentBillEnd, "yyyy-MM");
+  const nextInvoiceMonth = format(nextBillEnd, "yyyy-MM");
+
   // --- INÍCIO DA CORREÇÃO (Saldo Credor e Saldo Parcial) ---
   let currentBillAmount = 0;
   let nextBillAmount = 0;
@@ -163,8 +167,12 @@ export function calculateBillDetails(
     }
 
     // 2. Calcula o Saldo da Fatura Atual (currentBillAmount)
-    // Inclui despesas E pagamentos feitos dentro do ciclo da fatura atual
-    if (tDate >= currentBillStart && tDate <= currentBillEnd) {
+    // Prioriza invoice_month, senão usa a data da transação
+    const belongsToCurrentBill = t.invoice_month 
+      ? t.invoice_month === currentInvoiceMonth
+      : (tDate >= currentBillStart && tDate <= currentBillEnd);
+
+    if (belongsToCurrentBill) {
       if (t.type === 'expense') {
         currentBillAmount += t.amount;
       } else if (t.type === 'income') {
@@ -175,9 +183,13 @@ export function calculateBillDetails(
       }
     }
     // 3. Calcula a Próxima Fatura (nextBillAmount)
-    // Inclui APENAS despesas do próximo ciclo
-    else if (tDate >= nextBillStart && tDate <= nextBillEnd) {
-      if (t.type === 'expense') {
+    // Prioriza invoice_month, senão usa a data da transação
+    else {
+      const belongsToNextBill = t.invoice_month
+        ? t.invoice_month === nextInvoiceMonth
+        : (tDate >= nextBillStart && tDate <= nextBillEnd);
+
+      if (belongsToNextBill && t.type === 'expense') {
         nextBillAmount += t.amount;
       }
     }
