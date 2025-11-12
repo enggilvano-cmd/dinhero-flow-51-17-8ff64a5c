@@ -196,6 +196,13 @@ export function calculateBillDetails(
   let newTotalBalance = 0; // Saldo devedor total (limite utilizado)
   const paymentTransactions: AppTransaction[] = []; // <-- ADICIONADO
 
+  console.log('=== DEBUG calculateBillDetails ===');
+  console.log('Account:', account.name);
+  console.log('Current Invoice Month:', currentInvoiceMonth);
+  console.log('Next Invoice Month:', nextInvoiceMonth);
+  console.log('Current Bill Period:', currentBillStart, 'to', currentBillEnd);
+  console.log('Next Bill Period:', nextBillStart, 'to', nextBillEnd);
+
   for (const t of transactions) {
     const tDate = t.date; // t.date agora é um Objeto Date
     
@@ -215,14 +222,18 @@ export function calculateBillDetails(
       ? t.invoice_month === currentInvoiceMonth
       : (tDate >= currentBillStart && tDate <= currentBillEnd);
 
+    console.log(`Transaction: ${t.description}, invoice_month: ${t.invoice_month}, amount: ${t.amount}, belongsToCurrentBill: ${belongsToCurrentBill}`);
+
     if (belongsToCurrentBill) {
       if (t.type === 'expense') {
         currentBillAmount += t.amount;
+        console.log(`  Added to current bill: ${t.amount}, new total: ${currentBillAmount}`);
       } else if (t.type === 'income') {
         // CORREÇÃO: Subtrai o pagamento do valor da fatura atual.
         // Isso permite que currentBillAmount fique negativo (crédito).
         currentBillAmount -= t.amount;
         paymentTransactions.push(t); // <-- ADICIONADO
+        console.log(`  Payment subtracted from current bill: ${t.amount}, new total: ${currentBillAmount}`);
       }
     }
     // 3. Calcula a Próxima Fatura (nextBillAmount)
@@ -234,9 +245,14 @@ export function calculateBillDetails(
 
       if (belongsToNextBill && t.type === 'expense') {
         nextBillAmount += t.amount;
+        console.log(`  Added to next bill: ${t.amount}, new total: ${nextBillAmount}`);
       }
     }
   }
+
+  console.log('Final current bill amount:', currentBillAmount);
+  console.log('Final next bill amount:', nextBillAmount);
+  console.log('=== END DEBUG ===');
 
   // 4. Usa os novos valores calculados
   const totalBalance = newTotalBalance; // Saldo devedor total (correto)
