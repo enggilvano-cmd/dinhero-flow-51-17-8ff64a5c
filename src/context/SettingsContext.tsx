@@ -50,11 +50,13 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     }
   };
 
-  // Load theme from localStorage immediately on mount
+  // Apply system theme on mount (before authentication)
   useEffect(() => {
-    const savedTheme = localStorage.getItem('app-theme') as AppSettings['theme'] || 'system';
-    setSettings(prev => ({ ...prev, theme: savedTheme }));
-    applyTheme(savedTheme);
+    const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
+      ? 'dark'
+      : 'light';
+    const root = window.document.documentElement;
+    root.classList.add(systemTheme);
   }, []);
 
   // Load full settings when user is authenticated
@@ -63,23 +65,14 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
       if (!user || loading) return;
       
       try {
+        // Always load settings from Supabase (source of truth)
         const loadedSettings = await getSettings();
-        const localTheme = localStorage.getItem('app-theme') as AppSettings['theme'];
-        
-        // If localStorage has a different theme, use it and update Supabase
-        if (localTheme && localTheme !== loadedSettings.theme) {
-          const updatedSettings = { ...loadedSettings, theme: localTheme };
-          setSettings(updatedSettings);
-          applyTheme(localTheme);
-          await saveSettings(updatedSettings);
-        } else {
-          setSettings(loadedSettings);
-          applyTheme(loadedSettings.theme);
-          localStorage.setItem('app-theme', loadedSettings.theme);
-        }
+        setSettings(loadedSettings);
+        applyTheme(loadedSettings.theme);
       } catch (error) {
         console.error('Error loading settings:', error);
-        // Keep the theme from localStorage if Supabase fails
+        // Use default settings on error
+        applyTheme('system');
       }
     };
     loadSettings();
@@ -103,8 +96,6 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
 
   const updateSettings = async (newSettings: AppSettings) => {
     setSettings(newSettings);
-    // Save theme to localStorage immediately for persistence when logged out
-    localStorage.setItem('app-theme', newSettings.theme);
     applyTheme(newSettings.theme);
     
     // Save to Supabase if user is authenticated
