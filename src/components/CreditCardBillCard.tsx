@@ -73,7 +73,7 @@ export function CreditCardBillCard({
   const billAmountColor = currentBillAmount > 0 
     ? "balance-negative" 
     : currentBillAmount < 0 
-    ? "balance-positive" 
+    ? "balance-negative" 
     : "text-muted-foreground";
   
   const billLabel = currentBillAmount < 0 
