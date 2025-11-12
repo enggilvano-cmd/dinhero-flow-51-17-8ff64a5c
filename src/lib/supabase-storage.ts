@@ -518,14 +518,17 @@ export async function updateSettings(settings: Omit<AppSettings, 'userId'>): Pro
 
     const { error } = await supabase
       .from('user_settings')
-      .upsert({
-        user_id: user.user.id,
-        currency: settings.currency,
-        theme: settings.theme,
-        notifications: settings.notifications,
-        auto_backup: settings.autoBackup,
-        language: settings.language
-      });
+      .upsert(
+        {
+          user_id: user.user.id,
+          currency: settings.currency,
+          theme: settings.theme,
+          notifications: settings.notifications,
+          auto_backup: settings.autoBackup,
+          language: settings.language
+        },
+        { onConflict: 'user_id' }
+      );
 
     if (error) throw error;
     return true;
