@@ -109,7 +109,7 @@ export const useAccountStore = create<AccountStoreState>((set, get) => ({
     }
 
     const debitTransaction = {
-      type: "expense",
+      type: "expense" as const,
       amount,
       account_id: debitAccountId,
       description: `Pagamento Fatura ${creditCardAccount.name}`,
@@ -119,7 +119,7 @@ export const useAccountStore = create<AccountStoreState>((set, get) => ({
     };
 
     const creditTransaction = {
-      type: "income", // Pagamento é uma 'receita' para o cartão
+      type: "income" as const, // Pagamento é uma 'receita' para o cartão
       amount,
       account_id: creditCardAccountId,
       description: `Pagamento Recebido de ${debitAccount.name}`,
@@ -201,7 +201,7 @@ export const useAccountStore = create<AccountStoreState>((set, get) => ({
 
     // B. Criar as DUAS transações (com 'to_account_id' para rastreio)
     const debitTransaction = {
-      type: "expense",
+      type: "expense" as const,
       amount: amountInCents,
       account_id: fromAccountId,
       description: `Transferência para ${toAccount.name}`,
@@ -212,7 +212,7 @@ export const useAccountStore = create<AccountStoreState>((set, get) => ({
     };
 
     const creditTransaction = {
-      type: "income",
+      type: "income" as const,
       amount: amountInCents,
       account_id: toAccountId,
       description: `Transferência de ${fromAccount.name}`,

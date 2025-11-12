@@ -609,10 +609,6 @@ const PlaniFlowApp = () => {
         invoice_month: updatedTransaction.invoice_month || null,
       };
 
-      const baseDescription = oldTransaction.description.replace(
-        / \(\d+\/\d+\)$/,
-        ""
-      );
 
       let queryBuilder = supabase
         .from("transactions")
@@ -620,12 +616,7 @@ const PlaniFlowApp = () => {
         .eq("user_id", user.id)
         .eq("parent_transaction_id", oldTransaction.parent_transaction_id);
 
-      if (editScope === "current_and_previous") {
-        queryBuilder = queryBuilder.lte(
-          "current_installment",
-          oldTransaction.current_installment
-        );
-      } else if (editScope === "current-and-remaining") {
+      if (editScope === "current-and-remaining") {
         queryBuilder = queryBuilder.gte(
           "current_installment",
           oldTransaction.current_installment
@@ -768,6 +759,7 @@ const PlaniFlowApp = () => {
           for (const installment of installmentTransactions) {
             transactionsToDelete.push({
               ...installment,
+              category_id: installment.category_id || "",
               date: typeof installment.date === 'string' 
                 ? createDateFromString(installment.date) 
                 : installment.date
@@ -1130,7 +1122,10 @@ const PlaniFlowApp = () => {
         return <CategoriesPage />;
       case "analytics":
         return (
-          <AnalyticsPage transactions={transactions} accounts={accounts} />
+          <AnalyticsPage 
+            transactions={transactions.map(t => ({ ...t, category: t.category_id || "" }))} 
+            accounts={accounts} 
+          />
         );
       case "users":
         return isAdmin() ? (
@@ -1417,14 +1412,22 @@ const PlaniFlowApp = () => {
       <TransferModal
         open={transferModalOpen}
         onOpenChange={setTransferModalOpen}
-        onTransfer={handleTransfer}
+        onTransfer={async (fromAccountId, toAccountId, amountInCents, date) => {
+          await handleTransfer(fromAccountId, toAccountId, amountInCents, date);
+          const fromAccount = accounts.find(acc => acc.id === fromAccountId)!;
+          const toAccount = accounts.find(acc => acc.id === toAccountId)!;
+          return { fromAccount, toAccount };
+        }}
       />
 
       {/* Passando os valores da fatura para o modal */}
       <CreditPaymentModal
         open={creditPaymentModalOpen}
         onOpenChange={setCreditPaymentModalOpen}
-        onPayment={handleCreditPayment} 
+        onPayment={async (params) => {
+          const result = await handleCreditPayment(params);
+          return { updatedCreditAccount: result.creditAccount, updatedDebitAccount: result.bankAccount };
+        }}
         creditAccount={payingCreditAccount}
         invoiceValueInCents={currentInvoiceValue}
         nextInvoiceValueInCents={nextInvoiceValue}
