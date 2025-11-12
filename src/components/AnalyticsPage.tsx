@@ -1049,18 +1049,18 @@ export default function AnalyticsPage({
 
             {/* Indicadores visuais no mobile */}
             {isMobile && monthlyData.length > 0 && (
-              <div className="flex justify-center gap-4 mt-3 text-xs">
-                <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded bg-success"></div>
-                  <span className="text-muted-foreground">Receitas</span>
+              <div className="grid grid-cols-3 gap-2 mt-3 text-xs">
+                <div className="flex items-center gap-1 justify-center">
+                  <div className="w-3 h-3 rounded bg-success flex-shrink-0"></div>
+                  <span className="text-muted-foreground truncate">Receitas</span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded bg-destructive"></div>
-                  <span className="text-muted-foreground">Despesas</span>
+                <div className="flex items-center gap-1 justify-center">
+                  <div className="w-3 h-3 rounded bg-destructive flex-shrink-0"></div>
+                  <span className="text-muted-foreground truncate">Despesas</span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-3 h-0.5 bg-primary"></div>
-                  <span className="text-muted-foreground">Saldo</span>
+                <div className="flex items-center gap-1 justify-center">
+                  <div className="w-3 h-0.5 bg-primary flex-shrink-0"></div>
+                  <span className="text-muted-foreground truncate">Saldo</span>
                 </div>
               </div>
             )}
