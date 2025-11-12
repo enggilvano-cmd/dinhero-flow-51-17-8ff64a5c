@@ -495,7 +495,7 @@ export function Dashboard({
 
       {/* Layout Otimizado - Cards em um único grid responsivo */}
       <div className="space-y-3 sm:space-y-4">
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
           {/* Card de Filtros */}
           <Card className="financial-card">
             <CardContent className="p-3">
