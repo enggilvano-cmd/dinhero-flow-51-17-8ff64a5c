@@ -501,8 +501,8 @@ export default function AnalyticsPage({
       {/* Filters */}
       <Card>
         <CardContent className="p-2 sm:p-3">
-          <div className="flex flex-col gap-4 sm:flex-row">
-            <div className="flex-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div>
               <label htmlFor="search" className="text-caption">Buscar transações</label>
               <div className="relative mt-2">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -515,7 +515,8 @@ export default function AnalyticsPage({
                 />
               </div>
             </div>
-            <div className="sm:w-48">
+
+            <div>
               <label htmlFor="filter-type" className="text-caption">Tipo</label>
               <Select
                 value={filterType}
@@ -532,9 +533,7 @@ export default function AnalyticsPage({
                 </SelectContent>
               </Select>
             </div>
-          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
             <div>
               <label htmlFor="filter-account" className="text-caption">Conta</label>
               <Select value={filterAccount} onValueChange={setFilterAccount}>
