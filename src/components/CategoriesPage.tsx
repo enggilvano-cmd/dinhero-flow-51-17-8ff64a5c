@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -28,6 +29,7 @@ export function CategoriesPage({}: CategoriesPageProps) {
   const [editingCategory, setEditingCategory] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (!user) return;
@@ -71,8 +73,8 @@ export function CategoriesPage({}: CategoriesPageProps) {
       if (error) {
         console.error('Error adding category:', error);
         toast({
-          title: "Erro",
-          description: "Erro ao adicionar categoria.",
+          title: t("common.error"),
+          description: t("messages.errorOccurred"),
           variant: "destructive"
         });
         return;
@@ -81,14 +83,14 @@ export function CategoriesPage({}: CategoriesPageProps) {
       setCategories(prev => [...prev, data]);
       
       toast({
-        title: "Sucesso",
-        description: "Categoria adicionada com sucesso!",
+        title: t("categories.categoryAdded"),
+        description: t("messages.saveSuccess"),
       });
     } catch (error) {
       console.error('Error adding category:', error);
       toast({
-        title: "Erro",
-        description: "Erro inesperado ao adicionar categoria.",
+        title: t("common.error"),
+        description: t("messages.errorOccurred"),
         variant: "destructive"
       });
     }
@@ -107,8 +109,8 @@ export function CategoriesPage({}: CategoriesPageProps) {
       if (error) {
         console.error('Error updating category:', error);
         toast({
-          title: "Erro",
-          description: "Erro ao atualizar categoria.",
+          title: t("common.error"),
+          description: t("messages.errorOccurred"),
           variant: "destructive"
         });
         return;
@@ -120,14 +122,14 @@ export function CategoriesPage({}: CategoriesPageProps) {
       setEditingCategory(null);
       
       toast({
-        title: "Sucesso",
-        description: "Categoria atualizada com sucesso!",
+        title: t("categories.categoryUpdated"),
+        description: t("messages.updateSuccess"),
       });
     } catch (error) {
       console.error('Error updating category:', error);
       toast({
-        title: "Erro",
-        description: "Erro inesperado ao atualizar categoria.",
+        title: t("common.error"),
+        description: t("messages.errorOccurred"),
         variant: "destructive"
       });
     }
@@ -152,8 +154,8 @@ export function CategoriesPage({}: CategoriesPageProps) {
 
       if (transactions && transactions.length > 0) {
         toast({
-          title: "Erro",
-          description: "Esta categoria não pode ser excluída pois está sendo usada em transações.",
+          title: t("common.error"),
+          description: t("messages.errorOccurred"),
           variant: "destructive"
         });
         return;
@@ -168,8 +170,8 @@ export function CategoriesPage({}: CategoriesPageProps) {
       if (error) {
         console.error('Error deleting category:', error);
         toast({
-          title: "Erro",
-          description: "Erro ao excluir categoria.",
+          title: t("common.error"),
+          description: t("messages.errorOccurred"),
           variant: "destructive"
         });
         return;
@@ -178,14 +180,14 @@ export function CategoriesPage({}: CategoriesPageProps) {
       setCategories(prev => prev.filter(cat => cat.id !== categoryId));
       
       toast({
-        title: "Sucesso",
-        description: "Categoria excluída com sucesso!",
+        title: t("categories.categoryDeleted"),
+        description: t("messages.deleteSuccess"),
       });
     } catch (error) {
       console.error('Error deleting category:', error);
       toast({
-        title: "Erro",
-        description: "Erro inesperado ao excluir categoria.",
+        title: t("common.error"),
+        description: t("messages.errorOccurred"),
         variant: "destructive"
       });
     }
@@ -211,8 +213,8 @@ export function CategoriesPage({}: CategoriesPageProps) {
         if (deleteError) {
           console.error('Error deleting categories:', deleteError);
           toast({
-            title: "Erro",
-            description: "Erro ao substituir categorias.",
+            title: t("common.error"),
+            description: t("messages.errorOccurred"),
             variant: "destructive"
           });
           return;
@@ -232,8 +234,8 @@ export function CategoriesPage({}: CategoriesPageProps) {
         if (error) {
           console.error('Error importing categories:', error);
           toast({
-            title: "Erro",
-            description: "Erro ao importar categorias.",
+            title: t("common.error"),
+            description: t("messages.errorOccurred"),
             variant: "destructive"
           });
           return;
@@ -246,15 +248,15 @@ export function CategoriesPage({}: CategoriesPageProps) {
         });
 
         toast({
-          title: "Sucesso",
-          description: `${categoriesToAdd.length} categorias importadas com sucesso!`,
+          title: t("common.success"),
+          description: `${categoriesToAdd.length} ${t("categories.title").toLowerCase()}`,
         });
       }
     } catch (error) {
       console.error('Error importing categories:', error);
       toast({
-        title: "Erro",
-        description: "Erro inesperado ao importar categorias.",
+        title: t("common.error"),
+        description: t("messages.errorOccurred"),
         variant: "destructive"
       });
     }
@@ -285,8 +287,8 @@ export function CategoriesPage({}: CategoriesPageProps) {
     XLSX.writeFile(wb, fileName);
 
     toast({
-      title: "Exportação concluída",
-      description: `${filteredCategories.length} categorias exportadas para Excel.`,
+      title: t("common.success"),
+      description: `${filteredCategories.length} ${t("categories.title").toLowerCase()}`,
     });
   };
 
@@ -310,11 +312,11 @@ export function CategoriesPage({}: CategoriesPageProps) {
   const getTypeLabel = (type: string) => {
     switch (type) {
       case "income":
-        return "Receita";
+        return t("transactions.income");
       case "expense":
-        return "Despesa";
+        return t("transactions.expense");
       case "both":
-        return "Ambos";
+        return t("categories.both");
     }
   };
 
@@ -345,9 +347,9 @@ export function CategoriesPage({}: CategoriesPageProps) {
       {/* Header */}
       <div className="flex flex-col gap-3">
         <div className="min-w-0 w-full">
-          <h1 className="text-xl sm:text-2xl font-bold leading-tight">Categorias</h1>
+          <h1 className="text-xl sm:text-2xl font-bold leading-tight">{t("categories.title")}</h1>
           <p className="text-sm text-muted-foreground leading-tight">
-            Gerencie as categorias das suas transações
+            {t("categories.subtitle")}
           </p>
         </div>
         <div className="grid grid-cols-2 gap-2 w-full md:grid-cols-3 lg:flex lg:flex-nowrap lg:gap-2 lg:w-auto lg:ml-auto">
@@ -358,7 +360,7 @@ export function CategoriesPage({}: CategoriesPageProps) {
             disabled={categories.length === 0}
           >
             <FileDown className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span>Exportar</span>
+            <span>{t("common.export")}</span>
           </Button>
           <Button 
             variant="outline" 
@@ -366,11 +368,11 @@ export function CategoriesPage({}: CategoriesPageProps) {
             className="gap-2 apple-interaction h-9 text-xs sm:text-sm"
           >
             <Upload className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span>Importar</span>
+            <span>{t("common.import")}</span>
           </Button>
           <Button onClick={() => setAddModalOpen(true)} className="gap-2 apple-interaction h-9 text-xs sm:text-sm col-span-2 md:col-span-1">
             <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span>Nova Categoria</span>
+            <span>{t("categories.addCategory")}</span>
           </Button>
         </div>
       </div>
@@ -385,7 +387,7 @@ export function CategoriesPage({}: CategoriesPageProps) {
                   <Tag className="h-5 w-5 text-primary" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-caption font-medium">Total</p>
+                  <p className="text-caption font-medium">{t("common.total")}</p>
                   <div className="text-responsive-xl font-bold leading-tight">{categories.length}</div>
                 </div>
               </div>
@@ -401,7 +403,7 @@ export function CategoriesPage({}: CategoriesPageProps) {
                   <TrendingUp className="h-5 w-5 text-success" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-caption font-medium">Receitas</p>
+                  <p className="text-caption font-medium">{t("dashboard.revenues")}</p>
                   <div className="text-responsive-xl font-bold balance-positive leading-tight">
                     {categories.filter(c => c.type === "income" || c.type === "both").length}
                   </div>
@@ -419,7 +421,7 @@ export function CategoriesPage({}: CategoriesPageProps) {
                   <TrendingDown className="h-5 w-5 text-destructive" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-caption font-medium">Despesas</p>
+                  <p className="text-caption font-medium">{t("dashboard.expenses")}</p>
                   <div className="text-responsive-xl font-bold balance-negative leading-tight">
                     {categories.filter(c => c.type === "expense" || c.type === "both").length}
                   </div>
@@ -437,7 +439,7 @@ export function CategoriesPage({}: CategoriesPageProps) {
                   <ArrowUpDown className="h-5 w-5 text-primary" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-caption font-medium">Mistas</p>
+                  <p className="text-caption font-medium">{t("categories.both")}</p>
                   <div className="text-responsive-xl font-bold text-primary leading-tight">
                     {categories.filter(c => c.type === "both").length}
                   </div>
@@ -453,12 +455,12 @@ export function CategoriesPage({}: CategoriesPageProps) {
         <CardContent className="p-2 sm:p-3">
           <div className="flex flex-col gap-4 sm:flex-row">
             <div className="flex-1">
-              <Label htmlFor="search" className="text-caption">Buscar categorias</Label>
+              <Label htmlFor="search" className="text-caption">{t("categories.searchPlaceholder")}</Label>
               <div className="relative mt-2">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="search"
-                  placeholder="Digite o nome da categoria..."
+                  placeholder={t("categories.searchPlaceholder")}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 touch-target"
@@ -466,16 +468,16 @@ export function CategoriesPage({}: CategoriesPageProps) {
               </div>
             </div>
             <div className="sm:w-48">
-              <Label htmlFor="filter" className="text-caption">Filtrar por tipo</Label>
+              <Label htmlFor="filter" className="text-caption">{t("accounts.filterByType")}</Label>
               <Select value={filterType} onValueChange={(value: any) => setFilterType(value)}>
                 <SelectTrigger className="touch-target mt-2">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="income">Receitas</SelectItem>
-                  <SelectItem value="expense">Despesas</SelectItem>
-                  <SelectItem value="both">Ambos</SelectItem>
+                  <SelectItem value="all">{t("common.all")}</SelectItem>
+                  <SelectItem value="income">{t("transactions.income")}</SelectItem>
+                  <SelectItem value="expense">{t("transactions.expense")}</SelectItem>
+                  <SelectItem value="both">{t("categories.both")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -488,17 +490,17 @@ export function CategoriesPage({}: CategoriesPageProps) {
         {filteredCategories.length === 0 ? (
           <div className="col-span-full text-center py-12">
             <Tag className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-headline font-semibold mb-2">Nenhuma categoria encontrada</h3>
+            <h3 className="text-headline font-semibold mb-2">{t("categories.noCategories")}</h3>
             <p className="text-body text-muted-foreground mb-4">
               {searchTerm || filterType !== "all" 
-                ? "Tente ajustar os filtros para encontrar categorias." 
-                : "Comece criando sua primeira categoria."
+                ? t("messages.noDataFound")
+                : t("categories.addFirstCategory")
               }
             </p>
             {(!searchTerm && filterType === "all") && (
               <Button onClick={() => setAddModalOpen(true)} className="gap-2 apple-interaction">
                 <Plus className="h-4 w-4" />
-                Criar Primeira Categoria
+                {t("categories.addCategory")}
               </Button>
             )}
           </div>
@@ -532,31 +534,30 @@ export function CategoriesPage({}: CategoriesPageProps) {
                     className="gap-1 touch-target apple-interaction flex-1 sm:flex-initial"
                   >
                     <Edit className="h-3 w-3" />
-                    <span className="sm:inline">Editar</span>
+                    <span className="sm:inline">{t("common.edit")}</span>
                   </Button>
                   
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button variant="outline" size="sm" className="gap-1 touch-target text-destructive hover:text-destructive flex-1 sm:flex-initial">
                         <Trash2 className="h-3 w-3" />
-                        <span className="sm:inline">Excluir</span>
+                        <span className="sm:inline">{t("common.delete")}</span>
                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+                        <AlertDialogTitle>{t("categories.confirmDelete")}</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Tem certeza que deseja excluir a categoria "{category.name}"? 
-                          Esta ação não pode ser desfeita.
+                          {category.name}
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
                         <AlertDialogAction
                           onClick={() => handleDeleteCategory(category.id)}
                           className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                         >
-                          Excluir
+                          {t("common.delete")}
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>

@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import { useSettings } from "@/context/SettingsContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,13 +31,7 @@ import { cn } from "@/lib/utils";
 import { format, addMonths, isPast } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
-// Helper para formatar moeda
-const formatCents = (valueInCents: number) => {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(valueInCents / 100);
-};
+// This will be replaced with a method inside the component
 
 interface CreditBillsPageProps {
   onPayCreditCard: (
@@ -50,7 +46,17 @@ interface CreditBillsPageProps {
 
 export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBillsPageProps) {
   const allAccounts = useAccountStore((state) => state.accounts);
-  const allTransactions = useTransactionStore((state) => state.transactions); 
+  const allTransactions = useTransactionStore((state) => state.transactions);
+  const { t } = useTranslation();
+  const { settings } = useSettings();
+
+  // Helper para formatar moeda
+  const formatCents = (valueInCents: number) => {
+    return new Intl.NumberFormat(settings.language === 'pt-BR' ? 'pt-BR' : settings.language === 'es-ES' ? 'es-ES' : 'en-US', {
+      style: "currency",
+      currency: settings.currency,
+    }).format(valueInCents / 100);
+  };
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedAccountId, setSelectedAccountId] = useState("all");
@@ -211,9 +217,9 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold leading-tight">Faturas de Cartão</h1>
+          <h1 className="text-xl sm:text-2xl font-bold leading-tight">{t("creditBills.title")}</h1>
           <p className="text-sm text-muted-foreground leading-tight">
-            Acompanhe o vencimento e o limite dos seus cartões de crédito
+            {t("creditBills.subtitle")}
           </p>
         </div>
       </div>
@@ -229,7 +235,7 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs sm:text-sm font-medium text-muted-foreground">
-                  Fatura Atual (Total)
+                  {t("creditBills.currentBill")}
                 </p>
                 <div className="text-base sm:text-lg lg:text-xl font-bold balance-negative leading-tight">
                   {/* BUGFIX: Corrigido para mostrar o valor correto, mesmo se for crédito (negativo) */}
@@ -249,7 +255,7 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs sm:text-sm font-medium text-muted-foreground">
-                  Próxima Fatura (Total)
+                  {t("creditBills.nextBill")}
                 </p>
                 <div className="text-base sm:text-lg lg:text-xl font-bold text-muted-foreground leading-tight">
                   {formatCents(totalSummary.nextBill)}
@@ -268,7 +274,7 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs sm:text-sm font-medium text-muted-foreground">
-                  Limite Disponível (Total)
+                  {t("accounts.available")}
                 </p>
                 <div
                   className={cn(
@@ -289,20 +295,20 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
       {/* SEÇÃO DE FILTROS */}
       <Card className="financial-card">
         <CardHeader className="px-4 sm:px-6">
-          <CardTitle className="text-lg sm:text-xl">Filtros</CardTitle>
+          <CardTitle className="text-lg sm:text-xl">{t("common.filter")}</CardTitle>
         </CardHeader>
         <CardContent className="py-4 sm:pt-0">
           <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
               {/* Cartão */}
               <div className="space-y-1.5">
-                <Label htmlFor="filterCard">Cartão</Label>
+                <Label htmlFor="filterCard">{t("accounts.credit")}</Label>
                 <Select value={selectedAccountId} onValueChange={setSelectedAccountId}>
                   <SelectTrigger className="h-9 text-xs sm:text-sm" id="filterCard">
-                    <SelectValue placeholder="Selecione um cartão" />
+                    <SelectValue placeholder={t("transactions.selectAccount")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todos os Cartões</SelectItem>
+                    <SelectItem value="all">{t("common.all")}</SelectItem>
                     {creditAccounts.map((account) => (
                       <SelectItem key={account.id} value={account.id}>
                         <div className="flex items-center gap-2">
@@ -322,37 +328,37 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
 
               {/* Status da Fatura (Aberta/Fechada) */}
               <div className="space-y-1.5">
-                <Label htmlFor="filterBillStatus">Status da Fatura</Label>
+                <Label htmlFor="filterBillStatus">{t("transactions.status")}</Label>
                 <Select value={filterBillStatus} onValueChange={(value: any) => setFilterBillStatus(value)}>
                   <SelectTrigger className="h-9 text-xs sm:text-sm" id="filterBillStatus">
-                    <SelectValue placeholder="Status" />
+                    <SelectValue placeholder={t("transactions.status")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todas</SelectItem>
-                    <SelectItem value="open">Aberta</SelectItem>
-                    <SelectItem value="closed">Fechada</SelectItem>
+                    <SelectItem value="all">{t("common.all")}</SelectItem>
+                    <SelectItem value="open">{t("transactions.pending")}</SelectItem>
+                    <SelectItem value="closed">{t("transactions.completed")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               {/* Status de Pagamento */}
               <div className="space-y-1.5">
-                <Label htmlFor="filterPaymentStatus">Status de Pagamento</Label>
+                <Label htmlFor="filterPaymentStatus">{t("transactions.status")}</Label>
                 <Select value={filterPaymentStatus} onValueChange={(value: any) => setFilterPaymentStatus(value)}>
                   <SelectTrigger className="h-9 text-xs sm:text-sm" id="filterPaymentStatus">
-                    <SelectValue placeholder="Pagamento" />
+                    <SelectValue placeholder={t("transactions.status")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todos</SelectItem>
-                    <SelectItem value="paid">Pago</SelectItem>
-                    <SelectItem value="pending">Pendente</SelectItem>
+                    <SelectItem value="all">{t("common.all")}</SelectItem>
+                    <SelectItem value="paid">{t("transactions.completed")}</SelectItem>
+                    <SelectItem value="pending">{t("transactions.pending")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               {/* Período/Mês */}
               <div className="space-y-1.5">
-                <Label htmlFor="periodFilter">Período</Label>
+                <Label htmlFor="periodFilter">{t("dateFilter.custom")}</Label>
                 <Select
                   value={periodFilter}
                   onValueChange={(value: any) => {
@@ -363,23 +369,23 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
                   }}
                 >
                   <SelectTrigger className="h-9 text-xs sm:text-sm" id="periodFilter">
-                    <SelectValue placeholder="Período" />
+                    <SelectValue placeholder={t("dateFilter.custom")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="current_month">Mês Atual</SelectItem>
-                    <SelectItem value="month_picker">Navegar por Mês</SelectItem>
+                    <SelectItem value="current_month">{t("dateFilter.currentMonth")}</SelectItem>
+                    <SelectItem value="month_picker">{t("dateFilter.monthPicker")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               {/* Busca */}
               <div className="space-y-1.5 col-span-1 sm:col-span-2 lg:col-span-1">
-                <Label htmlFor="search">Buscar</Label>
+                <Label htmlFor="search">{t("common.search")}</Label>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="search"
-                    placeholder="Buscar cartão..."
+                    placeholder={t("accounts.searchPlaceholder")}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10 h-9"
@@ -424,13 +430,13 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
           <CreditCard className="h-12 w-12 mx-auto mb-4 opacity-50" />
           <p className="text-sm font-medium">
             {searchTerm
-              ? "Nenhum cartão encontrado"
-              : "Nenhum cartão de crédito cadastrado"}
+              ? t("messages.noDataFound")
+              : t("creditBills.noBills")}
           </p>
           <p className="text-xs">
             {searchTerm
-              ? "Tente ajustar sua busca."
-              : 'Adicione um cartão na página "Contas" para vê-lo aqui.'}
+              ? t("messages.tryAgain")
+              : t("accounts.addFirstAccount")}
           </p>
         </div>
       ) : (

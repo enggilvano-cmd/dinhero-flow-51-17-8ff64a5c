@@ -1,5 +1,6 @@
 import { createDateFromString } from "@/lib/dateUtils";
-
+import { useTranslation } from "react-i18next";
+import { useSettings } from "@/context/SettingsContext";
 import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -122,14 +123,16 @@ export function TransactionsPage({
   const [importModalOpen, setImportModalOpen] = useState(false);
 
   const { toast } = useToast();
+  const { t } = useTranslation();
+  const { settings } = useSettings();
 
   // =================================================================
   // CORREÇÃO 1: A função 'formatCurrency' local deve dividir por 100
   // =================================================================
   const formatCurrency = (valueInCents: number) => {
-    return new Intl.NumberFormat("pt-BR", {
+    return new Intl.NumberFormat(settings.language === 'pt-BR' ? 'pt-BR' : settings.language === 'es-ES' ? 'es-ES' : 'en-US', {
       style: "currency",
-      currency: "BRL",
+      currency: settings.currency,
     }).format(valueInCents / 100); // Dividido por 100
   };
 
@@ -158,11 +161,11 @@ export function TransactionsPage({
   const getTransactionTypeLabel = (type: string) => {
     switch (type) {
       case "income":
-        return "Receita";
+        return t("transactions.income");
       case "expense":
-        return "Despesa";
+        return t("transactions.expense");
       case "transfer":
-        return "Transferência";
+        return t("transactions.transfer");
       default:
         return type;
     }
@@ -182,9 +185,9 @@ export function TransactionsPage({
   const getStatusLabel = (status: string) => {
     switch (status) {
       case "pending":
-        return "Pendente";
+        return t("transactions.pending");
       case "completed":
-        return "Concluída";
+        return t("transactions.completed");
       default:
         return status;
     }
@@ -192,11 +195,11 @@ export function TransactionsPage({
 
   const getAccountName = (accountId: string) => {
     const account = accounts.find((acc) => acc.id === accountId);
-    return account?.name || "Conta não encontrada";
+    return account?.name || t("accounts.noAccounts");
   };
 
   const getCategoryName = (categoryId: string, isTransfer: boolean = false) => {
-    if (isTransfer) return "Transferência";
+    if (isTransfer) return t("transactions.transfer");
     const category = categories.find((cat) => cat.id === categoryId);
     return category?.name || "";
   };
@@ -306,13 +309,13 @@ export function TransactionsPage({
   const handleDeleteTransaction = (transaction: any) => {
     if (
       window.confirm(
-        `Tem certeza que deseja excluir a transação "${transaction.description}"?`,
+        t("transactions.confirmDelete"),
       )
     ) {
       onDeleteTransaction(transaction.id);
       toast({
-        title: "Transação excluída",
-        description: `A transação "${transaction.description}" foi excluída com sucesso.`,
+        title: t("transactions.transactionDeleted"),
+        description: `${transaction.description}`,
       });
     }
   };
@@ -403,8 +406,8 @@ export function TransactionsPage({
     XLSX.writeFile(wb, fileName);
 
     toast({
-      title: "Exportação concluída",
-      description: `${filteredAndSortedTransactions.length} transações exportadas para Excel.`,
+      title: t("common.success"),
+      description: `${filteredAndSortedTransactions.length} ${t("transactions.title").toLowerCase()} ${t("common.export").toLowerCase()}.`,
     });
   };
 
@@ -412,7 +415,7 @@ export function TransactionsPage({
   const tableColumns = [
     {
       key: "info",
-      header: "Transação",
+      header: t("transactions.title"),
       width: "30%",
       render: (transaction: any) => (
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
@@ -454,7 +457,7 @@ export function TransactionsPage({
     },
     {
       key: "category",
-      header: "Categoria",
+      header: t("transactions.category"),
       hideOnMobile: true, // Oculta apenas em mobile (< 640px)
       width: "15%",
       render: (transaction: any) => (
@@ -468,7 +471,7 @@ export function TransactionsPage({
     },
     {
       key: "account",
-      header: "Conta",
+      header: t("transactions.account"),
       hideOnMobile: true, // Oculta apenas em mobile
       width: "15%",
       render: (transaction: any) => (
@@ -479,8 +482,8 @@ export function TransactionsPage({
     },
     {
       key: "type",
-      header: "Tipo",
-      mobileLabel: "Tipo",
+      header: t("transactions.type"),
+      mobileLabel: t("transactions.type"),
       width: "12%",
       render: (transaction: any) => (
         <Badge
@@ -497,8 +500,8 @@ export function TransactionsPage({
     },
     {
       key: "status",
-      header: "Status",
-      mobileLabel: "Status",
+      header: t("transactions.status"),
+      mobileLabel: t("transactions.status"),
       width: "13%",
       render: (transaction: any) => (
         <div className="flex flex-col gap-1">
@@ -521,8 +524,8 @@ export function TransactionsPage({
       // CORREÇÃO 3: Usar Math.abs() aqui para evitar sinal duplo
       // =================================================================
       key: "amount",
-      header: "Valor",
-      mobileLabel: "Valor",
+      header: t("transactions.amount"),
+      mobileLabel: t("transactions.amount"),
       width: "15%",
       render: (transaction: any) => (
         <div
@@ -540,8 +543,8 @@ export function TransactionsPage({
     },
     {
       key: "actions",
-      header: "Ações",
-      mobileLabel: "Ações",
+      header: t("common.view"),
+      mobileLabel: t("common.view"),
       width: "10%",
       render: (transaction: any) => (
         <DropdownMenu>
@@ -554,14 +557,14 @@ export function TransactionsPage({
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={() => onEditTransaction(transaction)}>
               <Edit className="h-4 w-4 mr-2" />
-              Editar
+              {t("common.edit")}
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => handleDeleteTransaction(transaction)}
               className="text-destructive"
             >
               <Trash2 className="h-4 w-4 mr-2" />
-              Excluir
+              {t("common.delete")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -574,9 +577,9 @@ export function TransactionsPage({
       {/* Header */}
       <div className="flex flex-col gap-3">
         <div className="min-w-0 w-full">
-          <h1 className="text-xl sm:text-2xl font-bold leading-tight">Transações</h1>
+          <h1 className="text-xl sm:text-2xl font-bold leading-tight">{t("transactions.title")}</h1>
           <p className="text-sm text-muted-foreground leading-tight">
-            Histórico completo de receitas, despesas e transferências
+            {t("transactions.subtitle")}
           </p>
         </div>
         <div className="grid grid-cols-2 gap-2 w-full md:grid-cols-3 lg:flex lg:flex-nowrap lg:gap-2 lg:w-auto lg:ml-auto">
@@ -586,7 +589,7 @@ export function TransactionsPage({
             className="gap-2 apple-interaction h-9 text-xs sm:text-sm"
           >
             <Upload className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span>Importar</span>
+            <span>{t("common.import")}</span>
           </Button>
           <Button
             variant="outline"
@@ -595,14 +598,14 @@ export function TransactionsPage({
             disabled={filteredAndSortedTransactions.length === 0}
           >
             <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span>Exportar</span>
+            <span>{t("common.export")}</span>
           </Button>
           <Button
             onClick={onAddTransaction}
             className="gap-2 apple-interaction h-9 text-xs sm:text-sm col-span-2 md:col-span-1"
           >
             <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span>Adicionar</span>
+            <span>{t("common.add")}</span>
           </Button>
         </div>
       </div>
@@ -617,7 +620,7 @@ export function TransactionsPage({
               </div>
               <div>
                 <p className="text-caption font-medium text-muted-foreground">
-                  Total de Transações
+                  {t("common.total")} {t("transactions.title")}
                 </p>
                 <div className="text-responsive-xl font-bold leading-tight">
                   {filteredAndSortedTransactions.length}
@@ -635,7 +638,7 @@ export function TransactionsPage({
               </div>
               <div>
                 <p className="text-caption font-medium text-muted-foreground">
-                  Total Receitas
+                  {t("dashboard.revenues")}
                 </p>
                 <div className="text-responsive-xl font-bold balance-positive leading-tight">
                   {formatCurrency(totals.income)}
@@ -653,7 +656,7 @@ export function TransactionsPage({
               </div>
               <div>
                 <p className="text-caption font-medium text-muted-foreground">
-                  Total Despesas
+                  {t("dashboard.expenses")}
                 </p>
                 <div className="text-responsive-xl font-bold balance-negative leading-tight">
                   {formatCurrency(totals.expenses)}
@@ -671,7 +674,7 @@ export function TransactionsPage({
               </div>
               <div>
                 <p className="text-caption font-medium text-muted-foreground">
-                  Saldo Líquido
+                  {t("dashboard.balance")}
                 </p>
                 <div
                   className={`text-responsive-xl font-bold leading-tight ${
@@ -693,14 +696,14 @@ export function TransactionsPage({
       {/* ================================================================= */}
       <Card className="financial-card">
         <CardHeader className="px-4 sm:px-6">
-          <CardTitle className="text-lg sm:text-xl">Filtros</CardTitle>
+          <CardTitle className="text-lg sm:text-xl">{t("common.filter")}</CardTitle>
         </CardHeader>
         <CardContent className="py-4 sm:pt-0">
           <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Tipo */}
               <div className="space-y-1.5">
-                <Label htmlFor="filterType">Tipo</Label>
+                <Label htmlFor="filterType">{t("transactions.type")}</Label>
                 <Select
                   value={filterType}
                   onValueChange={(value: any) => setFilterType(value)}
@@ -709,17 +712,17 @@ export function TransactionsPage({
                     <SelectValue placeholder="Tipo" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todos</SelectItem>
-                    <SelectItem value="income">Receitas</SelectItem>
-                    <SelectItem value="expense">Despesas</SelectItem>
-                    <SelectItem value="transfer">Transferências</SelectItem>
+                    <SelectItem value="all">{t("common.all")}</SelectItem>
+                    <SelectItem value="income">{t("transactions.income")}</SelectItem>
+                    <SelectItem value="expense">{t("transactions.expense")}</SelectItem>
+                    <SelectItem value="transfer">{t("transactions.transfer")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               {/* Status */}
               <div className="space-y-1.5">
-                <Label htmlFor="filterStatus">Status</Label>
+                <Label htmlFor="filterStatus">{t("transactions.status")}</Label>
                 <Select
                   value={filterStatus}
                   onValueChange={(value: any) => setFilterStatus(value)}
@@ -728,16 +731,16 @@ export function TransactionsPage({
                     <SelectValue placeholder="Status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todos</SelectItem>
-                    <SelectItem value="completed">Concluídas</SelectItem>
-                    <SelectItem value="pending">Pendentes</SelectItem>
+                    <SelectItem value="all">{t("common.all")}</SelectItem>
+                    <SelectItem value="completed">{t("transactions.completed")}</SelectItem>
+                    <SelectItem value="pending">{t("transactions.pending")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               {/* Tipo de Conta */}
               <div className="space-y-1.5">
-                <Label htmlFor="filterAccountType">Tipo de Conta</Label>
+                <Label htmlFor="filterAccountType">{t("accounts.accountType")}</Label>
                 <Select
                   value={filterAccountType}
                   onValueChange={setFilterAccountType}
@@ -749,18 +752,18 @@ export function TransactionsPage({
                     <SelectValue placeholder="Tipo de Conta" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todas</SelectItem>
-                    <SelectItem value="checking">Conta Corrente</SelectItem>
-                    <SelectItem value="credit">Cartão de Crédito</SelectItem>
-                    <SelectItem value="investment">Investimentos</SelectItem>
-                    <SelectItem value="savings">Poupança</SelectItem>
+                    <SelectItem value="all">{t("common.all")}</SelectItem>
+                    <SelectItem value="checking">{t("accounts.checking")}</SelectItem>
+                    <SelectItem value="credit">{t("accounts.credit")}</SelectItem>
+                    <SelectItem value="investment">{t("accounts.investment")}</SelectItem>
+                    <SelectItem value="savings">{t("accounts.savings")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               {/* Conta Específica */}
               <div className="space-y-1.5">
-                <Label htmlFor="filterAccount">Conta Específica</Label>
+                <Label htmlFor="filterAccount">{t("transactions.account")}</Label>
                 <Select value={filterAccount} onValueChange={setFilterAccount}>
                   <SelectTrigger
                     className="h-9 text-xs sm:text-sm"
@@ -769,7 +772,7 @@ export function TransactionsPage({
                     <SelectValue placeholder="Conta Específica" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todas</SelectItem>
+                    <SelectItem value="all">{t("common.all")}</SelectItem>
                     {accounts.map((account) => (
                       <SelectItem key={account.id} value={account.id}>
                         <div className="flex items-center gap-2">
@@ -789,7 +792,7 @@ export function TransactionsPage({
 
               {/* Categoria */}
               <div className="space-y-1.5">
-                <Label htmlFor="filterCategory">Categoria</Label>
+                <Label htmlFor="filterCategory">{t("transactions.category")}</Label>
                 <Select
                   value={filterCategory}
                   onValueChange={setFilterCategory}
@@ -801,7 +804,7 @@ export function TransactionsPage({
                     <SelectValue placeholder="Categoria" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todas</SelectItem>
+                    <SelectItem value="all">{t("common.all")}</SelectItem>
                     {categories.map((category) => (
                       <SelectItem key={category.id} value={category.id}>
                         <div className="flex items-center gap-2">
@@ -821,7 +824,7 @@ export function TransactionsPage({
 
               {/* Período (Select) */}
               <div className="space-y-1.5">
-                <Label htmlFor="dateFilter">Período</Label>
+                <Label htmlFor="dateFilter">{t("dateFilter.custom")}</Label>
                 <Select
                   value={dateFilter}
                   onValueChange={
@@ -833,17 +836,17 @@ export function TransactionsPage({
                     <SelectValue placeholder="Período" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todos</SelectItem>
-                    <SelectItem value="current_month">Mês Atual</SelectItem>
-                    <SelectItem value="month_picker">Navegar por Mês</SelectItem>
-                    <SelectItem value="custom">Personalizado</SelectItem>
+                    <SelectItem value="all">{t("dateFilter.all")}</SelectItem>
+                    <SelectItem value="current_month">{t("dateFilter.currentMonth")}</SelectItem>
+                    <SelectItem value="month_picker">{t("dateFilter.monthPicker")}</SelectItem>
+                    <SelectItem value="custom">{t("dateFilter.custom")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               {/* Ordenação */}
               <div className="space-y-1.5">
-                <Label>Ordenar por</Label>
+                <Label>{t("common.filter")}</Label>
                 <div className="flex gap-1">
                   <Select
                     value={sortBy}
@@ -853,8 +856,8 @@ export function TransactionsPage({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="date">Data</SelectItem>
-                      <SelectItem value="amount">Valor</SelectItem>
+                      <SelectItem value="date">{t("transactions.date")}</SelectItem>
+                      <SelectItem value="amount">{t("transactions.amount")}</SelectItem>
                     </SelectContent>
                   </Select>
                   <Button
@@ -872,12 +875,12 @@ export function TransactionsPage({
 
               {/* Busca */}
               <div className="space-y-1.5 col-span-1 sm:col-span-2 lg:col-span-1">
-                <Label htmlFor="search">Buscar</Label>
+                <Label htmlFor="search">{t("common.search")}</Label>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="search"
-                    placeholder="Buscar transações..."
+                    placeholder={t("transactions.searchPlaceholder")}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10 h-9"
@@ -935,7 +938,7 @@ export function TransactionsPage({
                             ? format(customStartDate, "dd/MM/yyyy", {
                                 locale: ptBR,
                               })
-                            : "Data Início"}
+                            : t("dateFilter.startDate")}
                         </span>
                       </Button>
                     </PopoverTrigger>
@@ -971,7 +974,7 @@ export function TransactionsPage({
                             ? format(customEndDate, "dd/MM/yyyy", {
                                 locale: ptBR,
                               })
-                            : "Data Fim"}
+                            : t("dateFilter.endDate")}
                         </span>
                       </Button>
                     </PopoverTrigger>
@@ -1002,7 +1005,7 @@ export function TransactionsPage({
       <Card className="financial-card">
         <CardHeader className="px-4 sm:px-6">
           <CardTitle className="text-lg sm:text-xl">
-            Transações ({filteredAndSortedTransactions.length})
+            {t("transactions.title")} ({filteredAndSortedTransactions.length})
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
@@ -1014,13 +1017,13 @@ export function TransactionsPage({
               <div className="text-center py-8 sm:py-12 px-4 sm:px-6">
                 <Calendar className="h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-3 sm:mb-4 text-muted-foreground opacity-50" />
                 <h3 className="text-base sm:text-lg font-semibold mb-2">
-                  Nenhuma transação encontrada
+                  {t("transactions.noTransactions")}
                 </h3>
                 <p className="text-sm sm:text-base text-muted-foreground mb-4">
-                  Tente ajustar os filtros ou adicione uma nova transação
+                  {t("dashboard.addFirstTransaction")}
                 </p>
                 <Button onClick={onAddTransaction} className="text-sm">
-                  Adicionar Transação
+                  {t("transactions.addTransaction")}
                 </Button>
               </div>
             }
