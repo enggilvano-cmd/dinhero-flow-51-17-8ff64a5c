@@ -213,7 +213,7 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
   }, [billDetails]);
 
   return (
-    <div className="spacing-responsive-lg fade-in">
+    <div className="spacing-responsive-lg fade-in pb-6 sm:pb-8">
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>

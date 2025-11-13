@@ -343,7 +343,7 @@ export function CategoriesPage({}: CategoriesPageProps) {
   }
 
   return (
-    <div className="spacing-responsive-md fade-in">
+    <div className="spacing-responsive-md fade-in pb-6 sm:pb-8">
       {/* Header */}
       <div className="flex flex-col gap-3">
         <div className="min-w-0 w-full">
