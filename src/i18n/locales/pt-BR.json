@@ -668,11 +668,13 @@
           "placeholder": "Selecione uma conta"
         },
         "status": {
-          "label": "Status"
+          "label": "Status",
+          "placeholder": "Selecione o status"
         },
         "invoiceMonth": {
           "label": "Fatura",
-          "placeholder": "Selecione o mês da fatura"
+          "placeholder": "Selecione o mês da fatura",
+          "help": "Escolha o mês de cobrança desta despesa no cartão de crédito"
         }
       },
       "editScope": "Escopo de Edição",
