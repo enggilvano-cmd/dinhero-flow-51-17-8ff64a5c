@@ -446,7 +446,7 @@ export function Dashboard({
   };
 
   return (
-    <div className="space-y-3 sm:space-y-4 fade-in max-w-screen-2xl mx-auto px-2 sm:px-0">
+    <div className="space-y-3 sm:space-y-4 fade-in max-w-screen-2xl mx-auto px-2 sm:px-0 pb-6 sm:pb-8">
       {/* Header ultra compacto */}
       <div className="flex flex-col gap-3">
         <div className="min-w-0 w-full">
