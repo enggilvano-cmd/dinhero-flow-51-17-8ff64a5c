@@ -13,6 +13,7 @@ import { useTranslation } from "react-i18next";
 import * as XLSX from 'xlsx';
 import { parse, isValid } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { createDateFromString } from "@/lib/dateUtils";
 
 interface Account {
   id: string;
@@ -213,12 +214,15 @@ export function ImportTransactionsModal({
       isValid = false;
     }
 
-    const status = row.Status || row.status || 'completed';
-    const parsedStatus = validateStatus(status);
+    const status = pick(row, HEADERS.status) || 'completed';
+    const parsedStatus = validateStatus(status.toString());
     if (!parsedStatus) {
       errors.push(t('modals.import.errors.invalidStatus'));
       isValid = false;
     }
+
+    // Normalização de data para evitar diferenças de fuso horário
+    const normalizeToUTCDate = (d: Date) => new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate(), 12, 0, 0));
 
     // Verificação de duplicata
     let isDuplicate = false;
@@ -226,13 +230,14 @@ export function ImportTransactionsModal({
     if (isValid && parsedDate && accountId) {
       // Converter valor importado para centavos para comparação
       const valorInCents = Math.round(Math.abs(valor) * 100);
+      const parsedNorm = normalizeToUTCDate(parsedDate);
       
       const existingTx = transactions.find(tx => {
-        const txDate = new Date(tx.date);
+        const txDate = createDateFromString(tx.date as any);
         const isSameDate = 
-          txDate.getFullYear() === parsedDate.getFullYear() &&
-          txDate.getMonth() === parsedDate.getMonth() &&
-          txDate.getDate() === parsedDate.getDate();
+          txDate.getUTCFullYear() === parsedNorm.getUTCFullYear() &&
+          txDate.getUTCMonth() === parsedNorm.getUTCMonth() &&
+          txDate.getUTCDate() === parsedNorm.getUTCDate();
         
         const isSameAmount = Math.abs(tx.amount) === valorInCents;
         const isSameDescription = tx.description.trim().toLowerCase() === descricao.trim().toLowerCase();
