@@ -825,6 +825,71 @@
       "errorInvalidFormat": "Invalid format. Please check the file structure",
       "errorEmpty": "The file does not contain data to import",
       "success": "Imported successfully"
+  },
+  "userManagement": {
+    "title": "User Management",
+    "subtitle": "Full control over users and system permissions",
+    "restrictedAccess": "Restricted Access",
+    "restrictedAccessDescription": "You need administrator permissions to access this area.",
+    "tabs": {
+      "users": "Users",
+      "audit": "Audit"
+    },
+    "usersCard": {
+      "title": "System Users",
+      "description": "Manage users, their roles and access permissions",
+      "descriptionShort": "Manage users and permissions"
+    },
+    "table": {
+      "user": "User",
+      "role": "Role",
+      "status": "Status",
+      "created": "Created",
+      "actions": "Actions"
+    },
+    "roles": {
+      "admin": "Administrator",
+      "lifetime": "Lifetime",
+      "trial": "Trial",
+      "subscriber": "Subscriber"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "noName": "No name",
+    "daysPlaceholder": "Days",
+    "expiresAt": "Exp",
+    "confirmDelete": {
+      "title": "Confirm Deletion",
+      "description": "Are you sure you want to remove the user {{email}}? This action cannot be undone."
+    },
+    "auditLog": {
+      "title": "Audit Log",
+      "description": "Complete history of system activities for security monitoring",
+      "system": "System",
+      "columns": {
+        "user": "User",
+        "action": "Action",
+        "resource": "Resource",
+        "dateTime": "Date/Time"
+      }
+    },
+    "success": {
+      "roleUpdated": "User role updated successfully.",
+      "userActivated": "User activated successfully.",
+      "userDeactivated": "User deactivated successfully.",
+      "userDeleted": "User successfully removed from the system and authentication.",
+      "subscriptionSet": "Subscription configured for {{days}} days."
+    },
+    "errors": {
+      "loadUsers": "Could not load users.",
+      "loadAuditLogs": "Could not load audit logs.",
+      "updateRole": "Could not update user role: {{message}}",
+      "updateStatus": "Could not update user status.",
+      "deleteUser": "Could not remove user.",
+      "unknown": "Unknown error"
     }
   }
+}
 }

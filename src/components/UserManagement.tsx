@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -40,6 +41,7 @@ interface AuditLog {
 }
 
 export function UserManagement() {
+  const { t } = useTranslation();
   const { isAdmin, profile } = useAuth();
   const { toast } = useToast();
   const [users, setUsers] = useState<Profile[]>([]);
@@ -73,8 +75,8 @@ export function UserManagement() {
     } catch (error) {
       console.error('Error fetching users:', error);
       toast({
-        title: 'Erro',
-        description: 'Não foi possível carregar os usuários.',
+        title: t('common.error'),
+        description: t('userManagement.errors.loadUsers'),
         variant: 'destructive',
       });
     } finally {
@@ -103,8 +105,8 @@ export function UserManagement() {
     } catch (error) {
       console.error('Error fetching audit logs:', error);
       toast({
-        title: 'Erro',
-        description: 'Não foi possível carregar os logs de auditoria.',
+        title: t('common.error'),
+        description: t('userManagement.errors.loadAuditLogs'),
         variant: 'destructive',
       });
     }
@@ -145,14 +147,14 @@ export function UserManagement() {
       ));
 
       toast({
-        title: 'Sucesso',
-        description: 'Função do usuário atualizada com sucesso.',
+        title: t('common.success'),
+        description: t('userManagement.success.roleUpdated'),
       });
     } catch (error: any) {
       console.error('Error updating user role:', error);
       toast({
-        title: 'Erro',
-        description: `Não foi possível atualizar a função do usuário: ${error?.message || 'Erro desconhecido'}`,
+        title: t('common.error'),
+        description: t('userManagement.errors.updateRole', { message: error?.message || t('userManagement.errors.unknown') }),
         variant: 'destructive',
       });
     }
@@ -180,14 +182,14 @@ export function UserManagement() {
       ));
 
       toast({
-        title: 'Sucesso',
-        description: `Usuário ${isActive ? 'ativado' : 'desativado'} com sucesso.`,
+        title: t('common.success'),
+        description: t(isActive ? 'userManagement.success.userActivated' : 'userManagement.success.userDeactivated'),
       });
     } catch (error) {
       console.error('Error updating user status:', error);
       toast({
-        title: 'Erro',
-        description: 'Não foi possível atualizar o status do usuário.',
+        title: t('common.error'),
+        description: t('userManagement.errors.updateStatus'),
         variant: 'destructive',
       });
     }
@@ -228,14 +230,14 @@ export function UserManagement() {
       setUsers(prev => prev.filter(user => user.user_id !== userId));
 
       toast({
-        title: 'Sucesso',
-        description: 'Usuário removido com sucesso do sistema e autenticação.',
+        title: t('common.success'),
+        description: t('userManagement.success.userDeleted'),
       });
     } catch (error: any) {
       console.error('Error deleting user:', error);
       toast({
-        title: 'Erro',
-        description: error.message || 'Não foi possível remover o usuário.',
+        title: t('common.error'),
+        description: error.message || t('userManagement.errors.deleteUser'),
         variant: 'destructive',
       });
     }
@@ -253,13 +255,13 @@ export function UserManagement() {
   const getRoleLabel = (role: string) => {
     switch (role) {
       case 'admin':
-        return 'Administrador';
+        return t('userManagement.roles.admin');
       case 'user':
-        return 'Vitalício';
+        return t('userManagement.roles.lifetime');
       case 'trial':
-        return 'Trial';
+        return t('userManagement.roles.trial');
       case 'subscriber':
-        return 'Assinante';
+        return t('userManagement.roles.subscriber');
       default:
         return role;
     }
@@ -285,14 +287,14 @@ export function UserManagement() {
       });
 
       toast({
-        title: 'Sucesso',
-        description: `Assinatura configurada para ${days} dias.`,
+        title: t('common.success'),
+        description: t('userManagement.success.subscriptionSet', { days }),
       });
 
       fetchUsers();
     } catch (error: any) {
       toast({
-        title: 'Erro',
+        title: t('common.error'),
         description: error.message,
         variant: 'destructive',
       });
@@ -305,9 +307,9 @@ export function UserManagement() {
         <CardContent className="pt-6">
           <div className="text-center">
             <Shield className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold">Acesso Restrito</h3>
+            <h3 className="text-lg font-semibold">{t('userManagement.restrictedAccess')}</h3>
             <p className="text-muted-foreground">
-              Você precisa de permissões de administrador para acessar esta área.
+              {t('userManagement.restrictedAccessDescription')}
             </p>
           </div>
         </CardContent>
@@ -319,9 +321,9 @@ export function UserManagement() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold leading-tight">Gerenciamento de Usuários</h2>
+          <h2 className="text-xl sm:text-2xl font-bold leading-tight">{t('userManagement.title')}</h2>
           <p className="text-sm text-muted-foreground leading-tight">
-            Controle total sobre usuários e permissões do sistema
+            {t('userManagement.subtitle')}
           </p>
         </div>
         <div className="flex gap-2">
@@ -331,7 +333,7 @@ export function UserManagement() {
             className="flex items-center gap-2"
           >
             <Users className="h-4 w-4" />
-            Usuários
+            {t('userManagement.tabs.users')}
           </Button>
           <Button
             variant={selectedTab === 'audit' ? 'default' : 'outline'}
@@ -339,7 +341,7 @@ export function UserManagement() {
             className="flex items-center gap-2"
           >
             <Activity className="h-4 w-4" />
-            Auditoria
+            {t('userManagement.tabs.audit')}
           </Button>
         </div>
       </div>
@@ -349,12 +351,12 @@ export function UserManagement() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
               <Users className="h-4 w-4 sm:h-5 sm:w-5" />
-              <span className="block sm:hidden">Usuários</span>
-              <span className="hidden sm:block">Usuários do Sistema</span>
+              <span className="block sm:hidden">{t('userManagement.tabs.users')}</span>
+              <span className="hidden sm:block">{t('userManagement.usersCard.title')}</span>
             </CardTitle>
             <CardDescription className="text-xs sm:text-sm">
-              <span className="block sm:hidden">Gerencie usuários e permissões</span>
-              <span className="hidden sm:block">Gerencie usuários, suas funções e permissões de acesso</span>
+              <span className="block sm:hidden">{t('userManagement.usersCard.descriptionShort')}</span>
+              <span className="hidden sm:block">{t('userManagement.usersCard.description')}</span>
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -367,11 +369,11 @@ export function UserManagement() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="text-xs sm:text-sm">Usuário</TableHead>
-                      <TableHead className="text-xs sm:text-sm hidden sm:table-cell">Função</TableHead>
-                      <TableHead className="text-xs sm:text-sm">Status</TableHead>
-                      <TableHead className="text-xs sm:text-sm hidden md:table-cell">Criado</TableHead>
-                      <TableHead className="text-xs sm:text-sm">Ações</TableHead>
+                      <TableHead className="text-xs sm:text-sm">{t('userManagement.table.user')}</TableHead>
+                      <TableHead className="text-xs sm:text-sm hidden sm:table-cell">{t('userManagement.table.role')}</TableHead>
+                      <TableHead className="text-xs sm:text-sm">{t('userManagement.table.status')}</TableHead>
+                      <TableHead className="text-xs sm:text-sm hidden md:table-cell">{t('userManagement.table.created')}</TableHead>
+                      <TableHead className="text-xs sm:text-sm">{t('userManagement.table.actions')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -387,7 +389,7 @@ export function UserManagement() {
                             </Avatar>  
                             <div className="min-w-0 flex-1">
                               <p className="font-medium text-xs sm:text-sm truncate">
-                                {user.full_name || 'Sem nome'}
+                                {user.full_name || t('userManagement.noName')}
                               </p>
                               <p className="text-xs text-muted-foreground truncate">
                                 {user.email}
@@ -416,17 +418,17 @@ export function UserManagement() {
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="admin">Administrador</SelectItem>
-                                <SelectItem value="trial">Trial</SelectItem>
-                                <SelectItem value="user">Vitalício</SelectItem>
-                                <SelectItem value="subscriber">Assinante</SelectItem>
+                                <SelectItem value="admin">{t('userManagement.roles.admin')}</SelectItem>
+                                <SelectItem value="trial">{t('userManagement.roles.trial')}</SelectItem>
+                                <SelectItem value="user">{t('userManagement.roles.lifetime')}</SelectItem>
+                                <SelectItem value="subscriber">{t('userManagement.roles.subscriber')}</SelectItem>
                               </SelectContent>
                             </Select>
                             {user.role === 'subscriber' && (
                               <div className="flex gap-2 items-center">
                                 <input
                                   type="number"
-                                  placeholder="Dias"
+                                  placeholder={t('userManagement.daysPlaceholder')}
                                   className="w-16 px-2 py-1 text-xs border rounded"
                                   id={`days-${user.user_id}`}
                                 />
@@ -445,7 +447,7 @@ export function UserManagement() {
                                 </Button>
                                 {user.subscription_expires_at && (
                                   <span className="text-xs text-muted-foreground">
-                                    Exp: {new Date(user.subscription_expires_at).toLocaleDateString('pt-BR')}
+                                    {t('userManagement.expiresAt')}: {new Date(user.subscription_expires_at).toLocaleDateString()}
                                   </span>
                                 )}
                               </div>
@@ -466,12 +468,12 @@ export function UserManagement() {
                               variant={user.is_active ? 'default' : 'secondary'}
                               className="text-xs hidden sm:inline-flex"
                             >
-                              {user.is_active ? 'Ativo' : 'Inativo'}
+                              {user.is_active ? t('userManagement.status.active') : t('userManagement.status.inactive')}
                             </Badge>
                           </div>
                         </TableCell>
                         <TableCell className="hidden md:table-cell py-2 sm:py-4 text-xs sm:text-sm">
-                          {new Date(user.created_at).toLocaleDateString('pt-BR')}
+                          {new Date(user.created_at).toLocaleDateString()}
                         </TableCell>
                         <TableCell className="py-2 sm:py-4">
                           <AlertDialog>
@@ -488,22 +490,21 @@ export function UserManagement() {
                             <AlertDialogContent>
                               <AlertDialogHeader>
                                 <AlertDialogTitle className="text-sm sm:text-base">
-                                  Confirmar Exclusão
+                                  {t('userManagement.confirmDelete.title')}
                                 </AlertDialogTitle>
                                 <AlertDialogDescription className="text-xs sm:text-sm">
-                                  Tem certeza que deseja remover o usuário {user.email}? 
-                                  Esta ação não pode ser desfeita.
+                                  {t('userManagement.confirmDelete.description', { email: user.email })}
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
                                 <AlertDialogCancel className="text-xs sm:text-sm">
-                                  Cancelar
+                                  {t('common.cancel')}
                                 </AlertDialogCancel>
                                 <AlertDialogAction
                                   onClick={() => deleteUser(user.user_id)}
                                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90 text-xs sm:text-sm"
                                 >
-                                  Remover
+                                  {t('common.delete')}
                                 </AlertDialogAction>
                               </AlertDialogFooter>
                             </AlertDialogContent>
@@ -524,20 +525,20 @@ export function UserManagement() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Activity className="h-5 w-5" />
-              Log de Auditoria
+              {t('userManagement.auditLog.title')}
             </CardTitle>
             <CardDescription>
-              Histórico completo de atividades do sistema para monitoramento de segurança
+              {t('userManagement.auditLog.description')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Usuário</TableHead>
-                  <TableHead>Ação</TableHead>
-                  <TableHead>Recurso</TableHead>
-                  <TableHead>Data/Hora</TableHead>
+                  <TableHead>{t('userManagement.auditLog.columns.user')}</TableHead>
+                  <TableHead>{t('userManagement.auditLog.columns.action')}</TableHead>
+                  <TableHead>{t('userManagement.auditLog.columns.resource')}</TableHead>
+                  <TableHead>{t('userManagement.auditLog.columns.dateTime')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -546,7 +547,7 @@ export function UserManagement() {
                      <TableCell>
                       <div>
                         <p className="font-medium">
-                          {log.profiles?.full_name || log.profiles?.email || 'Sistema'}
+                          {log.profiles?.full_name || log.profiles?.email || t('userManagement.auditLog.system')}
                         </p>
                         <p className="text-sm text-muted-foreground">
                           ID: {log.user_id.substring(0, 8)}...
@@ -560,7 +561,7 @@ export function UserManagement() {
                     </TableCell>
                     <TableCell>{log.resource_type}</TableCell>
                     <TableCell>
-                      {new Date(log.created_at).toLocaleString('pt-BR')}
+                      {new Date(log.created_at).toLocaleString()}
                     </TableCell>
                   </TableRow>
                 ))}

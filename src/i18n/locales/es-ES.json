@@ -834,6 +834,71 @@
       "unexpectedLoadError": "Error inesperado al cargar configuraciones",
       "invalidValue": "Valor inválido",
       "invalidValueDescription": "El número de días debe ser mayor que cero"
+  },
+  "userManagement": {
+    "title": "Gestión de Usuarios",
+    "subtitle": "Control total sobre usuarios y permisos del sistema",
+    "restrictedAccess": "Acceso Restringido",
+    "restrictedAccessDescription": "Necesita permisos de administrador para acceder a esta área.",
+    "tabs": {
+      "users": "Usuarios",
+      "audit": "Auditoría"
+    },
+    "usersCard": {
+      "title": "Usuarios del Sistema",
+      "description": "Gestione usuarios, sus roles y permisos de acceso",
+      "descriptionShort": "Gestione usuarios y permisos"
+    },
+    "table": {
+      "user": "Usuario",
+      "role": "Rol",
+      "status": "Estado",
+      "created": "Creado",
+      "actions": "Acciones"
+    },
+    "roles": {
+      "admin": "Administrador",
+      "lifetime": "Vitalicio",
+      "trial": "Prueba",
+      "subscriber": "Suscriptor"
+    },
+    "status": {
+      "active": "Activo",
+      "inactive": "Inactivo"
+    },
+    "noName": "Sin nombre",
+    "daysPlaceholder": "Días",
+    "expiresAt": "Exp",
+    "confirmDelete": {
+      "title": "Confirmar Eliminación",
+      "description": "¿Está seguro de que desea eliminar al usuario {{email}}? Esta acción no se puede deshacer."
+    },
+    "auditLog": {
+      "title": "Registro de Auditoría",
+      "description": "Historial completo de actividades del sistema para monitoreo de seguridad",
+      "system": "Sistema",
+      "columns": {
+        "user": "Usuario",
+        "action": "Acción",
+        "resource": "Recurso",
+        "dateTime": "Fecha/Hora"
+      }
+    },
+    "success": {
+      "roleUpdated": "Rol de usuario actualizado con éxito.",
+      "userActivated": "Usuario activado con éxito.",
+      "userDeactivated": "Usuario desactivado con éxito.",
+      "userDeleted": "Usuario eliminado con éxito del sistema y autenticación.",
+      "subscriptionSet": "Suscripción configurada para {{days}} días."
+    },
+    "errors": {
+      "loadUsers": "No se pudieron cargar los usuarios.",
+      "loadAuditLogs": "No se pudieron cargar los registros de auditoría.",
+      "updateRole": "No se pudo actualizar el rol de usuario: {{message}}",
+      "updateStatus": "No se pudo actualizar el estado del usuario.",
+      "deleteUser": "No se pudo eliminar el usuario.",
+      "unknown": "Error desconocido"
     }
   }
+}
 }
