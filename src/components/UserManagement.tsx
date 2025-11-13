@@ -193,32 +193,47 @@ export function UserManagement() {
 
   const deleteUser = async (userId: string) => {
     try {
-      // Log the activity before deletion
-      await supabase.rpc('log_user_activity', {
-        p_user_id: profile?.user_id || '',
-        p_action: 'user_deleted',
-        p_resource_type: 'profile',
-        p_resource_id: userId
-      });
+      console.log('Deleting user:', userId);
+      
+      // Call edge function to delete user (will also delete from auth.users)
+      const { data: sessionData } = await supabase.auth.getSession();
+      
+      if (!sessionData.session) {
+        throw new Error('No active session');
+      }
 
-      const { error } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('user_id', userId);
+      const response = await fetch(
+        `https://sdberrkfwoozezletfuq.supabase.co/functions/v1/delete-user`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${sessionData.session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ userId }),
+        }
+      );
 
-      if (error) throw error;
+      const result = await response.json();
+
+      if (!response.ok) {
+        console.error('Error from edge function:', result);
+        throw new Error(result.error || 'Failed to delete user');
+      }
+
+      console.log('User deleted successfully:', result);
 
       setUsers(prev => prev.filter(user => user.user_id !== userId));
 
       toast({
         title: 'Sucesso',
-        description: 'Usuário removido com sucesso.',
+        description: 'Usuário removido com sucesso do sistema e autenticação.',
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting user:', error);
       toast({
         title: 'Erro',
-        description: 'Não foi possível remover o usuário.',
+        description: error.message || 'Não foi possível remover o usuário.',
         variant: 'destructive',
       });
     }
