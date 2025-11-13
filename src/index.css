@@ -195,6 +195,7 @@
 
   body {
     overflow-x: hidden;
+    overflow-y: auto;
   }
 
   /* Responsive container queries support */
