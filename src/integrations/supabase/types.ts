@@ -396,7 +396,7 @@ export type Database = {
       recurrence_type: "daily" | "weekly" | "monthly" | "yearly"
       transaction_status: "pending" | "completed"
       transaction_type: "income" | "expense" | "transfer"
-      user_role: "admin" | "user" | "subscriber"
+      user_role: "admin" | "user" | "subscriber" | "trial"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -529,7 +529,7 @@ export const Constants = {
       recurrence_type: ["daily", "weekly", "monthly", "yearly"],
       transaction_status: ["pending", "completed"],
       transaction_type: ["income", "expense", "transfer"],
-      user_role: ["admin", "user", "subscriber"],
+      user_role: ["admin", "user", "subscriber", "trial"],
     },
   },
 } as const
