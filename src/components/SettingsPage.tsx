@@ -269,6 +269,9 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="currency">Moeda</Label>
+              <p className="text-xs text-muted-foreground mb-2">
+                Selecione a moeda padrão para exibição de valores no sistema
+              </p>
               <Select 
                 value={localSettings.currency} 
                 onValueChange={(value) => setLocalSettings(prev => ({ ...prev, currency: value }))}
@@ -277,15 +280,22 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="BRL">Real Brasileiro (BRL)</SelectItem>
-                  <SelectItem value="USD">Dólar Americano (USD)</SelectItem>
-                  <SelectItem value="EUR">Euro (EUR)</SelectItem>
+                  <SelectItem value="BRL">🇧🇷 Real Brasileiro (R$)</SelectItem>
+                  <SelectItem value="USD">🇺🇸 Dólar Americano ($)</SelectItem>
+                  <SelectItem value="EUR">🇪🇺 Euro (€)</SelectItem>
+                  <SelectItem value="GBP">🇬🇧 Libra Esterlina (£)</SelectItem>
+                  <SelectItem value="JPY">🇯🇵 Iene Japonês (¥)</SelectItem>
+                  <SelectItem value="ARS">🇦🇷 Peso Argentino ($)</SelectItem>
+                  <SelectItem value="MXN">🇲🇽 Peso Mexicano ($)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="language">Idioma</Label>
+              <p className="text-xs text-muted-foreground mb-2">
+                Idioma para formatação de datas e números (interface mantém português)
+              </p>
               <Select 
                 value={localSettings.language} 
                 onValueChange={(value) => setLocalSettings(prev => ({ ...prev, language: value }))}
@@ -294,15 +304,25 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="pt-BR">Português (Brasil)</SelectItem>
-                  <SelectItem value="en-US">English (US)</SelectItem>
-                  <SelectItem value="es-ES">Español</SelectItem>
+                  <SelectItem value="pt-BR">🇧🇷 Português (Brasil)</SelectItem>
+                  <SelectItem value="pt-PT">🇵🇹 Português (Portugal)</SelectItem>
+                  <SelectItem value="en-US">🇺🇸 English (US)</SelectItem>
+                  <SelectItem value="en-GB">🇬🇧 English (UK)</SelectItem>
+                  <SelectItem value="es-ES">🇪🇸 Español (España)</SelectItem>
+                  <SelectItem value="es-MX">🇲🇽 Español (México)</SelectItem>
+                  <SelectItem value="fr-FR">🇫🇷 Français</SelectItem>
+                  <SelectItem value="de-DE">🇩🇪 Deutsch</SelectItem>
+                  <SelectItem value="it-IT">🇮🇹 Italiano</SelectItem>
+                  <SelectItem value="ja-JP">🇯🇵 日本語</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="theme">Tema</Label>
+              <p className="text-xs text-muted-foreground mb-2">
+                Escolha entre tema claro, escuro ou seguir as preferências do sistema
+              </p>
               <Select 
                 value={localSettings.theme} 
                 onValueChange={(value: any) => setLocalSettings(prev => ({ ...prev, theme: value }))}

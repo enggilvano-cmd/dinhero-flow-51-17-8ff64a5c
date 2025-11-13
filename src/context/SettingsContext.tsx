@@ -105,27 +105,36 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
   };
 
   const formatCurrency = (amount: number): string => {
-    const currencySymbols = {
+    const currencySymbols: Record<string, string> = {
       'BRL': 'R$',
       'USD': '$',
-      'EUR': '€'
+      'EUR': '€',
+      'GBP': '£',
+      'JPY': '¥',
+      'ARS': '$',
+      'MXN': '$'
     };
 
-    const locales = {
+    const locales: Record<string, string> = {
       'BRL': 'pt-BR',
       'USD': 'en-US', 
-      'EUR': 'de-DE'
+      'EUR': 'de-DE',
+      'GBP': 'en-GB',
+      'JPY': 'ja-JP',
+      'ARS': 'es-AR',
+      'MXN': 'es-MX'
     };
 
     try {
-      return new Intl.NumberFormat(locales[settings.currency as keyof typeof locales], {
+      const locale = locales[settings.currency] || settings.language || 'pt-BR';
+      return new Intl.NumberFormat(locale, {
         style: 'currency',
         currency: settings.currency,
         minimumFractionDigits: 2
       }).format(amount);
     } catch (error) {
       // Fallback if currency not supported
-      const symbol = currencySymbols[settings.currency as keyof typeof currencySymbols] || settings.currency;
+      const symbol = currencySymbols[settings.currency] || settings.currency;
       return `${symbol} ${amount.toFixed(2).replace('.', ',')}`;
     }
   };
