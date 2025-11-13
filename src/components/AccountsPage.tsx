@@ -145,18 +145,18 @@ export function AccountsPage({
 
   const exportToExcel = () => {
     const dataToExport = filteredAccounts.map((account) => ({
-      Nome: account.name,
-      Tipo: getAccountTypeLabel(account.type),
-      Saldo: account.balance / 100, // Converter para Reais
-      Limite: account.limit_amount ? account.limit_amount / 100 : 0,
-      Fechamento: account.closing_date || '',
-      Vencimento: account.due_date || '',
-      Cor: account.color,
+      [t('accounts.accountName')]: account.name,
+      [t('accounts.accountType')]: getAccountTypeLabel(account.type),
+      [t('accounts.balance')]: account.balance / 100, // Converter para Reais
+      [t('accounts.limit')]: account.limit_amount ? account.limit_amount / 100 : 0,
+      [t('accounts.closingDate')]: account.closing_date || '',
+      [t('accounts.dueDate')]: account.due_date || '',
+      [t('accounts.color')]: account.color,
     }));
 
     const ws = XLSX.utils.json_to_sheet(dataToExport);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Contas");
+    XLSX.utils.book_append_sheet(wb, ws, t('accounts.title'));
 
     const colWidths = [
       { wch: 30 }, // Nome
@@ -183,15 +183,15 @@ export function AccountsPage({
       }
     }
 
-    let fileName = "contas";
+    let fileName = t('accounts.title').toLowerCase();
     if (filterType !== "all") fileName += `_${filterType}`;
     fileName += ".xlsx";
 
     XLSX.writeFile(wb, fileName);
 
     toast({
-      title: t('messages.saveSuccess'),
-      description: `${filteredAccounts.length} ${t('accounts.title').toLowerCase()} ${t('common.export').toLowerCase()}.`,
+      title: t('common.success'),
+      description: t('accounts.exportSuccess', { count: filteredAccounts.length }),
     });
   };
 
