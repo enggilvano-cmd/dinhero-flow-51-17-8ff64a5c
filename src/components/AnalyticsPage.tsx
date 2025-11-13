@@ -417,16 +417,18 @@ export default function AnalyticsPage({
     try {
       // Scroll to top to ensure all content is visible
       window.scrollTo(0, 0);
+      // Force charts to recalculate sizes
+      window.dispatchEvent(new Event("resize"));
       
       // Wait for charts to fully render (Recharts needs more time)
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await new Promise((resolve) => setTimeout(resolve, 1500));
 
       // Configuração do PDF
-      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdf = new jsPDF("p", "mm", "a4");
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
       const margin = 10;
-      const contentWidth = pageWidth - (2 * margin);
+      const contentWidth = pageWidth - 2 * margin;
 
       // Header do PDF
       pdf.setFontSize(16);
@@ -435,7 +437,12 @@ export default function AnalyticsPage({
       
       pdf.setFontSize(10);
       pdf.setFont("helvetica", "normal");
-      pdf.text(`Gerado em: ${format(new Date(), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}`, pageWidth / 2, 22, { align: "center" });
+      pdf.text(
+        `Gerado em: ${format(new Date(), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}`,
+        pageWidth / 2,
+        22,
+        { align: "center" }
+      );
 
       let currentY = 30;
 
@@ -445,8 +452,8 @@ export default function AnalyticsPage({
       for (let i = 0; i < sections.length; i++) {
         const section = sections[i] as HTMLElement;
         
-        // Skip sections with no height (hidden or empty)
-        if (section.offsetHeight === 0) continue;
+        // Skip sections with no size (hidden or empty)
+        if (section.offsetWidth === 0 || section.offsetHeight === 0) continue;
         
         // Captura a seção como imagem
         const canvas = await html2canvas(section, {
@@ -455,8 +462,22 @@ export default function AnalyticsPage({
           allowTaint: true,
           logging: false,
           backgroundColor: '#ffffff',
-          windowWidth: section.scrollWidth,
-          windowHeight: section.scrollHeight,
+          foreignObjectRendering: true,
+          windowWidth: Math.max(section.scrollWidth, section.offsetWidth),
+          windowHeight: Math.max(section.scrollHeight, section.offsetHeight),
+          ignoreElements: (el) => {
+            if (el instanceof HTMLCanvasElement && (el.width === 0 || el.height === 0)) {
+              return true;
+            }
+            const he = el as HTMLElement;
+            if (!he) return false;
+            const zero = he.offsetWidth === 0 || he.offsetHeight === 0;
+            if (zero) {
+              const bg = getComputedStyle(he).backgroundImage;
+              if (bg && bg !== 'none') return true;
+            }
+            return false;
+          }
         });
 
         // Skip if canvas is invalid
