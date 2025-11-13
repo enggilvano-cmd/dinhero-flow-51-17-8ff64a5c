@@ -79,6 +79,30 @@ export function ImportTransactionsModal({
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
 
+  // Suporte a cabeçalhos exportados em diferentes idiomas
+  const HEADERS = {
+    date: ['Data', 'Date', 'Fecha'],
+    description: ['Descrição', 'Description', 'Descripción'],
+    category: ['Categoria', 'Category', 'Categoría'],
+    type: ['Tipo', 'Type', 'Tipo'],
+    account: ['Conta', 'Account', 'Cuenta'],
+    amount: ['Valor', 'Amount', 'Valor'],
+    status: ['Status', 'Status', 'Estado'],
+    installments: ['Parcelas', 'Installments', 'Cuotas']
+  } as const;
+
+  const pick = (row: any, keys: readonly string[]) => {
+    for (const key of keys) {
+      const candidates = [key, key.toLowerCase()];
+      for (const c of candidates) {
+        if (row[c] !== undefined && row[c] !== null && row[c] !== '') {
+          return row[c];
+        }
+      }
+    }
+    return '';
+  };
+
   const validateTransactionType = (tipo: string): 'income' | 'expense' | 'transfer' | null => {
     const normalizedType = tipo.toLowerCase().trim();
     if (['receita', 'income', 'entrada'].includes(normalizedType)) return 'income';
@@ -131,13 +155,13 @@ export function ImportTransactionsModal({
     const errors: string[] = [];
     let isValid = true;
 
-    // Validar campos obrigatórios
-    const data = row.Data || row.data || '';
-    const descricao = row.Descrição || row.descricao || row.Descricao || '';
-    const categoria = row.Categoria || row.categoria || '';
-    const tipo = row.Tipo || row.tipo || '';
-    const conta = row.Conta || row.conta || '';
-    const valor = parseFloat(row.Valor || row.valor || '0');
+    // Usar o mapeador de cabeçalhos para suportar diferentes idiomas
+    const data = pick(row, HEADERS.date);
+    const descricao = pick(row, HEADERS.description);
+    const categoria = pick(row, HEADERS.category);
+    const tipo = pick(row, HEADERS.type);
+    const conta = pick(row, HEADERS.account);
+    const valor = parseFloat(pick(row, HEADERS.amount) || '0');
 
     if (!data) {
       errors.push(t('modals.import.errors.dateRequired'));

@@ -51,6 +51,25 @@ export function ImportCategoriesModal({
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
 
+  // Suporte a cabeçalhos exportados em diferentes idiomas
+  const HEADERS = {
+    name: ['Nome', 'Name', 'Nombre'],
+    type: ['Tipo', 'Type', 'Tipo'],
+    color: ['Cor', 'Color', 'Color']
+  } as const;
+
+  const pick = (row: any, keys: readonly string[]) => {
+    for (const key of keys) {
+      const candidates = [key, key.toLowerCase()];
+      for (const c of candidates) {
+        if (row[c] !== undefined && row[c] !== null && row[c] !== '') {
+          return row[c];
+        }
+      }
+    }
+    return '';
+  };
+
   const validateCategoryType = (tipo: string): 'income' | 'expense' | 'both' | null => {
     const normalizedType = tipo.toLowerCase().trim();
     if (['receita', 'income', 'entrada'].includes(normalizedType)) return 'income';
@@ -68,9 +87,10 @@ export function ImportCategoriesModal({
     const errors: string[] = [];
     let isValid = true;
 
-    const nome = (row.Nome || row.nome || '').toString().trim();
-    const tipo = (row.Tipo || row.tipo || '').toString().trim();
-    const cor = (row.Cor || row.cor || '').toString().trim();
+    // Usar o mapeador de cabeçalhos para suportar diferentes idiomas
+    const nome = pick(row, HEADERS.name).toString().trim();
+    const tipo = pick(row, HEADERS.type).toString().trim();
+    const cor = pick(row, HEADERS.color).toString().trim();
 
     if (!nome) {
       errors.push(t('modals.import.errors.nameRequired'));
