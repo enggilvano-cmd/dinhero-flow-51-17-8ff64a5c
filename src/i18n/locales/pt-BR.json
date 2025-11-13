@@ -27,7 +27,8 @@
     "new": "Nova",
     "view": "Visualizar",
     "download": "Baixar",
-    "upload": "Enviar"
+    "upload": "Enviar",
+    "select": "Selecionar"
   },
   "auth": {
     "login": "Entrar",
@@ -107,7 +108,30 @@
     "monthly": "Mensal",
     "revenues": "Receitas",
     "expenses": "Despesas",
-    "balance": "Saldo"
+    "balance": "Saldo",
+    "period": "Período",
+    "allTransactions": "Todas",
+    "currentMonth": "Mês Atual",
+    "chooseMonth": "Escolher Mês",
+    "navigateByMonth": "Navegar por Mês",
+    "customPeriod": "Período Personalizado",
+    "startDate": "Data Inicial",
+    "endDate": "Data Final",
+    "selectedPeriod": "Período selecionado",
+    "cardLimit": "Limite dos cartões",
+    "cardExpenses": "Gastos Cartão",
+    "revenuesVsExpenses": "Receitas vs Despesas",
+    "noTransactionsInPeriod": "Não há transações no período selecionado",
+    "noTransactionsInYear": "Não há transações em {{year}}",
+    "accumulatedBalance": "Saldo Acumulado",
+    "day": "Dia {{day}}",
+    "monthOf": "Mês de {{month}}",
+    "moreTransactions": "+{{count}} transações • Clique para ver todas",
+    "month": "Mês",
+    "start": "Início",
+    "end": "Fim",
+    "initial": "Inicial",
+    "final": "Final"
   },
   "accounts": {
     "title": "Contas",
