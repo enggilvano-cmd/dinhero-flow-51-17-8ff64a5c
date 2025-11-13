@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import { AppSettings, getSettings, updateSettings as saveSettings } from '@/lib/supabase-storage';
 import { useAuth } from '@/hooks/useAuth';
 import { useTranslation } from 'react-i18next';
+import { detectBrowserLanguage } from '@/i18n';
 
 interface SettingsContextType {
   settings: AppSettings;
@@ -26,12 +27,16 @@ interface SettingsProviderProps {
 export function SettingsProvider({ children }: SettingsProviderProps) {
   const { user, loading } = useAuth();
   const { i18n } = useTranslation();
+  
+  // Detectar idioma do navegador para usar como padrão inicial
+  const detectedLanguage = detectBrowserLanguage();
+  
   const [settings, setSettings] = useState<AppSettings>({
     currency: 'BRL',
     theme: 'system',
     notifications: true,
     autoBackup: false,
-    language: 'pt-BR',
+    language: detectedLanguage, // Usar idioma detectado
     userId: ''
   });
 
@@ -69,17 +74,28 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
       try {
         // Always load settings from Supabase (source of truth)
         const loadedSettings = await getSettings();
+        
+        // Se o usuário não tiver preferência de idioma salva, usar o detectado
+        if (!loadedSettings.language) {
+          loadedSettings.language = detectedLanguage;
+          console.log(`📝 Preferência de idioma não encontrada, usando idioma detectado: ${detectedLanguage}`);
+        }
+        
         setSettings(loadedSettings);
         applyTheme(loadedSettings.theme);
         
         // Aplicar idioma ao i18n
         if (loadedSettings.language && i18n.language !== loadedSettings.language) {
+          console.log(`🔄 Alterando idioma de ${i18n.language} para ${loadedSettings.language}`);
           i18n.changeLanguage(loadedSettings.language);
         }
       } catch (error) {
         console.error('Error loading settings:', error);
-        // Use default settings on error
+        // Use default settings on error (com idioma detectado)
         applyTheme('system');
+        if (i18n.language !== detectedLanguage) {
+          i18n.changeLanguage(detectedLanguage);
+        }
       }
     };
     loadSettings();
