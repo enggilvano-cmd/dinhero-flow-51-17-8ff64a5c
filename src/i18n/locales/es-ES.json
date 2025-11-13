@@ -1046,6 +1046,32 @@
     },
     "roles": {
       "admin": "Administrador",
+      "lifetime": "De por vida",
+      "trial": "Prueba",
+      "subscriber": "Suscriptor"
+    },
+    "status": {
+      "active": "Activo",
+      "inactive": "Inactivo"
+    },
+    "success": {
+      "roleUpdated": "Rol actualizado con éxito",
+      "userActivated": "Usuario activado con éxito",
+      "userDeactivated": "Usuario desactivado con éxito",
+      "subscriptionSet": "Suscripción establecida por {{days}} días"
+    },
+    "errors": {
+      "loadUsers": "Error al cargar usuarios",
+      "loadAuditLogs": "Error al cargar registros de auditoría",
+      "updateRole": "Error al actualizar rol: {{message}}",
+      "updateStatus": "Error al actualizar estado",
+      "deleteUser": "Error al eliminar usuario",
+      "unknown": "Error desconocido"
+    },
+      "actions": "Acciones"
+    },
+    "roles": {
+      "admin": "Administrador",
       "lifetime": "Vitalicio",
       "trial": "Prueba",
       "subscriber": "Suscriptor"
