@@ -204,6 +204,14 @@ export function TransactionsPage({
     return category?.name || "";
   };
 
+  // Filter accounts by type for the account selector
+  const accountsByType = useMemo(() => {
+    if (filterAccountType === "all") {
+      return accounts;
+    }
+    return accounts.filter((account: any) => account.type === filterAccountType);
+  }, [accounts, filterAccountType]);
+
   const filteredAndSortedTransactions = useMemo(() => {
     let filtered = transactions.filter((transaction) => {
       const transactionDate =
