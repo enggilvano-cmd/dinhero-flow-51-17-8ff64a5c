@@ -85,6 +85,51 @@
       "roleAccess": "Role-based access control"
     }
   },
+  "twoFactor": {
+    "authenticator": "Authenticator",
+    "setup": {
+      "title": "Set Up Two-Factor Authentication",
+      "subtitle": "Add an extra layer of security to your account",
+      "appRequired": "You will need an authenticator app like Google Authenticator, Authy or Microsoft Authenticator.",
+      "description": "Two-factor authentication (2FA) adds an extra layer of security, requiring a code from your authenticator app in addition to your password.",
+      "startConfiguration": "Start Configuration",
+      "configuring": "Configuring...",
+      "scanQrCode": "Scan the QR Code",
+      "useAuthApp": "Use your authenticator app to scan the code",
+      "generatingQrCode": "Generating QR Code...",
+      "cantScan": "Can't scan?",
+      "manualCode": "Enter this code manually:",
+      "enterCode": "Enter the 6-digit code from your authenticator app",
+      "verifyAndActivate": "Verify and Activate 2FA",
+      "errors": {
+        "setupFailed": "Error setting up 2FA",
+        "setupFailedDescription": "Could not start configuration.",
+        "totpNotFound": "TOTP factor not found"
+      },
+      "success": {
+        "title": "Two-factor authentication activated!",
+        "description": "Your account is now protected with 2FA."
+      }
+    },
+    "verify": {
+      "title": "Two-Factor Verification",
+      "subtitle": "Enter the code from your authenticator app",
+      "verificationCode": "Verification Code",
+      "verify": "Verify",
+      "verifying": "Verifying...",
+      "errors": {
+        "invalidCode": "Invalid code",
+        "invalidCodeDescription": "Enter a 6-digit code.",
+        "notConfigured": "2FA is not configured",
+        "incorrectCode": "The code entered is incorrect. Try again.",
+        "verifyFailed": "Check the code and try again."
+      },
+      "success": {
+        "title": "Verification complete",
+        "description": "Two-factor authentication verified successfully."
+      }
+    }
+  },
   "dashboard": {
     "title": "Dashboard",
     "subtitle": "Overview of your finances",
