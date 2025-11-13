@@ -491,9 +491,21 @@
     "emailSentDescription": "Check your email to reset your password.",
     "resetEmailError": "Could not send reset email.",
     "roleAdmin": "Administrator",
+    "roleUser": "User",
     "roleLifetime": "Lifetime",
     "roleTrial": "Trial",
-    "roleLimited": "Limited User"
+    "roleLimited": "Limited User",
+    "activity": {
+      "profile_updated": "Profile Updated",
+      "user_login": "User Logged In",
+      "user_logout": "User Logged Out",
+      "password_reset": "Password Reset",
+      "password_changed": "Password Changed",
+      "mfa_enabled": "2FA Enabled",
+      "mfa_disabled": "2FA Disabled",
+      "account_created": "Account Created",
+      "email_changed": "Email Changed"
+    }
   },
   "systemSettings": {
     "title": "System Settings",
@@ -1128,10 +1140,6 @@
     "active": "Active",
     "inactive": "Inactive",
     "role": "Role",
-    "roleAdmin": "Administrator",
-    "roleLifetime": "Lifetime",
-    "roleTrial": "Trial",
-    "roleLimited": "Limited",
     "memberSince": "Member Since",
     "recentActivity": "Recent Activity",
     "recentActivityDescription": "Your last 10 activities in the system",

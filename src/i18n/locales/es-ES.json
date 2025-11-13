@@ -410,19 +410,6 @@
     "users": "Usuarios",
     "systemSettings": "Configuración del Sistema"
   },
-  "profile": {
-    "title": "Perfil",
-    "subtitle": "Gestiona tu información personal",
-    "personalInfo": "Información Personal",
-    "fullName": "Nombre Completo",
-    "email": "Correo",
-    "phone": "Teléfono",
-    "avatar": "Avatar",
-    "changePassword": "Cambiar Contraseña",
-    "currentPassword": "Contraseña Actual",
-    "newPassword": "Nueva Contraseña",
-    "confirmNewPassword": "Confirmar Nueva Contraseña"
-  },
   "transfer": {
     "title": "Transferencia",
     "fromAccount": "Desde (Cuenta)",
@@ -1124,6 +1111,7 @@
     "inactive": "Inactivo",
     "role": "Rol",
     "roleAdmin": "Administrador",
+    "roleUser": "Usuario",
     "roleLifetime": "Vitalicio",
     "roleTrial": "Prueba",
     "roleLimited": "Limitado",
@@ -1131,6 +1119,17 @@
     "recentActivity": "Actividad Reciente",
     "recentActivityDescription": "Sus últimas 10 actividades en el sistema",
     "noRecentActivity": "Sin actividades recientes",
+    "activity": {
+      "profile_updated": "Perfil Actualizado",
+      "user_login": "Inicio de Sesión",
+      "user_logout": "Cierre de Sesión",
+      "password_reset": "Contraseña Restablecida",
+      "password_changed": "Contraseña Cambiada",
+      "mfa_enabled": "2FA Activado",
+      "mfa_disabled": "2FA Desactivado",
+      "account_created": "Cuenta Creada",
+      "email_changed": "Correo Cambiado"
+    },
     "dangerZone": "Zona de Peligro",
     "dangerZoneDescription": "Acciones irreversibles para su cuenta",
     "signOut": "Cerrar Sesión",
