@@ -208,18 +208,10 @@ export function RecurringTransactionsPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground mb-3">
+          <p className="text-sm text-muted-foreground">
             As transações recorrentes configuradas serão geradas automaticamente todos os dias às 00:01, 
             respeitando a frequência e data final definidas.
           </p>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => window.open('https://github.com/yourusername/yourrepo/blob/main/RECURRING_TRANSACTIONS_CRON_SETUP.md', '_blank')}
-          >
-            <Calendar className="h-4 w-4 mr-2" />
-            {t("recurringTransactions.setupInstructions")}
-          </Button>
         </CardContent>
       </Card>
 
