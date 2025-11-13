@@ -159,6 +159,9 @@
       "expenses": "Expenses",
       "cumulativeBalance": "Cumulative Balance"
     },
+    "yourAccounts": "Your Accounts",
+    "noAccounts": "No accounts registered",
+    "addAccount": "Add account",
     "period": "Period",
     "allTransactions": "All",
     "currentMonth": "Current Month",

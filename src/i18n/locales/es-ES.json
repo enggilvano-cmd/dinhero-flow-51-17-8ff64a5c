@@ -159,6 +159,9 @@
       "expenses": "Gastos",
       "cumulativeBalance": "Saldo Acumulado"
     },
+    "yourAccounts": "Sus Cuentas",
+    "noAccounts": "Ninguna cuenta registrada",
+    "addAccount": "Agregar cuenta",
     "period": "Período",
     "allTransactions": "Todas",
     "currentMonth": "Mes Actual",
