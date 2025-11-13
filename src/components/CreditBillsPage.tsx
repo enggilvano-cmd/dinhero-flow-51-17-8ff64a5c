@@ -217,7 +217,7 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold leading-tight">{t("creditBills.title")}</h1>
+          <h1 className="text-system-h1 leading-tight">{t("creditBills.title")}</h1>
           <p className="text-sm text-muted-foreground leading-tight">
             {t("creditBills.subtitle")}
           </p>
