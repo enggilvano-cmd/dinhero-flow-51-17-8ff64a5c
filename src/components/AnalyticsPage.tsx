@@ -54,7 +54,6 @@ import {
   ComposedChart,
 } from "recharts";
 import {
-  exportToCSV,
   exportToPDF,
 } from "@/lib/reports";
 import {
@@ -399,21 +398,6 @@ export default function AnalyticsPage({
     return config;
   }, [accountBalanceData]);
 
-  const handleExportCSV = () => {
-    const data = categoryData.map((item) => ({
-      Categoria: item.category,
-      Valor: item.amount / 100,
-      Porcentagem: `${item.percentage.toFixed(1)}%`,
-      Transações: item.transactions,
-    }));
-
-    exportToCSV(data, `relatorio-analise-${categoryChartType}`);
-    toast({
-      title: "Relatório exportado",
-      description: "O arquivo CSV foi baixado com sucesso.",
-    });
-  };
-
   const handleExportPDF = () => {
     const data = categoryData.map((item) => ({
       Categoria: item.category,
@@ -478,15 +462,7 @@ export default function AnalyticsPage({
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-2 w-full md:grid-cols-2 lg:flex lg:flex-nowrap lg:gap-2 lg:w-auto lg:ml-auto">
-          <Button
-            variant="outline"
-            onClick={handleExportCSV}
-            className="gap-2 apple-interaction h-9 text-xs sm:text-sm"
-          >
-            <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span>Exportar CSV</span>
-          </Button>
+        <div className="grid grid-cols-1 gap-2 w-full md:grid-cols-1 lg:flex lg:flex-nowrap lg:gap-2 lg:w-auto lg:ml-auto">
           <Button
             variant="outline"
             onClick={handleExportPDF}
