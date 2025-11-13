@@ -752,6 +752,24 @@
       "updating": "Updating...",
       "update": "Update Category"
     },
+    "installmentScope": {
+      "title": "Edit Installments",
+      "subtitle": "You are editing installment {{current}} of {{total}}. Choose the scope of the edit:",
+      "options": {
+        "current": {
+          "label": "Only this installment",
+          "description": "Edit only installment {{current}} of {{total}}"
+        },
+        "remaining": {
+          "label": "This and remaining installments",
+          "description": "Edit from installment {{current}} to {{total}}"
+        },
+        "all": {
+          "label": "All installments",
+          "description": "Edit all {{total}} installments"
+        }
+      }
+    },
     "transfer": {
       "title": "New Transfer",
       "subtitle": "Move money between your accounts",

@@ -853,6 +853,24 @@
       "updating": "Atualizando...",
       "update": "Atualizar Categoria"
     },
+    "installmentScope": {
+      "title": "Editar Parcelas",
+      "subtitle": "Você está editando a parcela {{current}} de {{total}}. Escolha o escopo da edição:",
+      "options": {
+        "current": {
+          "label": "Apenas esta parcela",
+          "description": "Editar somente a parcela {{current}} de {{total}}"
+        },
+        "remaining": {
+          "label": "Esta e próximas parcelas",
+          "description": "Editar da parcela {{current}} até {{total}}"
+        },
+        "all": {
+          "label": "Todas as parcelas",
+          "description": "Editar todas as {{total}} parcelas"
+        }
+      }
+    },
     "transfer": {
       "title": "Nova Transferência",
       "subtitle": "Mova dinheiro entre suas contas",
