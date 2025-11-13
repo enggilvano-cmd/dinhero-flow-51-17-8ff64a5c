@@ -201,7 +201,10 @@
     "transactionDeleted": "Transação excluída",
     "confirmDelete": "Tem certeza que deseja excluir esta transação?",
     "invoiceMonth": "Fatura",
-    "selectInvoice": "Selecionar fatura"
+    "selectInvoice": "Selecionar fatura",
+    "accountType": "Tipo de Conta",
+    "specificAccount": "Conta Específica",
+    "exportSuccess": "{{count}} transações exportadas."
   },
   "categories": {
     "title": "Categorias",
