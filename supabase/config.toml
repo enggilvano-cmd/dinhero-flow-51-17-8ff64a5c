@@ -1,1 +1,7 @@
 project_id = "sdberrkfwoozezletfuq"
+
+[functions.delete-user]
+verify_jwt = true
+
+[functions.generate-recurring-transactions]
+verify_jwt = false
