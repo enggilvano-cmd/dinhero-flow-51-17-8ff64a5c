@@ -331,36 +331,36 @@ export function UserProfile() {
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between p-4 border rounded-lg">
                 <div>
-                  <h4 className="font-medium">Alterar Senha</h4>
+                  <h4 className="font-medium">{t('profile.changePassword')}</h4>
                   <p className="text-sm text-muted-foreground">
-                    Enviar email para redefinir senha
+                    {t('profile.changePasswordDescription')}
                   </p>
                 </div>
                 <Button variant="outline" onClick={changePassword}>
-                  Redefinir Senha
+                  {t('profile.resetPassword')}
                 </Button>
               </div>
 
               <div className="flex items-center justify-between p-4 border rounded-lg">
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <h4 className="font-medium">Autenticação de Dois Fatores</h4>
+                    <h4 className="font-medium">{t('profile.twoFactorAuth')}</h4>
                     {mfaEnabled ? (
                       <Badge variant="default" className="gap-1">
                         <ShieldCheck className="h-3 w-3" />
-                        Ativo
+                        {t('profile.enabled')}
                       </Badge>
                     ) : (
                       <Badge variant="secondary" className="gap-1">
                         <ShieldOff className="h-3 w-3" />
-                        Inativo
+                        {t('profile.disabled')}
                       </Badge>
                     )}
                   </div>
                   <p className="text-sm text-muted-foreground">
                     {mfaEnabled 
-                      ? 'Sua conta está protegida com 2FA'
-                      : 'Adicione uma camada extra de segurança'
+                      ? t('profile.mfaProtected')
+                      : t('profile.mfaAddLayer')
                     }
                   </p>
                 </div>
@@ -408,7 +408,7 @@ export function UserProfile() {
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">{t('profile.memberSince')}</span>
                 <span className="text-sm text-muted-foreground">
-                  {new Date(profile.created_at).toLocaleDateString('pt-BR')}
+                  {new Date(profile.created_at).toLocaleDateString()}
                 </span>
               </div>
             </CardContent>
@@ -438,7 +438,7 @@ export function UserProfile() {
                         </p>
                       </div>
                       <span className="text-xs text-muted-foreground">
-                        {new Date(activity.created_at).toLocaleDateString('pt-BR')}
+                        {new Date(activity.created_at).toLocaleDateString()}
                       </span>
                     </div>
                   ))
@@ -487,19 +487,19 @@ export function UserProfile() {
       <AlertDialog open={showDisableMfaDialog} onOpenChange={setShowDisableMfaDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Desativar Autenticação em Dois Fatores?</AlertDialogTitle>
+            <AlertDialogTitle>{t('profile.disableMfaTitle')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Isso tornará sua conta menos segura. Você não precisará mais de um código do app autenticador para fazer login.
+              {t('profile.disableMfaDescription')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDisableMfa}
               disabled={loading}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {loading ? 'Desativando...' : 'Desativar 2FA'}
+              {loading ? t('profile.disablingMfa') : t('profile.disableMfa')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
