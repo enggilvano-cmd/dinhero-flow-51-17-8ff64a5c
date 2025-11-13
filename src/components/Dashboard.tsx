@@ -242,11 +242,11 @@ export function Dashboard({
         a.localeCompare(b)
       );
 
-      // CORREÇÃO: Iniciar o saldo acumulado com o saldo total das contas (exceto crédito)
+      // CORREÇÃO: Iniciar o saldo acumulado com o saldo total das contas (exceto crédito e investimento)
       // para que o gráfico reflita o saldo real no início do período,
       // alinhando-se com os valores dos cards.
       const saldoInicial = accounts
-        .filter((acc) => acc.type !== "credit")
+        .filter((acc) => acc.type !== "credit" && acc.type !== "investment")
         .reduce((sum, acc) => sum + acc.balance, 0);
 
       // RE-CÁLCULO CORRETO:
@@ -345,7 +345,7 @@ export function Dashboard({
   const filteredTransactions = getFilteredTransactions();
 
   const totalBalance = accounts
-    .filter((acc) => acc.type !== "credit")
+    .filter((acc) => acc.type !== "credit" && acc.type !== "investment")
     .reduce((sum, acc) => sum + acc.balance, 0);
 
   const creditAvailable = accounts
