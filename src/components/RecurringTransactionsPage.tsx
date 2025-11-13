@@ -373,7 +373,7 @@ export function RecurringTransactionsPage() {
                   </div>
                   <div className="text-right">
                     <div className={`text-xl font-bold ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
-                      {transaction.type === 'income' ? '+' : '-'} {formatCurrency(Math.abs(transaction.amount))}
+                      {transaction.type === 'income' ? '+' : '-'} {formatCents(Math.abs(transaction.amount))}
                     </div>
                   </div>
                 </div>
