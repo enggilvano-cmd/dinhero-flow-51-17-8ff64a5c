@@ -622,10 +622,14 @@ export function AddTransactionModal({
           )}
 
           {/* Installment Options */}
-          <div className="space-y-4 border-t pt-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="installment">{t("modals.addTransaction.fields.installment.label")}</Label>
+          <div className="space-y-4 border rounded-lg p-4 bg-muted/30">
+            <div className="flex items-start justify-between gap-4">
+              <div className="space-y-1 flex-1">
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="installment" className="text-base font-semibold cursor-pointer">
+                    {t("modals.addTransaction.fields.installment.label")}
+                  </Label>
+                </div>
                 <p className="text-sm text-muted-foreground">
                   {formData.account_id &&
                   filteredAccounts.find((acc) => acc.id === formData.account_id)
@@ -642,66 +646,69 @@ export function AddTransactionModal({
                     isInstallment: checked,
                   }))
                 }
+                className="mt-1"
               />
             </div>
 
             {formData.isInstallment && (
-              <div className="space-y-2">
-                <Label htmlFor="installments">{t("modals.addTransaction.fields.installment.numberOfInstallments")}</Label>
-                <Select
-                  value={formData.installments}
-                  onValueChange={(value) => {
-                    setFormData((prev) => ({ ...prev, installments: value }));
-                    if (value !== "custom") {
-                      setCustomInstallments("");
-                    }
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={t("modals.addTransaction.fields.installment.selectPlaceholder")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                        {Array.from({ length: 59 }, (_, i) => i + 2).map((num) => (
-                      <SelectItem key={num} value={num.toString()}>
-                        {num}x
-                        {(() => {
-                          const numericAmount = formData.amount;
-                          return numericAmount > 0
-                            ? ` de ${new Intl.NumberFormat("pt-BR", {
-                                style: "currency",
-                                currency: "BRL",
-                              }).format((numericAmount / 100) / (num || 1))}`
-                            : "";
-                        })()}
-                      </SelectItem>
-                    ))}
-                    <SelectItem value="custom">{t("modals.addTransaction.fields.installment.custom")}</SelectItem>
-                  </SelectContent>
-                </Select>
-                
-                {formData.installments === "custom" && (
-                  <div className="space-y-2 pt-2">
-                    <Label htmlFor="customInstallments">{t("modals.addTransaction.fields.installment.customLabel")}</Label>
-                    <Input
-                      id="customInstallments"
-                      type="number"
-                      min="61"
-                      max="360"
-                      placeholder={t("modals.addTransaction.fields.installment.customPlaceholder")}
-                      value={customInstallments}
-                      onChange={(e) => setCustomInstallments(e.target.value)}
-                    />
-                    {customInstallments && parseInt(customInstallments) > 0 && formData.amount > 0 && (
-                      <p className="text-sm text-muted-foreground">
-                        {parseInt(customInstallments)}x de{" "}
-                        {new Intl.NumberFormat("pt-BR", {
-                          style: "currency",
-                          currency: "BRL",
-                        }).format((formData.amount / 100) / parseInt(customInstallments))}
-                      </p>
-                    )}
-                  </div>
-                )}
+              <div className="space-y-4 pt-2 animate-fade-in">
+                <div className="space-y-2">
+                  <Label htmlFor="installments">{t("modals.addTransaction.fields.installment.numberOfInstallments")}</Label>
+                  <Select
+                    value={formData.installments}
+                    onValueChange={(value) => {
+                      setFormData((prev) => ({ ...prev, installments: value }));
+                      if (value !== "custom") {
+                        setCustomInstallments("");
+                      }
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder={t("modals.addTransaction.fields.installment.selectPlaceholder")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                          {Array.from({ length: 59 }, (_, i) => i + 2).map((num) => (
+                        <SelectItem key={num} value={num.toString()}>
+                          {num}x
+                          {(() => {
+                            const numericAmount = formData.amount;
+                            return numericAmount > 0
+                              ? ` de ${new Intl.NumberFormat("pt-BR", {
+                                  style: "currency",
+                                  currency: "BRL",
+                                }).format((numericAmount / 100) / (num || 1))}`
+                              : "";
+                          })()}
+                        </SelectItem>
+                      ))}
+                      <SelectItem value="custom">{t("modals.addTransaction.fields.installment.custom")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
+                  {formData.installments === "custom" && (
+                    <div className="space-y-2 pt-2 animate-fade-in">
+                      <Label htmlFor="customInstallments">{t("modals.addTransaction.fields.installment.customLabel")}</Label>
+                      <Input
+                        id="customInstallments"
+                        type="number"
+                        min="61"
+                        max="360"
+                        placeholder={t("modals.addTransaction.fields.installment.customPlaceholder")}
+                        value={customInstallments}
+                        onChange={(e) => setCustomInstallments(e.target.value)}
+                      />
+                      {customInstallments && parseInt(customInstallments) > 0 && formData.amount > 0 && (
+                        <p className="text-sm text-muted-foreground">
+                          {parseInt(customInstallments)}x de{" "}
+                          {new Intl.NumberFormat("pt-BR", {
+                            style: "currency",
+                            currency: "BRL",
+                          }).format((formData.amount / 100) / parseInt(customInstallments))}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
