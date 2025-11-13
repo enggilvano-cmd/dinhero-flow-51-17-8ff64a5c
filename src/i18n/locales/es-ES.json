@@ -658,8 +658,23 @@
     "editCategory": {
       "title": "Editar Categoría",
       "subtitle": "Actualizar información de la categoría",
-      "updating": "Actualizando...",
-      "update": "Actualizar Categoría"
+      "fields": {
+        "name": {
+          "label": "Nombre",
+          "placeholder": "Nombre de la categoría"
+        },
+        "type": {
+          "label": "Tipo",
+          "placeholder": "Seleccionar tipo",
+          "both": "Ambos"
+        }
+      },
+      "actions": {
+        "save": "Guardar Cambios"
+      },
+      "errors": {
+        "required": "Por favor, complete todos los campos obligatorios"
+      }
     },
     "installmentScope": {
       "title": "Editar Cuotas",
