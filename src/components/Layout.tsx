@@ -341,7 +341,7 @@ function LayoutContent({ children, currentPage, onPageChange }: LayoutProps) {
         )}>
           {/* Desktop Logo Header */}
           {!isMobile && (
-            <div className="flex justify-end items-center px-12 pt-4 pb-0">
+            <div className="flex justify-end items-center px-12 pt-2 pb-0">
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-emerald-600 to-emerald-700 flex items-center justify-center shadow-lg">
                   <BarChart3 className="h-6 w-6 text-yellow-400" />
