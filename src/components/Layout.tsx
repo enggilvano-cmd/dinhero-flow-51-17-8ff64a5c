@@ -208,7 +208,7 @@ function AppSidebar({ currentPage, onPageChange }: { currentPage: string; onPage
 
         {/* User Profile Section */}
         <div className={cn(
-          "mt-auto border-t border-border/30",
+          "mt-auto border-t border-b border-border/30",
            isMobile 
              ? "px-4 py-4" 
              : isCollapsed 
