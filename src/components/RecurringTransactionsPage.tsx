@@ -287,6 +287,14 @@ export function RecurringTransactionsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <EditRecurringTransactionModal
+        open={!!editTransaction}
+        onOpenChange={(open) => !open && setEditTransaction(null)}
+        onEditTransaction={handleEdit}
+        transaction={editTransaction}
+        accounts={accounts}
+      />
     </div>
   );
 }
