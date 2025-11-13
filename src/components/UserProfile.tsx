@@ -214,7 +214,7 @@ export function UserProfile() {
   const getRoleLabel = (role: string) => {
     switch (role) {
       case 'admin': return 'Administrador';
-      case 'user': return 'Usuário Padrão';
+      case 'user': return 'Vitalício';
       case 'limited': return 'Usuário Limitado';
       default: return role;
     }

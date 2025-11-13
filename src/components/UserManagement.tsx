@@ -253,7 +253,7 @@ export function UserManagement() {
       case 'admin':
         return 'Administrador';
       case 'user':
-        return 'Usuário Padrão';
+        return 'Vitalício';
       case 'subscriber':
         return 'Assinante';
       default:
@@ -413,7 +413,7 @@ export function UserManagement() {
                               </SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="admin">Administrador</SelectItem>
-                                <SelectItem value="user">Usuário Padrão</SelectItem>
+                                <SelectItem value="user">Vitalício</SelectItem>
                                 <SelectItem value="subscriber">Assinante</SelectItem>
                               </SelectContent>
                             </Select>
