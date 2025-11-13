@@ -7,12 +7,14 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Settings, Save, Shield } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useTranslation } from 'react-i18next';
 
 export default function SystemSettings() {
   const [trialDays, setTrialDays] = useState<string>('7');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   useEffect(() => {
     fetchSettings();
@@ -30,8 +32,8 @@ export default function SystemSettings() {
       if (error) {
         console.error('Error fetching settings:', error);
         toast({
-          title: "Erro ao carregar configurações",
-          description: "Não foi possível carregar as configurações do sistema.",
+          title: t('systemSettings.loadError'),
+          description: t('systemSettings.loadErrorDescription'),
           variant: "destructive",
         });
         return;
@@ -43,8 +45,8 @@ export default function SystemSettings() {
     } catch (error) {
       console.error('Error fetching settings:', error);
       toast({
-        title: "Erro ao carregar configurações",
-        description: "Erro inesperado ao carregar configurações.",
+        title: t('systemSettings.loadError'),
+        description: t('systemSettings.unexpectedLoadError'),
         variant: "destructive",
       });
     } finally {
@@ -55,8 +57,8 @@ export default function SystemSettings() {
   const updateSetting = async () => {
     if (!trialDays || parseInt(trialDays) < 1) {
       toast({
-        title: "Valor inválido",
-        description: "O período de trial deve ser de pelo menos 1 dia.",
+        title: t('systemSettings.invalidValue'),
+        description: t('systemSettings.invalidValueDescription'),
         variant: "destructive",
       });
       return;
@@ -111,9 +113,9 @@ export default function SystemSettings() {
       <div className="flex items-center gap-2">
         <Settings className="h-6 w-6" />
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold leading-tight">Configurações do Sistema</h1>
+          <h1 className="text-xl sm:text-2xl font-bold leading-tight">{t('systemSettings.title')}</h1>
           <p className="text-sm text-muted-foreground leading-tight">
-            Gerencie as configurações globais do aplicativo
+            {t('systemSettings.subtitle')}
           </p>
         </div>
       </div>
@@ -121,7 +123,7 @@ export default function SystemSettings() {
       <Alert>
         <Shield className="h-4 w-4" />
         <AlertDescription>
-          Área restrita para administradores. As configurações afetam todos os usuários do sistema.
+          {t('systemSettings.restrictedArea')}
         </AlertDescription>
       </Alert>
 
@@ -129,15 +131,15 @@ export default function SystemSettings() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Settings className="h-5 w-5" />
-            Período de Trial
+            {t('systemSettings.trialPeriod')}
           </CardTitle>
           <CardDescription>
-            Configure quantos dias os novos usuários podem usar o sistema gratuitamente
+            {t('systemSettings.trialPeriodDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="trial-days">Dias de Trial</Label>
+            <Label htmlFor="trial-days">{t('systemSettings.trialDays')}</Label>
             <Input
               id="trial-days"
               type="number"
@@ -148,7 +150,7 @@ export default function SystemSettings() {
               placeholder="7"
             />
             <p className="text-sm text-muted-foreground">
-              Número de dias que novos usuários podem usar o sistema após o cadastro
+              {t('systemSettings.trialDaysDescription')}
             </p>
           </div>
 
@@ -162,7 +164,7 @@ export default function SystemSettings() {
             ) : (
               <Save className="h-4 w-4 mr-2" />
             )}
-            {saving ? 'Salvando...' : 'Salvar Configuração'}
+            {saving ? t('common.saving') : t('systemSettings.saveSettings')}
           </Button>
         </CardContent>
       </Card>

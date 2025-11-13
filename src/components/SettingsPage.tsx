@@ -46,11 +46,11 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
     try {
       // Validate settings before saving
       if (!localSettings.currency || !localSettings.language || !localSettings.theme) {
-        toast({
-          title: "Configurações inválidas",
-          description: "Todos os campos obrigatórios devem ser preenchidos.",
-          variant: "destructive"
-        });
+      toast({
+        title: t('settings.invalidSettings'),
+        description: t('settings.invalidSettingsDescription'),
+        variant: "destructive"
+      });
         return;
       }
 
@@ -62,8 +62,8 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
     } catch (error) {
       console.error('Settings save error:', error);
       toast({
-        title: "Erro ao salvar",
-        description: "Não foi possível salvar as configurações.",
+        title: t('common.error'),
+        description: t('settings.errorSaving'),
         variant: "destructive"
       });
     }
@@ -76,8 +76,8 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
       // Validate data before export
       if (!data || Object.keys(data).length === 0) {
         toast({
-          title: "Nenhum dado para exportar",
-          description: "Não há dados disponíveis para criar o backup.",
+          title: t('settings.noDataToExport'),
+          description: t('settings.noDataToExportDescription'),
           variant: "destructive"
         });
         return;
@@ -105,14 +105,14 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
       setTimeout(() => URL.revokeObjectURL(url), 100);
       
       toast({
-        title: "Backup criado",
-        description: `Backup salvo como: planiflow-backup-${dateStr}-${timeStr}.json`,
+        title: t('settings.backupCreated'),
+        description: t('settings.backupCreatedDescription', { filename: `planiflow-backup-${dateStr}-${timeStr}.json` }),
       });
     } catch (error) {
       console.error('Export error:', error);
       toast({
-        title: "Erro no backup",
-        description: "Não foi possível criar o backup dos dados.",
+        title: t('settings.backupError'),
+        description: t('settings.backupErrorDescription'),
         variant: "destructive"
       });
     }
@@ -125,8 +125,8 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
     // Validate file type
     if (!file.name.endsWith('.json')) {
       toast({
-        title: "Arquivo inválido",
-        description: "Por favor, selecione um arquivo JSON válido.",
+        title: t('settings.invalidFile'),
+        description: t('settings.invalidFileDescription'),
         variant: "destructive"
       });
       return;
@@ -135,8 +135,8 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
     // Validate file size (max 10MB)
     if (file.size > 10 * 1024 * 1024) {
       toast({
-        title: "Arquivo muito grande",
-        description: "O arquivo deve ter no máximo 10MB.",
+        title: t('settings.fileTooLarge'),
+        description: t('settings.fileTooLargeDescription'),
         variant: "destructive"
       });
       return;
@@ -149,36 +149,36 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
       try {
         const jsonString = e.target?.result as string;
         if (!jsonString || jsonString.trim() === '') {
-          throw new Error('Arquivo vazio');
+          throw new Error(t('settings.emptyFile'));
         }
 
         const data = JSON.parse(jsonString);
         
         // Validate data structure
         if (!data || typeof data !== 'object') {
-          throw new Error('Estrutura de dados inválida');
+          throw new Error(t('settings.invalidDataStructure'));
         }
 
         // Optional: Validate required fields
         if (data.accounts && !Array.isArray(data.accounts)) {
-          throw new Error('Formato de contas inválido');
+          throw new Error(t('settings.invalidAccountsFormat'));
         }
         if (data.transactions && !Array.isArray(data.transactions)) {
-          throw new Error('Formato de transações inválido');
+          throw new Error(t('settings.invalidTransactionsFormat'));
         }
 
         const result = await importData(data);
         
         if (result.success) {
           toast({
-            title: "Dados importados",
+            title: t('settings.dataImported'),
             description: result.message,
           });
           // Reload the page to reflect changes
           setTimeout(() => window.location.reload(), 1500);
         } else {
           toast({
-            title: "Erro na importação",
+            title: t('settings.importError'),
             description: result.message,
             variant: "destructive"
           });
@@ -186,8 +186,8 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
       } catch (error) {
         console.error('Import error:', error);
         toast({
-          title: "Erro na importação",
-          description: error instanceof Error ? error.message : "Arquivo inválido ou corrompido.",
+          title: t('settings.importError'),
+          description: error instanceof Error ? error.message : t('settings.invalidOrCorruptedFile'),
           variant: "destructive"
         });
       } finally {
@@ -202,8 +202,8 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
     reader.onerror = () => {
       setIsImporting(false);
       toast({
-        title: "Erro na leitura",
-        description: "Não foi possível ler o arquivo selecionado.",
+        title: t('settings.readError'),
+        description: t('settings.readErrorDescription'),
         variant: "destructive"
       });
     };
@@ -213,7 +213,7 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
 
   const handleRecalculateInvoiceMonths = async () => {
     if (!window.confirm(
-      "Esta ação irá recalcular o invoice_month das suas transações de cartão com base nas regras de fechamento e vencimento. Deseja continuar?"
+      t('settings.recalculateConfirm')
     )) {
       return;
     }
@@ -221,14 +221,18 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
     try {
       const res = await recalculateInvoiceMonthsForUser();
       toast({
-        title: "Correção concluída",
-        description: `Escaneadas: ${res.scanned} • Elegíveis: ${res.eligible} • Atualizadas: ${res.updated}`,
+        title: t('settings.fixComplete'),
+        description: t('settings.fixCompleteDescription', { 
+          scanned: res.scanned, 
+          eligible: res.eligible, 
+          updated: res.updated 
+        }),
       });
     } catch (error) {
       console.error('Fix error:', error);
       toast({
-        title: "Erro na correção",
-        description: "Não foi possível recalcular as faturas. Tente novamente.",
+        title: t('settings.fixError'),
+        description: t('settings.fixErrorDescription'),
         variant: "destructive"
       });
     } finally {
@@ -238,12 +242,12 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
 
   const handleClearData = () => {
     if (window.confirm(
-      "ATENÇÃO: Você está prestes a apagar TODOS os seus dados (contas, transações, etc.) de forma permanente. Esta ação não pode ser desfeita.\n\nTem certeza que deseja continuar?"
+      t('settings.clearDataConfirm')
     )) {
       onClearAllData();
       toast({
-        title: "Dados apagados",
-        description: "Todos os dados foram removidos do aplicativo.",
+        title: t('settings.dataCleared'),
+        description: t('settings.dataClearedDescription'),
         variant: "destructive"
       });
     }
