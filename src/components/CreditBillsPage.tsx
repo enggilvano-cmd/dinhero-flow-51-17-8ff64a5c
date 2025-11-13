@@ -324,7 +324,7 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
 
             {/* Status da Fatura (Aberta/Fechada) */}
             <div>
-              <Label htmlFor="filterBillStatus" className="text-caption">{t("creditBills.billStatus")}</Label>
+              <Label htmlFor="filterBillStatus" className="text-caption">{t("transactions.status")}</Label>
               <Select value={filterBillStatus} onValueChange={(value: any) => setFilterBillStatus(value)}>
                 <SelectTrigger className="touch-target mt-2" id="filterBillStatus">
                   <SelectValue placeholder={t("transactions.status")} />
@@ -339,7 +339,7 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
 
             {/* Status de Pagamento */}
             <div>
-              <Label htmlFor="filterPaymentStatus" className="text-caption">{t("creditBills.paymentStatus")}</Label>
+              <Label htmlFor="filterPaymentStatus" className="text-caption">{t("transactions.status")}</Label>
               <Select value={filterPaymentStatus} onValueChange={(value: any) => setFilterPaymentStatus(value)}>
                 <SelectTrigger className="touch-target mt-2" id="filterPaymentStatus">
                   <SelectValue placeholder={t("transactions.status")} />
@@ -354,7 +354,7 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
 
             {/* Período/Mês */}
             <div>
-              <Label htmlFor="periodFilter" className="text-caption">{t("dateFilter.period")}</Label>
+              <Label htmlFor="periodFilter" className="text-caption">{t("dashboard.period")}</Label>
               <Select
                 value={periodFilter}
                 onValueChange={(value: any) => {
