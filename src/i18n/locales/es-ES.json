@@ -22,7 +22,12 @@
     "none": "Ninguno",
     "back": "Volver",
     "next": "Siguiente",
-    "previous": "Anterior"
+    "previous": "Anterior",
+    "total": "Total",
+    "new": "Nueva",
+    "view": "Ver",
+    "download": "Descargar",
+    "upload": "Subir"
   },
   "auth": {
     "login": "Iniciar sesión",
@@ -30,6 +35,9 @@
     "signup": "Registrarse",
     "email": "Correo electrónico",
     "password": "Contraseña",
+    "confirmPassword": "Confirmar Contraseña",
+    "fullName": "Nombre Completo",
+    "phone": "Teléfono",
     "forgotPassword": "¿Olvidaste tu contraseña?",
     "rememberMe": "Recordarme",
     "createAccount": "Crear cuenta",
@@ -39,7 +47,11 @@
     "loginTitle": "Bienvenido de nuevo",
     "loginSubtitle": "Inicia sesión en tu cuenta para continuar",
     "signupTitle": "Crear nueva cuenta",
-    "signupSubtitle": "Comienza a gestionar tus finanzas hoy"
+    "signupSubtitle": "Comienza a gestionar tus finanzas hoy",
+    "signingIn": "Iniciando sesión...",
+    "signingUp": "Registrando...",
+    "loginError": "Correo o contraseña incorrectos",
+    "signupError": "Error al crear la cuenta"
   },
   "dashboard": {
     "title": "Panel",
@@ -59,7 +71,12 @@
     "recentTransactions": "Transacciones Recientes",
     "viewAll": "Ver Todas",
     "noTransactions": "No hay transacciones registradas",
-    "addFirstTransaction": "Añade tu primera transacción para comenzar"
+    "addFirstTransaction": "Añade tu primera transacción para comenzar",
+    "daily": "Diario",
+    "monthly": "Mensual",
+    "revenues": "Ingresos",
+    "expenses": "Gastos",
+    "balance": "Saldo"
   },
   "accounts": {
     "title": "Cuentas",
@@ -82,7 +99,18 @@
     "creditUsed": "Crédito Utilizado",
     "payBill": "Pagar Factura",
     "noAccounts": "No hay cuentas registradas",
-    "addFirstAccount": "Comienza añadiendo tu primera cuenta bancaria o tarjeta de crédito"
+    "addFirstAccount": "Comienza añadiendo tu primera cuenta bancaria o tarjeta de crédito",
+    "confirmDelete": "¿Estás seguro de que deseas eliminar la cuenta",
+    "accountDeleted": "Cuenta eliminada",
+    "accountDeletedDesc": "La cuenta se eliminó correctamente",
+    "accountAdded": "Cuenta añadida",
+    "accountAddedDesc": "La cuenta se añadió correctamente",
+    "accountUpdated": "Cuenta actualizada",
+    "accountUpdatedDesc": "La cuenta se actualizó correctamente",
+    "searchPlaceholder": "Escribe el nombre de la cuenta...",
+    "filterByType": "Filtrar por tipo",
+    "available": "Disponible",
+    "used": "Utilizado"
   },
   "transactions": {
     "title": "Transacciones",
@@ -107,7 +135,17 @@
     "noTransactions": "No se encontraron transacciones",
     "filterByType": "Filtrar por tipo",
     "filterByStatus": "Filtrar por estado",
-    "filterByDate": "Filtrar por fecha"
+    "filterByDate": "Filtrar por fecha",
+    "searchPlaceholder": "Buscar transacciones...",
+    "selectAccount": "Selecciona una cuenta",
+    "selectCategory": "Selecciona una categoría",
+    "selectDate": "Selecciona la fecha",
+    "transactionAdded": "Transacción añadida",
+    "transactionUpdated": "Transacción actualizada",
+    "transactionDeleted": "Transacción eliminada",
+    "confirmDelete": "¿Estás seguro de que deseas eliminar esta transacción?",
+    "invoiceMonth": "Factura",
+    "selectInvoice": "Seleccionar factura"
   },
   "categories": {
     "title": "Categorías",
@@ -119,7 +157,33 @@
     "categoryType": "Tipo de Categoría",
     "categoryColor": "Color de la Categoría",
     "noCategories": "No hay categorías registradas",
-    "addFirstCategory": "Añade tu primera categoría"
+    "addFirstCategory": "Añade tu primera categoría",
+    "confirmDelete": "¿Estás seguro de que deseas eliminar esta categoría?",
+    "categoryAdded": "Categoría añadida",
+    "categoryUpdated": "Categoría actualizada",
+    "categoryDeleted": "Categoría eliminada",
+    "both": "Ambos",
+    "searchPlaceholder": "Buscar categorías..."
+  },
+  "creditBills": {
+    "title": "Facturas de Tarjeta",
+    "subtitle": "Sigue tus facturas de tarjeta de crédito",
+    "currentBill": "Factura Actual",
+    "nextBill": "Próxima Factura",
+    "payBill": "Pagar Factura",
+    "viewDetails": "Ver Detalles",
+    "noBills": "No se encontraron facturas",
+    "closingDate": "Cierre",
+    "dueDate": "Vencimiento",
+    "totalAmount": "Valor Total"
+  },
+  "analytics": {
+    "title": "Análisis",
+    "subtitle": "Informes e insights financieros",
+    "expensesByCategory": "Gastos por Categoría",
+    "incomeByCategory": "Ingresos por Categoría",
+    "monthlyComparison": "Comparación Mensual",
+    "noData": "Sin datos para mostrar"
   },
   "settings": {
     "title": "Configuración",
@@ -147,7 +211,10 @@
     "version": "Versión",
     "saveSettings": "Guardar Configuración",
     "settingsSaved": "Configuración guardada",
-    "settingsSavedDescription": "Tus preferencias se han actualizado correctamente."
+    "settingsSavedDescription": "Tus preferencias se han actualizado correctamente.",
+    "dangerZone": "Zona de Peligro",
+    "typeToConfirm": "Escribe \"ELIMINAR TODO\"",
+    "backupAndRestore": "Copia de Seguridad y Restauración"
   },
   "menu": {
     "dashboard": "Panel",
@@ -161,13 +228,38 @@
     "users": "Usuarios",
     "systemSettings": "Configuración del Sistema"
   },
+  "profile": {
+    "title": "Perfil",
+    "subtitle": "Gestiona tu información personal",
+    "personalInfo": "Información Personal",
+    "fullName": "Nombre Completo",
+    "email": "Correo",
+    "phone": "Teléfono",
+    "avatar": "Avatar",
+    "changePassword": "Cambiar Contraseña",
+    "currentPassword": "Contraseña Actual",
+    "newPassword": "Nueva Contraseña",
+    "confirmNewPassword": "Confirmar Nueva Contraseña"
+  },
+  "transfer": {
+    "title": "Transferencia",
+    "fromAccount": "Desde (Cuenta)",
+    "toAccount": "Para (Cuenta)",
+    "amount": "Valor",
+    "date": "Fecha",
+    "selectFromAccount": "Selecciona la cuenta de origen",
+    "selectToAccount": "Selecciona la cuenta de destino",
+    "transferSuccess": "Transferencia realizada",
+    "transferError": "Error al realizar la transferencia"
+  },
   "validation": {
     "required": "Campo obligatorio",
     "invalidEmail": "Correo electrónico inválido",
     "passwordTooShort": "Contraseña demasiado corta",
     "passwordsDontMatch": "Las contraseñas no coinciden",
     "invalidAmount": "Valor inválido",
-    "invalidDate": "Fecha inválida"
+    "invalidDate": "Fecha inválida",
+    "selectOption": "Selecciona una opción"
   },
   "messages": {
     "confirmDelete": "¿Estás seguro de que deseas eliminar?",
@@ -175,6 +267,16 @@
     "saveSuccess": "Guardado con éxito",
     "updateSuccess": "Actualizado con éxito",
     "errorOccurred": "Ocurrió un error",
-    "tryAgain": "Inténtalo de nuevo"
+    "tryAgain": "Inténtalo de nuevo",
+    "noDataFound": "No se encontraron datos",
+    "loadingData": "Cargando datos..."
+  },
+  "dateFilter": {
+    "all": "Todas las transacciones",
+    "currentMonth": "Mes Actual",
+    "monthPicker": "Elegir Mes",
+    "custom": "Período Personalizado",
+    "startDate": "Fecha Inicial",
+    "endDate": "Fecha Final"
   }
 }

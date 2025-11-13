@@ -22,7 +22,12 @@
     "none": "None",
     "back": "Back",
     "next": "Next",
-    "previous": "Previous"
+    "previous": "Previous",
+    "total": "Total",
+    "new": "New",
+    "view": "View",
+    "download": "Download",
+    "upload": "Upload"
   },
   "auth": {
     "login": "Login",
@@ -30,6 +35,9 @@
     "signup": "Sign Up",
     "email": "Email",
     "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "fullName": "Full Name",
+    "phone": "Phone",
     "forgotPassword": "Forgot password?",
     "rememberMe": "Remember me",
     "createAccount": "Create account",
@@ -39,7 +47,11 @@
     "loginTitle": "Welcome back",
     "loginSubtitle": "Sign in to your account to continue",
     "signupTitle": "Create new account",
-    "signupSubtitle": "Start managing your finances today"
+    "signupSubtitle": "Start managing your finances today",
+    "signingIn": "Signing in...",
+    "signingUp": "Signing up...",
+    "loginError": "Invalid email or password",
+    "signupError": "Error creating account"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -59,7 +71,12 @@
     "recentTransactions": "Recent Transactions",
     "viewAll": "View All",
     "noTransactions": "No transactions recorded",
-    "addFirstTransaction": "Add your first transaction to get started"
+    "addFirstTransaction": "Add your first transaction to get started",
+    "daily": "Daily",
+    "monthly": "Monthly",
+    "revenues": "Revenues",
+    "expenses": "Expenses",
+    "balance": "Balance"
   },
   "accounts": {
     "title": "Accounts",
@@ -82,7 +99,18 @@
     "creditUsed": "Credit Used",
     "payBill": "Pay Bill",
     "noAccounts": "No accounts registered",
-    "addFirstAccount": "Start by adding your first bank account or credit card"
+    "addFirstAccount": "Start by adding your first bank account or credit card",
+    "confirmDelete": "Are you sure you want to delete the account",
+    "accountDeleted": "Account deleted",
+    "accountDeletedDesc": "The account was successfully deleted",
+    "accountAdded": "Account added",
+    "accountAddedDesc": "The account was successfully added",
+    "accountUpdated": "Account updated",
+    "accountUpdatedDesc": "The account was successfully updated",
+    "searchPlaceholder": "Type the account name...",
+    "filterByType": "Filter by type",
+    "available": "Available",
+    "used": "Used"
   },
   "transactions": {
     "title": "Transactions",
@@ -107,7 +135,17 @@
     "noTransactions": "No transactions found",
     "filterByType": "Filter by type",
     "filterByStatus": "Filter by status",
-    "filterByDate": "Filter by date"
+    "filterByDate": "Filter by date",
+    "searchPlaceholder": "Search transactions...",
+    "selectAccount": "Select an account",
+    "selectCategory": "Select a category",
+    "selectDate": "Select date",
+    "transactionAdded": "Transaction added",
+    "transactionUpdated": "Transaction updated",
+    "transactionDeleted": "Transaction deleted",
+    "confirmDelete": "Are you sure you want to delete this transaction?",
+    "invoiceMonth": "Invoice",
+    "selectInvoice": "Select invoice"
   },
   "categories": {
     "title": "Categories",
@@ -119,7 +157,33 @@
     "categoryType": "Category Type",
     "categoryColor": "Category Color",
     "noCategories": "No categories registered",
-    "addFirstCategory": "Add your first category"
+    "addFirstCategory": "Add your first category",
+    "confirmDelete": "Are you sure you want to delete this category?",
+    "categoryAdded": "Category added",
+    "categoryUpdated": "Category updated",
+    "categoryDeleted": "Category deleted",
+    "both": "Both",
+    "searchPlaceholder": "Search categories..."
+  },
+  "creditBills": {
+    "title": "Credit Card Bills",
+    "subtitle": "Track your credit card bills",
+    "currentBill": "Current Bill",
+    "nextBill": "Next Bill",
+    "payBill": "Pay Bill",
+    "viewDetails": "View Details",
+    "noBills": "No bills found",
+    "closingDate": "Closing Date",
+    "dueDate": "Due Date",
+    "totalAmount": "Total Amount"
+  },
+  "analytics": {
+    "title": "Analytics",
+    "subtitle": "Financial reports and insights",
+    "expensesByCategory": "Expenses by Category",
+    "incomeByCategory": "Income by Category",
+    "monthlyComparison": "Monthly Comparison",
+    "noData": "No data to display"
   },
   "settings": {
     "title": "Settings",
@@ -147,7 +211,10 @@
     "version": "Version",
     "saveSettings": "Save Settings",
     "settingsSaved": "Settings saved",
-    "settingsSavedDescription": "Your preferences have been successfully updated."
+    "settingsSavedDescription": "Your preferences have been successfully updated.",
+    "dangerZone": "Danger Zone",
+    "typeToConfirm": "Type \"DELETE ALL\"",
+    "backupAndRestore": "Backup and Restore"
   },
   "menu": {
     "dashboard": "Dashboard",
@@ -161,13 +228,38 @@
     "users": "Users",
     "systemSettings": "System Settings"
   },
+  "profile": {
+    "title": "Profile",
+    "subtitle": "Manage your personal information",
+    "personalInfo": "Personal Information",
+    "fullName": "Full Name",
+    "email": "Email",
+    "phone": "Phone",
+    "avatar": "Avatar",
+    "changePassword": "Change Password",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "confirmNewPassword": "Confirm New Password"
+  },
+  "transfer": {
+    "title": "Transfer",
+    "fromAccount": "From (Account)",
+    "toAccount": "To (Account)",
+    "amount": "Amount",
+    "date": "Date",
+    "selectFromAccount": "Select source account",
+    "selectToAccount": "Select destination account",
+    "transferSuccess": "Transfer completed",
+    "transferError": "Error completing transfer"
+  },
   "validation": {
     "required": "Required field",
     "invalidEmail": "Invalid email",
     "passwordTooShort": "Password too short",
     "passwordsDontMatch": "Passwords don't match",
     "invalidAmount": "Invalid amount",
-    "invalidDate": "Invalid date"
+    "invalidDate": "Invalid date",
+    "selectOption": "Select an option"
   },
   "messages": {
     "confirmDelete": "Are you sure you want to delete?",
@@ -175,6 +267,16 @@
     "saveSuccess": "Saved successfully",
     "updateSuccess": "Updated successfully",
     "errorOccurred": "An error occurred",
-    "tryAgain": "Try again"
+    "tryAgain": "Try again",
+    "noDataFound": "No data found",
+    "loadingData": "Loading data..."
+  },
+  "dateFilter": {
+    "all": "All transactions",
+    "currentMonth": "Current Month",
+    "monthPicker": "Choose Month",
+    "custom": "Custom Period",
+    "startDate": "Start Date",
+    "endDate": "End Date"
   }
 }

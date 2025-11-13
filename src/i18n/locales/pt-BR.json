@@ -22,7 +22,12 @@
     "none": "Nenhum",
     "back": "Voltar",
     "next": "Próximo",
-    "previous": "Anterior"
+    "previous": "Anterior",
+    "total": "Total",
+    "new": "Nova",
+    "view": "Visualizar",
+    "download": "Baixar",
+    "upload": "Enviar"
   },
   "auth": {
     "login": "Entrar",
@@ -30,6 +35,9 @@
     "signup": "Cadastrar",
     "email": "Email",
     "password": "Senha",
+    "confirmPassword": "Confirmar Senha",
+    "fullName": "Nome Completo",
+    "phone": "Telefone",
     "forgotPassword": "Esqueceu a senha?",
     "rememberMe": "Lembrar-me",
     "createAccount": "Criar conta",
@@ -39,7 +47,11 @@
     "loginTitle": "Bem-vindo de volta",
     "loginSubtitle": "Acesse sua conta para continuar",
     "signupTitle": "Criar nova conta",
-    "signupSubtitle": "Comece a gerenciar suas finanças hoje"
+    "signupSubtitle": "Comece a gerenciar suas finanças hoje",
+    "signingIn": "Entrando...",
+    "signingUp": "Cadastrando...",
+    "loginError": "Email ou senha incorretos",
+    "signupError": "Erro ao criar conta"
   },
   "dashboard": {
     "title": "Painel",
@@ -59,7 +71,12 @@
     "recentTransactions": "Transações Recentes",
     "viewAll": "Ver Todas",
     "noTransactions": "Nenhuma transação registrada",
-    "addFirstTransaction": "Adicione sua primeira transação para começar"
+    "addFirstTransaction": "Adicione sua primeira transação para começar",
+    "daily": "Diário",
+    "monthly": "Mensal",
+    "revenues": "Receitas",
+    "expenses": "Despesas",
+    "balance": "Saldo"
   },
   "accounts": {
     "title": "Contas",
@@ -82,7 +99,18 @@
     "creditUsed": "Cartões Utilizados",
     "payBill": "Pagar Fatura",
     "noAccounts": "Nenhuma conta cadastrada",
-    "addFirstAccount": "Comece adicionando sua primeira conta bancária ou cartão de crédito"
+    "addFirstAccount": "Comece adicionando sua primeira conta bancária ou cartão de crédito",
+    "confirmDelete": "Tem certeza que deseja excluir a conta",
+    "accountDeleted": "Conta excluída",
+    "accountDeletedDesc": "A conta foi excluída com sucesso",
+    "accountAdded": "Conta adicionada",
+    "accountAddedDesc": "A conta foi adicionada com sucesso",
+    "accountUpdated": "Conta atualizada",
+    "accountUpdatedDesc": "A conta foi atualizada com sucesso",
+    "searchPlaceholder": "Digite o nome da conta...",
+    "filterByType": "Filtrar por tipo",
+    "available": "Disponível",
+    "used": "Utilizado"
   },
   "transactions": {
     "title": "Transações",
@@ -107,7 +135,17 @@
     "noTransactions": "Nenhuma transação encontrada",
     "filterByType": "Filtrar por tipo",
     "filterByStatus": "Filtrar por status",
-    "filterByDate": "Filtrar por data"
+    "filterByDate": "Filtrar por data",
+    "searchPlaceholder": "Buscar transações...",
+    "selectAccount": "Selecione uma conta",
+    "selectCategory": "Selecione uma categoria",
+    "selectDate": "Selecione a data",
+    "transactionAdded": "Transação adicionada",
+    "transactionUpdated": "Transação atualizada",
+    "transactionDeleted": "Transação excluída",
+    "confirmDelete": "Tem certeza que deseja excluir esta transação?",
+    "invoiceMonth": "Fatura",
+    "selectInvoice": "Selecionar fatura"
   },
   "categories": {
     "title": "Categorias",
@@ -119,7 +157,33 @@
     "categoryType": "Tipo da Categoria",
     "categoryColor": "Cor da Categoria",
     "noCategories": "Nenhuma categoria cadastrada",
-    "addFirstCategory": "Adicione sua primeira categoria"
+    "addFirstCategory": "Adicione sua primeira categoria",
+    "confirmDelete": "Tem certeza que deseja excluir esta categoria?",
+    "categoryAdded": "Categoria adicionada",
+    "categoryUpdated": "Categoria atualizada",
+    "categoryDeleted": "Categoria excluída",
+    "both": "Ambos",
+    "searchPlaceholder": "Buscar categorias..."
+  },
+  "creditBills": {
+    "title": "Faturas de Cartão",
+    "subtitle": "Acompanhe suas faturas de cartão de crédito",
+    "currentBill": "Fatura Atual",
+    "nextBill": "Próxima Fatura",
+    "payBill": "Pagar Fatura",
+    "viewDetails": "Ver Detalhes",
+    "noBills": "Nenhuma fatura encontrada",
+    "closingDate": "Fechamento",
+    "dueDate": "Vencimento",
+    "totalAmount": "Valor Total"
+  },
+  "analytics": {
+    "title": "Análises",
+    "subtitle": "Relatórios e insights financeiros",
+    "expensesByCategory": "Despesas por Categoria",
+    "incomeByCategory": "Receitas por Categoria",
+    "monthlyComparison": "Comparação Mensal",
+    "noData": "Sem dados para exibir"
   },
   "settings": {
     "title": "Configurações",
@@ -147,7 +211,10 @@
     "version": "Versão",
     "saveSettings": "Salvar Configurações",
     "settingsSaved": "Configurações salvas",
-    "settingsSavedDescription": "Suas preferências foram atualizadas com sucesso."
+    "settingsSavedDescription": "Suas preferências foram atualizadas com sucesso.",
+    "dangerZone": "Zona de Perigo",
+    "typeToConfirm": "Digite \"APAGAR TUDO\"",
+    "backupAndRestore": "Backup e Restauração"
   },
   "menu": {
     "dashboard": "Painel",
@@ -161,13 +228,38 @@
     "users": "Usuários",
     "systemSettings": "Configurações do Sistema"
   },
+  "profile": {
+    "title": "Perfil",
+    "subtitle": "Gerencie suas informações pessoais",
+    "personalInfo": "Informações Pessoais",
+    "fullName": "Nome Completo",
+    "email": "Email",
+    "phone": "Telefone",
+    "avatar": "Avatar",
+    "changePassword": "Alterar Senha",
+    "currentPassword": "Senha Atual",
+    "newPassword": "Nova Senha",
+    "confirmNewPassword": "Confirmar Nova Senha"
+  },
+  "transfer": {
+    "title": "Transferência",
+    "fromAccount": "De (Conta)",
+    "toAccount": "Para (Conta)",
+    "amount": "Valor",
+    "date": "Data",
+    "selectFromAccount": "Selecione a conta de origem",
+    "selectToAccount": "Selecione a conta de destino",
+    "transferSuccess": "Transferência realizada",
+    "transferError": "Erro ao realizar transferência"
+  },
   "validation": {
     "required": "Campo obrigatório",
     "invalidEmail": "Email inválido",
     "passwordTooShort": "Senha muito curta",
     "passwordsDontMatch": "Senhas não conferem",
     "invalidAmount": "Valor inválido",
-    "invalidDate": "Data inválida"
+    "invalidDate": "Data inválida",
+    "selectOption": "Selecione uma opção"
   },
   "messages": {
     "confirmDelete": "Tem certeza que deseja excluir?",
@@ -175,6 +267,16 @@
     "saveSuccess": "Salvo com sucesso",
     "updateSuccess": "Atualizado com sucesso",
     "errorOccurred": "Ocorreu um erro",
-    "tryAgain": "Tente novamente"
+    "tryAgain": "Tente novamente",
+    "noDataFound": "Nenhum dado encontrado",
+    "loadingData": "Carregando dados..."
+  },
+  "dateFilter": {
+    "all": "Todas as transações",
+    "currentMonth": "Mês Atual",
+    "monthPicker": "Escolher Mês",
+    "custom": "Período Personalizado",
+    "startDate": "Data Inicial",
+    "endDate": "Data Final"
   }
 }

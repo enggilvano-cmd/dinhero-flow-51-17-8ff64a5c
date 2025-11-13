@@ -30,6 +30,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useAccountStore } from "@/stores/AccountStore";
 import { ImportAccountsModal } from "@/components/ImportAccountsModal";
 import * as XLSX from 'xlsx';
+import { useTranslation } from 'react-i18next';
+import { useSettings } from "@/context/SettingsContext";
 
 interface AccountsPageProps {
   onAddAccount: () => void;
@@ -51,6 +53,8 @@ export function AccountsPage({
   initialFilterType = "all",
 }: AccountsPageProps) {
   const accounts = useAccountStore((state) => state.accounts);
+  const { t } = useTranslation();
+  const { formatCurrency: formatCurrencyFromSettings } = useSettings();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<
@@ -60,10 +64,7 @@ export function AccountsPage({
   const { toast } = useToast();
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    }).format(value);
+    return formatCurrencyFromSettings(value);
   };
 
   const formatCents = (valueInCents: number) =>
@@ -87,13 +88,13 @@ export function AccountsPage({
   const getAccountTypeLabel = (type: string) => {
     switch (type) {
       case "checking":
-        return "Conta Corrente";
+        return t('accounts.checking');
       case "savings":
-        return "Poupança";
+        return t('accounts.savings');
       case "credit":
-        return "Cartão de Crédito";
+        return t('accounts.credit');
       case "investment":
-        return "Investimento";
+        return t('accounts.investment');
       default:
         return type;
     }
@@ -123,12 +124,12 @@ export function AccountsPage({
 
   const handleDeleteAccount = (account: any) => {
     if (
-      window.confirm(`Tem certeza que deseja excluir a conta "${account.name}"?`)
+      window.confirm(t('accounts.confirmDelete') + ` "${account.name}"?`)
     ) {
       onDeleteAccount(account.id);
       toast({
-        title: "Conta excluída",
-        description: `A conta "${account.name}" foi excluída com sucesso.`,
+        title: t('accounts.accountDeleted'),
+        description: t('accounts.accountDeletedDesc').replace('{name}', account.name),
       });
     }
   };
@@ -189,8 +190,8 @@ export function AccountsPage({
     XLSX.writeFile(wb, fileName);
 
     toast({
-      title: "Exportação concluída",
-      description: `${filteredAccounts.length} contas exportadas para Excel.`,
+      title: t('messages.saveSuccess'),
+      description: `${filteredAccounts.length} ${t('accounts.title').toLowerCase()} ${t('common.export').toLowerCase()}.`,
     });
   };
 
@@ -205,9 +206,9 @@ export function AccountsPage({
       {/* Header */}
       <div className="flex flex-col gap-3">
         <div className="min-w-0 w-full">
-          <h1 className="text-xl sm:text-2xl font-bold leading-tight">Contas</h1>
+          <h1 className="text-xl sm:text-2xl font-bold leading-tight">{t('accounts.title')}</h1>
           <p className="text-sm text-muted-foreground leading-tight">
-            Gerencie suas contas bancárias e cartões de crédito
+            {t('accounts.subtitle')}
           </p>
         </div>
         <div className="grid grid-cols-2 gap-2 w-full md:grid-cols-4 lg:flex lg:flex-nowrap lg:gap-2 lg:w-auto lg:ml-auto">
@@ -218,7 +219,7 @@ export function AccountsPage({
             disabled={accounts.length === 0}
           >
             <FileDown className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span>Exportar</span>
+            <span>{t('common.export')}</span>
           </Button>
           <Button
             onClick={() => setImportModalOpen(true)}
@@ -226,7 +227,7 @@ export function AccountsPage({
             className="gap-2 apple-interaction h-9 text-xs sm:text-sm"
           >
             <Upload className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span>Importar</span>
+            <span>{t('common.import')}</span>
           </Button>
           {onTransfer && (
             <Button
@@ -235,12 +236,12 @@ export function AccountsPage({
               className="gap-2 apple-interaction h-9 text-xs sm:text-sm"
             >
               <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              <span>Transferir</span>
+              <span>{t('dashboard.transfer')}</span>
             </Button>
           )}
           <Button onClick={onAddAccount} className="gap-2 apple-interaction h-9 text-xs sm:text-sm">
             <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span>Nova Conta</span>
+            <span>{t('accounts.addAccount')}</span>
           </Button>
         </div>
       </div>
@@ -255,7 +256,7 @@ export function AccountsPage({
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs sm:text-sm font-medium text-muted-foreground">
-                  Total em Contas
+                  {t('accounts.totalBalance')}
                 </p>
                 <div
                   className={`text-base sm:text-lg lg:text-xl font-bold ${
@@ -277,7 +278,7 @@ export function AccountsPage({
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs sm:text-sm font-medium text-muted-foreground">
-                  Cartões Utilizados
+                  {t('accounts.creditUsed')}
                 </p>
                 <div className="text-base sm:text-lg lg:text-xl font-bold balance-negative leading-tight">
                   {formatCents(creditUsed)}
@@ -295,7 +296,7 @@ export function AccountsPage({
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs sm:text-sm font-medium text-muted-foreground">
-                  Total de Contas
+                  {t('accounts.totalAccounts')}
                 </p>
                 <div className="text-base sm:text-lg lg:text-xl font-bold leading-tight">
                   {filteredAccounts.length}
@@ -311,12 +312,12 @@ export function AccountsPage({
         <CardContent className="p-2 sm:p-3">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="lg:col-span-2">
-              <Label htmlFor="search" className="text-caption">Buscar contas</Label>
+              <Label htmlFor="search" className="text-caption">{t('common.search')} {t('accounts.title').toLowerCase()}</Label>
               <div className="relative mt-2">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="search"
-                  placeholder="Digite o nome da conta..."
+                  placeholder={t('accounts.searchPlaceholder')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 touch-target"
@@ -324,17 +325,17 @@ export function AccountsPage({
               </div>
             </div>
             <div>
-              <Label htmlFor="filter" className="text-caption">Filtrar por tipo</Label>
+              <Label htmlFor="filter" className="text-caption">{t('accounts.filterByType')}</Label>
               <Select value={filterType} onValueChange={(value: any) => setFilterType(value)}>
                 <SelectTrigger id="filter" className="touch-target mt-2">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todas</SelectItem>
-                  <SelectItem value="checking">Conta Corrente</SelectItem>
-                  <SelectItem value="savings">Poupança</SelectItem>
-                  <SelectItem value="credit">Cartão de Crédito</SelectItem>
-                  <SelectItem value="investment">Investimento</SelectItem>
+                  <SelectItem value="all">{t('common.all')}</SelectItem>
+                  <SelectItem value="checking">{t('accounts.checking')}</SelectItem>
+                  <SelectItem value="savings">{t('accounts.savings')}</SelectItem>
+                  <SelectItem value="credit">{t('accounts.credit')}</SelectItem>
+                  <SelectItem value="investment">{t('accounts.investment')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -349,16 +350,16 @@ export function AccountsPage({
             <CreditCard className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
             <h3 className="text-lg font-semibold mb-2">
               {searchTerm || filterType !== "all"
-                ? "Nenhuma conta encontrada"
-                : "Nenhuma conta cadastrada"}
+                ? t('messages.noDataFound')
+                : t('accounts.noAccounts')}
             </h3>
             <p className="text-muted-foreground mb-4">
               {searchTerm || filterType !== "all"
-                ? "Tente ajustar os filtros de busca"
-                : "Comece adicionando sua primeira conta bancária ou cartão de crédito"}
+                ? t('common.filter')
+                : t('accounts.addFirstAccount')}
             </p>
             {!searchTerm && filterType === "all" && (
-              <Button onClick={onAddAccount}>Adicionar Conta</Button>
+              <Button onClick={onAddAccount}>{t('accounts.addAccount')}</Button>
             )}
           </CardContent>
         </Card>
@@ -412,7 +413,7 @@ export function AccountsPage({
                             onClick={() => onEditAccount(account)}
                           >
                             <Edit className="h-4 w-4 mr-2" />
-                            Editar
+                            {t('common.edit')}
                           </DropdownMenuItem>
                           {account.type === "credit" &&
                             account.balance < 0 &&
@@ -421,7 +422,7 @@ export function AccountsPage({
                                 onClick={() => onPayCreditCard(account)}
                               >
                                 <DollarSign className="h-4 w-4 mr-2" />
-                                Pagar Fatura
+                                {t('accounts.payBill')}
                               </DropdownMenuItem>
                             )}
                           <DropdownMenuItem
@@ -429,7 +430,7 @@ export function AccountsPage({
                             className="text-destructive"
                           >
                             <Trash2 className="h-4 w-4 mr-2" />
-                            Excluir
+                            {t('common.delete')}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -441,7 +442,7 @@ export function AccountsPage({
                     {/* Saldo */}
                     <div className="flex items-center justify-between">
                       <span className="text-xs sm:text-sm text-muted-foreground font-medium">
-                        Saldo:
+                        {t('accounts.balance')}:
                       </span>
                       <span
                         className={`text-sm sm:text-base font-bold ${
@@ -461,7 +462,7 @@ export function AccountsPage({
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
                           <span className="text-xs sm:text-sm text-muted-foreground">
-                            Limite:
+                            {t('accounts.limit')}:
                           </span>
                           <span className="text-xs sm:text-sm font-medium">
                             {formatCents(account.limit_amount || 0)}
