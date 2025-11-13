@@ -1007,21 +1007,7 @@
       "passwordRequired": "La contraseña es obligatoria",
       "newPasswordRequired": "La nueva contraseña es obligatoria",
       "confirmPasswordRequired": "La confirmación de contraseña es obligatoria"
-    },
-    "systemSettings": {
-      "title": "Configuraciones del Sistema",
-      "subtitle": "Gestiona las configuraciones del sistema",
-      "restrictedArea": "Área restringida solo para administradores",
-      "trialPeriod": "Período de Prueba",
-      "trialPeriodDescription": "Configure el período de prueba para nuevos usuarios",
-      "trialDays": "Días de Prueba",
-      "trialDaysDescription": "Número de días que los nuevos usuarios tendrán acceso gratuito al sistema",
-      "saveSettings": "Guardar Configuraciones",
-      "loadError": "Error al cargar configuraciones",
-      "loadErrorDescription": "No se pudieron cargar las configuraciones del sistema",
-      "unexpectedLoadError": "Error inesperado al cargar configuraciones",
-      "invalidValue": "Valor inválido",
-      "invalidValueDescription": "El número de días debe ser mayor que cero"
+    }
   },
   "userManagement": {
     "title": "Gestión de Usuarios",
@@ -1042,32 +1028,6 @@
       "role": "Rol",
       "status": "Estado",
       "created": "Creado",
-      "actions": "Acciones"
-    },
-    "roles": {
-      "admin": "Administrador",
-      "lifetime": "De por vida",
-      "trial": "Prueba",
-      "subscriber": "Suscriptor"
-    },
-    "status": {
-      "active": "Activo",
-      "inactive": "Inactivo"
-    },
-    "success": {
-      "roleUpdated": "Rol actualizado con éxito",
-      "userActivated": "Usuario activado con éxito",
-      "userDeactivated": "Usuario desactivado con éxito",
-      "subscriptionSet": "Suscripción establecida por {{days}} días"
-    },
-    "errors": {
-      "loadUsers": "Error al cargar usuarios",
-      "loadAuditLogs": "Error al cargar registros de auditoría",
-      "updateRole": "Error al actualizar rol: {{message}}",
-      "updateStatus": "Error al actualizar estado",
-      "deleteUser": "Error al eliminar usuario",
-      "unknown": "Error desconocido"
-    },
       "actions": "Acciones"
     },
     "roles": {
@@ -1191,5 +1151,4 @@
     "emailSentDescription": "Se ha enviado un enlace de restablecimiento de contraseña a su correo.",
     "resetEmailError": "No se pudo enviar el correo de restablecimiento de contraseña."
   }
-}
 }
