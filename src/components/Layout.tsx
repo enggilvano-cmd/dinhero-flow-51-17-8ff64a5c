@@ -241,7 +241,10 @@ function AppSidebar({ currentPage, onPageChange }: { currentPage: string; onPage
                           {getFirstName(profile.full_name) || 'Usuário'}
                         </p>
                         <span className="text-xs text-muted-foreground">
-                          {profile.role === 'admin' ? '• Admin' : profile.role === 'user' ? '• Usuário' : profile.role === 'subscriber' ? '• Assinante' : '• Trial'}
+                          {profile.role === 'admin' && '• Admin'}
+                          {profile.role === 'user' && '• User'}
+                          {profile.role === 'subscriber' && '• Subscriber'}
+                          {profile.role === 'trial' && '• Trial'}
                         </span>
                       </div>
                       {!isAdmin() && timeRemaining && (
