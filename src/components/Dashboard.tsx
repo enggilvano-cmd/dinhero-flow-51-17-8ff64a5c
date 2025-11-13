@@ -646,32 +646,28 @@ export function Dashboard({
 
           {/* Saldo Total */}
           <Card
-            className="financial-card cursor-pointer apple-interaction hover:shadow-md transition-shadow"
+            className="financial-card cursor-pointer apple-interaction"
             onClick={() => onNavigateToAccounts?.()}
           >
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <DollarSign className="h-4 w-4 text-primary" />
-                </div>
-                <span>{t('dashboard.totalBalance')}</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="space-y-2">
-                <div
-                  className={`text-2xl sm:text-3xl font-bold ${
-                    totalBalance >= 0 ? "text-success" : "text-destructive"
-                  }`}
-                >
-                  {formatCurrency(totalBalance / 100)}
-                </div>
-                <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <span>{t('accounts.checking')}</span>
-                  <span>•</span>
-                  <span>{t('accounts.savings')}</span>
+            <CardContent className="p-3 text-center">
+              <div className="flex items-center justify-center gap-2 mb-1">
+                <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center">
+                  <DollarSign className="h-3.5 w-3.5 text-primary" />
                 </div>
               </div>
+              <p className="text-xs font-medium text-muted-foreground mb-1">
+                {t('dashboard.totalBalance')}
+              </p>
+              <div
+                className={`text-base sm:text-lg font-bold leading-tight ${
+                  totalBalance >= 0 ? "balance-positive" : "balance-negative"
+                }`}
+              >
+                {formatCurrency(totalBalance / 100)}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1 opacity-70">
+                {t('accounts.checking')} • {t('accounts.savings')}
+              </p>
             </CardContent>
           </Card>
 
