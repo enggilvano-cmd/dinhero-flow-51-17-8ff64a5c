@@ -4,8 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { createDateFromString, getTodayString } from "@/lib/dateUtils";import { CurrencyInput } from "./forms/CurrencyInput";
-import { useToast } from "@/hooks/use-toast"; // Textarea não está sendo usado, pode ser removido se não for planejado.
+import { createDateFromString, getTodayString } from "@/lib/dateUtils";
+import { CurrencyInput } from "./forms/CurrencyInput";
+import { useToast } from "@/hooks/use-toast";
 import { formatCurrency, getAvailableBalance } from "@/lib/formatters";
 import { ArrowRight } from "lucide-react";
 import { AccountBalanceDetails } from "./AccountBalanceDetails";

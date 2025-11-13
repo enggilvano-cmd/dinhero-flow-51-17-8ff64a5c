@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Account } from "@/types";
 import { getTodayString } from "@/lib/dateUtils";
 import { getAvailableBalance } from "@/lib/formatters"; // Remove formatCurrency se não for usado
