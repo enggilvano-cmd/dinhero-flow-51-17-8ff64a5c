@@ -825,6 +825,71 @@
       "errorInvalidFormat": "Formato inválido. Por favor, verifique a estrutura do arquivo",
       "errorEmpty": "O arquivo não contém dados para importar",
       "success": "Importado com sucesso"
+  },
+  "userManagement": {
+    "title": "Gerenciamento de Usuários",
+    "subtitle": "Controle total sobre usuários e permissões do sistema",
+    "restrictedAccess": "Acesso Restrito",
+    "restrictedAccessDescription": "Você precisa de permissões de administrador para acessar esta área.",
+    "tabs": {
+      "users": "Usuários",
+      "audit": "Auditoria"
+    },
+    "usersCard": {
+      "title": "Usuários do Sistema",
+      "description": "Gerencie usuários, suas funções e permissões de acesso",
+      "descriptionShort": "Gerencie usuários e permissões"
+    },
+    "table": {
+      "user": "Usuário",
+      "role": "Função",
+      "status": "Status",
+      "created": "Criado",
+      "actions": "Ações"
+    },
+    "roles": {
+      "admin": "Administrador",
+      "lifetime": "Vitalício",
+      "trial": "Trial",
+      "subscriber": "Assinante"
+    },
+    "status": {
+      "active": "Ativo",
+      "inactive": "Inativo"
+    },
+    "noName": "Sem nome",
+    "daysPlaceholder": "Dias",
+    "expiresAt": "Exp",
+    "confirmDelete": {
+      "title": "Confirmar Exclusão",
+      "description": "Tem certeza que deseja remover o usuário {{email}}? Esta ação não pode ser desfeita."
+    },
+    "auditLog": {
+      "title": "Log de Auditoria",
+      "description": "Histórico completo de atividades do sistema para monitoramento de segurança",
+      "system": "Sistema",
+      "columns": {
+        "user": "Usuário",
+        "action": "Ação",
+        "resource": "Recurso",
+        "dateTime": "Data/Hora"
+      }
+    },
+    "success": {
+      "roleUpdated": "Função do usuário atualizada com sucesso.",
+      "userActivated": "Usuário ativado com sucesso.",
+      "userDeactivated": "Usuário desativado com sucesso.",
+      "userDeleted": "Usuário removido com sucesso do sistema e autenticação.",
+      "subscriptionSet": "Assinatura configurada para {{days}} dias."
+    },
+    "errors": {
+      "loadUsers": "Não foi possível carregar os usuários.",
+      "loadAuditLogs": "Não foi possível carregar os logs de auditoria.",
+      "updateRole": "Não foi possível atualizar a função do usuário: {{message}}",
+      "updateStatus": "Não foi possível atualizar o status do usuário.",
+      "deleteUser": "Não foi possível remover o usuário.",
+      "unknown": "Erro desconhecido"
     }
   }
+}
 }
