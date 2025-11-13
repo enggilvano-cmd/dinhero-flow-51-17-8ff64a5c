@@ -450,7 +450,7 @@ export function Dashboard({
       {/* Header ultra compacto */}
       <div className="flex flex-col gap-3">
         <div className="min-w-0 w-full">
-          <h1 className="text-xl sm:text-2xl font-bold leading-tight">{t('dashboard.title')}</h1>
+          <h1 className="text-system-h1 leading-tight">{t('dashboard.title')}</h1>
           <p className="text-sm text-muted-foreground leading-tight">
             {t('dashboard.subtitle')}
           </p>

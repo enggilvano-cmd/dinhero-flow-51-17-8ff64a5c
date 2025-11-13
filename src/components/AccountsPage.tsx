@@ -206,7 +206,7 @@ export function AccountsPage({
       {/* Header */}
       <div className="flex flex-col gap-3">
         <div className="min-w-0 w-full">
-          <h1 className="text-xl sm:text-2xl font-bold leading-tight">{t('accounts.title')}</h1>
+          <h1 className="text-system-h1 leading-tight">{t('accounts.title')}</h1>
           <p className="text-sm text-muted-foreground leading-tight">
             {t('accounts.subtitle')}
           </p>

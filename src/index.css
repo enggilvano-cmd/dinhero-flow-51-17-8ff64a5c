@@ -507,47 +507,56 @@
     animation: appleScale 0.3s ease-out;
   }
 
-  /* Financial App Typography System - Hierarquia Padrão */
+  /* Typography System - Standardized based on sidebar menu */
   
-  /* Títulos Principais (H1) - Saldo total, nome do app */
-  .text-financial-h1 {
-    @apply text-2xl md:text-[2rem] font-bold tracking-tight;
-    /* Mobile: 24-28px, Desktop: 28-32px */
+  /* Page Titles (H1) */
+  .text-system-h1 {
+    @apply text-xl sm:text-2xl font-bold tracking-tight text-foreground;
   }
 
-  /* Títulos de Seção (H2) - "Minhas despesas", "Relatórios" */
-  .text-financial-h2 {
-    @apply text-xl md:text-2xl font-semibold tracking-tight;
-    /* Mobile: 20-24px, Desktop: 22-26px */
+  /* Section Titles (H2) */
+  .text-system-h2 {
+    @apply text-lg sm:text-xl font-semibold tracking-tight text-foreground;
   }
 
-  /* Subtítulos/Detalhes (H3) - Mês selecionado, descrições */
-  .text-financial-h3 {
-    @apply text-lg font-medium;
-    /* Mobile/Desktop: 18-20px */
+  /* Subsection Titles (H3) */
+  .text-system-h3 {
+    @apply text-base font-semibold text-foreground;
   }
 
-  /* Valores Financeiros - Destaque especial para valores monetários */
-  .text-financial-value {
-    @apply text-xl font-bold tabular-nums;
-    /* 20px, fonte monoespaçada para números */
+  /* Body Text - Matches menu items */
+  .text-system-body {
+    @apply text-sm font-medium text-foreground;
   }
 
-  /* Texto Corpo - Valores, descrições, textos principais */
-  .text-financial-body {
-    @apply text-base font-normal;
-    /* Mobile/Desktop: 16-18px */
+  /* Secondary Body Text */
+  .text-system-body-secondary {
+    @apply text-sm font-normal text-muted-foreground;
   }
 
-  /* Texto Secundário/Legenda - Informativo, categorias, legendas */
-  .text-financial-secondary {
-    @apply text-sm md:text-base font-normal text-muted-foreground;
-    /* Mobile: 13-15px, Desktop: 14-16px */
+  /* Labels - Matches sidebar group labels */
+  .text-system-label {
+    @apply text-xs font-semibold text-muted-foreground uppercase tracking-wider;
   }
 
-  /* Botões - Foco na legibilidade */
-  .text-financial-button {
-    @apply text-base font-medium;
+  /* Captions / Helper Text */
+  .text-system-caption {
+    @apply text-xs font-normal text-muted-foreground;
+  }
+
+  /* Financial Values - Bold, tabular nums for amounts */
+  .text-system-value {
+    @apply text-base sm:text-lg font-bold tabular-nums;
+  }
+
+  /* Small Text */
+  .text-system-small {
+    @apply text-[10px] font-medium text-muted-foreground;
+  }
+
+  /* Button Text */
+  .text-system-button {
+    @apply text-sm font-medium;
     /* 16px, sempre medium ou bold */
   }
 
@@ -569,23 +578,23 @@
   }
 
   .text-title-2 {
-    @apply text-financial-h2;
+    @apply text-system-h2;
   }
 
   .text-title-3 {
-    @apply text-financial-h3;
+    @apply text-system-h3;
   }
 
   .text-headline {
-    @apply text-financial-h3;
+    @apply text-system-h3;
   }
 
   .text-body {
-    @apply text-financial-body;
+    @apply text-system-body;
   }
 
   .text-caption {
-    @apply text-financial-caption;
+    @apply text-system-caption;
   }
 
   /* Apple-style layout containers */
