@@ -314,6 +314,7 @@
     "backupAndRestore": "Copia de Seguridad y Restauración"
   },
   "menu": {
+    "mainMenu": "Menú Principal",
     "dashboard": "Panel",
     "accounts": "Cuentas",
     "transactions": "Transacciones",

@@ -344,6 +344,7 @@
     "dataClearedDescription": "Todos os dados foram removidos do aplicativo."
   },
   "menu": {
+    "mainMenu": "Menu Principal",
     "dashboard": "Painel",
     "accounts": "Contas",
     "transactions": "Transações",
