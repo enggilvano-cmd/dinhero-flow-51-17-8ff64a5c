@@ -681,10 +681,12 @@
         },
         "closingDate": {
           "label": "Closing Day",
+          "placeholder": "Ex: 15",
           "help": "Day of the month when the invoice closes"
         },
         "dueDate": {
           "label": "Due Day",
+          "placeholder": "Ex: 25",
           "help": "Day of the month when the invoice is due"
         },
         "color": {
