@@ -236,7 +236,15 @@
     "noBills": "No se encontraron facturas",
     "closingDate": "Cierre",
     "dueDate": "Vencimiento",
-    "totalAmount": "Valor Total"
+    "totalAmount": "Valor Total",
+    "open": "Abierta",
+    "closed": "Cerrada",
+    "paid": "Pagada",
+    "pending": "Pendiente",
+    "dueOn": "Vencimiento en",
+    "closingOn": "Cierre en",
+    "paidAmount": "Pagado",
+    "remaining": "Restante"
   },
   "analytics": {
     "title": "Análisis",
