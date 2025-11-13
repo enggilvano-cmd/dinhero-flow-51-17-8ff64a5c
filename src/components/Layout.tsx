@@ -363,8 +363,8 @@ function LayoutContent({ children, currentPage, onPageChange }: LayoutProps) {
             isMobile 
               ? "px-3 py-4" 
               : open
-                ? "px-12 py-5 md:pl-0 md:pr-6 md:py-4 lg:pl-16 lg:pr-10 lg:py-12"
-                : "px-12 py-5 md:px-6 md:py-4 lg:pl-8 lg:pr-10 lg:py-12"
+                ? "px-12 pt-0 pb-5 md:pl-0 md:pr-6 md:pt-0 md:pb-4 lg:pl-16 lg:pr-10 lg:pt-0 lg:pb-12"
+                : "px-12 pt-0 pb-5 md:px-6 md:pt-0 md:pb-4 lg:pl-8 lg:pr-10 lg:pt-0 lg:pb-12"
           )}>
             <div className={cn(
               "mx-auto w-full",
