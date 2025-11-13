@@ -279,6 +279,26 @@
     "searchPlaceholder": "Buscar categorias...",
     "exportSuccess": "{{count}} categorias exportadas."
   },
+  "recurringTransactions": {
+    "title": "Transações Recorrentes",
+    "subtitle": "Gerencie suas transações automáticas",
+    "noTransactions": "Nenhuma transação recorrente encontrada",
+    "endsOn": "Termina em",
+    "frequency": {
+      "daily": "Diariamente",
+      "weekly": "Semanalmente",
+      "monthly": "Mensalmente",
+      "yearly": "Anualmente"
+    },
+    "deleteTitle": "Excluir transação recorrente?",
+    "deleteDescription": "Esta ação não pode ser desfeita. A transação recorrente será permanentemente removida.",
+    "deleteSuccess": "Transação recorrente excluída com sucesso",
+    "editComingSoon": "Edição em breve",
+    "errors": {
+      "loadFailed": "Erro ao carregar transações recorrentes",
+      "deleteFailed": "Erro ao excluir transação recorrente"
+    }
+  },
   "creditBills": {
     "title": "Faturas de Cartão",
     "subtitle": "Acompanhe suas faturas de cartão de crédito",
@@ -401,6 +421,7 @@
     "dashboard": "Painel",
     "accounts": "Contas",
     "transactions": "Transações",
+    "recurring": "Recorrentes",
     "categories": "Categorias",
     "creditBills": "Faturas de Cartão",
     "analytics": "Análises",
@@ -569,6 +590,17 @@
           "custom": "Personalizar (61-360)",
           "customLabel": "Número Personalizado de Parcelas",
           "customPlaceholder": "Digite um número entre 61 e 360"
+        },
+        "recurring": {
+          "label": "Transação Recorrente",
+          "help": "Repita esta transação automaticamente em intervalos regulares",
+          "frequency": "Frequência",
+          "daily": "Diariamente",
+          "weekly": "Semanalmente",
+          "monthly": "Mensalmente",
+          "yearly": "Anualmente",
+          "endDate": "Data Final (opcional)",
+          "endDateHelp": "Deixe em branco para repetir indefinidamente"
         }
       },
       "description": "Descrição",
