@@ -134,6 +134,9 @@ export function EditTransactionModal({
       status: formData.status,
       invoice_month: formData.invoiceMonth || undefined,
       invoice_month_overridden: Boolean(formData.invoiceMonth),
+      is_recurring: transaction.is_recurring,
+      recurrence_type: transaction.recurrence_type,
+      recurrence_end_date: transaction.recurrence_end_date,
     };
 
     onEditTransaction(updatedTransaction, editScope);
