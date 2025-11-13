@@ -10,6 +10,7 @@ import SystemSettings from "@/components/SystemSettings";
 import { SettingsPage } from "@/components/SettingsPage";
 import { UserManagement } from "@/components/UserManagement";
 import { UserProfile } from "@/components/UserProfile";
+import { RecurringTransactionsPage } from "@/components/RecurringTransactionsPage";
 import { AddAccountModal } from "@/components/AddAccountModal";
 import { AddTransactionModal } from "@/components/AddTransactionModal";
 import { EditAccountModal } from "@/components/EditAccountModal";
@@ -849,6 +850,9 @@ const PlaniFlowApp = () => {
               parent_transaction_id: installment.parent_transaction_id || undefined,
               linked_transaction_id: installment.linked_transaction_id || undefined,
               invoice_month: installment.invoice_month || undefined,
+              is_recurring: installment.is_recurring || undefined,
+              recurrence_type: installment.recurrence_type || undefined,
+              recurrence_end_date: installment.recurrence_end_date || undefined,
               date: typeof installment.date === 'string' 
                 ? createDateFromString(installment.date) 
                 : installment.date
@@ -1208,6 +1212,8 @@ const PlaniFlowApp = () => {
             initialCustomEndDate={transactionCustomEndDate}
           />
         );
+      case "recurring":
+        return <RecurringTransactionsPage />;
       case "categories":
         return <CategoriesPage />;
       case "analytics":

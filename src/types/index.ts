@@ -52,6 +52,9 @@ export interface Transaction {
   linked_transaction_id?: string; // <-- ADICIONADO: Para vincular pagamentos/transferências
   invoice_month?: string; // Month of credit card invoice (YYYY-MM)
   invoice_month_overridden?: boolean; // True when user manually sets invoice month
+  is_recurring?: boolean; // Is this a recurring transaction
+  recurrence_type?: "daily" | "weekly" | "monthly" | "yearly"; // Type of recurrence
+  recurrence_end_date?: Date | string; // When the recurrence ends
 }
 
 // Para o store, garantindo que a data seja um objeto Date

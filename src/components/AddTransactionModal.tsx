@@ -95,6 +95,9 @@ export function AddTransactionModal({
     isInstallment: false,
     installments: "2", // Padrão de 2 se parcelado
     invoiceMonth: "", // Mês da fatura (YYYY-MM)
+    isRecurring: false,
+    recurrenceType: "monthly" as "daily" | "weekly" | "monthly" | "yearly",
+    recurrenceEndDate: "",
   });
   const [customInstallments, setCustomInstallments] = useState("");
   const { toast } = useToast();
@@ -116,6 +119,9 @@ export function AddTransactionModal({
         isInstallment: false,
         installments: "2",
         invoiceMonth: "", // Será calculado pelo próximo useEffect
+        isRecurring: false,
+        recurrenceType: "monthly",
+        recurrenceEndDate: "",
       });
       setCustomInstallments("");
       
@@ -380,6 +386,11 @@ export function AddTransactionModal({
           status: status,
           invoiceMonth: formData.invoiceMonth || undefined,
           invoiceMonthOverridden: Boolean(formData.invoiceMonth),
+          is_recurring: formData.isRecurring || false,
+          recurrence_type: formData.isRecurring ? formData.recurrenceType : undefined,
+          recurrence_end_date: formData.isRecurring && formData.recurrenceEndDate 
+            ? formData.recurrenceEndDate 
+            : undefined,
         };
 
         await onAddTransaction(transactionPayload);
@@ -403,6 +414,9 @@ export function AddTransactionModal({
         isInstallment: false,
         installments: "2",
         invoiceMonth: "",
+        isRecurring: false,
+        recurrenceType: "monthly",
+        recurrenceEndDate: "",
       });
       setCustomInstallments("");
       onOpenChange(false);
@@ -708,6 +722,74 @@ export function AddTransactionModal({
                       )}
                     </div>
                   )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Recurring Transaction Options */}
+          <div className="space-y-4 border rounded-lg p-4 bg-muted/30">
+            <div className="flex items-start justify-between gap-4">
+              <div className="space-y-1 flex-1">
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="recurring" className="text-base font-semibold cursor-pointer">
+                    {t("modals.addTransaction.fields.recurring.label")}
+                  </Label>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {t("modals.addTransaction.fields.recurring.help")}
+                </p>
+              </div>
+              <Switch
+                id="recurring"
+                checked={formData.isRecurring}
+                disabled={formData.isInstallment}
+                onCheckedChange={(checked) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    isRecurring: checked,
+                  }))
+                }
+                className="mt-1 data-[state=unchecked]:bg-muted data-[state=unchecked]:border data-[state=unchecked]:border-primary/50"
+              />
+            </div>
+
+            {formData.isRecurring && (
+              <div className="space-y-4 pt-2 animate-fade-in">
+                <div className="space-y-2">
+                  <Label htmlFor="recurrenceType">{t("modals.addTransaction.fields.recurring.frequency")}</Label>
+                  <Select
+                    value={formData.recurrenceType}
+                    onValueChange={(value: "daily" | "weekly" | "monthly" | "yearly") =>
+                      setFormData((prev) => ({ ...prev, recurrenceType: value }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="daily">{t("modals.addTransaction.fields.recurring.daily")}</SelectItem>
+                      <SelectItem value="weekly">{t("modals.addTransaction.fields.recurring.weekly")}</SelectItem>
+                      <SelectItem value="monthly">{t("modals.addTransaction.fields.recurring.monthly")}</SelectItem>
+                      <SelectItem value="yearly">{t("modals.addTransaction.fields.recurring.yearly")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="recurrenceEndDate">{t("modals.addTransaction.fields.recurring.endDate")}</Label>
+                  <Input
+                    id="recurrenceEndDate"
+                    type="date"
+                    value={formData.recurrenceEndDate}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, recurrenceEndDate: e.target.value }))
+                    }
+                    min={getTodayString()}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {t("modals.addTransaction.fields.recurring.endDateHelp")}
+                  </p>
                 </div>
               </div>
             )}
