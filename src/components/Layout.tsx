@@ -341,7 +341,7 @@ function LayoutContent({ children, currentPage, onPageChange }: LayoutProps) {
         )}>
           {/* Desktop Logo Header */}
           {!isMobile && (
-            <div className="flex justify-end items-center px-12 pt-2 pb-0">
+            <div className="flex justify-end items-center px-12 pt-0 pb-0">
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-emerald-600 to-emerald-700 flex items-center justify-center shadow-lg">
                   <BarChart3 className="h-6 w-6 text-yellow-400" />
@@ -363,8 +363,8 @@ function LayoutContent({ children, currentPage, onPageChange }: LayoutProps) {
             isMobile 
               ? "px-3 py-4" 
               : open
-                ? "px-12 pt-0 pb-5 md:pl-0 md:pr-6 md:pt-0 md:pb-4 lg:pl-16 lg:pr-10 lg:pt-0 lg:pb-12"
-                : "px-12 pt-0 pb-5 md:px-6 md:pt-0 md:pb-4 lg:pl-8 lg:pr-10 lg:pt-0 lg:pb-12"
+                ? "px-12 pt-0 -mt-4 pb-5 md:pl-0 md:pr-6 md:pt-0 md:-mt-4 md:pb-4 lg:pl-16 lg:pr-10 lg:pt-0 lg:-mt-4 lg:pb-12"
+                : "px-12 pt-0 -mt-4 pb-5 md:px-6 md:pt-0 md:-mt-4 md:pb-4 lg:pl-8 lg:pr-10 lg:pt-0 lg:-mt-4 lg:pb-12"
           )}>
             <div className={cn(
               "mx-auto w-full",
