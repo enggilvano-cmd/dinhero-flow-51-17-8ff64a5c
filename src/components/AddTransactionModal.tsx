@@ -622,15 +622,15 @@ export function AddTransactionModal({
           )}
 
           {/* Installment Options */}
-          <div className="space-y-4 border rounded-lg p-4 bg-accent/50 dark:bg-accent/20 dark:border-border/50">
+          <div className="space-y-4 border rounded-lg p-4 bg-muted/30">
             <div className="flex items-start justify-between gap-4">
               <div className="space-y-1 flex-1">
                 <div className="flex items-center gap-2">
-                  <Label htmlFor="installment" className="text-base font-semibold cursor-pointer dark:text-foreground">
+                  <Label htmlFor="installment" className="text-base font-semibold cursor-pointer">
                     {t("modals.addTransaction.fields.installment.label")}
                   </Label>
                 </div>
-                <p className="text-sm text-muted-foreground dark:text-muted-foreground/90">
+                <p className="text-sm text-muted-foreground">
                   {formData.account_id &&
                   filteredAccounts.find((acc) => acc.id === formData.account_id)
                     ?.type === "credit" ? t("modals.addTransaction.fields.installment.creditHelp")
@@ -646,7 +646,7 @@ export function AddTransactionModal({
                     isInstallment: checked,
                   }))
                 }
-                className="mt-1 data-[state=checked]:bg-primary"
+                className="mt-1 data-[state=unchecked]:bg-muted data-[state=unchecked]:border data-[state=unchecked]:border-primary/50"
               />
             </div>
 
