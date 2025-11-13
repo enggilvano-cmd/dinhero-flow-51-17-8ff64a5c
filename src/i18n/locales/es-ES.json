@@ -379,7 +379,48 @@
   "modals": {
     "addTransaction": {
       "title": "Nueva Transacción",
+      "titleIncome": "Nuevo Ingreso",
+      "titleExpense": "Nuevo Gasto",
       "subtitle": "Añadir un nuevo ingreso, gasto o transferencia",
+      "subtitleIncome": "Registrar un nuevo ingreso",
+      "subtitleExpense": "Registrar un nuevo gasto",
+      "fields": {
+        "description": {
+          "label": "Descripción",
+          "placeholder": "Descripción de la transacción"
+        },
+        "amount": {
+          "label": "Valor"
+        },
+        "type": {
+          "label": "Tipo",
+          "placeholder": "Seleccionar tipo de transacción"
+        },
+        "category": {
+          "label": "Categoría",
+          "placeholder": "Seleccionar una categoría"
+        },
+        "account": {
+          "label": "Cuenta",
+          "placeholder": "Seleccionar una cuenta"
+        },
+        "date": {
+          "label": "Fecha"
+        },
+        "status": {
+          "label": "Estado"
+        },
+        "installment": {
+          "label": "Cuotas"
+        },
+        "installmentCount": {
+          "label": "Número de Cuotas",
+          "placeholder": "Seleccionar"
+        },
+        "invoiceMonth": {
+          "label": "Factura"
+        }
+      },
       "description": "Descripción",
       "descriptionPlaceholder": "Descripción de la transacción",
       "amount": "Valor",
@@ -398,6 +439,23 @@
       "invoiceMonth": "Factura",
       "adding": "Añadiendo...",
       "add": "Añadir Transacción",
+      "validation": {
+        "invalidAmount": "Por favor, ingresa un valor válido mayor que cero",
+        "descriptionRequired": "Por favor, completa la descripción",
+        "typeRequired": "Por favor, selecciona el tipo de transacción",
+        "categoryRequired": "Por favor, selecciona una categoría",
+        "accountRequired": "Por favor, selecciona una cuenta",
+        "installmentsRange": "El número de cuotas debe estar entre 2 y 360",
+        "accountNotFound": "Cuenta seleccionada no encontrada"
+      },
+      "errors": {
+        "installmentFunctionMissing": "La función de cuotas no fue proporcionada",
+        "createFailed": "Error al crear transacción. Inténtalo de nuevo"
+      },
+      "success": {
+        "single": "Transacción añadida con éxito",
+        "installment": "Transacción dividida en {{count}}x añadida con éxito"
+      },
       "errorFillFields": "Por favor, complete todos los campos obligatorios",
       "errorSelectCategory": "Por favor, selecciona una categoría",
       "errorSelectAccount": "Por favor, selecciona una cuenta",

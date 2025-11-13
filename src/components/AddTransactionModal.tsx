@@ -203,8 +203,8 @@ export function AddTransactionModal({
     // Garantir que o valor convertido seja usado corretamente
     if (isNaN(numericAmount) || numericAmount <= 0) {
       toast({
-        title: "Erro",
-        description: "Por favor, insira um valor válido maior que zero.",
+        title: t("common.error"),
+        description: t("modals.addTransaction.validation.invalidAmount"),
         variant: "destructive",
       });
       return;
@@ -212,8 +212,8 @@ export function AddTransactionModal({
 
     if (!description.trim()) {
       toast({
-        title: "Erro",
-        description: "Por favor, preencha a descrição.",
+        title: t("common.error"),
+        description: t("modals.addTransaction.validation.descriptionRequired"),
         variant: "destructive",
       });
       return;
@@ -221,8 +221,8 @@ export function AddTransactionModal({
 
     if (!type) {
       toast({
-        title: "Erro",
-        description: "Por favor, selecione o tipo de transação.",
+        title: t("common.error"),
+        description: t("modals.addTransaction.validation.typeRequired"),
         variant: "destructive",
       });
       return;
@@ -230,8 +230,8 @@ export function AddTransactionModal({
 
     if (!category_id) {
       toast({
-        title: "Erro",
-        description: "Por favor, selecione uma categoria.",
+        title: t("common.error"),
+        description: t("modals.addTransaction.validation.categoryRequired"),
         variant: "destructive",
       });
       return;
@@ -239,8 +239,8 @@ export function AddTransactionModal({
 
     if (!account_id) {
       toast({
-        title: "Erro",
-        description: "Por favor, selecione uma conta.",
+        title: t("common.error"),
+        description: t("modals.addTransaction.validation.accountRequired"),
         variant: "destructive",
       });
       return;
@@ -252,8 +252,8 @@ export function AddTransactionModal({
       (isNaN(installments) || installments < 2 || installments > 360)
     ) {
       toast({
-        title: "Erro",
-        description: "O número de parcelas deve ser entre 2 e 360.",
+        title: t("common.error"),
+        description: t("modals.addTransaction.validation.installmentsRange"),
         variant: "destructive",
       });
       return;
@@ -262,8 +262,8 @@ export function AddTransactionModal({
     const selectedAccount = accounts.find((acc) => acc.id === account_id);
     if (!selectedAccount) {
       toast({
-        title: "Erro",
-        description: "Conta selecionada não encontrada.",
+        title: t("common.error"),
+        description: t("modals.addTransaction.validation.accountNotFound"),
         variant: "destructive",
       });
       return;
@@ -274,7 +274,7 @@ export function AddTransactionModal({
         // --- LÓGICA DE PARCELAMENTO UNIFICADA ---
         if (!onAddInstallmentTransactions) {
           // Garante que a função necessária para parcelamento existe.
-          throw new Error("A função onAddInstallmentTransactions não foi fornecida.");
+          throw new Error(t("modals.addTransaction.errors.installmentFunctionMissing"));
         }
 
         const baseDate = createDateFromString(date);
@@ -362,8 +362,8 @@ export function AddTransactionModal({
 
         await onAddInstallmentTransactions(transactionsToCreate);
         toast({
-          title: "Sucesso",
-          description: `Transação dividida em ${installments}x adicionada com sucesso!`,
+          title: t("common.success"),
+          description: t("modals.addTransaction.success.installment", { count: installments }),
           variant: "default",
         });
 
@@ -385,8 +385,8 @@ export function AddTransactionModal({
         await onAddTransaction(transactionPayload);
 
         toast({
-          title: "Sucesso",
-          description: "Transação adicionada com sucesso!",
+          title: t("common.success"),
+          description: t("modals.addTransaction.success.single"),
           variant: "default",
         });
       }
@@ -409,8 +409,8 @@ export function AddTransactionModal({
     } catch (error) {
       console.error("Error creating transaction(s):", error);
       toast({
-        title: "Erro",
-        description: "Erro ao criar transação. Tente novamente.",
+        title: t("common.error"),
+        description: t("modals.addTransaction.errors.createFailed"),
         variant: "destructive",
       });
     }
