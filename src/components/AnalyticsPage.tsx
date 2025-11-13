@@ -415,22 +415,20 @@ export default function AnalyticsPage({
     });
 
     try {
-      // Scroll to top to ensure all content is visible
+      // Scroll to top and force resize
       window.scrollTo(0, 0);
-      // Force charts to recalculate sizes
       window.dispatchEvent(new Event("resize"));
       
-      // Wait for charts to fully render (Recharts needs more time)
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // Wait longer for charts to render
+      await new Promise((resolve) => setTimeout(resolve, 2000));
 
-      // Configuração do PDF
       const pdf = new jsPDF("p", "mm", "a4");
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
       const margin = 10;
       const contentWidth = pageWidth - 2 * margin;
 
-      // Header do PDF
+      // Header
       pdf.setFontSize(16);
       pdf.setFont("helvetica", "bold");
       pdf.text("Relatório de Análises Financeiras", pageWidth / 2, 15, { align: "center" });
@@ -446,64 +444,61 @@ export default function AnalyticsPage({
 
       let currentY = 30;
 
-      // Captura todas as seções
-      const sections = contentRef.current.querySelectorAll('.analytics-section');
+      // Capture all sections
+      const sections = contentRef.current.querySelectorAll(".analytics-section");
+      
+      console.log("Sections found:", sections.length);
       
       for (let i = 0; i < sections.length; i++) {
         const section = sections[i] as HTMLElement;
         
-        // Skip sections with no size (hidden or empty)
-        if (section.offsetWidth === 0 || section.offsetHeight === 0) continue;
+        console.log(`Section ${i}: ${section.offsetWidth}x${section.offsetHeight}`);
         
-        // Captura a seção como imagem
+        // Skip invisible sections
+        if (section.offsetWidth === 0 || section.offsetHeight === 0) {
+          console.log(`Skipping section ${i} (no size)`);
+          continue;
+        }
+        
+        // Capture section as image with simpler config
         const canvas = await html2canvas(section, {
           scale: 2,
           useCORS: true,
-          allowTaint: true,
-          logging: false,
-          backgroundColor: '#ffffff',
-          foreignObjectRendering: true,
-          windowWidth: Math.max(section.scrollWidth, section.offsetWidth),
-          windowHeight: Math.max(section.scrollHeight, section.offsetHeight),
-          ignoreElements: (el) => {
-            if (el instanceof HTMLCanvasElement && (el.width === 0 || el.height === 0)) {
-              return true;
-            }
-            const he = el as HTMLElement;
-            if (!he) return false;
-            const zero = he.offsetWidth === 0 || he.offsetHeight === 0;
-            if (zero) {
-              const bg = getComputedStyle(he).backgroundImage;
-              if (bg && bg !== 'none') return true;
-            }
-            return false;
-          }
+          allowTaint: false,
+          logging: true,
+          backgroundColor: "#ffffff",
+          removeContainer: false,
         });
 
-        // Skip if canvas is invalid
-        if (canvas.width === 0 || canvas.height === 0) continue;
+        console.log(`Canvas ${i}: ${canvas.width}x${canvas.height}`);
 
-        const imgData = canvas.toDataURL('image/png');
+        if (canvas.width === 0 || canvas.height === 0) {
+          console.log(`Skipping section ${i} (invalid canvas)`);
+          continue;
+        }
+
+        const imgData = canvas.toDataURL("image/png");
         const imgWidth = contentWidth;
         const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-        // Verifica se precisa adicionar nova página
+        // Add new page if needed
         if (currentY + imgHeight > pageHeight - margin) {
           pdf.addPage();
           currentY = margin;
         }
 
-        // Adiciona a imagem ao PDF
-        pdf.addImage(imgData, 'PNG', margin, currentY, imgWidth, imgHeight);
+        // Add image to PDF
+        pdf.addImage(imgData, "PNG", margin, currentY, imgWidth, imgHeight);
         currentY += imgHeight + 5;
       }
 
-      // Salva o PDF
-      const periodLabel = dateFilter === "current_month" 
-        ? format(new Date(), "MMMM-yyyy", { locale: ptBR })
-        : dateFilter === "month_picker"
-        ? format(selectedMonth, "MMMM-yyyy", { locale: ptBR })
-        : "completo";
+      // Save PDF
+      const periodLabel =
+        dateFilter === "current_month"
+          ? format(new Date(), "MMMM-yyyy", { locale: ptBR })
+          : dateFilter === "month_picker"
+          ? format(selectedMonth, "MMMM-yyyy", { locale: ptBR })
+          : "completo";
       
       pdf.save(`relatorio-analises-${periodLabel}.pdf`);
 
@@ -512,7 +507,7 @@ export default function AnalyticsPage({
         description: "O arquivo PDF foi baixado com sucesso.",
       });
     } catch (error) {
-      console.error('Erro ao gerar PDF:', error);
+      console.error("Erro ao gerar PDF:", error);
       toast({
         title: "Erro ao gerar PDF",
         description: "Não foi possível gerar o relatório. Tente novamente.",
