@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { Category, PREDEFINED_COLORS } from "@/types";
 import { ColorPicker } from "@/components/forms/ColorPicker";
+import { useTranslation } from "react-i18next";
 
 interface AddCategoryModalProps {
   open: boolean;
@@ -22,14 +23,15 @@ export function AddCategoryModal({ open, onOpenChange, onAddCategory }: AddCateg
     color: PREDEFINED_COLORS[0]
   });
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.name.trim() || !formData.type) {
       toast({
-        title: "Erro",
-        description: "Por favor, preencha todos os campos obrigatórios.",
+        title: t("common.error"),
+        description: t("modals.addCategory.errors.required"),
         variant: "destructive"
       });
       return;
@@ -64,18 +66,18 @@ export function AddCategoryModal({ open, onOpenChange, onAddCategory }: AddCateg
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Adicionar Nova Categoria</DialogTitle>
+          <DialogTitle>{t("modals.addCategory.title")}</DialogTitle>
           <DialogDescription>
-            Crie uma nova categoria para organizar suas transações.
+            {t("modals.addCategory.subtitle")}
           </DialogDescription>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="name">Nome da Categoria *</Label>
+            <Label htmlFor="name">{t("modals.addCategory.fields.name.label")}</Label>
             <Input
               id="name"
-              placeholder="Ex: Alimentação, Transporte..."
+              placeholder={t("modals.addCategory.fields.name.placeholder")}
               value={formData.name}
               onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
               maxLength={50}
@@ -83,15 +85,15 @@ export function AddCategoryModal({ open, onOpenChange, onAddCategory }: AddCateg
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="type">Tipo *</Label>
+            <Label htmlFor="type">{t("modals.addCategory.fields.type.label")}</Label>
             <Select value={formData.type} onValueChange={(value: Category["type"]) => setFormData(prev => ({ ...prev, type: value }))}>
               <SelectTrigger>
-                <SelectValue placeholder="Selecione o tipo" />
+                <SelectValue placeholder={t("modals.addCategory.fields.type.placeholder")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="income">Receita</SelectItem>
-                <SelectItem value="expense">Despesa</SelectItem>
-                <SelectItem value="both">Ambos (Receita e Despesa)</SelectItem>
+                <SelectItem value="income">{t("transactions.income")}</SelectItem>
+                <SelectItem value="expense">{t("transactions.expense")}</SelectItem>
+                <SelectItem value="both">{t("modals.addCategory.fields.type.both")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -103,10 +105,10 @@ export function AddCategoryModal({ open, onOpenChange, onAddCategory }: AddCateg
 
           <div className="flex gap-3 pt-4">
             <Button type="button" variant="outline" onClick={handleCancel} className="flex-1">
-              Cancelar
+              {t("common.cancel")}
             </Button>
             <Button type="submit" className="flex-1">
-              Adicionar Categoria
+              {t("modals.addCategory.actions.add")}
             </Button>
           </div>
         </form>

@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { Category, PREDEFINED_COLORS } from "@/types";
 import { ColorPicker } from "@/components/forms/ColorPicker";
+import { useTranslation } from "react-i18next";
 
 interface EditCategoryModalProps {
   open: boolean;
@@ -22,6 +23,7 @@ export function EditCategoryModal({ open, onOpenChange, onEditCategory, category
     color: PREDEFINED_COLORS[0]
   });
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (category) {
@@ -40,8 +42,8 @@ export function EditCategoryModal({ open, onOpenChange, onEditCategory, category
     
     if (!formData.name.trim() || !formData.type) {
       toast({
-        title: "Erro",
-        description: "Por favor, preencha todos os campos obrigatórios.",
+        title: t("common.error"),
+        description: t("modals.editCategory.errors.required"),
         variant: "destructive"
       });
       return;
@@ -78,18 +80,18 @@ export function EditCategoryModal({ open, onOpenChange, onEditCategory, category
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Editar Categoria</DialogTitle>
+          <DialogTitle>{t("modals.editCategory.title")}</DialogTitle>
           <DialogDescription>
-            Atualize o nome, tipo ou cor da sua categoria.
+            {t("modals.editCategory.subtitle")}
           </DialogDescription>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="name">Nome da Categoria *</Label>
+            <Label htmlFor="name">{t("modals.editCategory.fields.name.label")}</Label>
             <Input
               id="name"
-              placeholder="Ex: Alimentação, Transporte..."
+              placeholder={t("modals.editCategory.fields.name.placeholder")}
               value={formData.name}
               onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
               maxLength={50}
@@ -97,15 +99,15 @@ export function EditCategoryModal({ open, onOpenChange, onEditCategory, category
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="type">Tipo *</Label>
+            <Label htmlFor="type">{t("modals.editCategory.fields.type.label")}</Label>
             <Select value={formData.type} onValueChange={(value: Category["type"]) => setFormData(prev => ({ ...prev, type: value }))}>
               <SelectTrigger>
-                <SelectValue placeholder="Selecione o tipo" />
+                <SelectValue placeholder={t("modals.editCategory.fields.type.placeholder")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="income">Receita</SelectItem>
-                <SelectItem value="expense">Despesa</SelectItem>
-                <SelectItem value="both">Ambos (Receita e Despesa)</SelectItem>
+                <SelectItem value="income">{t("transactions.income")}</SelectItem>
+                <SelectItem value="expense">{t("transactions.expense")}</SelectItem>
+                <SelectItem value="both">{t("modals.editCategory.fields.type.both")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -117,10 +119,10 @@ export function EditCategoryModal({ open, onOpenChange, onEditCategory, category
 
           <div className="flex gap-3 pt-4">
             <Button type="button" variant="outline" onClick={handleCancel} className="flex-1">
-              Cancelar
+              {t("common.cancel")}
             </Button>
             <Button type="submit" className="flex-1">
-              Salvar Alterações
+              {t("modals.editCategory.actions.save")}
             </Button>
           </div>
         </form>

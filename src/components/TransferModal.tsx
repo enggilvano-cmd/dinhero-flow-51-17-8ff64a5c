@@ -12,6 +12,7 @@ import { ArrowRight } from "lucide-react";
 import { AccountBalanceDetails } from "./AccountBalanceDetails";
 import { useAccountStore } from "@/stores/AccountStore";
 import { Account } from "@/types";
+import { useTranslation } from "react-i18next";
 
 interface TransferModalProps {
   open: boolean;
@@ -29,6 +30,7 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const accounts = useAccountStore((state) => state.accounts);
+  const { t } = useTranslation();
 
   // Contas de origem podem ser qualquer tipo, exceto crédito.
   const sourceAccounts = useMemo(() => accounts.filter(acc => acc.type !== "credit"), [accounts]);
@@ -43,8 +45,8 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
     e.preventDefault();
     if (!formData.fromAccountId || !formData.toAccountId || formData.amountInCents <= 0) {
       toast({
-        title: "Erro",
-        description: "Por favor, preencha todos os campos.",
+        title: t("common.error"),
+        description: t("modals.transfer.errors.required"),
         variant: "destructive"
       });
       return;
@@ -52,8 +54,8 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
 
     if (formData.fromAccountId === formData.toAccountId) {
       toast({
-        title: "Erro",
-        description: "As contas de origem e destino devem ser diferentes.",
+        title: t("common.error"),
+        description: t("modals.transfer.errors.sameAccount"),
         variant: "destructive"
       });
       return;
@@ -67,11 +69,11 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
       const availableBalanceInCents = getAvailableBalance(fromAccount);
       if (availableBalanceInCents < formData.amountInCents) {
         const limitText = fromAccount.limit_amount 
-          ? ` (incluindo limite de ${formatCurrency(fromAccount.limit_amount)})`
+          ? ` (${t("modals.transfer.errors.includingLimit")} ${formatCurrency(fromAccount.limit_amount)})`
           : '';
         toast({
-          title: "Saldo Insuficiente",
-          description: `A conta ${fromAccount.name} não possui saldo suficiente para esta transferência${limitText}.`,
+          title: t("modals.transfer.errors.insufficientBalance"),
+          description: `${t("modals.transfer.errors.account")} ${fromAccount.name} ${t("modals.transfer.errors.noBalance")}${limitText}.`,
           variant: "destructive"
         });
         return;
@@ -92,8 +94,8 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
       );
 
       toast({
-        title: "Sucesso",
-        description: "Transferência realizada com sucesso!",
+        title: t("common.success"),
+        description: t("modals.transfer.success"),
         variant: "default"
       });
 
@@ -110,8 +112,8 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
       // A função onTransfer deve lançar um erro em caso de falha para este bloco ser ativado.
       console.error("Transfer failed:", error);
       toast({
-        title: "Erro na Transferência",
-        description: "Não foi possível realizar a transferência. Tente novamente.",
+        title: t("modals.transfer.errors.title"),
+        description: t("modals.transfer.errors.failed"),
         variant: "destructive",
       });
     } finally {
@@ -123,19 +125,19 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Nova Transferência</DialogTitle>
+          <DialogTitle>{t("modals.transfer.title")}</DialogTitle>
           <DialogDescription>
-            Mova dinheiro entre suas contas.
+            {t("modals.transfer.subtitle")}
           </DialogDescription>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="fromAccount">Conta de Origem</Label>
+              <Label htmlFor="fromAccount">{t("modals.transfer.fields.from.label")}</Label>
               <Select value={formData.fromAccountId} onValueChange={(value) => setFormData(prev => ({ ...prev, fromAccountId: value }))}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione a conta de origem" />
+                  <SelectValue placeholder={t("modals.transfer.fields.from.placeholder")} />
                 </SelectTrigger>
                 <SelectContent>
                   {sourceAccounts.map((account) => (
@@ -168,10 +170,10 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="toAccount">Conta de Destino</Label>
+              <Label htmlFor="toAccount">{t("modals.transfer.fields.to.label")}</Label>
               <Select value={formData.toAccountId} onValueChange={(value) => setFormData(prev => ({ ...prev, toAccountId: value }))}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione a conta de destino" />
+                  <SelectValue placeholder={t("modals.transfer.fields.to.placeholder")} />
                 </SelectTrigger>
                 <SelectContent>
                   {destinationAccounts
@@ -198,7 +200,7 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="amount">Valor da Transferência (R$)</Label>
+              <Label htmlFor="amount">{t("modals.transfer.fields.amount.label")}</Label>
               <CurrencyInput
                 id="amount"
                 value={formData.amountInCents}
@@ -207,7 +209,7 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="date">Data</Label>
+              <Label htmlFor="date">{t("modals.transfer.fields.date.label")}</Label>
               <Input
                 id="date"
                 type="date"
@@ -218,29 +220,29 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
           </div>
 
           <p className="text-xs text-center text-muted-foreground pt-2">
-            Cartões de crédito não são listados para transferências.
+            {t("modals.transfer.help.credit")}
             <br />
-            Para pagar uma fatura, use a opção 'Pagar Fatura' na tela de contas.
+            {t("modals.transfer.help.payBill")}
           </p>
 
           {sourceAccounts.length < 2 && (
             <div className="p-4 bg-muted rounded-lg">
               <p className="text-sm text-muted-foreground">
-                <strong>Atenção:</strong> Você precisa ter pelo menos 2 contas bancárias (corrente ou poupança) cadastradas para realizar transferências.
+                <strong>{t("common.attention")}:</strong> {t("modals.transfer.help.minAccounts")}
               </p>
             </div>
           )}
 
           <div className="flex gap-3 pt-4">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
-              Cancelar
+              {t("common.cancel")}
             </Button>
             <Button 
               type="submit" 
               className="flex-1"
               disabled={sourceAccounts.length < 2 || isSubmitting}
             >
-              {isSubmitting ? "Realizando..." : "Realizar Transferência"}
+              {isSubmitting ? t("modals.transfer.actions.processing") : t("modals.transfer.actions.transfer")}
             </Button>
           </div>
         </form>
