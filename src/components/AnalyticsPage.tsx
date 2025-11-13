@@ -53,7 +53,7 @@ import {
   Line,
   ComposedChart,
 } from "recharts";
-import html2canvas from "html2canvas";
+import * as htmlToImage from "html-to-image";
 import jsPDF from "jspdf";
 import {
   startOfMonth,
@@ -441,38 +441,28 @@ export default function AnalyticsPage({
       // Captura os cards de resumo
       const summaryCards = contentRef.current.querySelectorAll(".analytics-section")[0];
       if (summaryCards && summaryCards instanceof HTMLElement) {
-        const canvas = await html2canvas(summaryCards, {
-          scale: 1.5,
-          useCORS: true,
+        const rect = summaryCards.getBoundingClientRect();
+        const dataUrl = await htmlToImage.toPng(summaryCards, {
+          pixelRatio: 2,
+          cacheBust: true,
           backgroundColor: "#ffffff",
-          logging: false,
-          onclone: (clonedDoc) => {
-            const root = clonedDoc.documentElement as HTMLElement;
-            root.style.setProperty("--gradient-card", "none");
-            root.style.setProperty("--gradient-glass", "none");
-            root.style.setProperty("--gradient-surface", "none");
-            root.style.setProperty("--gradient-hero", "none");
-            const cards = clonedDoc.querySelectorAll('.financial-card, .apple-card, .hero-card, .dynamic-surface') as NodeListOf<HTMLElement>;
-            cards.forEach((el) => {
-              el.style.background = "#ffffff";
-              el.style.boxShadow = "none";
-            });
+          filter: (node) => {
+            if (node instanceof HTMLCanvasElement && (node.width === 0 || node.height === 0)) {
+              return false;
+            }
+            return true;
           },
         });
 
-        if (canvas.width > 0 && canvas.height > 0) {
-          const imgData = canvas.toDataURL("image/png");
-          const imgWidth = contentWidth;
-          const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-          if (currentY + imgHeight > pageHeight - margin) {
-            pdf.addPage();
-            currentY = margin;
-          }
-
-          pdf.addImage(imgData, "PNG", margin, currentY, imgWidth, imgHeight);
-          currentY += imgHeight + 10;
+        const imgWidth = contentWidth;
+        const imgHeight = (rect.height * imgWidth) / rect.width;
+        if (currentY + imgHeight > pageHeight - margin) {
+          pdf.addPage();
+          currentY = margin;
         }
+
+        pdf.addImage(dataUrl, "PNG", margin, currentY, imgWidth, imgHeight);
+        currentY += imgHeight + 10;
       }
 
       // Captura cada gráfico individualmente
@@ -486,35 +476,25 @@ export default function AnalyticsPage({
         
         if (card.offsetWidth === 0 || card.offsetHeight === 0) continue;
 
-        const canvas = await html2canvas(card, {
-          scale: 1.5,
-          useCORS: true,
+        const rect = card.getBoundingClientRect();
+        const dataUrl = await htmlToImage.toPng(card, {
+          pixelRatio: 2,
+          cacheBust: true,
           backgroundColor: "#ffffff",
-          logging: false,
-          onclone: (clonedDoc) => {
-            const root = clonedDoc.documentElement as HTMLElement;
-            root.style.setProperty("--gradient-card", "none");
-            root.style.setProperty("--gradient-glass", "none");
-            root.style.setProperty("--gradient-surface", "none");
-            root.style.setProperty("--gradient-hero", "none");
-            const cards = clonedDoc.querySelectorAll('.financial-card, .apple-card, .hero-card, .dynamic-surface') as NodeListOf<HTMLElement>;
-            cards.forEach((el) => {
-              el.style.background = "#ffffff";
-              el.style.boxShadow = "none";
-            });
+          filter: (node) => {
+            if (node instanceof HTMLCanvasElement && (node.width === 0 || node.height === 0)) {
+              return false;
+            }
+            return true;
           },
         });
 
-        if (canvas.width === 0 || canvas.height === 0) continue;
-
-        const imgData = canvas.toDataURL("image/png");
         let imgWidth = contentWidth;
-        let imgHeight = (canvas.height * imgWidth) / canvas.width;
+        let imgHeight = (rect.height * imgWidth) / rect.width;
 
-        // Se a imagem for muito alta, redimensiona para caber na página
         if (imgHeight > maxContentHeight) {
           imgHeight = maxContentHeight;
-          imgWidth = (canvas.width * imgHeight) / canvas.height;
+          imgWidth = (rect.width * imgHeight) / rect.height;
         }
 
         // Adiciona nova página se necessário
@@ -526,7 +506,7 @@ export default function AnalyticsPage({
         // Centraliza imagens menores
         const xPos = imgWidth < contentWidth ? margin + (contentWidth - imgWidth) / 2 : margin;
         
-        pdf.addImage(imgData, "PNG", xPos, currentY, imgWidth, imgHeight);
+        pdf.addImage(dataUrl, "PNG", xPos, currentY, imgWidth, imgHeight);
         currentY += imgHeight + 8;
       }
 
