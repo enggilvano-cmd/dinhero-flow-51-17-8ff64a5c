@@ -782,10 +782,12 @@
         },
         "closingDate": {
           "label": "Dia de Fechamento",
+          "placeholder": "Ex: 15",
           "help": "Dia do mês em que a fatura fecha"
         },
         "dueDate": {
           "label": "Dia de Vencimento",
+          "placeholder": "Ex: 25",
           "help": "Dia do mês em que a fatura vence"
         },
         "color": {

@@ -590,10 +590,12 @@
         },
         "closingDate": {
           "label": "Día de Cierre",
+          "placeholder": "Ej: 15",
           "help": "Día del mes en que la factura cierra"
         },
         "dueDate": {
           "label": "Día de Vencimiento",
+          "placeholder": "Ej: 25",
           "help": "Día del mes en que vence la factura"
         },
         "color": {
