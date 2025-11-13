@@ -343,7 +343,7 @@ function LayoutContent({ children, currentPage, onPageChange }: LayoutProps) {
         
         {/* Main content with responsive padding and safe areas */}
         <main className={cn(
-          "flex-1 w-full overflow-x-hidden overflow-y-auto",
+          "flex-1 w-full overflow-x-hidden",
           "safe-bottom"
         )}>
           {/* Desktop Logo Header */}
@@ -396,7 +396,7 @@ export function Layout({ children, currentPage, onPageChange }: LayoutProps) {
   
   return (
     <SidebarProvider defaultOpen={!isMobile}>
-      <div className="min-h-screen min-h-[100dvh] flex w-full bg-gradient-surface">
+      <div className="min-h-screen flex w-full bg-gradient-surface">
         <LayoutContent currentPage={currentPage} onPageChange={onPageChange}>
           {children}
         </LayoutContent>
