@@ -195,7 +195,7 @@
 
   body {
     overflow-x: hidden;
-    overflow-y: auto;
+    overflow-y: hidden; /* prevent double scrollbars; main handles scroll */
   }
 
   /* Responsive container queries support */

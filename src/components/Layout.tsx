@@ -342,10 +342,10 @@ function LayoutContent({ children, currentPage, onPageChange }: LayoutProps) {
         <AppSidebar currentPage={currentPage} onPageChange={onPageChange} />
         
         {/* Main content with responsive padding and safe areas */}
-        <main className={cn(
-          "flex-1 w-full overflow-x-hidden",
-          "safe-bottom"
-        )}>
+          <main className={cn(
+            "flex-1 w-full overflow-x-hidden overflow-y-auto",
+            "safe-bottom"
+          )}>
           {/* Desktop Logo Header */}
           {!isMobile && (
             <div className="flex justify-end items-center px-12 pt-3 pb-0">
@@ -396,7 +396,7 @@ export function Layout({ children, currentPage, onPageChange }: LayoutProps) {
   
   return (
     <SidebarProvider defaultOpen={!isMobile}>
-      <div className="min-h-screen flex w-full bg-gradient-surface">
+      <div className="h-screen flex w-full bg-gradient-surface overflow-hidden">
         <LayoutContent currentPage={currentPage} onPageChange={onPageChange}>
           {children}
         </LayoutContent>
