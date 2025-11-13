@@ -244,40 +244,45 @@ export function UserProfile() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-xl sm:text-2xl font-bold leading-tight">{t('profile.title')}</h2>
-        <p className="text-sm text-muted-foreground leading-tight">
+    <div className="space-y-4 sm:space-y-6 pb-6">
+      {/* Header */}
+      <div className="space-y-1">
+        <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight">{t('profile.title')}</h2>
+        <p className="text-sm sm:text-base text-muted-foreground">
           {t('profile.subtitle')}
         </p>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        <div className="lg:col-span-2 space-y-6">
+      {/* Responsive Grid Layout */}
+      <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
+        {/* Main Content Area - Full width on mobile, 2/3 on desktop */}
+        <div className="space-y-4 sm:space-y-6 lg:col-span-2">
+          {/* Personal Info Card */}
           <Card className="financial-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
+            <CardHeader className="space-y-1">
+              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                <User className="h-4 w-4 sm:h-5 sm:w-5" />
                 {t('profile.personalInfo')}
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-xs sm:text-sm">
                 {t('profile.personalInfoDescription')}
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center gap-4">
-                <Avatar className="h-16 w-16">
+            <CardContent className="space-y-4">
+              {/* Avatar and Basic Info */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <Avatar className="h-16 w-16 sm:h-20 sm:w-20">
                   <AvatarImage src={profile.avatar_url} />
-                  <AvatarFallback className="text-lg">
+                  <AvatarFallback className="text-lg sm:text-xl">
                     {profile.full_name?.charAt(0) || profile.email.charAt(0)}
                   </AvatarFallback>
                 </Avatar>
-                <div>
-                  <h3 className="font-semibold">{profile.full_name || t('profile.noName')}</h3>
-                  <p className="text-sm text-muted-foreground">{profile.email}</p>
+                <div className="flex-1 space-y-1">
+                  <h3 className="font-semibold text-base sm:text-lg">{profile.full_name || t('profile.noName')}</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground break-all">{profile.email}</p>
                   <Badge 
                     variant={getRoleBadgeVariant(profile.role)}
-                    className="mt-1"
+                    className="mt-1.5 text-xs"
                   >
                     {getRoleLabel(profile.role)}
                   </Badge>
@@ -286,9 +291,10 @@ export function UserProfile() {
 
               <Separator />
 
+              {/* Form Fields */}
               <div className="grid gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="fullName">{t('profile.fullName')}</Label>
+                  <Label htmlFor="fullName" className="text-sm">{t('profile.fullName')}</Label>
                   <Input
                     id="fullName"
                     value={formData.fullName}
@@ -297,11 +303,12 @@ export function UserProfile() {
                       fullName: e.target.value
                     }))}
                     placeholder={t('profile.fullNamePlaceholder')}
+                    className="text-sm"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email">{t('auth.email')}</Label>
+                  <Label htmlFor="email" className="text-sm">{t('auth.email')}</Label>
                   <Input
                     id="email"
                     type="email"
@@ -311,13 +318,14 @@ export function UserProfile() {
                       email: e.target.value
                     }))}
                     placeholder={t('profile.emailPlaceholder')}
+                    className="text-sm"
                   />
                 </div>
 
                 <Button 
                   onClick={updateProfile}
                   disabled={loading}
-                  className="w-fit"
+                  className="w-full sm:w-fit"
                 >
                   {loading ? t('common.saving') : t('profile.saveChanges')}
                 </Button>
@@ -325,46 +333,53 @@ export function UserProfile() {
             </CardContent>
           </Card>
 
+          {/* Security Card */}
           <Card className="financial-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Key className="h-5 w-5" />
+            <CardHeader className="space-y-1">
+              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                <Key className="h-4 w-4 sm:h-5 sm:w-5" />
                 {t('profile.security')}
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-xs sm:text-sm">
                 {t('profile.securityDescription')}
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div>
-                  <h4 className="font-medium">{t('profile.changePassword')}</h4>
-                  <p className="text-sm text-muted-foreground">
+            <CardContent className="space-y-4">
+              {/* Password Change Section */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 sm:p-4 border rounded-lg">
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-medium text-sm sm:text-base">{t('profile.changePassword')}</h4>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     {t('profile.changePasswordDescription')}
                   </p>
                 </div>
-                <Button variant="outline" onClick={changePassword}>
+                <Button 
+                  variant="outline" 
+                  onClick={changePassword}
+                  className="w-full sm:w-auto text-sm shrink-0"
+                >
                   {t('profile.resetPassword')}
                 </Button>
               </div>
 
-              <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <h4 className="font-medium">{t('profile.twoFactorAuth')}</h4>
+              {/* 2FA Section */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 sm:p-4 border rounded-lg">
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h4 className="font-medium text-sm sm:text-base">{t('profile.twoFactorAuth')}</h4>
                     {mfaEnabled ? (
-                      <Badge variant="default" className="gap-1">
+                      <Badge variant="default" className="gap-1 text-xs">
                         <ShieldCheck className="h-3 w-3" />
                         {t('profile.enabled')}
                       </Badge>
                     ) : (
-                      <Badge variant="secondary" className="gap-1">
+                      <Badge variant="secondary" className="gap-1 text-xs">
                         <ShieldOff className="h-3 w-3" />
                         {t('profile.disabled')}
                       </Badge>
                     )}
                   </div>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                     {mfaEnabled 
                       ? t('profile.mfaProtected')
                       : t('profile.mfaAddLayer')
@@ -375,6 +390,7 @@ export function UserProfile() {
                   <Button 
                     variant="outline" 
                     onClick={() => setShowDisableMfaDialog(true)}
+                    className="w-full sm:w-auto text-sm shrink-0"
                   >
                     {t('profile.disable')}
                   </Button>
@@ -382,6 +398,7 @@ export function UserProfile() {
                   <Button 
                     variant="default" 
                     onClick={() => setShowMfaSetup(true)}
+                    className="w-full sm:w-auto text-sm shrink-0"
                   >
                     {t('profile.enable2FA')}
                   </Button>
@@ -391,66 +408,76 @@ export function UserProfile() {
           </Card>
         </div>
 
-        <div className="space-y-6">
+        {/* Sidebar - Full width on mobile, 1/3 on desktop */}
+        <div className="space-y-4 sm:space-y-6 lg:col-span-1">
+          {/* Account Status Card */}
           <Card className="financial-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5" />
+            <CardHeader className="space-y-1">
+              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                <Shield className="h-4 w-4 sm:h-5 sm:w-5" />
                 {t('profile.accountStatus')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">{t('transactions.status')}</span>
-                <Badge variant={profile.is_active ? 'default' : 'secondary'}>
+              <div className="flex items-center justify-between py-1.5">
+                <span className="text-xs sm:text-sm font-medium">{t('transactions.status')}</span>
+                <Badge variant={profile.is_active ? 'default' : 'secondary'} className="text-xs">
                   {profile.is_active ? t('profile.active') : t('profile.inactive')}
                 </Badge>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">{t('profile.role')}</span>
-                <Badge variant={getRoleBadgeVariant(profile.role)}>
+              <Separator />
+              <div className="flex items-center justify-between py-1.5">
+                <span className="text-xs sm:text-sm font-medium">{t('profile.role')}</span>
+                <Badge variant={getRoleBadgeVariant(profile.role)} className="text-xs">
                   {getRoleLabel(profile.role)}
                 </Badge>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">{t('profile.memberSince')}</span>
-                <span className="text-sm text-muted-foreground">
+              <Separator />
+              <div className="flex items-center justify-between py-1.5">
+                <span className="text-xs sm:text-sm font-medium">{t('profile.memberSince')}</span>
+                <span className="text-xs sm:text-sm text-muted-foreground">
                   {new Date(profile.created_at).toLocaleDateString()}
                 </span>
               </div>
             </CardContent>
           </Card>
 
+          {/* Recent Activity Card */}
           <Card className="financial-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Activity className="h-5 w-5" />
+            <CardHeader className="space-y-1">
+              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                <Activity className="h-4 w-4 sm:h-5 sm:w-5" />
                 {t('profile.recentActivity')}
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-xs sm:text-sm">
                 {t('profile.recentActivityDescription')}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
                 {recentActivities.length > 0 ? (
-                  recentActivities.map((activity) => (
-                    <div key={activity.id} className="flex items-center justify-between py-2 border-b last:border-0">
-                      <div>
-                        <p className="text-sm font-medium">
-                          {getActivityLabel(activity.action)}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {activity.resource_type}
-                        </p>
+                  <div className="space-y-1">
+                    {recentActivities.slice(0, 5).map((activity) => (
+                      <div key={activity.id} className="flex items-center justify-between py-2 border-b last:border-0">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs sm:text-sm font-medium truncate">
+                            {getActivityLabel(activity.action)}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {activity.resource_type}
+                          </p>
+                        </div>
+                        <span className="text-xs text-muted-foreground ml-2 shrink-0">
+                          {new Date(activity.created_at).toLocaleDateString('pt-BR', { 
+                            day: '2-digit',
+                            month: '2-digit'
+                          })}
+                        </span>
                       </div>
-                      <span className="text-xs text-muted-foreground">
-                        {new Date(activity.created_at).toLocaleDateString()}
-                      </span>
-                    </div>
-                  ))
+                    ))}
+                  </div>
                 ) : (
-                  <p className="text-sm text-muted-foreground text-center py-4">
+                  <p className="text-xs sm:text-sm text-muted-foreground text-center py-4">
                     {t('profile.noRecentActivity')}
                   </p>
                 )}
@@ -458,17 +485,21 @@ export function UserProfile() {
             </CardContent>
           </Card>
 
-          <Card className="financial-card border-destructive/20">
-            <CardHeader>
-              <CardTitle className="text-destructive">{t('profile.dangerZone')}</CardTitle>
-              <CardDescription>
+          {/* Danger Zone Card */}
+          <Card className="financial-card border-destructive/50">
+            <CardHeader className="space-y-1">
+              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl text-destructive">
+                <Shield className="h-4 w-4 sm:h-5 sm:w-5" />
+                {t('profile.dangerZone')}
+              </CardTitle>
+              <CardDescription className="text-xs sm:text-sm">
                 {t('profile.dangerZoneDescription')}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <Button 
                 variant="destructive" 
-                className="w-full"
+                className="w-full text-sm"
                 onClick={signOut}
               >
                 {t('profile.signOut')}
