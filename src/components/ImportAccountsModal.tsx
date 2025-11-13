@@ -60,11 +60,34 @@ export function ImportAccountsModal({
   const { toast } = useToast();
 
   const validateAccountType = (tipo: string): 'checking' | 'savings' | 'credit' | 'investment' | null => {
-    const normalizedType = tipo.toLowerCase().trim();
-    if (['conta corrente', 'corrente', 'checking'].includes(normalizedType)) return 'checking';
-    if (['poupança', 'poupanca', 'savings'].includes(normalizedType)) return 'savings';
-    if (['cartão de crédito', 'cartao de credito', 'cartão', 'cartao', 'credit'].includes(normalizedType)) return 'credit';
-    if (['investimento', 'investment'].includes(normalizedType)) return 'investment';
+    const normalizedType = tipo.toLowerCase().trim()
+      .normalize('NFD') // Normaliza para separar caracteres acentuados
+      .replace(/[\u0300-\u036f]/g, ''); // Remove acentos
+    
+    // Conta Corrente
+    if (normalizedType.includes('corrente') || 
+        normalizedType.includes('conta corr') ||
+        normalizedType === 'checking' ||
+        normalizedType === 'cc') return 'checking';
+    
+    // Poupança
+    if (normalizedType.includes('poupanca') || 
+        normalizedType.includes('poupança') ||
+        normalizedType === 'savings' ||
+        normalizedType === 'pp') return 'savings';
+    
+    // Cartão de Crédito
+    if (normalizedType.includes('cartao') || 
+        normalizedType.includes('credito') ||
+        normalizedType.includes('card') ||
+        normalizedType === 'credit' ||
+        normalizedType === 'cc' ||
+        normalizedType === 'cred') return 'credit';
+    
+    // Investimento
+    if (normalizedType.includes('invest') ||
+        normalizedType === 'inv') return 'investment';
+    
     return null;
   };
 
