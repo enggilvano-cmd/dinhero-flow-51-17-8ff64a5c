@@ -6,6 +6,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -167,7 +168,7 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[95vw] max-w-md sm:max-w-lg md:max-w-xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] max-w-md sm:max-w-lg md:max-w-xl">
         <DialogHeader className="pb-4">
           <DialogTitle className="text-lg sm:text-xl">
             {t("modals.addAccount.title")}
@@ -177,7 +178,8 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+        <ScrollArea className="max-h-[60vh]">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6 pr-4">
           {/* Nome da Conta */}
           <div className="space-y-2">
             <Label htmlFor="name" className="text-sm font-medium">
@@ -350,6 +352,7 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
             </Button>
           </div>
         </form>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );

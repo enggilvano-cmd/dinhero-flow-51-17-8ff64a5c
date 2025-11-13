@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -86,7 +87,8 @@ export function EditCategoryModal({ open, onOpenChange, onEditCategory, category
           </DialogDescription>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <ScrollArea className="max-h-[60vh]">
+          <form onSubmit={handleSubmit} className="space-y-6 pr-4">
           <div className="space-y-2">
             <Label htmlFor="name">{t("modals.editCategory.fields.name.label")}</Label>
             <Input
@@ -126,6 +128,7 @@ export function EditCategoryModal({ open, onOpenChange, onEditCategory, category
             </Button>
           </div>
         </form>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );
