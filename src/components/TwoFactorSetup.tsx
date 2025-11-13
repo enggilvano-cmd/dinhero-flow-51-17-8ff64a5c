@@ -6,12 +6,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { toast } from '@/hooks/use-toast';
 import { Shield, QrCode, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useTranslation } from 'react-i18next';
 
 interface TwoFactorSetupProps {
   onComplete: () => void;
 }
 
 export function TwoFactorSetup({ onComplete }: TwoFactorSetupProps) {
+  const { t } = useTranslation();
   const [qrCode, setQrCode] = useState<string>('');
   const [secret, setSecret] = useState<string>('');
   const [verifyCode, setVerifyCode] = useState('');
@@ -23,7 +25,7 @@ export function TwoFactorSetup({ onComplete }: TwoFactorSetupProps) {
     try {
       const { data, error } = await supabase.auth.mfa.enroll({
         factorType: 'totp',
-        friendlyName: 'Autenticador'
+        friendlyName: t('twoFactor.authenticator')
       });
 
       if (error) throw error;
@@ -36,8 +38,8 @@ export function TwoFactorSetup({ onComplete }: TwoFactorSetupProps) {
     } catch (error: any) {
       console.error('Erro ao iniciar 2FA:', error);
       toast({
-        title: 'Erro ao configurar 2FA',
-        description: error.message || 'Não foi possível iniciar a configuração.',
+        title: t('twoFactor.setup.errors.setupFailed'),
+        description: error.message || t('twoFactor.setup.errors.setupFailedDescription'),
         variant: 'destructive'
       });
     } finally {
@@ -48,8 +50,8 @@ export function TwoFactorSetup({ onComplete }: TwoFactorSetupProps) {
   const handleVerify = async () => {
     if (!verifyCode || verifyCode.length !== 6) {
       toast({
-        title: 'Código inválido',
-        description: 'Digite um código de 6 dígitos.',
+        title: t('twoFactor.verify.errors.invalidCode'),
+        description: t('twoFactor.verify.errors.invalidCodeDescription'),
         variant: 'destructive'
       });
       return;
@@ -61,7 +63,7 @@ export function TwoFactorSetup({ onComplete }: TwoFactorSetupProps) {
       if (factors.error) throw factors.error;
 
       const totpFactor = factors.data?.totp[0];
-      if (!totpFactor) throw new Error('Fator TOTP não encontrado');
+      if (!totpFactor) throw new Error(t('twoFactor.setup.errors.totpNotFound'));
 
       const { error } = await supabase.auth.mfa.challengeAndVerify({
         factorId: totpFactor.id,
@@ -71,16 +73,16 @@ export function TwoFactorSetup({ onComplete }: TwoFactorSetupProps) {
       if (error) throw error;
 
       toast({
-        title: 'Autenticação em dois fatores ativada!',
-        description: 'Sua conta agora está protegida com 2FA.'
+        title: t('twoFactor.setup.success.title'),
+        description: t('twoFactor.setup.success.description')
       });
 
       onComplete();
     } catch (error: any) {
       console.error('Erro ao verificar código:', error);
       toast({
-        title: 'Código inválido',
-        description: 'Verifique o código e tente novamente.',
+        title: t('twoFactor.verify.errors.invalidCode'),
+        description: t('twoFactor.verify.errors.verifyFailed'),
         variant: 'destructive'
       });
     } finally {
@@ -94,23 +96,23 @@ export function TwoFactorSetup({ onComplete }: TwoFactorSetupProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Shield className="h-5 w-5" />
-            Configurar Autenticação em Dois Fatores
+            {t('twoFactor.setup.title')}
           </CardTitle>
           <CardDescription>
-            Adicione uma camada extra de segurança à sua conta
+            {t('twoFactor.setup.subtitle')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <Alert>
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              Você precisará de um app autenticador como Google Authenticator, Authy ou Microsoft Authenticator.
+              {t('twoFactor.setup.appRequired')}
             </AlertDescription>
           </Alert>
 
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              A autenticação em dois fatores (2FA) adiciona uma camada extra de segurança, exigindo um código do seu app autenticador além da sua senha.
+              {t('twoFactor.setup.description')}
             </p>
 
             <Button 
@@ -118,7 +120,7 @@ export function TwoFactorSetup({ onComplete }: TwoFactorSetupProps) {
               disabled={loading}
               className="w-full"
             >
-              {loading ? 'Configurando...' : 'Iniciar Configuração'}
+              {loading ? t('twoFactor.setup.configuring') : t('twoFactor.setup.startConfiguration')}
             </Button>
           </div>
         </CardContent>
@@ -131,10 +133,10 @@ export function TwoFactorSetup({ onComplete }: TwoFactorSetupProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <QrCode className="h-5 w-5" />
-          Escaneie o QR Code
+          {t('twoFactor.setup.scanQrCode')}
         </CardTitle>
         <CardDescription>
-          Use seu app autenticador para escanear o código
+          {t('twoFactor.setup.useAuthApp')}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -144,20 +146,20 @@ export function TwoFactorSetup({ onComplete }: TwoFactorSetupProps) {
               <img src={qrCode} alt="QR Code 2FA" className="w-48 h-48" />
             ) : (
               <div className="w-48 h-48 flex items-center justify-center bg-background rounded">
-                <p className="text-sm text-muted-foreground">Gerando QR Code...</p>
+                <p className="text-sm text-muted-foreground">{t('twoFactor.setup.generatingQrCode')}</p>
               </div>
             )}
           </div>
 
           <Alert>
             <AlertDescription className="space-y-2">
-              <p className="font-medium">Não consegue escanear?</p>
-              <p className="text-xs break-all">Digite este código manualmente: <code className="bg-muted px-1 py-0.5 rounded">{secret}</code></p>
+              <p className="font-medium">{t('twoFactor.setup.cantScan')}</p>
+              <p className="text-xs break-all">{t('twoFactor.setup.manualCode')} <code className="bg-muted px-1 py-0.5 rounded">{secret}</code></p>
             </AlertDescription>
           </Alert>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Código de Verificação</label>
+            <label className="text-sm font-medium">{t('twoFactor.verify.verificationCode')}</label>
             <Input
               type="text"
               placeholder="000000"
@@ -167,7 +169,7 @@ export function TwoFactorSetup({ onComplete }: TwoFactorSetupProps) {
               className="text-center text-lg tracking-widest"
             />
             <p className="text-xs text-muted-foreground">
-              Digite o código de 6 dígitos do seu app autenticador
+              {t('twoFactor.setup.enterCode')}
             </p>
           </div>
 
@@ -176,7 +178,7 @@ export function TwoFactorSetup({ onComplete }: TwoFactorSetupProps) {
             disabled={loading || verifyCode.length !== 6}
             className="w-full"
           >
-            {loading ? 'Verificando...' : 'Verificar e Ativar 2FA'}
+            {loading ? t('twoFactor.verify.verifying') : t('twoFactor.setup.verifyAndActivate')}
           </Button>
         </div>
       </CardContent>

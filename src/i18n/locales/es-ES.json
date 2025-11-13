@@ -85,6 +85,51 @@
       "roleAccess": "Control de acceso basado en roles"
     }
   },
+  "twoFactor": {
+    "authenticator": "Autenticador",
+    "setup": {
+      "title": "Configurar Autenticación de Dos Factores",
+      "subtitle": "Añade una capa extra de seguridad a tu cuenta",
+      "appRequired": "Necesitarás una app autenticadora como Google Authenticator, Authy o Microsoft Authenticator.",
+      "description": "La autenticación de dos factores (2FA) añade una capa extra de seguridad, requiriendo un código de tu app autenticadora además de tu contraseña.",
+      "startConfiguration": "Iniciar Configuración",
+      "configuring": "Configurando...",
+      "scanQrCode": "Escanea el Código QR",
+      "useAuthApp": "Usa tu app autenticadora para escanear el código",
+      "generatingQrCode": "Generando Código QR...",
+      "cantScan": "¿No puedes escanear?",
+      "manualCode": "Ingresa este código manualmente:",
+      "enterCode": "Ingresa el código de 6 dígitos de tu app autenticadora",
+      "verifyAndActivate": "Verificar y Activar 2FA",
+      "errors": {
+        "setupFailed": "Error al configurar 2FA",
+        "setupFailedDescription": "No se pudo iniciar la configuración.",
+        "totpNotFound": "Factor TOTP no encontrado"
+      },
+      "success": {
+        "title": "¡Autenticación de dos factores activada!",
+        "description": "Tu cuenta ahora está protegida con 2FA."
+      }
+    },
+    "verify": {
+      "title": "Verificación de Dos Factores",
+      "subtitle": "Ingresa el código de tu app autenticadora",
+      "verificationCode": "Código de Verificación",
+      "verify": "Verificar",
+      "verifying": "Verificando...",
+      "errors": {
+        "invalidCode": "Código inválido",
+        "invalidCodeDescription": "Ingresa un código de 6 dígitos.",
+        "notConfigured": "2FA no está configurado",
+        "incorrectCode": "El código ingresado es incorrecto. Inténtalo de nuevo.",
+        "verifyFailed": "Verifica el código e inténtalo de nuevo."
+      },
+      "success": {
+        "title": "Verificación completada",
+        "description": "Autenticación de dos factores verificada con éxito."
+      }
+    }
+  },
   "dashboard": {
     "title": "Panel",
     "subtitle": "Resumen de tus finanzas",
