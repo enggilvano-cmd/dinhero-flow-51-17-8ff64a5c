@@ -294,7 +294,7 @@ export function UserProfile() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email">{t('common.email')}</Label>
+                  <Label htmlFor="email">{t('auth.email')}</Label>
                   <Input
                     id="email"
                     type="email"
@@ -394,7 +394,7 @@ export function UserProfile() {
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">{t('common.status')}</span>
+                <span className="text-sm font-medium">{t('transactions.status')}</span>
                 <Badge variant={profile.is_active ? 'default' : 'secondary'}>
                   {profile.is_active ? t('profile.active') : t('profile.inactive')}
                 </Badge>
