@@ -6,7 +6,6 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/hooks/useAuth';
 import { Lock, User, Mail, Eye, EyeOff, BarChart3, Phone } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -175,8 +174,8 @@ export default function Auth() {
           <p className="text-muted-foreground">{t('auth.systemTitle')}</p>
         </div>
 
-        <Card className="financial-card">
-          <CardHeader className="text-center">
+        <Card className="financial-card max-h-[85vh] flex flex-col">
+          <CardHeader className="text-center flex-shrink-0">
             <CardTitle className="flex items-center justify-center gap-2">
               <Lock className="h-5 w-5" />
               {t('auth.secureAuthentication')}
@@ -185,10 +184,8 @@ export default function Auth() {
               {t('auth.accessDescription')}
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <ScrollArea className="max-h-[60vh]">
-              <div className="pr-4">
-                <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <CardContent className="overflow-y-auto flex-1">
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="signin">{t('auth.signIn')}</TabsTrigger>
                 <TabsTrigger value="signup">{t('auth.signUp')}</TabsTrigger>
@@ -415,8 +412,6 @@ export default function Auth() {
                 <li>• {t('auth.securityFeatures.roleAccess')}</li>
               </ul>
             </div>
-              </div>
-            </ScrollArea>
           </CardContent>
         </Card>
       </div>
