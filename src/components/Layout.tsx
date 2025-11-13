@@ -41,11 +41,12 @@ const getMenuItems = () => [
 ];
 
 function AppSidebar({ currentPage, onPageChange }: { currentPage: string; onPageChange: (page: string) => void }) {
-  const { profile, isAdmin, signOut } = useAuth();
+  const { profile, isAdmin, signOut, getSubscriptionTimeRemaining } = useAuth();
   const { state: sidebarState, setOpenMobile } = useSidebar();
   const isMobile = useIsMobile();
   const isCollapsed = sidebarState === "collapsed";
   const menuItems = getMenuItems();
+  const timeRemaining = getSubscriptionTimeRemaining();
 
   const handlePageChange = (page: string) => {
     onPageChange(page);
@@ -239,13 +240,18 @@ function AppSidebar({ currentPage, onPageChange }: { currentPage: string; onPage
                       <p className="text-sm font-medium truncate">
                         {getFirstName(profile.full_name) || 'Usuário'}
                       </p>
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-col gap-1">
                         <Badge 
                           variant={profile.role === 'admin' ? 'destructive' : 'secondary'}
-                          className="text-xs"
+                          className="text-xs w-fit"
                         >
                           {profile.role === 'admin' ? 'Admin' : profile.role === 'user' ? 'Usuário' : 'Limitado'}
                         </Badge>
+                        {!isAdmin() && timeRemaining && (
+                          <span className="text-xs text-muted-foreground">
+                            {timeRemaining}
+                          </span>
+                        )}
                       </div>
                     </div>
                   )}
