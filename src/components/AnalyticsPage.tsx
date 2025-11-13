@@ -1,6 +1,6 @@
 import { createDateFromString } from "@/lib/dateUtils";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -53,9 +53,8 @@ import {
   Line,
   ComposedChart,
 } from "recharts";
-import {
-  exportToPDF,
-} from "@/lib/reports";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 import {
   startOfMonth,
   endOfMonth,
@@ -149,6 +148,8 @@ export default function AnalyticsPage({
   const [categoryChartType, setCategoryChartType] = useState<
     "expense" | "income"
   >("expense");
+  
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -398,21 +399,96 @@ export default function AnalyticsPage({
     return config;
   }, [accountBalanceData]);
 
-  const handleExportPDF = () => {
-    const data = categoryData.map((item) => ({
-      Categoria: item.category,
-      Valor: formatCurrency(item.amount / 100),
-      Porcentagem: `${item.percentage.toFixed(1)}%`,
-      Transações: item.transactions,
-    }));
+  const handleExportPDF = async () => {
+    if (!contentRef.current) {
+      toast({
+        title: "Erro",
+        description: "Conteúdo não encontrado para exportação.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    const reportTypeLabel =
-      categoryChartType === "income" ? "Receitas" : "Despesas";
-    exportToPDF(data, `Relatório de ${reportTypeLabel}`);
     toast({
-      title: "Relatório gerado",
-      description: "O relatório PDF foi aberto para impressão.",
+      title: "Gerando PDF...",
+      description: "Aguarde enquanto preparamos o relatório completo.",
     });
+
+    try {
+      // Scroll to top to ensure all content is visible
+      window.scrollTo(0, 0);
+      
+      // Wait a bit for any animations to complete
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Configuração do PDF
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 10;
+      const contentWidth = pageWidth - (2 * margin);
+
+      // Header do PDF
+      pdf.setFontSize(16);
+      pdf.setFont("helvetica", "bold");
+      pdf.text("Relatório de Análises Financeiras", pageWidth / 2, 15, { align: "center" });
+      
+      pdf.setFontSize(10);
+      pdf.setFont("helvetica", "normal");
+      pdf.text(`Gerado em: ${format(new Date(), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}`, pageWidth / 2, 22, { align: "center" });
+
+      let currentY = 30;
+
+      // Captura todas as seções
+      const sections = contentRef.current.querySelectorAll('.analytics-section');
+      
+      for (let i = 0; i < sections.length; i++) {
+        const section = sections[i] as HTMLElement;
+        
+        // Captura a seção como imagem
+        const canvas = await html2canvas(section, {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          backgroundColor: '#ffffff',
+        });
+
+        const imgData = canvas.toDataURL('image/png');
+        const imgWidth = contentWidth;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+        // Verifica se precisa adicionar nova página
+        if (currentY + imgHeight > pageHeight - margin) {
+          pdf.addPage();
+          currentY = margin;
+        }
+
+        // Adiciona a imagem ao PDF
+        pdf.addImage(imgData, 'PNG', margin, currentY, imgWidth, imgHeight);
+        currentY += imgHeight + 5;
+      }
+
+      // Salva o PDF
+      const periodLabel = dateFilter === "current_month" 
+        ? format(new Date(), "MMMM-yyyy", { locale: ptBR })
+        : dateFilter === "month_picker"
+        ? format(selectedMonth, "MMMM-yyyy", { locale: ptBR })
+        : "completo";
+      
+      pdf.save(`relatorio-analises-${periodLabel}.pdf`);
+
+      toast({
+        title: "Relatório exportado",
+        description: "O arquivo PDF foi baixado com sucesso.",
+      });
+    } catch (error) {
+      console.error('Erro ao gerar PDF:', error);
+      toast({
+        title: "Erro ao gerar PDF",
+        description: "Não foi possível gerar o relatório. Tente novamente.",
+        variant: "destructive",
+      });
+    }
   };
 
   const chartConfig = {
@@ -452,8 +528,7 @@ export default function AnalyticsPage({
   };
 
   return (
-    <div className="spacing-responsive-lg fade-in">
-      {/* Header */}
+    <div ref={contentRef} className="spacing-responsive-lg fade-in">{/*  Header */}
       <div className="flex flex-col gap-3">
         <div className="min-w-0 w-full">
           <h1 className="text-xl sm:text-2xl font-bold leading-tight">Análises</h1>
@@ -682,7 +757,7 @@ export default function AnalyticsPage({
       </Card>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-8">
+      <div className="analytics-section grid grid-cols-1 lg:grid-cols-3 gap-4 mt-8">
         <Card className="financial-card">
           <CardContent className="p-3 overflow-hidden">
             <div className="grid grid-cols-[2.5rem_1fr] gap-x-3 gap-y-1 items-center">
@@ -738,7 +813,7 @@ export default function AnalyticsPage({
       </div>
 
       {/* Charts Grid */}
-      <div className="grid grid-cols-1 gap-3 sm:gap-4 mt-6">
+      <div className="analytics-section grid grid-cols-1 gap-3 sm:gap-4 mt-6">
         {/* Category Pie Chart */}
         <Card className="financial-card">
           {/* 2. BOTÕES DE ALTERNÂNCIA ATUALIZADOS COM CORES */}
