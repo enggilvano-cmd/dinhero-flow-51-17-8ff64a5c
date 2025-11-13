@@ -17,8 +17,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-// 1. IMPORTAR O SWITCH
-import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { Account, PREDEFINED_COLORS, ACCOUNT_TYPE_LABELS } from "@/types";
 import { ColorPicker } from "@/components/forms/ColorPicker";
@@ -48,8 +46,7 @@ export function EditAccountModal({
     color: PREDEFINED_COLORS[0],
   });
   
-  // 2. ADICIONAR ESTADO PARA CONTROLE DO SALDO NEGATIVO
-  const [isNegative, setIsNegative] = useState(false);
+  // Estado removido - saldo negativo será gerenciado pelas transações
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const updateAccounts = useAccountStore((state) => state.updateAccounts);
@@ -60,16 +57,13 @@ export function EditAccountModal({
       setFormData({
         name: account.name,
         type: account.type,
-        // 3. Carrega sempre a magnitude (valor positivo)
-        balanceInCents: Math.abs(account.balance), 
-        limitInCents: account.limit_amount || 0,
-        dueDate: account.due_date?.toString() || "",
-        closingDate: account.closing_date?.toString() || "",
-        color: account.color || PREDEFINED_COLORS[0],
-      });
-
-      // 4. Define o switch com base no saldo real (e se não é cartão)
-      setIsNegative(account.balance < 0 && account.type !== 'credit');
+      // Carrega o saldo mantendo o sinal (positivo ou negativo)
+      balanceInCents: account.balance, 
+      limitInCents: account.limit_amount || 0,
+      dueDate: account.due_date?.toString() || "",
+      closingDate: account.closing_date?.toString() || "",
+      color: account.color || PREDEFINED_COLORS[0],
+    });
     }
   }, [account]);
 
@@ -87,17 +81,14 @@ export function EditAccountModal({
       return;
     }
 
-    // 5. LÓGICA DE SALVAMENTO CORRIGIDA
+    // Lógica de salvamento simplificada
     let balanceInCents: number;
     
     if (formData.type === 'credit') {
       // Cartão de crédito sempre salva como dívida (negativo)
       balanceInCents = -Math.abs(formData.balanceInCents);
-    } else if (isNegative && (formData.type === 'checking' || formData.type === 'savings')) {
-      // Aplica negativo se o switch estiver ligado para conta ou poupança
-      balanceInCents = -Math.abs(formData.balanceInCents);
     } else {
-      // Mantém positivo para investimento ou contas não marcadas como negativas
+      // Mantém o saldo como foi inserido pelo usuário
       balanceInCents = formData.balanceInCents;
     }
 
@@ -208,8 +199,6 @@ export function EditAccountModal({
               value={formData.type}
               onValueChange={(value) => {
                 setFormData((prev) => ({ ...prev, type: value as any }));
-                // Reseta o switch de negativo se mudar o tipo
-                setIsNegative(false);
               }}
             >
               <SelectTrigger className="text-financial-input">
@@ -249,23 +238,6 @@ export function EditAccountModal({
                 setFormData((prev) => ({ ...prev, balanceInCents: value || 0 }))
               }
             />
-            
-            {/* 6. ADICIONAR O SWITCH PARA SALDO NEGATIVO */}
-            {(formData.type === "checking" || formData.type === "savings") && (
-              <div className="flex items-center space-x-2 pt-2">
-                <Switch
-                  id="is-negative"
-                  checked={isNegative}
-                  onCheckedChange={setIsNegative}
-                />
-                <Label
-                  htmlFor="is-negative"
-                  className="text-sm font-normal text-financial-secondary"
-                >
-                  {t("modals.editAccount.fields.balance.negative")}
-                </Label>
-              </div>
-            )}
 
             <p className="text-financial-caption">
               {formData.type === "credit"
