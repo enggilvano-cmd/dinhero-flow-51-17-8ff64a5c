@@ -51,26 +51,42 @@ export function ImportCategoriesModal({
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
 
-  // Suporte a cabeçalhos exportados em diferentes idiomas
+  // Suporte a cabeçalhos exportados em diferentes idiomas e por páginas do app
   const HEADERS = {
-    name: ['Nome', 'Name', 'Nombre'],
-    type: ['Tipo', 'Type', 'Tipo'],
-    color: ['Cor', 'Color', 'Color']
+    name: ['Nome', 'Name', 'Nombre', 'Nome da Categoria', 'Category Name', 'Nombre de la Categoría', t('categories.categoryName')],
+    type: ['Tipo', 'Type', 'Tipo', 'Tipo da Categoria', 'Category Type', 'Tipo de la Categoría', t('categories.categoryType')],
+    color: ['Cor', 'Color', 'Color', 'Cor da Categoria', 'Category Color', 'Color de la Categoría', t('categories.categoryColor')]
   } as const;
 
+  // Normalizadores (definidos antes de usar)
+  const normalizeString = (str: string): string => {
+    return (str ?? '')
+      .toString()
+      .trim()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/\s+/g, ' ');
+  };
+  const normalizeKey = (str: string): string => normalizeString(str).replace(/[^a-z0-9]/g, '');
+
   const pick = (row: any, keys: readonly string[]) => {
+    // Mapa normalizado de chaves do Excel -> valor
+    const keyMap = new Map<string, any>();
+    for (const k of Object.keys(row)) {
+      keyMap.set(normalizeKey(k), row[k]);
+    }
     for (const key of keys) {
       const candidates = [key, key.toLowerCase()];
       for (const c of candidates) {
-        if (row[c] !== undefined && row[c] !== null && row[c] !== '') {
-          return row[c];
+        const nk = normalizeKey(c);
+        if (keyMap.has(nk)) {
+          return keyMap.get(nk);
         }
       }
     }
     return '';
   };
-
-  const validateCategoryType = (tipo: string): 'income' | 'expense' | 'both' | null => {
     const normalizedType = normalizeString(tipo);
     // Suporte para PT-BR, EN-US, ES-ES (singular e plural)
     if (['receita', 'receitas', 'income', 'entrada', 'entradas', 'ingreso', 'ingresos'].includes(normalizedType)) return 'income';
@@ -93,8 +109,8 @@ export function ImportCategoriesModal({
       .replace(/[\u0300-\u036f]/g, '') // Remove diacríticos (acentos)
       .replace(/\s+/g, ' '); // Normaliza espaços
   };
-
-  const validateAndCheckDuplicate = (row: any): ImportedCategory => {
+  // Normalização para chaves de cabeçalho
+  const normalizeKey = (str: string): string => normalizeString(str).replace(/[^a-z0-9]/g, '');
     const errors: string[] = [];
     let isValid = true;
 
