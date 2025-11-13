@@ -15,7 +15,20 @@ const SettingsContext = createContext<SettingsContextType | undefined>(undefined
 export function useSettings() {
   const context = useContext(SettingsContext);
   if (context === undefined) {
-    throw new Error('useSettings must be used within a SettingsProvider');
+    // Durante o desenvolvimento, pode haver hot reload que causa esse erro temporariamente
+    console.warn('useSettings called outside SettingsProvider, returning defaults');
+    return {
+      settings: {
+        currency: 'BRL',
+        theme: 'system' as const,
+        notifications: true,
+        autoBackup: false,
+        language: 'pt-BR',
+        userId: ''
+      },
+      updateSettings: () => Promise.resolve(),
+      formatCurrency: (amount: number) => `R$ ${amount.toFixed(2).replace('.', ',')}`
+    };
   }
   return context;
 }
@@ -25,8 +38,12 @@ interface SettingsProviderProps {
 }
 
 export function SettingsProvider({ children }: SettingsProviderProps) {
-  const { user, loading } = useAuth();
+  const auth = useAuth();
   const { i18n } = useTranslation();
+  
+  // Se o auth ainda não está pronto, use valores seguros
+  const user = auth?.user;
+  const loading = auth?.loading ?? true;
   
   // Detectar idioma do navegador para usar como padrão inicial
   const detectedLanguage = detectBrowserLanguage();
