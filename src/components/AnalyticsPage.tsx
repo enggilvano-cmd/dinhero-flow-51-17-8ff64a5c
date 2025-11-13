@@ -367,10 +367,11 @@ export default function AnalyticsPage({
   const totalsByType = useMemo(() => {
     return filteredTransactions.reduce(
       (acc, transaction) => {
+        const amount = Math.abs(Number((transaction as any).amount) || 0);
         if (transaction.type === "income") {
-          acc.income += transaction.amount;
+          acc.income += amount;
         } else if (transaction.type === "expense") {
-          acc.expenses += transaction.amount;
+          acc.expenses += amount;
         }
         return acc;
       },
@@ -830,7 +831,7 @@ export default function AnalyticsPage({
                 <p className="text-xs text-muted-foreground">{t("analytics.filteredPeriod")}</p>
               </div>
               <div className="col-start-2 text-responsive-xl font-bold balance-negative leading-tight truncate max-w-full">
-                {formatCurrency(totalsByType.expenses)}
+                {formatCurrency(-totalsByType.expenses)}
               </div>
             </div>
           </CardContent>
@@ -900,10 +901,10 @@ export default function AnalyticsPage({
               <RechartsPieChart width={undefined} height={undefined}>
                 <ChartTooltip
                   content={<ChartTooltipContent />}
-                  formatter={(value: number, name: string) => [
-                    formatCurrency(value / 100),
-                    name,
-                  ]}
+                    formatter={(value: number, name: string) => [
+                      formatCurrency(value),
+                      name,
+                    ]}
                 />
                 <Pie
                   data={categoryData.map((item) => ({
@@ -980,7 +981,7 @@ export default function AnalyticsPage({
                   <ChartTooltip
                     content={<ChartTooltipContent />}
                     formatter={(value: number) => [
-                      formatCurrency(value / 100),
+                      formatCurrency(value),
                       "Saldo",
                     ]}
                   />
@@ -1066,7 +1067,7 @@ export default function AnalyticsPage({
                   <ChartTooltip
                     content={<ChartTooltipContent />}
                     formatter={(value: number, name: string) => [
-                      formatCurrency(value / 100),
+                      formatCurrency(value),
                       name === "receitas"
                         ? "Receitas"
                         : name === "despesas"
@@ -1219,7 +1220,7 @@ export default function AnalyticsPage({
                       </td>
                       <td className="text-right py-2 sm:py-3 font-medium text-xs sm:text-sm">
                         <div className="flex flex-col sm:block">
-                          <span>{formatCurrency(item.amount / 100)}</span>
+                          <span>{formatCurrency(item.amount)}</span>
                           <span className="text-xs text-muted-foreground sm:hidden">
                             {item.percentage.toFixed(1)}% • {item.transactions}x
                           </span>
