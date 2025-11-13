@@ -1170,13 +1170,13 @@ export function Dashboard({
             <CardHeader className="pb-2">
               <CardTitle className="text-sm flex items-center gap-2">
                 <CreditCard className="h-4 w-4" />
-                Suas Contas ({accounts.length})
+                {t('dashboard.yourAccounts')} ({accounts.length})
               </CardTitle>
             </CardHeader>
             <CardContent className="p-3 pt-0">
               {accounts.length === 0 ? (
                 <div className="text-center py-3 text-muted-foreground">
-                  <p className="text-xs">Nenhuma conta cadastrada</p>
+                  <p className="text-xs">{t('dashboard.noAccounts')}</p>
                   <Button
                     variant="outline"
                     size="sm"
@@ -1186,7 +1186,7 @@ export function Dashboard({
                     }}
                     className="mt-2 h-7 text-xs"
                   >
-                    Adicionar conta
+                    {t('dashboard.addAccount')}
                   </Button>
                 </div>
               ) : (
