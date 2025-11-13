@@ -121,6 +121,21 @@ export function UserProfile() {
 
     setLoading(true);
     try {
+      // Update email in Supabase Auth if changed
+      if (formData.email !== profile.email) {
+        const { error: authError } = await supabase.auth.updateUser({
+          email: formData.email
+        });
+
+        if (authError) throw authError;
+
+        toast({
+          title: 'Verificação necessária',
+          description: 'Um email de confirmação foi enviado para o novo endereço. Confirme para completar a alteração.',
+        });
+      }
+
+      // Update profile data
       const { error } = await supabase
         .from('profiles')
         .update({
