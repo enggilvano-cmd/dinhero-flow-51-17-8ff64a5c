@@ -28,7 +28,8 @@
     "view": "Ver",
     "download": "Descargar",
     "upload": "Subir",
-    "select": "Seleccionar"
+    "select": "Seleccionar",
+    "noResults": "No se encontraron resultados"
   },
   "auth": {
     "login": "Iniciar sesión",
@@ -278,6 +279,36 @@
     "both": "Ambos",
     "searchPlaceholder": "Buscar categorías...",
     "exportSuccess": "{{count}} categorías exportadas."
+  },
+  "recurringTransactions": {
+    "title": "Transacciones Recurrentes",
+    "subtitle": "Gestiona tus transacciones automáticas",
+    "noTransactions": "No se encontraron transacciones recurrentes",
+    "endsOn": "Termina en",
+    "autoGeneration": "Generación Automática",
+    "autoGenerationEnabled": "Las transacciones se generarán automáticamente según lo configurado",
+    "autoGenerationDisabled": "Configure el cron job para activar la generación automática",
+    "setupInstructions": "Ver instrucciones de configuración",
+    "totalRecurring": "Total de Recurrentes",
+    "monthlyIncome": "Ingresos Mensuales",
+    "monthlyExpenses": "Gastos Mensuales",
+    "searchPlaceholder": "Escribe la descripción de la transacción...",
+    "filterByType": "Filtrar por tipo",
+    "frequency": {
+      "daily": "Diariamente",
+      "weekly": "Semanalmente",
+      "monthly": "Mensualmente",
+      "yearly": "Anualmente"
+    },
+    "deleteTitle": "¿Eliminar transacción recurrente?",
+    "deleteDescription": "Esta acción no se puede deshacer. La transacción recurrente se eliminará permanentemente.",
+    "deleteSuccess": "Transacción recurrente eliminada con éxito",
+    "editComingSoon": "Edición próximamente",
+    "errors": {
+      "loadFailed": "Error al cargar transacciones recurrentes",
+      "deleteFailed": "Error al eliminar transacción recurrente",
+      "updateFailed": "Error al actualizar transacción recurrente"
+    }
   },
   "creditBills": {
     "title": "Facturas de Tarjeta",

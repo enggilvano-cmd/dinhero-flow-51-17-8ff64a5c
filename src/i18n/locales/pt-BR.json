@@ -28,7 +28,8 @@
     "view": "Visualizar",
     "download": "Baixar",
     "upload": "Enviar",
-    "select": "Selecionar"
+    "select": "Selecionar",
+    "noResults": "Nenhum resultado encontrado"
   },
   "auth": {
     "login": "Entrar",
@@ -288,6 +289,11 @@
     "autoGenerationEnabled": "Transações serão geradas automaticamente conforme configurado",
     "autoGenerationDisabled": "Configure o cron job para ativar a geração automática",
     "setupInstructions": "Ver instruções de configuração",
+    "totalRecurring": "Total de Recorrentes",
+    "monthlyIncome": "Receitas Mensais",
+    "monthlyExpenses": "Despesas Mensais",
+    "searchPlaceholder": "Digite a descrição da transação...",
+    "filterByType": "Filtrar por tipo",
     "frequency": {
       "daily": "Diariamente",
       "weekly": "Semanalmente",
