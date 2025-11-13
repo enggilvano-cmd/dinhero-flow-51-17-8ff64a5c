@@ -61,36 +61,38 @@ export function ImportAccountsModal({
 
   const validateAccountType = (tipo: string): 'checking' | 'savings' | 'credit' | 'investment' | null => {
     const normalizedType = tipo.toLowerCase().trim()
-      .normalize('NFD') // Normaliza para separar caracteres acentuados
-      .replace(/[\u0300-\u036f]/g, ''); // Remove acentos
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
     
-    // Conta Corrente
+    // Conta Corrente / Checking
     if (normalizedType.includes('corrente') || 
         normalizedType.includes('conta corr') ||
+        normalizedType.includes('checking') ||
         normalizedType === 'checking' ||
         normalizedType === 'cc') return 'checking';
     
-    // Poupança
+    // Poupança / Savings
     if (normalizedType.includes('poupanca') || 
         normalizedType.includes('poupança') ||
+        normalizedType.includes('saving') ||
         normalizedType === 'savings' ||
         normalizedType === 'pp') return 'savings';
     
-    // Cartão de Crédito
+    // Cartão de Crédito / Credit Card
     if (normalizedType.includes('cartao') || 
         normalizedType.includes('credito') ||
+        normalizedType.includes('credit') ||
         normalizedType.includes('card') ||
         normalizedType === 'credit' ||
         normalizedType === 'cc' ||
         normalizedType === 'cred') return 'credit';
     
-    // Investimento
+    // Investimento / Investment
     if (normalizedType.includes('invest') ||
         normalizedType === 'inv') return 'investment';
     
     return null;
   };
-
   const isValidColor = (color: string): boolean => {
     return /^#([0-9A-F]{3}){1,2}$/i.test(color);
   };
@@ -104,6 +106,29 @@ export function ImportAccountsModal({
     }
     return 0;
   };
+
+  // Suporte a cabeçalhos exportados em diferentes idiomas
+  const pick = (row: any, keys: string[]) => {
+    for (const key of keys) {
+      const candidates = [key, key.toLowerCase()];
+      for (const c of candidates) {
+        if (row[c] !== undefined && row[c] !== null && `${row[c]}`.toString().trim() !== '') {
+          return row[c];
+        }
+      }
+    }
+    return '';
+  };
+
+  const HEADERS = {
+    name: ['Nome', 'Nome da Conta', 'Account Name', 'Nombre de la Cuenta', 'Name'],
+    type: ['Tipo', 'Tipo de Conta', 'Account Type', 'Tipo de Cuenta', 'Type'],
+    balance: ['Saldo', 'Balance'],
+    limit: ['Limite', 'Limit'],
+    closing: ['Fechamento', 'Dia de Fechamento', 'Closing Day', 'Día de Cierre'],
+    due: ['Vencimento', 'Dia de Vencimento', 'Due Day', 'Día de Vencimiento'],
+    color: ['Cor', 'Color']
+  } as const;
 
   const validateAndCheckDuplicate = (row: any): ImportedAccount => {
     const errors: string[] = [];
