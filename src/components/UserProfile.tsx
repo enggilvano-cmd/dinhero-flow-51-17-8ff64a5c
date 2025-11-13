@@ -123,9 +123,10 @@ export function UserProfile() {
     try {
       // Update email in Supabase Auth if changed
       if (formData.email !== profile.email) {
-        const { error: authError } = await supabase.auth.updateUser({
-          email: formData.email
-        });
+        const { error: authError } = await supabase.auth.updateUser(
+          { email: formData.email },
+          { emailRedirectTo: `${window.location.origin}/auth` }
+        );
 
         if (authError) throw authError;
 
