@@ -1,5 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 
 export type EditScope = "current" | "current-and-remaining" | "all";
 
@@ -18,6 +19,8 @@ export function InstallmentEditScopeDialog({
   currentInstallment,
   totalInstallments
 }: InstallmentEditScopeDialogProps) {
+  const { t } = useTranslation();
+  
   const handleScopeSelection = (scope: EditScope) => {
     onScopeSelected(scope);
     onOpenChange(false);
@@ -27,10 +30,12 @@ export function InstallmentEditScopeDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Escopo da Edição</DialogTitle>
+          <DialogTitle>{t("modals.installmentScope.title")}</DialogTitle>
           <DialogDescription>
-            Esta transação faz parte de um parcelamento ({currentInstallment}/{totalInstallments}). 
-            Selecione o escopo da edição:
+            {t("modals.installmentScope.subtitle", { 
+              current: currentInstallment, 
+              total: totalInstallments 
+            })}
           </DialogDescription>
         </DialogHeader>
         
@@ -41,9 +46,12 @@ export function InstallmentEditScopeDialog({
             onClick={() => handleScopeSelection("current")}
           >
             <div className="text-left">
-              <div className="font-medium">Apenas esta parcela</div>
+              <div className="font-medium">{t("modals.installmentScope.options.current.label")}</div>
               <div className="text-sm text-muted-foreground">
-                Editar somente a parcela {currentInstallment}/{totalInstallments}
+                {t("modals.installmentScope.options.current.description", { 
+                  current: currentInstallment, 
+                  total: totalInstallments 
+                })}
               </div>
             </div>
           </Button>
@@ -55,9 +63,12 @@ export function InstallmentEditScopeDialog({
               onClick={() => handleScopeSelection("current-and-remaining")}
             >
               <div className="text-left">
-                <div className="font-medium">Esta parcela e as demais</div>
+                <div className="font-medium">{t("modals.installmentScope.options.remaining.label")}</div>
                 <div className="text-sm text-muted-foreground">
-                  Editar as parcelas {currentInstallment} até {totalInstallments}
+                  {t("modals.installmentScope.options.remaining.description", { 
+                    current: currentInstallment, 
+                    total: totalInstallments 
+                  })}
                 </div>
               </div>
             </Button>
@@ -69,9 +80,11 @@ export function InstallmentEditScopeDialog({
             onClick={() => handleScopeSelection("all")}
           >
             <div className="text-left">
-              <div className="font-medium">Todas as parcelas</div>
+              <div className="font-medium">{t("modals.installmentScope.options.all.label")}</div>
               <div className="text-sm text-muted-foreground">
-                Editar todas as {totalInstallments} parcelas do parcelamento
+                {t("modals.installmentScope.options.all.description", { 
+                  total: totalInstallments 
+                })}
               </div>
             </div>
           </Button>
@@ -79,7 +92,7 @@ export function InstallmentEditScopeDialog({
 
         <div className="flex gap-3 pt-4">
           <Button variant="ghost" onClick={() => onOpenChange(false)} className="flex-1">
-            Cancelar
+            {t("common.cancel")}
           </Button>
         </div>
       </DialogContent>

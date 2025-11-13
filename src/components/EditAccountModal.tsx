@@ -23,6 +23,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Account, PREDEFINED_COLORS, ACCOUNT_TYPE_LABELS } from "@/types";
 import { ColorPicker } from "@/components/forms/ColorPicker";
 import { useAccountStore } from "@/stores/AccountStore";
+import { useTranslation } from "react-i18next";
 
 interface EditAccountModalProps {
   open: boolean;
@@ -52,6 +53,7 @@ export function EditAccountModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const updateAccounts = useAccountStore((state) => state.updateAccounts);
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (account) {
@@ -78,8 +80,8 @@ export function EditAccountModal({
 
     if (!formData.name.trim() || !formData.type) {
       toast({
-        title: "Erro",
-        description: "Por favor, preencha todos os campos obrigatórios.",
+        title: t("common.error"),
+        description: t("modals.editAccount.errors.required"),
         variant: "destructive",
       });
       return;
@@ -108,9 +110,8 @@ export function EditAccountModal({
       dueDate = parseInt(formData.dueDate);
       if (isNaN(dueDate) || dueDate < 1 || dueDate > 31) {
         toast({
-          title: "Erro",
-          description:
-            "Por favor, insira um dia válido (1-31) para o vencimento.",
+          title: t("common.error"),
+          description: t("modals.editAccount.errors.invalidDueDate"),
           variant: "destructive",
         });
         return;
@@ -122,9 +123,8 @@ export function EditAccountModal({
       closingDate = parseInt(formData.closingDate);
       if (isNaN(closingDate) || closingDate < 1 || closingDate > 31) {
         toast({
-          title: "Erro",
-          description:
-            "Por favor, insira um dia válido (1-31) para o fechamento.",
+          title: t("common.error"),
+          description: t("modals.editAccount.errors.invalidClosingDate"),
           variant: "destructive",
         });
         return;
@@ -151,8 +151,8 @@ export function EditAccountModal({
       updateAccounts(updatedAccount);
 
       toast({
-        title: "Sucesso",
-        description: "Conta atualizada com sucesso!",
+        title: t("common.success"),
+        description: t("modals.editAccount.success"),
         variant: "default",
       });
     } catch (error) {
@@ -172,9 +172,9 @@ export function EditAccountModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[95vw] max-w-[425px] max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader className="space-y-2 pb-4">
-          <DialogTitle className="text-financial-h3">Editar Conta</DialogTitle>
+          <DialogTitle className="text-financial-h3">{t("modals.editAccount.title")}</DialogTitle>
           <DialogDescription>
-            Atualize os detalhes da sua conta.
+            {t("modals.editAccount.subtitle")}
           </DialogDescription>
         </DialogHeader>
 
@@ -184,11 +184,11 @@ export function EditAccountModal({
               htmlFor="name"
               className="text-financial-secondary font-medium"
             >
-              Nome da Conta
+              {t("modals.editAccount.fields.name.label")}
             </Label>
             <Input
               id="name"
-              placeholder="Ex: Banco do Brasil - Conta Corrente"
+              placeholder={t("modals.editAccount.fields.name.placeholder")}
               value={formData.name}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, name: e.target.value }))
@@ -202,7 +202,7 @@ export function EditAccountModal({
               htmlFor="type"
               className="text-financial-secondary font-medium"
             >
-              Tipo de Conta
+              {t("modals.editAccount.fields.type.label")}
             </Label>
             <Select
               value={formData.type}
@@ -213,7 +213,7 @@ export function EditAccountModal({
               }}
             >
               <SelectTrigger className="text-financial-input">
-                <SelectValue placeholder="Selecione o tipo de conta" />
+                <SelectValue placeholder={t("modals.editAccount.fields.type.placeholder")} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="checking">
@@ -238,10 +238,10 @@ export function EditAccountModal({
               className="text-financial-secondary font-medium"
             >
               {formData.type === "credit"
-                ? "Saldo Devedor Atual"
+                ? t("modals.editAccount.fields.balance.debtLabel")
                 : formData.type === "investment"
-                ? "Valor Aplicado"
-                : "Saldo"}
+                ? t("modals.editAccount.fields.balance.investmentLabel")
+                : t("modals.editAccount.fields.balance.label")}
             </Label>
             <CurrencyInput
               value={formData.balanceInCents}
@@ -262,17 +262,17 @@ export function EditAccountModal({
                   htmlFor="is-negative"
                   className="text-sm font-normal text-financial-secondary"
                 >
-                  Definir saldo como negativo (Ex: Cheque especial)
+                  {t("modals.editAccount.fields.balance.negative")}
                 </Label>
               </div>
             )}
 
             <p className="text-financial-caption">
               {formData.type === "credit"
-                ? "Insira o valor total que você deve no cartão neste momento (faturas abertas + fechadas não pagas)."
+                ? t("modals.editAccount.fields.balance.debtHelp")
                 : formData.type === "investment"
-                ? "Valor total aplicado no investimento"
-                : "Saldo atual da conta"}
+                ? t("modals.editAccount.fields.balance.investmentHelp")
+                : t("modals.editAccount.fields.balance.help")}
             </p>
           </div>
 
@@ -281,7 +281,7 @@ export function EditAccountModal({
               htmlFor="limit"
               className="text-financial-secondary font-medium"
             >
-              Limite da Conta (opcional)
+              {t("modals.editAccount.fields.limit.label")}
             </Label>
             <CurrencyInput
               value={formData.limitInCents}
@@ -290,15 +290,14 @@ export function EditAccountModal({
               }
             />
             <p className="text-financial-caption">
-              Defina um limite opcional para esta conta. Útil para controlar
-              teto de gastos.
+              {t("modals.editAccount.fields.limit.help")}
             </p>
           </div>
 
           {formData.type === "credit" && (
             <div className="space-y-4 sm:space-y-6 p-3 sm:p-4 bg-muted/50 rounded-lg border-l-4 border-primary/30">
               <h4 className="text-financial-body font-medium text-primary">
-                Configurações do Cartão de Crédito
+                {t("modals.editAccount.fields.creditSettings")}
               </h4>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
@@ -307,14 +306,14 @@ export function EditAccountModal({
                     htmlFor="closingDate"
                     className="text-financial-secondary font-medium"
                   >
-                    Fechamento
+                    {t("modals.editAccount.fields.closingDate.label")}
                   </Label>
                   <Input
                     id="closingDate"
                     type="number"
                     min="1"
                     max="31"
-                    placeholder="Ex: 5"
+                    placeholder={t("modals.editAccount.fields.closingDate.placeholder")}
                     value={formData.closingDate}
                     onChange={(e) =>
                       setFormData((prev) => ({
@@ -324,7 +323,7 @@ export function EditAccountModal({
                     }
                     className="text-financial-input"
                   />
-                  <p className="text-financial-caption">Dia do fechamento</p>
+                  <p className="text-financial-caption">{t("modals.editAccount.fields.closingDate.help")}</p>
                 </div>
 
                 <div className="space-y-2">
@@ -332,14 +331,14 @@ export function EditAccountModal({
                     htmlFor="dueDate"
                     className="text-financial-secondary font-medium"
                   >
-                    Vencimento
+                    {t("modals.editAccount.fields.dueDate.label")}
                   </Label>
                   <Input
                     id="dueDate"
                     type="number"
                     min="1"
                     max="31"
-                    placeholder="Ex: 15"
+                    placeholder={t("modals.editAccount.fields.dueDate.placeholder")}
                     value={formData.dueDate}
                     onChange={(e) =>
                       setFormData((prev) => ({
@@ -349,7 +348,7 @@ export function EditAccountModal({
                     }
                     className="text-financial-input"
                   />
-                  <p className="text-financial-caption">Dia do vencimento</p>
+                  <p className="text-financial-caption">{t("modals.editAccount.fields.dueDate.help")}</p>
                 </div>
               </div>
             </div>
@@ -364,14 +363,14 @@ export function EditAccountModal({
               onClick={() => onOpenChange(false)}
               className="flex-1 text-financial-button touch-target"
             >
-              Cancelar
+              {t("common.cancel")}
             </Button>
             <Button
               type="submit"
               className="flex-1 text-financial-button bg-primary hover:bg-primary/90 text-primary-foreground touch-target"
               disabled={isSubmitting}
             >
-              {isSubmitting ? "Salvando..." : "Salvar Alterações"}
+              {isSubmitting ? t("modals.editAccount.actions.saving") : t("modals.editAccount.actions.save")}
             </Button>
           </div>
         </form>
