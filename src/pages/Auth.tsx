@@ -174,8 +174,8 @@ export default function Auth() {
           <p className="text-muted-foreground">{t('auth.systemTitle')}</p>
         </div>
 
-        <Card className="financial-card max-h-[85vh] flex flex-col">
-          <CardHeader className="text-center flex-shrink-0">
+        <Card className="financial-card transition-all duration-300">
+          <CardHeader className="text-center">
             <CardTitle className="flex items-center justify-center gap-2">
               <Lock className="h-5 w-5" />
               {t('auth.secureAuthentication')}
@@ -184,7 +184,7 @@ export default function Auth() {
               {t('auth.accessDescription')}
             </CardDescription>
           </CardHeader>
-          <CardContent className="overflow-y-auto flex-1">
+          <CardContent>
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="signin">{t('auth.signIn')}</TabsTrigger>
