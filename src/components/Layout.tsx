@@ -363,8 +363,8 @@ function LayoutContent({ children, currentPage, onPageChange }: LayoutProps) {
             isMobile 
               ? "px-3 py-4" 
               : open
-                ? "px-12 pt-0 -mt-4 pb-5 md:pl-0 md:pr-6 md:pt-0 md:-mt-4 md:pb-4 lg:pl-16 lg:pr-10 lg:pt-0 lg:-mt-4 lg:pb-12"
-                : "px-12 pt-0 -mt-4 pb-5 md:px-6 md:pt-0 md:-mt-4 md:pb-4 lg:pl-8 lg:pr-10 lg:pt-0 lg:-mt-4 lg:pb-12"
+                ? "px-12 pt-0 -mt-6 pb-5 md:pl-0 md:pr-6 md:pt-0 md:-mt-6 md:pb-4 lg:pl-16 lg:pr-10 lg:pt-0 lg:-mt-6 lg:pb-12"
+                : "px-12 pt-0 -mt-6 pb-5 md:px-6 md:pt-0 md:-mt-6 md:pb-4 lg:pl-8 lg:pr-10 lg:pt-0 lg:-mt-6 lg:pb-12"
           )}>
             <div className={cn(
               "mx-auto w-full",
