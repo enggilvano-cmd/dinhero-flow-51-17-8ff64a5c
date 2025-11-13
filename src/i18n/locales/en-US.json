@@ -838,7 +838,42 @@
       "errorInsufficientBalance": "Insufficient Balance",
       "errorInsufficientBalanceDesc": "The account {accountName} does not have sufficient balance for this transfer{limitText}",
       "errorTransfer": "Could not complete the transfer. Please try again",
-      "success": "Transfer completed successfully"
+      "success": "Transfer completed successfully",
+      "fields": {
+        "from": {
+          "label": "From (Account)",
+          "placeholder": "Select source account"
+        },
+        "to": {
+          "label": "To (Account)",
+          "placeholder": "Select destination account"
+        },
+        "amount": {
+          "label": "Amount"
+        },
+        "date": {
+          "label": "Date"
+        }
+      },
+      "help": {
+        "credit": "To pay credit card bills, use the Pay Bill menu.",
+        "payBill": "Transfers do not affect credit card bills.",
+        "minAccounts": "You need at least 2 accounts to make transfers."
+      },
+      "actions": {
+        "transfer": "Transfer",
+        "processing": "Transferring..."
+      },
+      "errors": {
+        "required": "Please fill in all fields",
+        "sameAccount": "Source and destination accounts must be different",
+        "insufficientBalance": "Insufficient Balance",
+        "includingLimit": "including limit of",
+        "account": "The account",
+        "noBalance": "does not have sufficient balance",
+        "title": "Transfer Error",
+        "failed": "Could not complete the transfer. Please try again."
+      }
     },
     "creditPayment": {
       "title": "Credit Card Payment",

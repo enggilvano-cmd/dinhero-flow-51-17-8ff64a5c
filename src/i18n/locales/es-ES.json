@@ -747,7 +747,42 @@
       "errorInsufficientBalance": "Saldo Insuficiente",
       "errorInsufficientBalanceDesc": "La cuenta {accountName} no tiene saldo suficiente para esta transferencia{limitText}",
       "errorTransfer": "No se pudo realizar la transferencia. Inténtalo de nuevo",
-      "success": "Transferencia realizada con éxito"
+      "success": "Transferencia realizada con éxito",
+      "fields": {
+        "from": {
+          "label": "Desde (Cuenta)",
+          "placeholder": "Seleccionar cuenta de origen"
+        },
+        "to": {
+          "label": "Para (Cuenta)",
+          "placeholder": "Seleccionar cuenta de destino"
+        },
+        "amount": {
+          "label": "Valor"
+        },
+        "date": {
+          "label": "Fecha"
+        }
+      },
+      "help": {
+        "credit": "Para pagar tarjetas de crédito, usa el menú Pagar Factura.",
+        "payBill": "Las transferencias no afectan las facturas de tarjeta de crédito.",
+        "minAccounts": "Necesitas al menos 2 cuentas para realizar transferencias."
+      },
+      "actions": {
+        "transfer": "Transferir",
+        "processing": "Transfiriendo..."
+      },
+      "errors": {
+        "required": "Por favor, completa todos los campos",
+        "sameAccount": "Las cuentas de origen y destino deben ser diferentes",
+        "insufficientBalance": "Saldo Insuficiente",
+        "includingLimit": "incluyendo límite de",
+        "account": "La cuenta",
+        "noBalance": "no tiene saldo suficiente",
+        "title": "Error en la Transferencia",
+        "failed": "No se pudo realizar la transferencia. Inténtalo de nuevo."
+      }
     },
     "creditPayment": {
       "title": "Pago de Factura",
