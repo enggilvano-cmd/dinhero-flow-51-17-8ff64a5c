@@ -28,6 +28,7 @@ interface RecurringTransaction {
   id: string;
   description: string;
   amount: number;
+  date: string;
   type: "income" | "expense" | "transfer";
   category_id: string | null;
   account_id: string;
@@ -381,6 +382,10 @@ export function RecurringTransactionsPage() {
               <CardContent className="pt-0">
                 <div className="flex items-center justify-between">
                   <div className="space-y-2 text-sm">
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Calendar className="h-3 w-3" />
+                      {format(new Date(transaction.date), "dd/MM/yyyy", { locale: ptBR })}
+                    </div>
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <div 
                         className="w-3 h-3 rounded-full" 

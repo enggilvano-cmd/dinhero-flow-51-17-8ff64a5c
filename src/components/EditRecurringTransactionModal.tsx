@@ -19,6 +19,7 @@ interface RecurringTransaction {
   id: string;
   description: string;
   amount: number;
+  date: string;
   type: "income" | "expense" | "transfer";
   category_id: string | null;
   account_id: string;
@@ -108,6 +109,7 @@ export function EditRecurringTransactionModal({
       id: transaction.id,
       description: formData.description.trim(),
       amount: finalAmount,
+      date: transaction.date,
       type: formData.type,
       category_id: formData.category_id,
       account_id: formData.account_id,
