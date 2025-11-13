@@ -346,12 +346,14 @@ function LayoutContent({ children, currentPage, onPageChange }: LayoutProps) {
                 <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-emerald-600 to-emerald-700 flex items-center justify-center shadow-lg">
                   <BarChart3 className="h-6 w-6 text-yellow-400" />
                 </div>
-                <h1 className="text-xl font-bold tracking-tight text-foreground">
-                  PlaniFlow
-                </h1>
-                <span className="text-sm text-muted-foreground font-medium">
-                  • Gestão Financeira
-                </span>
+                <div>
+                  <h1 className="text-xl font-bold tracking-tight text-foreground">
+                    PlaniFlow
+                  </h1>
+                  <p className="text-sm text-muted-foreground mt-1 font-medium">
+                    Gestão Financeira
+                  </p>
+                </div>
               </div>
             </div>
           )}
