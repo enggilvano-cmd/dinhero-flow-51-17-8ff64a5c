@@ -342,7 +342,10 @@ function LayoutContent({ children, currentPage, onPageChange }: LayoutProps) {
           {/* Desktop Logo Header */}
           {!isMobile && (
             <div className="flex justify-end items-center px-12 pt-3 pb-0">
-              <div className="flex items-center gap-3">
+              <div 
+                className="flex items-center gap-3 cursor-pointer transition-all duration-200 hover:scale-105"
+                onClick={() => onPageChange('dashboard')}
+              >
                 <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-emerald-600 to-emerald-700 flex items-center justify-center shadow-lg">
                   <BarChart3 className="h-6 w-6 text-yellow-400" />
                 </div>
