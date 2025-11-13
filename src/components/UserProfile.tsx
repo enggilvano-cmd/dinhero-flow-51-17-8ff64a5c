@@ -215,6 +215,7 @@ export function UserProfile() {
     switch (role) {
       case 'admin': return 'Administrador';
       case 'user': return 'Vitalício';
+      case 'trial': return 'Trial';
       case 'limited': return 'Usuário Limitado';
       default: return role;
     }

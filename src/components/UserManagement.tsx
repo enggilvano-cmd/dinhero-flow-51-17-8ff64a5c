@@ -18,8 +18,9 @@ interface Profile {
   email: string;
   full_name?: string;
   avatar_url?: string;
-  role: 'admin' | 'user' | 'subscriber';
+  role: 'admin' | 'user' | 'subscriber' | 'trial';
   is_active: boolean;
+  trial_expires_at?: string;
   subscription_expires_at?: string;
   created_at: string;
   updated_at: string;
@@ -66,6 +67,7 @@ export function UserManagement() {
         full_name: user.full_name ?? undefined,
         avatar_url: user.avatar_url ?? undefined,
         whatsapp: user.whatsapp ?? undefined,
+        trial_expires_at: user.trial_expires_at ?? undefined,
         subscription_expires_at: user.subscription_expires_at ?? undefined,
       })));
     } catch (error) {
@@ -108,7 +110,7 @@ export function UserManagement() {
     }
   };
 
-  const updateUserRole = async (userId: string, newRole: 'admin' | 'user' | 'subscriber') => {
+  const updateUserRole = async (userId: string, newRole: 'admin' | 'user' | 'subscriber' | 'trial') => {
     try {
       console.log('Updating user role:', { userId, newRole });
       
@@ -254,6 +256,8 @@ export function UserManagement() {
         return 'Administrador';
       case 'user':
         return 'Vitalício';
+      case 'trial':
+        return 'Trial';
       case 'subscriber':
         return 'Assinante';
       default:
@@ -413,6 +417,7 @@ export function UserManagement() {
                               </SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="admin">Administrador</SelectItem>
+                                <SelectItem value="trial">Trial</SelectItem>
                                 <SelectItem value="user">Vitalício</SelectItem>
                                 <SelectItem value="subscriber">Assinante</SelectItem>
                               </SelectContent>

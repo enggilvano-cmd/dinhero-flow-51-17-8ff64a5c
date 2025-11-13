@@ -7,13 +7,13 @@ import { Shield } from 'lucide-react';
 interface ProtectedRouteProps {
   children: ReactNode;
   requireAdmin?: boolean;
-  allowedRoles?: ('admin' | 'user' | 'subscriber')[];
+  allowedRoles?: ('admin' | 'user' | 'subscriber' | 'trial')[];
 }
 
 export function ProtectedRoute({ 
   children, 
   requireAdmin = false, 
-  allowedRoles = ['admin', 'user', 'subscriber'] 
+  allowedRoles = ['admin', 'user', 'subscriber', 'trial'] 
 }: ProtectedRouteProps) {
   const { user, profile, loading } = useAuth();
 
