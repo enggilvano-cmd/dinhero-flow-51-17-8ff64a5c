@@ -29,7 +29,8 @@
     "download": "Baixar",
     "upload": "Enviar",
     "select": "Selecionar",
-    "noResults": "Nenhum resultado encontrado"
+    "noResults": "Nenhum resultado encontrado",
+    "ok": "OK"
   },
   "auth": {
     "login": "Entrar",
@@ -1175,6 +1176,30 @@
         "action": "Ação",
         "resource": "Recurso",
         "dateTime": "Data/Hora"
+      },
+      "actions": {
+        "user_created": "Usuário criado",
+        "user_updated": "Usuário atualizado",
+        "user_deleted": "Usuário excluído",
+        "user_role_updated": "Função atualizada",
+        "user_activated": "Usuário ativado",
+        "user_deactivated": "Usuário desativado",
+        "subscription_updated": "Assinatura atualizada",
+        "login": "Login",
+        "logout": "Logout",
+        "password_changed": "Senha alterada",
+        "mfa_enabled": "2FA ativado",
+        "mfa_disabled": "2FA desativado",
+        "account_created": "Conta criada",
+        "email_changed": "Email alterado"
+      },
+      "resourceTypes": {
+        "profile": "Perfil",
+        "user": "Usuário",
+        "account": "Conta",
+        "transaction": "Transação",
+        "category": "Categoria",
+        "settings": "Configurações"
       }
     },
     "success": {
