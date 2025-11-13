@@ -9,6 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Upload, FileSpreadsheet, AlertCircle, MoreVertical, Copy, AlertTriangle, PlusCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 import * as XLSX from 'xlsx';
 
 interface Account {
@@ -51,6 +52,7 @@ export function ImportAccountsModal({
   accounts,
   onImportAccounts 
 }: ImportAccountsModalProps) {
+  const { t } = useTranslation();
   const [file, setFile] = useState<File | null>(null);
   const [importedData, setImportedData] = useState<ImportedAccount[]>([]);
   const [excludedIndexes, setExcludedIndexes] = useState<Set<number>>(new Set());
@@ -93,38 +95,38 @@ export function ImportAccountsModal({
     const cor = (row.Cor || row.cor || '').toString().trim();
 
     if (!nome) {
-      errors.push('Nome é obrigatório');
+      errors.push(t('modals.import.errors.nameRequired'));
       isValid = false;
     }
 
     if (!tipo) {
-      errors.push('Tipo é obrigatório');
+      errors.push(t('modals.import.errors.typeRequired'));
       isValid = false;
     }
 
     if (!cor) {
-      errors.push('Cor é obrigatória');
+      errors.push(t('modals.import.errors.colorRequired'));
       isValid = false;
     }
 
     const parsedType = validateAccountType(tipo);
     if (!parsedType) {
-      errors.push('Tipo inválido. Use: Conta Corrente, Poupança, Cartão de Crédito ou Investimento');
+      errors.push(t('modals.import.errors.invalidAccountType'));
       isValid = false;
     }
 
     if (cor && !isValidColor(cor)) {
-      errors.push('Cor deve estar no formato hexadecimal (#RRGGBB)');
+      errors.push(t('modals.import.errors.invalidColorFormat'));
       isValid = false;
     }
 
     if (parsedType === 'credit') {
       if (fechamento && (fechamento < 1 || fechamento > 31)) {
-        errors.push('Fechamento deve estar entre 1 e 31');
+        errors.push(t('modals.import.errors.closingDateRange'));
         isValid = false;
       }
       if (vencimento && (vencimento < 1 || vencimento > 31)) {
-        errors.push('Vencimento deve estar entre 1 e 31');
+        errors.push(t('modals.import.errors.dueDateRange'));
         isValid = false;
       }
     }
@@ -167,8 +169,8 @@ export function ImportAccountsModal({
 
     if (!selectedFile.name.match(/\.(xlsx|xls)$/)) {
       toast({
-        title: "Formato inválido",
-        description: "Por favor, selecione um arquivo Excel (.xlsx ou .xls)",
+        title: t('common.error'),
+        description: t('modals.import.errorInvalidFile'),
         variant: "destructive"
       });
       return;
@@ -186,8 +188,8 @@ export function ImportAccountsModal({
 
       if (rawData.length === 0) {
         toast({
-          title: "Arquivo vazio",
-          description: "O arquivo não contém dados para importar",
+          title: t('common.error'),
+          description: t('modals.import.errorEmpty'),
           variant: "destructive"
         });
         setIsProcessing(false);
@@ -205,14 +207,18 @@ export function ImportAccountsModal({
       }, { new: 0, duplicates: 0, invalid: 0 });
 
       toast({
-        title: "Arquivo processado",
-        description: `${summary.new} novas, ${summary.duplicates} duplicadas, ${summary.invalid} com erros.`,
+        title: t('modals.import.fileProcessed'),
+        description: t('modals.import.summaryDesc', {
+          new: summary.new,
+          duplicates: summary.duplicates,
+          errors: summary.invalid
+        }),
       });
 
     } catch (error) {
       toast({
-        title: "Erro ao processar arquivo",
-        description: "Não foi possível ler o arquivo Excel",
+        title: t('common.error'),
+        description: t('modals.import.errorReadFile'),
         variant: "destructive"
       });
     }
@@ -256,8 +262,8 @@ export function ImportAccountsModal({
     onImportAccounts(accountsToAdd, accountsToReplaceIds);
     
     toast({
-      title: "Contas importadas",
-      description: `${accountsToAdd.length} contas foram processadas com sucesso.`,
+      title: t('common.success'),
+      description: t('modals.import.accountsImported', { count: accountsToAdd.length }),
     });
 
     // Reset
@@ -341,8 +347,8 @@ export function ImportAccountsModal({
     XLSX.writeFile(wb, 'modelo-importacao-contas.xlsx');
 
     toast({
-      title: "Modelo baixado",
-      description: "Use este arquivo como exemplo para importar suas contas.",
+      title: t('common.success'),
+      description: t('modals.import.templateDownloaded'),
     });
   };
 
@@ -382,10 +388,10 @@ export function ImportAccountsModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Upload className="h-5 w-5" />
-            Importar Contas do Excel
+            {t('modals.import.titleAccounts')}
           </DialogTitle>
           <DialogDescription>
-            Faça o upload de um arquivo Excel (.xlsx ou .xls) para importar múltiplas contas de uma vez.
+            {t('modals.import.subtitleAccounts')}
           </DialogDescription>
         </DialogHeader>
 
@@ -393,7 +399,7 @@ export function ImportAccountsModal({
           {/* File Upload */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Selecionar Arquivo</CardTitle>
+              <CardTitle className="text-lg">{t('modals.import.selectFile')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -417,15 +423,15 @@ export function ImportAccountsModal({
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>
                     <div className="space-y-2">
-                      <p><strong>Formato esperado:</strong> O arquivo deve ter as colunas:</p>
+                      <p><strong>{t('modals.import.expectedFormat')}:</strong> {t('modals.import.fileColumns')}:</p>
                       <ul className="list-disc list-inside text-sm space-y-1">
-                        <li><strong>Nome:</strong> Nome da conta</li>
-                        <li><strong>Tipo:</strong> Conta Corrente, Poupança, Cartão de Crédito ou Investimento</li>
-                        <li><strong>Saldo:</strong> Saldo atual em Reais (negativo para cartões utilizados)</li>
-                        <li><strong>Limite:</strong> Limite em Reais (opcional, principalmente para cartões)</li>
-                        <li><strong>Fechamento:</strong> Dia do fechamento (1-31, opcional, apenas para cartões)</li>
-                        <li><strong>Vencimento:</strong> Dia do vencimento (1-31, opcional, apenas para cartões)</li>
-                        <li><strong>Cor:</strong> Cor em hexadecimal (ex: #3b82f6)</li>
+                        <li><strong>{t('modals.import.fields.name')}:</strong> {t('modals.import.accountNameDesc')}</li>
+                        <li><strong>{t('modals.import.fields.type')}:</strong> {t('modals.import.accountTypeDesc')}</li>
+                        <li><strong>{t('modals.import.fields.balance')}:</strong> {t('modals.import.accountBalanceDesc')}</li>
+                        <li><strong>{t('modals.import.fields.limit')}:</strong> {t('modals.import.accountLimitDesc')}</li>
+                        <li><strong>{t('modals.import.fields.closingDate')}:</strong> {t('modals.import.accountClosingDesc')}</li>
+                        <li><strong>{t('modals.import.fields.dueDate')}:</strong> {t('modals.import.accountDueDesc')}</li>
+                        <li><strong>{t('modals.import.fields.color')}:</strong> {t('modals.import.colorDesc')}</li>
                       </ul>
                       <Button
                         variant="outline"
@@ -433,7 +439,7 @@ export function ImportAccountsModal({
                         onClick={() => downloadTemplate()}
                         className="mt-2"
                       >
-                        Baixar Modelo de Exemplo
+                        {t('modals.import.downloadTemplate')}
                       </Button>
                     </div>
                   </AlertDescription>
@@ -454,7 +460,7 @@ export function ImportAccountsModal({
                         {summary.new}
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        Novas Contas
+                        {t('modals.import.newAccounts')}
                       </p>
                     </div>
                   </div>
@@ -470,7 +476,7 @@ export function ImportAccountsModal({
                         {summary.duplicates}
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        Duplicatas Encontradas
+                        {t('modals.import.duplicatesFound')}
                       </p>
                     </div>
                   </div>
@@ -486,7 +492,7 @@ export function ImportAccountsModal({
                         {summary.invalid}
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        Com Erros
+                        {t('modals.import.withErrors')}
                       </p>
                     </div>
                   </div>
@@ -502,7 +508,7 @@ export function ImportAccountsModal({
                         {summary.excluded}
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        Excluídas
+                        {t('modals.import.excluded')}
                       </p>
                     </div>
                   </div>
@@ -515,20 +521,20 @@ export function ImportAccountsModal({
           {importedData.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle>Prévia das Contas ({importedData.length} total)</CardTitle>
+                <CardTitle>{t('modals.import.previewAccounts', { count: importedData.length })}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="max-h-96 overflow-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="w-[100px]">Status</TableHead>
-                        <TableHead>Nome</TableHead>
-                        <TableHead>Tipo</TableHead>
-                        <TableHead>Saldo</TableHead>
-                        <TableHead>Limite</TableHead>
-                        <TableHead>Cor</TableHead>
-                        <TableHead className="w-[180px]">Ação</TableHead>
+                        <TableHead className="w-[100px]">{t('modals.import.status')}</TableHead>
+                        <TableHead>{t('modals.import.fields.name')}</TableHead>
+                        <TableHead>{t('modals.import.fields.type')}</TableHead>
+                        <TableHead>{t('modals.import.fields.balance')}</TableHead>
+                        <TableHead>{t('modals.import.fields.limit')}</TableHead>
+                        <TableHead>{t('modals.import.fields.color')}</TableHead>
+                        <TableHead className="w-[180px]">{t('modals.import.action')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -542,13 +548,13 @@ export function ImportAccountsModal({
                           >
                             <TableCell>
                               {isExcluded ? (
-                                <Badge variant="outline" className="bg-muted">Excluída</Badge>
+                                <Badge variant="outline" className="bg-muted">{t('modals.import.badges.excluded')}</Badge>
                               ) : !account.isValid ? (
-                                <Badge variant="destructive">Erro</Badge>
+                                <Badge variant="destructive">{t('modals.import.badges.error')}</Badge>
                               ) : account.isDuplicate ? (
-                                <Badge variant="secondary" className="bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300">Duplicata</Badge>
+                                <Badge variant="secondary" className="bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300">{t('modals.import.badges.duplicate')}</Badge>
                               ) : (
-                                <Badge variant="default" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300">Nova</Badge>
+                                <Badge variant="default" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300">{t('modals.import.badges.new')}</Badge>
                               )}
                             </TableCell>
                             <TableCell>{account.nome}</TableCell>
@@ -578,7 +584,7 @@ export function ImportAccountsModal({
                                   onClick={() => handleToggleExclude(index)}
                                   className="h-7 text-xs"
                                 >
-                                  {isExcluded ? "Incluir" : "Excluir"}
+                                  {isExcluded ? t('modals.import.include') : t('modals.import.exclude')}
                                 </Button>
                                 
                                 {!isExcluded && !account.isValid && (
@@ -593,16 +599,16 @@ export function ImportAccountsModal({
                                   <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                       <Button variant="outline" size="sm" className="text-xs h-7">
-                                        {account.resolution === 'skip' && 'Ignorar'}
-                                        {account.resolution === 'add' && 'Adicionar'}
-                                        {account.resolution === 'replace' && 'Substituir'}
+                                        {account.resolution === 'skip' && t('modals.import.resolutions.skip')}
+                                        {account.resolution === 'add' && t('modals.import.resolutions.add')}
+                                        {account.resolution === 'replace' && t('modals.import.resolutions.replace')}
                                         <MoreVertical className="h-3 w-3 ml-1" />
                                       </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent>
-                                      <DropdownMenuItem onClick={() => handleResolutionChange(index, 'skip')}>Ignorar</DropdownMenuItem>
-                                      <DropdownMenuItem onClick={() => handleResolutionChange(index, 'add')}>Adicionar como Nova</DropdownMenuItem>
-                                      <DropdownMenuItem onClick={() => handleResolutionChange(index, 'replace')} className="text-destructive">Substituir</DropdownMenuItem>
+                                      <DropdownMenuItem onClick={() => handleResolutionChange(index, 'skip')}>{t('modals.import.resolutions.skip')}</DropdownMenuItem>
+                                      <DropdownMenuItem onClick={() => handleResolutionChange(index, 'add')}>{t('modals.import.resolutions.addAsNew')}</DropdownMenuItem>
+                                      <DropdownMenuItem onClick={() => handleResolutionChange(index, 'replace')} className="text-destructive">{t('modals.import.resolutions.replace')}</DropdownMenuItem>
                                     </DropdownMenuContent>
                                   </DropdownMenu>
                                 )}
@@ -622,13 +628,13 @@ export function ImportAccountsModal({
         {/* Actions */}
         <div className="flex justify-end gap-3 pt-4 border-t">
           <Button variant="outline" onClick={handleCancel}>
-            Cancelar
+            {t('common.cancel')}
           </Button>
           <Button 
             onClick={handleImport}
             disabled={accountsToImportCount === 0 || isProcessing}
           >
-            Importar {accountsToImportCount} Contas
+            {t('modals.import.importButton', { count: accountsToImportCount, type: t('modals.import.typeAccounts') })}
           </Button>
         </div>
       </DialogContent>

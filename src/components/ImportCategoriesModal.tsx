@@ -9,6 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Upload, FileSpreadsheet, AlertCircle, MoreVertical, Copy, AlertTriangle, PlusCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 import * as XLSX from 'xlsx';
 
 interface Category {
@@ -43,6 +44,7 @@ export function ImportCategoriesModal({
   categories,
   onImportCategories 
 }: ImportCategoriesModalProps) {
+  const { t } = useTranslation();
   const [file, setFile] = useState<File | null>(null);
   const [importedData, setImportedData] = useState<ImportedCategory[]>([]);
   const [excludedIndexes, setExcludedIndexes] = useState<Set<number>>(new Set());
@@ -71,28 +73,28 @@ export function ImportCategoriesModal({
     const cor = (row.Cor || row.cor || '').toString().trim();
 
     if (!nome) {
-      errors.push('Nome é obrigatório');
+      errors.push(t('modals.import.errors.nameRequired'));
       isValid = false;
     }
 
     if (!tipo) {
-      errors.push('Tipo é obrigatório');
+      errors.push(t('modals.import.errors.typeRequired'));
       isValid = false;
     }
 
     if (!cor) {
-      errors.push('Cor é obrigatória');
+      errors.push(t('modals.import.errors.colorRequired'));
       isValid = false;
     }
 
     const parsedType = validateCategoryType(tipo);
     if (!parsedType) {
-      errors.push('Tipo deve ser: Receita, Despesa ou Ambos');
+      errors.push(t('modals.import.errors.invalidCategoryType'));
       isValid = false;
     }
 
     if (cor && !isValidColor(cor)) {
-      errors.push('Cor deve estar no formato hexadecimal (#RRGGBB)');
+      errors.push(t('modals.import.errors.invalidColorFormat'));
       isValid = false;
     }
 
@@ -130,8 +132,8 @@ export function ImportCategoriesModal({
 
     if (!selectedFile.name.match(/\.(xlsx|xls)$/)) {
       toast({
-        title: "Formato inválido",
-        description: "Por favor, selecione um arquivo Excel (.xlsx ou .xls)",
+        title: t('common.error'),
+        description: t('modals.import.errorInvalidFile'),
         variant: "destructive"
       });
       return;
@@ -149,8 +151,8 @@ export function ImportCategoriesModal({
 
       if (rawData.length === 0) {
         toast({
-          title: "Arquivo vazio",
-          description: "O arquivo não contém dados para importar",
+          title: t('common.error'),
+          description: t('modals.import.errorEmpty'),
           variant: "destructive"
         });
         setIsProcessing(false);
@@ -168,14 +170,18 @@ export function ImportCategoriesModal({
       }, { new: 0, duplicates: 0, invalid: 0 });
 
       toast({
-        title: "Arquivo processado",
-        description: `${summary.new} novas, ${summary.duplicates} duplicadas, ${summary.invalid} com erros.`,
+        title: t('modals.import.fileProcessed'),
+        description: t('modals.import.summaryDesc', {
+          new: summary.new,
+          duplicates: summary.duplicates,
+          errors: summary.invalid
+        }),
       });
 
     } catch (error) {
       toast({
-        title: "Erro ao processar arquivo",
-        description: "Não foi possível ler o arquivo Excel",
+        title: t('common.error'),
+        description: t('modals.import.errorReadFile'),
         variant: "destructive"
       });
     }
@@ -209,8 +215,8 @@ export function ImportCategoriesModal({
     onImportCategories(categoriesToAdd, categoriesToReplaceIds);
     
     toast({
-      title: "Categorias importadas",
-      description: `${categoriesToAdd.length} categorias foram processadas com sucesso.`,
+      title: t('common.success'),
+      description: t('modals.import.categoriesImported', { count: categoriesToAdd.length }),
     });
 
     // Reset
@@ -278,8 +284,8 @@ export function ImportCategoriesModal({
     XLSX.writeFile(wb, 'modelo-importacao-categorias.xlsx');
 
     toast({
-      title: "Modelo baixado",
-      description: "Use este arquivo como exemplo para importar suas categorias.",
+      title: t('common.success'),
+      description: t('modals.import.templateDownloaded'),
     });
   };
 
@@ -312,10 +318,10 @@ export function ImportCategoriesModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Upload className="h-5 w-5" />
-            Importar Categorias do Excel
+            {t('modals.import.titleCategories')}
           </DialogTitle>
           <DialogDescription>
-            Faça o upload de um arquivo Excel (.xlsx ou .xls) para importar múltiplas categorias de uma vez.
+            {t('modals.import.subtitleCategories')}
           </DialogDescription>
         </DialogHeader>
 
@@ -540,13 +546,13 @@ export function ImportCategoriesModal({
         {/* Actions */}
         <div className="flex justify-end gap-3 pt-4 border-t">
           <Button variant="outline" onClick={handleCancel}>
-            Cancelar
+            {t('common.cancel')}
           </Button>
           <Button 
             onClick={handleImport}
             disabled={categoriesToImportCount === 0 || isProcessing}
           >
-            Importar {categoriesToImportCount} Categorias
+            {t('modals.import.importButton', { count: categoriesToImportCount, type: t('modals.import.typeCategories') })}
           </Button>
         </div>
       </DialogContent>
