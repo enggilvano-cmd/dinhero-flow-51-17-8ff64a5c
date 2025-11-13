@@ -154,6 +154,11 @@
     "revenues": "Revenues",
     "expenses": "Expenses",
     "balance": "Balance",
+    "chart": {
+      "revenues": "Revenues",
+      "expenses": "Expenses",
+      "cumulativeBalance": "Cumulative Balance"
+    },
     "period": "Period",
     "allTransactions": "All",
     "currentMonth": "Current Month",

@@ -154,6 +154,11 @@
     "revenues": "Receitas",
     "expenses": "Despesas",
     "balance": "Saldo",
+    "chart": {
+      "revenues": "Receitas",
+      "expenses": "Despesas",
+      "cumulativeBalance": "Saldo Acumulado"
+    },
     "period": "Período",
     "allTransactions": "Todas",
     "currentMonth": "Mês Atual",

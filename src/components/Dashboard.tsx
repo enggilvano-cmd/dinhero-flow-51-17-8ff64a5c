@@ -946,15 +946,15 @@ export function Dashboard({
                   <ChartContainer
                     config={{
                       receitas: {
-                        label: "Receitas",
+                        label: t('dashboard.chart.revenues'),
                         color: "hsl(var(--success))",
                       },
                       despesas: {
-                        label: "Despesas",
+                        label: t('dashboard.chart.expenses'),
                         color: "hsl(var(--destructive))",
                       },
                       saldo: {
-                        label: "Saldo Acumulado",
+                        label: t('dashboard.chart.cumulativeBalance'),
                         color: "hsl(var(--primary))",
                       },
                     }}
@@ -1089,7 +1089,7 @@ export function Dashboard({
                           dataKey="receitas"
                           fill="url(#colorReceitas)"
                           radius={[4, 4, 0, 0]}
-                          name="Receitas"
+                          name={t('dashboard.chart.revenues')}
                         />
 
                         {/* Barras de Despesas com gradiente */}
@@ -1097,7 +1097,7 @@ export function Dashboard({
                           dataKey="despesas"
                           fill="url(#colorDespesas)"
                           radius={[4, 4, 0, 0]}
-                          name="Despesas"
+                          name={t('dashboard.chart.expenses')}
                         />
 
                         {/* Linha de saldo com pontos condicionais */}
@@ -1132,7 +1132,7 @@ export function Dashboard({
                             stroke: "hsl(var(--background))",
                           }}
                           connectNulls={false}
-                          name="Saldo Acumulado"
+                          name={t('dashboard.chart.cumulativeBalance')}
                         />
                       </ComposedChart>
                     </ResponsiveContainer>
@@ -1144,15 +1144,15 @@ export function Dashboard({
                   <div className="flex justify-center gap-4 mt-3 text-xs">
                     <div className="flex items-center gap-1">
                       <div className="w-3 h-3 rounded bg-success"></div>
-                      <span className="text-muted-foreground">Receitas</span>
+                      <span className="text-muted-foreground">{t('dashboard.chart.revenues')}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <div className="w-3 h-3 rounded bg-destructive"></div>
-                      <span className="text-muted-foreground">Despesas</span>
+                      <span className="text-muted-foreground">{t('dashboard.chart.expenses')}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <div className="w-3 h-0.5 bg-primary"></div>
-                      <span className="text-muted-foreground">Saldo</span>
+                      <span className="text-muted-foreground">{t('dashboard.balance')}</span>
                     </div>
                   </div>
                 )}
