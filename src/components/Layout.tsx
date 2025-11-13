@@ -26,6 +26,11 @@ interface LayoutProps {
   onPageChange: (page: string) => void;
 }
 
+const getFirstName = (fullName?: string | null) => {
+  if (!fullName) return null;
+  return fullName.split(' ')[0];
+};
+
 const getMenuItems = () => [
   { id: "dashboard", label: "Painel", icon: Home },
   { id: "accounts", label: "Contas", icon: CreditCard },
@@ -271,7 +276,7 @@ function AppSidebar({ currentPage, onPageChange }: { currentPage: string; onPage
                   {(!isCollapsed || isMobile) && (
                     <div className="flex-1 text-left">
                       <p className="text-sm font-medium truncate">
-                        {profile.full_name || 'Usuário'}
+                        {getFirstName(profile.full_name) || 'Usuário'}
                       </p>
                       <div className="flex items-center gap-2">
                         <Badge 
