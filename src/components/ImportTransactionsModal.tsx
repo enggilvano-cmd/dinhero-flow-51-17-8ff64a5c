@@ -104,18 +104,30 @@ export function ImportTransactionsModal({
     return '';
   };
 
+  // Função para normalizar strings (remover acentos, espaços extras, etc.)
+  const normalizeString = (str: string): string => {
+    return str
+      .trim()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Remove diacríticos (acentos)
+      .replace(/\s+/g, ' '); // Normaliza espaços
+  };
+
   const validateTransactionType = (tipo: string): 'income' | 'expense' | 'transfer' | null => {
-    const normalizedType = tipo.toLowerCase().trim();
-    if (['receita', 'income', 'entrada'].includes(normalizedType)) return 'income';
-    if (['despesa', 'expense', 'saída', 'saida'].includes(normalizedType)) return 'expense';
-    if (['transferência', 'transferencia', 'transfer'].includes(normalizedType)) return 'transfer';
+    const normalizedType = normalizeString(tipo);
+    // Suporte para PT-BR, EN-US, ES-ES (singular e plural)
+    if (['receita', 'receitas', 'income', 'entrada', 'entradas', 'ingreso', 'ingresos'].includes(normalizedType)) return 'income';
+    if (['despesa', 'despesas', 'expense', 'expenses', 'saida', 'saidas', 'gasto', 'gastos'].includes(normalizedType)) return 'expense';
+    if (['transferencia', 'transfer', 'transferir'].includes(normalizedType)) return 'transfer';
     return null;
   };
 
   const validateStatus = (status: string): 'completed' | 'pending' | null => {
     if (!status) return 'completed'; // padrão
-    const normalizedStatus = status.toLowerCase().trim();
-    if (['concluída', 'concluida', 'completed', 'finalizada'].includes(normalizedStatus)) return 'completed';
+    const normalizedStatus = normalizeString(status);
+    // Suporte para PT-BR, EN-US, ES-ES
+    if (['concluida', 'completed', 'finalizada', 'completada'].includes(normalizedStatus)) return 'completed';
     if (['pendente', 'pending', 'em andamento'].includes(normalizedStatus)) return 'pending';
     return null;
   };
