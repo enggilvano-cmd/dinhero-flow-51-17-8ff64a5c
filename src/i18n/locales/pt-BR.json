@@ -644,13 +644,57 @@
     "editTransaction": {
       "title": "Editar Transação",
       "subtitle": "Editar detalhes da transação",
+      "installmentInfo": "Parcela {{current}} de {{total}}",
+      "fields": {
+        "description": {
+          "label": "Descrição",
+          "placeholder": "Descrição da transação"
+        },
+        "amount": {
+          "label": "Valor"
+        },
+        "date": {
+          "label": "Data"
+        },
+        "type": {
+          "label": "Tipo"
+        },
+        "category": {
+          "label": "Categoria",
+          "placeholder": "Selecione uma categoria"
+        },
+        "account": {
+          "label": "Conta",
+          "placeholder": "Selecione uma conta"
+        },
+        "status": {
+          "label": "Status"
+        },
+        "invoiceMonth": {
+          "label": "Fatura",
+          "placeholder": "Selecione o mês da fatura"
+        }
+      },
       "editScope": "Escopo de Edição",
       "onlyThis": "Apenas esta parcela",
       "thisAndNext": "Esta e próximas parcelas",
       "all": "Todas as parcelas",
-      "updating": "Atualizando...",
-      "update": "Atualizar Transação",
-      "success": "Transação atualizada com sucesso"
+      "actions": {
+        "cancel": "Cancelar",
+        "save": "Salvar",
+        "updating": "Atualizando..."
+      },
+      "errors": {
+        "required": "Por favor, preencha todos os campos obrigatórios",
+        "categoryRequired": "Por favor, selecione uma categoria",
+        "updateFailed": "Erro ao atualizar transação"
+      },
+      "success": {
+        "title": "Transação atualizada",
+        "current": "Transação atualizada com sucesso",
+        "all": "Todas as parcelas foram atualizadas com sucesso",
+        "selected": "Parcelas selecionadas foram atualizadas com sucesso"
+      }
     },
     "addAccount": {
       "title": "Adicionar Nova Conta",
