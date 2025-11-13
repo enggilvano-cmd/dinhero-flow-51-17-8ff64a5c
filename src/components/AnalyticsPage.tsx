@@ -446,6 +446,18 @@ export default function AnalyticsPage({
           useCORS: true,
           backgroundColor: "#ffffff",
           logging: false,
+          onclone: (clonedDoc) => {
+            const root = clonedDoc.documentElement as HTMLElement;
+            root.style.setProperty("--gradient-card", "none");
+            root.style.setProperty("--gradient-glass", "none");
+            root.style.setProperty("--gradient-surface", "none");
+            root.style.setProperty("--gradient-hero", "none");
+            const cards = clonedDoc.querySelectorAll('.financial-card, .apple-card, .hero-card, .dynamic-surface') as NodeListOf<HTMLElement>;
+            cards.forEach((el) => {
+              el.style.background = "#ffffff";
+              el.style.boxShadow = "none";
+            });
+          },
         });
 
         if (canvas.width > 0 && canvas.height > 0) {
@@ -479,6 +491,18 @@ export default function AnalyticsPage({
           useCORS: true,
           backgroundColor: "#ffffff",
           logging: false,
+          onclone: (clonedDoc) => {
+            const root = clonedDoc.documentElement as HTMLElement;
+            root.style.setProperty("--gradient-card", "none");
+            root.style.setProperty("--gradient-glass", "none");
+            root.style.setProperty("--gradient-surface", "none");
+            root.style.setProperty("--gradient-hero", "none");
+            const cards = clonedDoc.querySelectorAll('.financial-card, .apple-card, .hero-card, .dynamic-surface') as NodeListOf<HTMLElement>;
+            cards.forEach((el) => {
+              el.style.background = "#ffffff";
+              el.style.boxShadow = "none";
+            });
+          },
         });
 
         if (canvas.width === 0 || canvas.height === 0) continue;
