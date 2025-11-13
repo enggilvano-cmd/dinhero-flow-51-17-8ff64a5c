@@ -572,7 +572,7 @@ export default function AnalyticsPage({
   };
 
   return (
-    <div ref={contentRef} className="spacing-responsive-lg fade-in">{/*  Header */}
+    <div ref={contentRef} className="spacing-responsive-lg fade-in pb-6 sm:pb-8">{/*  Header */}
       <div className="flex flex-col gap-3">
         <div className="min-w-0 w-full">
           <h1 className="text-xl sm:text-2xl font-bold leading-tight">{t("analytics.title")}</h1>

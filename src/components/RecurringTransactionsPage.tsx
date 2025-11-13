@@ -221,7 +221,7 @@ export function RecurringTransactionsPage() {
   }
 
   return (
-    <div className="spacing-responsive-lg fade-in">
+    <div className="spacing-responsive-lg fade-in pb-6 sm:pb-8">
       {/* Header */}
       <div className="flex flex-col gap-3">
         <div className="min-w-0 w-full">

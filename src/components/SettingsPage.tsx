@@ -254,7 +254,7 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
   };
 
   return (
-    <div className="space-y-8 fade-in">
+    <div className="space-y-8 fade-in pb-6 sm:pb-8">
       {/* Header */}
       <div>
         <h1 className="text-xl sm:text-2xl font-bold leading-tight">{t('settings.title')}</h1>
