@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -237,22 +236,19 @@ function AppSidebar({ currentPage, onPageChange }: { currentPage: string; onPage
                   </Avatar>
                   {(!isCollapsed || isMobile) && (
                     <div className="flex-1 text-left">
-                      <p className="text-sm font-medium truncate">
-                        {getFirstName(profile.full_name) || 'Usuário'}
-                      </p>
-                      <div className="flex flex-col gap-1">
-                        <Badge 
-                          variant={profile.role === 'admin' ? 'destructive' : 'secondary'}
-                          className="text-xs w-fit"
-                        >
-                          {profile.role === 'admin' ? 'Admin' : profile.role === 'user' ? 'Usuário' : 'Limitado'}
-                        </Badge>
-                        {!isAdmin() && timeRemaining && (
-                          <span className="text-xs text-muted-foreground">
-                            {timeRemaining}
-                          </span>
-                        )}
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium truncate">
+                          {getFirstName(profile.full_name) || 'Usuário'}
+                        </p>
+                        <span className="text-xs text-muted-foreground">
+                          {profile.role === 'admin' ? '• Admin' : profile.role === 'user' ? '• Usuário' : profile.role === 'subscriber' ? '• Assinante' : '• Trial'}
+                        </span>
                       </div>
+                      {!isAdmin() && timeRemaining && (
+                        <span className="text-xs text-muted-foreground mt-0.5">
+                          {timeRemaining}
+                        </span>
+                      )}
                     </div>
                   )}
                 </Button>
