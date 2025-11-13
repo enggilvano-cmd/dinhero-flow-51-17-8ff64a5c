@@ -134,6 +134,7 @@ export type Database = {
           id: string
           is_active: boolean
           role: Database["public"]["Enums"]["user_role"]
+          subscription_expires_at: string | null
           trial_expires_at: string | null
           updated_at: string
           user_id: string
@@ -147,6 +148,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           role?: Database["public"]["Enums"]["user_role"]
+          subscription_expires_at?: string | null
           trial_expires_at?: string | null
           updated_at?: string
           user_id: string
@@ -160,6 +162,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           role?: Database["public"]["Enums"]["user_role"]
+          subscription_expires_at?: string | null
           trial_expires_at?: string | null
           updated_at?: string
           user_id?: string
@@ -347,6 +350,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      deactivate_expired_subscriptions: { Args: never; Returns: undefined }
       deactivate_expired_trials: { Args: never; Returns: undefined }
       get_system_setting: { Args: { p_setting_key: string }; Returns: string }
       get_user_role: {
@@ -369,6 +373,10 @@ export type Database = {
         Returns: undefined
       }
       is_admin: { Args: { check_user_id: string }; Returns: boolean }
+      is_subscription_active: {
+        Args: { check_user_id: string }
+        Returns: boolean
+      }
       is_trial_active: { Args: { check_user_id: string }; Returns: boolean }
       log_user_activity: {
         Args: {
@@ -388,7 +396,7 @@ export type Database = {
       recurrence_type: "daily" | "weekly" | "monthly" | "yearly"
       transaction_status: "pending" | "completed"
       transaction_type: "income" | "expense" | "transfer"
-      user_role: "admin" | "user" | "limited"
+      user_role: "admin" | "user" | "subscriber"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -521,7 +529,7 @@ export const Constants = {
       recurrence_type: ["daily", "weekly", "monthly", "yearly"],
       transaction_status: ["pending", "completed"],
       transaction_type: ["income", "expense", "transfer"],
-      user_role: ["admin", "user", "limited"],
+      user_role: ["admin", "user", "subscriber"],
     },
   },
 } as const

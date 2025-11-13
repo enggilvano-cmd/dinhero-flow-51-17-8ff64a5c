@@ -10,9 +10,9 @@ interface Profile {
   full_name?: string;
   whatsapp?: string;
   avatar_url?: string;
-  role: 'admin' | 'user' | 'limited';
+  role: 'admin' | 'user' | 'subscriber';
   is_active: boolean;
-  trial_expires_at?: string;
+  subscription_expires_at?: string;
   created_at: string;
   updated_at: string;
 }
@@ -27,9 +27,9 @@ interface AuthContextType {
   signOut: () => Promise<{ error: any }>;
   resetPassword: (email: string) => Promise<{ error: any }>;
   isAdmin: () => boolean;
-  hasRole: (role: 'admin' | 'user' | 'limited') => boolean;
-  isTrialActive: () => boolean;
-  getTrialTimeRemaining: () => string | null;
+  hasRole: (role: 'admin' | 'user' | 'subscriber') => boolean;
+  isSubscriptionActive: () => boolean;
+  getSubscriptionTimeRemaining: () => string | null;
   initializeUserData: () => Promise<void>;
 }
 
@@ -68,7 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         full_name: data.full_name ?? undefined,
         avatar_url: data.avatar_url ?? undefined,
         whatsapp: data.whatsapp ?? undefined,
-        trial_expires_at: data.trial_expires_at ?? undefined,
+        subscription_expires_at: data.subscription_expires_at ?? undefined,
       } : null);
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -365,34 +365,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return result;
   };
 
-  const hasRole = (role: 'admin' | 'user' | 'limited') => {
+  const hasRole = (role: 'admin' | 'user' | 'subscriber') => {
     return profile?.role === role && profile?.is_active;
   };
 
-  const isTrialActive = () => {
-    if (!profile || profile.role === 'admin') return true;
-    if (!profile.trial_expires_at) return false;
-    
-    const expiresAt = new Date(profile.trial_expires_at);
-    const now = new Date();
-    return expiresAt > now && profile.is_active;
+  const isSubscriptionActive = () => {
+    if (!profile) return false;
+    if (profile.role === 'admin' || profile.role === 'user') return profile.is_active;
+    if (profile.role === 'subscriber') {
+      if (!profile.subscription_expires_at) return false;
+      const expiresAt = new Date(profile.subscription_expires_at);
+      const now = new Date();
+      return expiresAt > now && profile.is_active;
+    }
+    return false;
   };
 
-  const getTrialTimeRemaining = () => {
-    if (!profile || profile.role === 'admin' || !profile.trial_expires_at) return null;
+  const getSubscriptionTimeRemaining = () => {
+    if (!profile || profile.role !== 'subscriber' || !profile.subscription_expires_at) return null;
     
-    const expiresAt = new Date(profile.trial_expires_at);
+    const expiresAt = new Date(profile.subscription_expires_at);
     const now = new Date();
     const timeLeft = expiresAt.getTime() - now.getTime();
     
     if (timeLeft <= 0) return 'Expirado';
     
-    const hours = Math.floor(timeLeft / (1000 * 60 * 60));
-    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+    const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     
-    if (hours > 0) {
-      return `${hours}h ${minutes}m restantes`;
+    if (days > 0) {
+      return `${days} dia${days > 1 ? 's' : ''} restante${days > 1 ? 's' : ''}`;
+    } else if (hours > 0) {
+      return `${hours}h restantes`;
     } else {
+      const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
       return `${minutes}m restantes`;
     }
   };
@@ -410,8 +416,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         resetPassword,
         isAdmin,
         hasRole,
-        isTrialActive,
-        getTrialTimeRemaining,
+        isSubscriptionActive,
+        getSubscriptionTimeRemaining,
         initializeUserData,
       }}
     >

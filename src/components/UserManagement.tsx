@@ -18,8 +18,9 @@ interface Profile {
   email: string;
   full_name?: string;
   avatar_url?: string;
-  role: 'admin' | 'user' | 'limited';
+  role: 'admin' | 'user' | 'subscriber';
   is_active: boolean;
+  subscription_expires_at?: string;
   created_at: string;
   updated_at: string;
 }
@@ -65,7 +66,7 @@ export function UserManagement() {
         full_name: user.full_name ?? undefined,
         avatar_url: user.avatar_url ?? undefined,
         whatsapp: user.whatsapp ?? undefined,
-        trial_expires_at: user.trial_expires_at ?? undefined,
+        subscription_expires_at: user.subscription_expires_at ?? undefined,
       })));
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -107,7 +108,7 @@ export function UserManagement() {
     }
   };
 
-  const updateUserRole = async (userId: string, newRole: 'admin' | 'user' | 'limited') => {
+  const updateUserRole = async (userId: string, newRole: 'admin' | 'user' | 'subscriber') => {
     try {
       console.log('Updating user role:', { userId, newRole });
       
@@ -227,17 +228,55 @@ export function UserManagement() {
     switch (role) {
       case 'admin': return 'destructive';
       case 'user': return 'default';
-      case 'limited': return 'secondary';
+      case 'subscriber': return 'secondary';
       default: return 'outline';
     }
   };
 
   const getRoleLabel = (role: string) => {
     switch (role) {
-      case 'admin': return 'Administrador';
-      case 'user': return 'Usuário Padrão';
-      case 'limited': return 'Usuário Limitado';
-      default: return role;
+      case 'admin':
+        return 'Administrador';
+      case 'user':
+        return 'Usuário Padrão';
+      case 'subscriber':
+        return 'Assinante';
+      default:
+        return role;
+    }
+  };
+
+  const setSubscriptionDays = async (userId: string, days: number) => {
+    try {
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + days);
+
+      const { error } = await supabase
+        .from('profiles')
+        .update({ subscription_expires_at: expiresAt.toISOString() })
+        .eq('user_id', userId);
+
+      if (error) throw error;
+
+      await supabase.rpc('log_user_activity', {
+        p_user_id: profile?.user_id || '',
+        p_action: 'subscription_updated',
+        p_resource_type: 'profile',
+        p_resource_id: userId,
+      });
+
+      toast({
+        title: 'Sucesso',
+        description: `Assinatura configurada para ${days} dias.`,
+      });
+
+      fetchUsers();
+    } catch (error: any) {
+      toast({
+        title: 'Erro',
+        description: error.message,
+        variant: 'destructive',
+      });
     }
   };
 
@@ -346,22 +385,52 @@ export function UserManagement() {
                           </div>
                         </TableCell>
                         <TableCell className="hidden sm:table-cell py-2 sm:py-4">
-                          <Select
-                            value={user.role}
-                            onValueChange={(value: 'admin' | 'user' | 'limited') => 
-                              updateUserRole(user.user_id, value)
-                            }
-                            disabled={user.user_id === profile?.user_id}
-                          >
-                            <SelectTrigger className="w-32 sm:w-40 text-xs sm:text-sm">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="admin">Administrador</SelectItem>
-                              <SelectItem value="user">Usuário Padrão</SelectItem>
-                              <SelectItem value="limited">Usuário Limitado</SelectItem>
-                            </SelectContent>
-                          </Select>
+                          <div className="flex flex-col gap-2">
+                            <Select
+                              value={user.role}
+                              onValueChange={(value: 'admin' | 'user' | 'subscriber') => 
+                                updateUserRole(user.user_id, value)
+                              }
+                              disabled={user.user_id === profile?.user_id}
+                            >
+                              <SelectTrigger className="w-32 sm:w-40 text-xs sm:text-sm">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="admin">Administrador</SelectItem>
+                                <SelectItem value="user">Usuário Padrão</SelectItem>
+                                <SelectItem value="subscriber">Assinante</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            {user.role === 'subscriber' && (
+                              <div className="flex gap-2 items-center">
+                                <input
+                                  type="number"
+                                  placeholder="Dias"
+                                  className="w-16 px-2 py-1 text-xs border rounded"
+                                  id={`days-${user.user_id}`}
+                                />
+                                <Button
+                                  size="sm"
+                                  className="text-xs h-6"
+                                  onClick={() => {
+                                    const input = document.getElementById(`days-${user.user_id}`) as HTMLInputElement;
+                                    const days = parseInt(input.value);
+                                    if (days > 0) {
+                                      setSubscriptionDays(user.user_id, days);
+                                    }
+                                  }}
+                                >
+                                  OK
+                                </Button>
+                                {user.subscription_expires_at && (
+                                  <span className="text-xs text-muted-foreground">
+                                    Exp: {new Date(user.subscription_expires_at).toLocaleDateString('pt-BR')}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                          </div>
                         </TableCell>
                         <TableCell className="py-2 sm:py-4">
                           <div className="flex items-center gap-1 sm:gap-2">
