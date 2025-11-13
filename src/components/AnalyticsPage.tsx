@@ -415,84 +415,97 @@ export default function AnalyticsPage({
     });
 
     try {
-      // Scroll to top and force resize
       window.scrollTo(0, 0);
       window.dispatchEvent(new Event("resize"));
-      
-      // Wait longer for charts to render
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
       const pdf = new jsPDF("p", "mm", "a4");
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
-      const margin = 10;
+      const margin = 15;
       const contentWidth = pageWidth - 2 * margin;
+      const maxContentHeight = pageHeight - 2 * margin;
 
       // Header
-      pdf.setFontSize(16);
+      pdf.setFontSize(18);
       pdf.setFont("helvetica", "bold");
-      pdf.text("Relatório de Análises Financeiras", pageWidth / 2, 15, { align: "center" });
+      pdf.text("Relatório de Análises Financeiras", pageWidth / 2, margin, { align: "center" });
       
       pdf.setFontSize(10);
       pdf.setFont("helvetica", "normal");
-      pdf.text(
-        `Gerado em: ${format(new Date(), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}`,
-        pageWidth / 2,
-        22,
-        { align: "center" }
-      );
+      const dateText = `Gerado em: ${format(new Date(), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}`;
+      pdf.text(dateText, pageWidth / 2, margin + 7, { align: "center" });
 
-      let currentY = 30;
+      let currentY = margin + 15;
 
-      // Capture all sections
-      const sections = contentRef.current.querySelectorAll(".analytics-section");
-      
-      console.log("Sections found:", sections.length);
-      
-      for (let i = 0; i < sections.length; i++) {
-        const section = sections[i] as HTMLElement;
-        
-        console.log(`Section ${i}: ${section.offsetWidth}x${section.offsetHeight}`);
-        
-        // Skip invisible sections
-        if (section.offsetWidth === 0 || section.offsetHeight === 0) {
-          console.log(`Skipping section ${i} (no size)`);
-          continue;
-        }
-        
-        // Capture section as image with simpler config
-        const canvas = await html2canvas(section, {
-          scale: 2,
+      // Captura os cards de resumo
+      const summaryCards = contentRef.current.querySelectorAll(".analytics-section")[0];
+      if (summaryCards && summaryCards instanceof HTMLElement) {
+        const canvas = await html2canvas(summaryCards, {
+          scale: 1.5,
           useCORS: true,
-          allowTaint: false,
-          logging: true,
           backgroundColor: "#ffffff",
-          removeContainer: false,
+          logging: false,
         });
 
-        console.log(`Canvas ${i}: ${canvas.width}x${canvas.height}`);
+        if (canvas.width > 0 && canvas.height > 0) {
+          const imgData = canvas.toDataURL("image/png");
+          const imgWidth = contentWidth;
+          const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-        if (canvas.width === 0 || canvas.height === 0) {
-          console.log(`Skipping section ${i} (invalid canvas)`);
-          continue;
+          if (currentY + imgHeight > pageHeight - margin) {
+            pdf.addPage();
+            currentY = margin;
+          }
+
+          pdf.addImage(imgData, "PNG", margin, currentY, imgWidth, imgHeight);
+          currentY += imgHeight + 10;
         }
+      }
+
+      // Captura cada gráfico individualmente
+      const chartCards = contentRef.current.querySelectorAll(".financial-card");
+      
+      for (let i = 0; i < chartCards.length; i++) {
+        const card = chartCards[i] as HTMLElement;
+        
+        // Pular os cards de resumo (primeiros 3)
+        if (i < 3) continue;
+        
+        if (card.offsetWidth === 0 || card.offsetHeight === 0) continue;
+
+        const canvas = await html2canvas(card, {
+          scale: 1.5,
+          useCORS: true,
+          backgroundColor: "#ffffff",
+          logging: false,
+        });
+
+        if (canvas.width === 0 || canvas.height === 0) continue;
 
         const imgData = canvas.toDataURL("image/png");
-        const imgWidth = contentWidth;
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        let imgWidth = contentWidth;
+        let imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-        // Add new page if needed
+        // Se a imagem for muito alta, redimensiona para caber na página
+        if (imgHeight > maxContentHeight) {
+          imgHeight = maxContentHeight;
+          imgWidth = (canvas.width * imgHeight) / canvas.height;
+        }
+
+        // Adiciona nova página se necessário
         if (currentY + imgHeight > pageHeight - margin) {
           pdf.addPage();
           currentY = margin;
         }
 
-        // Add image to PDF
-        pdf.addImage(imgData, "PNG", margin, currentY, imgWidth, imgHeight);
-        currentY += imgHeight + 5;
+        // Centraliza imagens menores
+        const xPos = imgWidth < contentWidth ? margin + (contentWidth - imgWidth) / 2 : margin;
+        
+        pdf.addImage(imgData, "PNG", xPos, currentY, imgWidth, imgHeight);
+        currentY += imgHeight + 8;
       }
 
-      // Save PDF
       const periodLabel =
         dateFilter === "current_month"
           ? format(new Date(), "MMMM-yyyy", { locale: ptBR })
