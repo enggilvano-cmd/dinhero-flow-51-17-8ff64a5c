@@ -9,14 +9,30 @@ export const useT = () => {
   const t = (key: string, options?: any): string => {
     const result = baseT(key as any, options);
     if (typeof result === 'string' && result === key) {
-      // tentar recuperar diretamente do bundle atual
       const lang = i18n.language || 'pt-BR';
+
+      // 1) Tenta diretamente via getResource
       const fromLang = i18n.getResource(lang, 'translation', key);
       if (typeof fromLang === 'string') return fromLang;
 
-      // tentar do fallback
+      // 2) Tenta via bundle completo com deep path
+      const deepGet = (obj: any, path: string) =>
+        path.split('.').reduce((o: any, p: string) => (o && typeof o === 'object' ? o[p] : undefined), obj);
+
+      try {
+        const bundle = i18n.getResourceBundle(lang, 'translation');
+        const fromBundle = deepGet(bundle, key);
+        if (typeof fromBundle === 'string') return fromBundle;
+      } catch {}
+
+      // 3) Fallback pt-BR
       const fromFallback = i18n.getResource('pt-BR', 'translation', key);
       if (typeof fromFallback === 'string') return fromFallback;
+      try {
+        const fbBundle = i18n.getResourceBundle('pt-BR', 'translation');
+        const fromFbBundle = deepGet(fbBundle, key);
+        if (typeof fromFbBundle === 'string') return fromFbBundle;
+      } catch {}
     }
     return result as string;
   };

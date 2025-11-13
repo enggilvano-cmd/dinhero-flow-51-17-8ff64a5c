@@ -1019,6 +1019,7 @@
     },
     "roles": {
       "admin": "Administrador",
+      "user": "Usuario",
       "lifetime": "Vitalicio",
       "trial": "Prueba",
       "subscriber": "Suscriptor"

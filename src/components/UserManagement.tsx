@@ -257,7 +257,7 @@ export function UserManagement() {
       case 'admin':
         return t('userManagement.roles.admin');
       case 'user':
-        return t('userManagement.roles.lifetime');
+        return t('userManagement.roles.user');
       case 'trial':
         return t('userManagement.roles.trial');
       case 'subscriber':
@@ -423,7 +423,7 @@ export function UserManagement() {
                                 <SelectContent>
                                   <SelectItem value="admin">{t('userManagement.roles.admin')}</SelectItem>
                                   <SelectItem value="trial">{t('userManagement.roles.trial')}</SelectItem>
-                                  <SelectItem value="user">{t('userManagement.roles.lifetime')}</SelectItem>
+                                  <SelectItem value="user">{t('userManagement.roles.user')}</SelectItem>
                                   <SelectItem value="subscriber">{t('userManagement.roles.subscriber')}</SelectItem>
                                 </SelectContent>
                               </Select>
