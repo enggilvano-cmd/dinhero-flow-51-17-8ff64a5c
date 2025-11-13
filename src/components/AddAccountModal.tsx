@@ -239,6 +239,7 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
               onValueChange={(value) =>
                 setFormData((prev) => ({ ...prev, balanceInCents: value }))
               }
+              allowNegative={formData.type !== "credit"}
             />
             <p className="text-xs sm:text-sm text-muted-foreground">
               {formData.type === "credit"

@@ -237,6 +237,7 @@ export function EditAccountModal({
               onValueChange={(value) =>
                 setFormData((prev) => ({ ...prev, balanceInCents: value || 0 }))
               }
+              allowNegative={formData.type !== "credit"}
             />
 
             <p className="text-financial-caption">
