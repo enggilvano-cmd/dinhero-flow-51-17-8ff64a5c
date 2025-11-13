@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { AppSettings, getSettings, updateSettings as saveSettings } from '@/lib/supabase-storage';
 import { useAuth } from '@/hooks/useAuth';
+import { useTranslation } from 'react-i18next';
 
 interface SettingsContextType {
   settings: AppSettings;
@@ -24,6 +25,7 @@ interface SettingsProviderProps {
 
 export function SettingsProvider({ children }: SettingsProviderProps) {
   const { user, loading } = useAuth();
+  const { i18n } = useTranslation();
   const [settings, setSettings] = useState<AppSettings>({
     currency: 'BRL',
     theme: 'system',
@@ -69,6 +71,11 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
         const loadedSettings = await getSettings();
         setSettings(loadedSettings);
         applyTheme(loadedSettings.theme);
+        
+        // Aplicar idioma ao i18n
+        if (loadedSettings.language) {
+          i18n.changeLanguage(loadedSettings.language);
+        }
       } catch (error) {
         console.error('Error loading settings:', error);
         // Use default settings on error
@@ -76,7 +83,7 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
       }
     };
     loadSettings();
-  }, [user, loading]);
+  }, [user, loading, i18n]);
 
   // Apply theme when settings change and listen for system changes
   useEffect(() => {
@@ -97,6 +104,11 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
   const updateSettings = async (newSettings: AppSettings) => {
     setSettings(newSettings);
     applyTheme(newSettings.theme);
+    
+    // Atualizar idioma do i18n
+    if (newSettings.language) {
+      i18n.changeLanguage(newSettings.language);
+    }
     
     // Save to Supabase if user is authenticated
     if (user) {

@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from 'react-i18next';
 import {
   Select,
   SelectContent,
@@ -123,6 +124,7 @@ export function Dashboard({
 }: DashboardProps) {
   const { formatCurrency } = useSettings();
   const { chartConfig: responsiveConfig, isMobile } = useChartResponsive();
+  const { t } = useTranslation();
 
   // Estado dos filtros de data
   const [dateFilter, setDateFilter] = useState<
@@ -448,9 +450,9 @@ export function Dashboard({
       {/* Header ultra compacto */}
       <div className="flex flex-col gap-3">
         <div className="min-w-0 w-full">
-          <h1 className="text-xl sm:text-2xl font-bold leading-tight">Painel</h1>
+          <h1 className="text-xl sm:text-2xl font-bold leading-tight">{t('dashboard.title')}</h1>
           <p className="text-sm text-muted-foreground leading-tight">
-            Visão geral das suas finanças
+            {t('dashboard.subtitle')}
           </p>
         </div>
         <div className="grid grid-cols-2 gap-2 w-full md:grid-cols-4 lg:flex lg:flex-nowrap lg:gap-2 lg:w-auto lg:ml-auto">
@@ -460,7 +462,7 @@ export function Dashboard({
             className="gap-2 apple-interaction h-9 text-xs sm:text-sm"
           >
             <ArrowRightLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span>Transferir</span>
+            <span>{t('dashboard.transfer')}</span>
           </Button>
           <Button
             onClick={onAddExpense || onAddTransaction}
@@ -468,7 +470,7 @@ export function Dashboard({
             className="gap-2 apple-interaction h-9 text-xs sm:text-sm"
           >
             <TrendingDown className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span>Despesa</span>
+            <span>{t('dashboard.expense')}</span>
           </Button>
           <Button
             onClick={onAddIncome || onAddTransaction}
@@ -476,7 +478,7 @@ export function Dashboard({
             className="gap-2 apple-interaction h-9 text-xs sm:text-sm bg-success hover:bg-success/90"
           >
             <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span>Receita</span>
+            <span>{t('dashboard.income')}</span>
           </Button>
           <Button
             onClick={onAddCreditExpense || onAddTransaction}
@@ -484,7 +486,7 @@ export function Dashboard({
             className="gap-2 apple-interaction h-9 text-xs sm:text-sm border-warning text-warning hover:bg-warning hover:text-warning-foreground"
           >
             <CreditCard className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span>Cartão</span>
+            <span>{t('dashboard.creditCard')}</span>
           </Button>
         </div>
       </div>
@@ -654,7 +656,7 @@ export function Dashboard({
                 </div>
               </div>
               <p className="text-xs font-medium text-muted-foreground mb-1">
-                Saldo Total
+                {t('dashboard.totalBalance')}
               </p>
               <div
                 className={`text-base sm:text-lg font-bold leading-tight ${
@@ -665,7 +667,7 @@ export function Dashboard({
                 {formatCurrency(totalBalance / 100)}
               </div>
               <p className="text-xs text-muted-foreground mt-1 opacity-70">
-                Contas e poupança
+                {t('accounts.checking')} e {t('accounts.savings').toLowerCase()}
               </p>
             </CardContent>
           </Card>
@@ -693,7 +695,7 @@ export function Dashboard({
                 </div>
               </div>
               <p className="text-xs font-medium text-muted-foreground mb-1">
-                Receitas
+                {t('dashboard.monthIncome')}
               </p>
               <div className="text-base sm:text-lg font-bold balance-positive leading-tight">
                 {/* CORREÇÃO AQUI */}
@@ -728,7 +730,7 @@ export function Dashboard({
                 </div>
               </div>
               <p className="text-xs font-medium text-muted-foreground mb-1">
-                Despesas
+                {t('dashboard.monthExpenses')}
               </p>
               <div className="text-base sm:text-lg font-bold balance-negative leading-tight">
                 {/* CORREÇÃO AQUI */}

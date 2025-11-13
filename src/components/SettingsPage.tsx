@@ -20,6 +20,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { AppSettings, exportData, importData } from "@/lib/supabase-storage";
 import { recalculateInvoiceMonthsForUser } from "@/lib/fixes/recalculateInvoiceMonths";
+import { useTranslation } from 'react-i18next';
 
 interface SettingsPageProps {
   settings: AppSettings;
@@ -33,6 +34,7 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
   const [clearDataConfirmation, setClearDataConfirmation] = useState("");
   const [isFixing, setIsFixing] = useState(false);
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   // Sync local settings when props change
   useEffect(() => {
@@ -54,8 +56,8 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
 
       onUpdateSettings(localSettings);
       toast({
-        title: "Configurações salvas",
-        description: "Suas preferências foram atualizadas com sucesso.",
+        title: t('settings.settingsSaved'),
+        description: t('settings.settingsSavedDescription'),
       });
     } catch (error) {
       console.error('Settings save error:', error);
@@ -251,9 +253,9 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
     <div className="space-y-8 fade-in">
       {/* Header */}
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold leading-tight">Configurações</h1>
+        <h1 className="text-xl sm:text-2xl font-bold leading-tight">{t('settings.title')}</h1>
         <p className="text-sm text-muted-foreground leading-tight">
-          Personalize seu aplicativo e gerencie seus dados
+          {t('settings.subtitle')}
         </p>
       </div>
 
@@ -263,14 +265,14 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Settings className="h-5 w-5" />
-              Configurações Gerais
+              {t('settings.general')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="currency">Moeda</Label>
+              <Label htmlFor="currency">{t('settings.currency')}</Label>
               <p className="text-xs text-muted-foreground mb-2">
-                Selecione a moeda padrão para exibição de valores no sistema
+                {t('settings.currencyDescription')}
               </p>
               <Select 
                 value={localSettings.currency} 
@@ -292,9 +294,9 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="language">Idioma</Label>
+              <Label htmlFor="language">{t('settings.language')}</Label>
               <p className="text-xs text-muted-foreground mb-2">
-                Idioma para formatação de datas e números (interface mantém português)
+                {t('settings.languageDescription')}
               </p>
               <Select 
                 value={localSettings.language} 
@@ -319,9 +321,9 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="theme">Tema</Label>
+              <Label htmlFor="theme">{t('settings.theme')}</Label>
               <p className="text-xs text-muted-foreground mb-2">
-                Escolha entre tema claro, escuro ou seguir as preferências do sistema
+                {t('settings.themeDescription')}
               </p>
               <Select 
                 value={localSettings.theme} 
@@ -331,15 +333,15 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="system">Sistema</SelectItem>
-                  <SelectItem value="light">Claro</SelectItem>
-                  <SelectItem value="dark">Escuro</SelectItem>
+                  <SelectItem value="system">{t('settings.themeSystem')}</SelectItem>
+                  <SelectItem value="light">{t('settings.themeLight')}</SelectItem>
+                  <SelectItem value="dark">{t('settings.themeDark')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <Button onClick={handleSaveSettings} className="w-full">
-              Salvar Configurações
+              {t('settings.saveSettings')}
             </Button>
           </CardContent>
         </Card>

@@ -18,6 +18,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/hooks/useAuth";
+import { useTranslation } from 'react-i18next';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -30,13 +31,13 @@ const getFirstName = (fullName?: string | null) => {
   return fullName.split(' ')[0];
 };
 
-const getMenuItems = () => [
-  { id: "dashboard", label: "Painel", icon: Home },
-  { id: "accounts", label: "Contas", icon: CreditCard },
-  { id: "credit-bills", label: "Faturas Cartão", icon: Receipt },
-  { id: "transactions", label: "Transações", icon: ArrowLeftRight },
-  { id: "categories", label: "Categorias", icon: Tag },
-  { id: "analytics", label: "Análises", icon: BarChart3 },
+const getMenuItems = (t: any) => [
+  { id: "dashboard", label: t('menu.dashboard'), icon: Home },
+  { id: "accounts", label: t('menu.accounts'), icon: CreditCard },
+  { id: "credit-bills", label: t('menu.creditBills'), icon: Receipt },
+  { id: "transactions", label: t('menu.transactions'), icon: ArrowLeftRight },
+  { id: "categories", label: t('menu.categories'), icon: Tag },
+  { id: "analytics", label: t('menu.analytics'), icon: BarChart3 },
 ];
 
 function AppSidebar({ currentPage, onPageChange }: { currentPage: string; onPageChange: (page: string) => void }) {
@@ -44,7 +45,8 @@ function AppSidebar({ currentPage, onPageChange }: { currentPage: string; onPage
   const { state: sidebarState, setOpenMobile } = useSidebar();
   const isMobile = useIsMobile();
   const isCollapsed = sidebarState === "collapsed";
-  const menuItems = getMenuItems();
+  const { t } = useTranslation();
+  const menuItems = getMenuItems(t);
   const timeRemaining = getSubscriptionTimeRemaining();
 
   const handlePageChange = (page: string) => {
@@ -257,32 +259,32 @@ function AppSidebar({ currentPage, onPageChange }: { currentPage: string; onPage
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
+                <DropdownMenuLabel>{t('auth.email')}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => onPageChange('profile')}>
                   <User className="mr-2 h-4 w-4" />
-                  Perfil
+                  {t('menu.profile')}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onPageChange('settings')}>
                   <Settings className="mr-2 h-4 w-4" />
-                  Configurações
+                  {t('menu.settings')}
                 </DropdownMenuItem>
                 {isAdmin() && (
                   <>
                     <DropdownMenuItem onClick={() => onPageChange('users')}>
                       <Users className="mr-2 h-4 w-4" />
-                      Gerenciar Usuários
+                      {t('menu.users')}
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => onPageChange('system-settings')}>
                       <Settings className="mr-2 h-4 w-4" />
-                      Config. Sistema
+                      {t('menu.systemSettings')}
                     </DropdownMenuItem>
                   </>
                 )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={signOut} className="text-destructive">
                   <LogOut className="mr-2 h-4 w-4" />
-                  Sair
+                  {t('auth.logout')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
