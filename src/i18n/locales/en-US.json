@@ -236,7 +236,15 @@
     "noBills": "No bills found",
     "closingDate": "Closing Date",
     "dueDate": "Due Date",
-    "totalAmount": "Total Amount"
+    "totalAmount": "Total Amount",
+    "open": "Open",
+    "closed": "Closed",
+    "paid": "Paid",
+    "pending": "Pending",
+    "dueOn": "Due on",
+    "closingOn": "Closing on",
+    "paidAmount": "Paid",
+    "remaining": "Remaining"
   },
   "analytics": {
     "title": "Analytics",

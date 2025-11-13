@@ -236,7 +236,15 @@
     "noBills": "Nenhuma fatura encontrada",
     "closingDate": "Fechamento",
     "dueDate": "Vencimento",
-    "totalAmount": "Valor Total"
+    "totalAmount": "Valor Total",
+    "open": "Aberta",
+    "closed": "Fechada",
+    "paid": "Paga",
+    "pending": "Pendente",
+    "dueOn": "Vencimento em",
+    "closingOn": "Fechamento em",
+    "paidAmount": "Pago",
+    "remaining": "Restante"
   },
   "analytics": {
     "title": "Análises",
