@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useSettings } from "@/context/SettingsContext";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -293,134 +293,130 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
       </div>
 
       {/* SEÇÃO DE FILTROS */}
-      <Card className="financial-card">
-        <CardHeader className="px-4 sm:px-6">
-          <CardTitle className="text-lg sm:text-xl">{t("common.filter")}</CardTitle>
-        </CardHeader>
-        <CardContent className="py-4 sm:pt-0">
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-              {/* Cartão */}
-              <div className="space-y-1.5">
-                <Label htmlFor="filterCard">{t("accounts.credit")}</Label>
-                <Select value={selectedAccountId} onValueChange={setSelectedAccountId}>
-                  <SelectTrigger className="h-9 text-xs sm:text-sm" id="filterCard">
-                    <SelectValue placeholder={t("transactions.selectAccount")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t("common.all")}</SelectItem>
-                    {creditAccounts.map((account) => (
-                      <SelectItem key={account.id} value={account.id}>
-                        <div className="flex items-center gap-2">
-                          <div
-                            className="w-2 h-2 sm:w-3 sm:h-3 rounded-full flex-shrink-0"
-                            style={{
-                              backgroundColor: account.color || "#6b7280",
-                            }}
-                          />
-                          <span className="truncate">{account.name}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Status da Fatura (Aberta/Fechada) */}
-              <div className="space-y-1.5">
-                <Label htmlFor="filterBillStatus">{t("transactions.status")}</Label>
-                <Select value={filterBillStatus} onValueChange={(value: any) => setFilterBillStatus(value)}>
-                  <SelectTrigger className="h-9 text-xs sm:text-sm" id="filterBillStatus">
-                    <SelectValue placeholder={t("transactions.status")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t("common.all")}</SelectItem>
-                    <SelectItem value="open">{t("transactions.pending")}</SelectItem>
-                    <SelectItem value="closed">{t("transactions.completed")}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Status de Pagamento */}
-              <div className="space-y-1.5">
-                <Label htmlFor="filterPaymentStatus">{t("transactions.status")}</Label>
-                <Select value={filterPaymentStatus} onValueChange={(value: any) => setFilterPaymentStatus(value)}>
-                  <SelectTrigger className="h-9 text-xs sm:text-sm" id="filterPaymentStatus">
-                    <SelectValue placeholder={t("transactions.status")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t("common.all")}</SelectItem>
-                    <SelectItem value="paid">{t("transactions.completed")}</SelectItem>
-                    <SelectItem value="pending">{t("transactions.pending")}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Período/Mês */}
-              <div className="space-y-1.5">
-                <Label htmlFor="periodFilter">{t("dateFilter.custom")}</Label>
-                <Select
-                  value={periodFilter}
-                  onValueChange={(value: any) => {
-                    setPeriodFilter(value);
-                    if (value === "current_month") {
-                      setSelectedMonthOffset(0);
-                    }
-                  }}
-                >
-                  <SelectTrigger className="h-9 text-xs sm:text-sm" id="periodFilter">
-                    <SelectValue placeholder={t("dateFilter.custom")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="current_month">{t("dateFilter.currentMonth")}</SelectItem>
-                    <SelectItem value="month_picker">{t("dateFilter.monthPicker")}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Busca */}
-              <div className="space-y-1.5 col-span-1 sm:col-span-2 lg:col-span-1">
-                <Label htmlFor="search">{t("common.search")}</Label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="search"
-                    placeholder={t("accounts.searchPlaceholder")}
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 h-9"
-                  />
-                </div>
-              </div>
+      <Card>
+        <CardContent className="p-2 sm:p-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Cartão */}
+            <div>
+              <Label htmlFor="filterCard" className="text-caption">{t("accounts.credit")}</Label>
+              <Select value={selectedAccountId} onValueChange={setSelectedAccountId}>
+                <SelectTrigger className="touch-target mt-2" id="filterCard">
+                  <SelectValue placeholder={t("transactions.selectAccount")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t("common.all")}</SelectItem>
+                  {creditAccounts.map((account) => (
+                    <SelectItem key={account.id} value={account.id}>
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="w-2 h-2 sm:w-3 sm:h-3 rounded-full flex-shrink-0"
+                          style={{
+                            backgroundColor: account.color || "#6b7280",
+                          }}
+                        />
+                        <span className="truncate">{account.name}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
-            {/* Controle de navegação de mês - mostrar apenas quando necessário */}
-            {periodFilter === "month_picker" && (
-              <div className="border-t border-border pt-4">
-                <div className="flex items-center gap-1 h-9 px-3 border border-input rounded-md bg-background max-w-xs mx-auto">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setSelectedMonthOffset(selectedMonthOffset - 1)}
-                    className="h-6 w-6 p-0 flex-shrink-0"
-                  >
-                    <ChevronLeft className="h-3 w-3" />
-                  </Button>
-                  <span className="flex-1 text-center text-sm font-medium">
-                    {format(selectedMonthDate, "MMMM 'de' yyyy", { locale: ptBR })}
-                  </span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setSelectedMonthOffset(selectedMonthOffset + 1)}
-                    className="h-6 w-6 p-0 flex-shrink-0"
-                  >
-                    <ChevronRight className="h-3 w-3" />
-                  </Button>
-                </div>
+            {/* Status da Fatura (Aberta/Fechada) */}
+            <div>
+              <Label htmlFor="filterBillStatus" className="text-caption">{t("creditBills.billStatus")}</Label>
+              <Select value={filterBillStatus} onValueChange={(value: any) => setFilterBillStatus(value)}>
+                <SelectTrigger className="touch-target mt-2" id="filterBillStatus">
+                  <SelectValue placeholder={t("transactions.status")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t("common.all")}</SelectItem>
+                  <SelectItem value="open">{t("transactions.pending")}</SelectItem>
+                  <SelectItem value="closed">{t("transactions.completed")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Status de Pagamento */}
+            <div>
+              <Label htmlFor="filterPaymentStatus" className="text-caption">{t("creditBills.paymentStatus")}</Label>
+              <Select value={filterPaymentStatus} onValueChange={(value: any) => setFilterPaymentStatus(value)}>
+                <SelectTrigger className="touch-target mt-2" id="filterPaymentStatus">
+                  <SelectValue placeholder={t("transactions.status")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t("common.all")}</SelectItem>
+                  <SelectItem value="paid">{t("transactions.completed")}</SelectItem>
+                  <SelectItem value="pending">{t("transactions.pending")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Período/Mês */}
+            <div>
+              <Label htmlFor="periodFilter" className="text-caption">{t("dateFilter.period")}</Label>
+              <Select
+                value={periodFilter}
+                onValueChange={(value: any) => {
+                  setPeriodFilter(value);
+                  if (value === "current_month") {
+                    setSelectedMonthOffset(0);
+                  }
+                }}
+              >
+                <SelectTrigger className="touch-target mt-2" id="periodFilter">
+                  <SelectValue placeholder={t("dateFilter.custom")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="current_month">{t("dateFilter.currentMonth")}</SelectItem>
+                  <SelectItem value="month_picker">{t("dateFilter.monthPicker")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Busca */}
+            <div className="sm:col-span-2">
+              <Label htmlFor="search" className="text-caption">{t("common.search")}</Label>
+              <div className="relative mt-2">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="search"
+                  placeholder={t("accounts.searchPlaceholder")}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 touch-target"
+                />
               </div>
-            )}
+            </div>
           </div>
+
+          {/* Controle de navegação de mês - mostrar apenas quando necessário */}
+          {periodFilter === "month_picker" && (
+            <div className="border-t border-border mt-4 pt-4">
+              <div className="flex items-center gap-1 px-3 border border-input rounded-md bg-background max-w-xs mx-auto touch-target">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedMonthOffset(selectedMonthOffset - 1)}
+                  className="h-6 w-6 p-0 flex-shrink-0"
+                >
+                  <ChevronLeft className="h-3 w-3" />
+                </Button>
+                <span className="flex-1 text-center text-system-body">
+                  {format(selectedMonthDate, "MMMM 'de' yyyy", { locale: ptBR })}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedMonthOffset(selectedMonthOffset + 1)}
+                  disabled={selectedMonthOffset >= 0}
+                  className="h-6 w-6 p-0 flex-shrink-0"
+                >
+                  <ChevronRight className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 

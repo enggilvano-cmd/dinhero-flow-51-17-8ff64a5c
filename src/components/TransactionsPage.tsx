@@ -692,314 +692,305 @@ export function TransactionsPage({
       </div>
 
       {/* ================================================================= */}
-      {/* ================== BLOCO DE FILTROS MODIFICADO ================== */}
-      {/* ================================================================= */}
-      <Card className="financial-card">
-        <CardHeader className="px-4 sm:px-6">
-          <CardTitle className="text-lg sm:text-xl">{t("common.filter")}</CardTitle>
-        </CardHeader>
-        <CardContent className="py-4 sm:pt-0">
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {/* Tipo */}
-              <div className="space-y-1.5">
-                <Label htmlFor="filterType">{t("transactions.type")}</Label>
-                <Select
-                  value={filterType}
-                  onValueChange={(value: any) => setFilterType(value)}
+      {/* BLOCO DE FILTROS */}
+      <Card>
+        <CardContent className="p-2 sm:p-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Tipo */}
+            <div>
+              <Label htmlFor="filterType" className="text-caption">{t("transactions.type")}</Label>
+              <Select
+                value={filterType}
+                onValueChange={(value: any) => setFilterType(value)}
+              >
+                <SelectTrigger className="touch-target mt-2" id="filterType">
+                  <SelectValue placeholder={t('transactions.type')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t("common.all")}</SelectItem>
+                  <SelectItem value="income">{t("transactions.income")}</SelectItem>
+                  <SelectItem value="expense">{t("transactions.expense")}</SelectItem>
+                  <SelectItem value="transfer">{t("transactions.transfer")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Status */}
+            <div>
+              <Label htmlFor="filterStatus" className="text-caption">{t("transactions.status")}</Label>
+              <Select
+                value={filterStatus}
+                onValueChange={(value: any) => setFilterStatus(value)}
+              >
+                <SelectTrigger className="touch-target mt-2" id="filterStatus">
+                  <SelectValue placeholder={t('transactions.status')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t("common.all")}</SelectItem>
+                  <SelectItem value="completed">{t("transactions.completed")}</SelectItem>
+                  <SelectItem value="pending">{t("transactions.pending")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Tipo de Conta */}
+            <div>
+              <Label htmlFor="filterAccountType" className="text-caption">{t("accounts.accountType")}</Label>
+              <Select
+                value={filterAccountType}
+                onValueChange={setFilterAccountType}
+              >
+                <SelectTrigger
+                  className="touch-target mt-2"
+                  id="filterAccountType"
                 >
-                  <SelectTrigger className="h-9 text-xs sm:text-sm" id="filterType">
-                    <SelectValue placeholder={t('transactions.type')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t("common.all")}</SelectItem>
-                    <SelectItem value="income">{t("transactions.income")}</SelectItem>
-                    <SelectItem value="expense">{t("transactions.expense")}</SelectItem>
-                    <SelectItem value="transfer">{t("transactions.transfer")}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                  <SelectValue placeholder={t('transactions.accountType')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t("common.all")}</SelectItem>
+                  <SelectItem value="checking">{t("accounts.checking")}</SelectItem>
+                  <SelectItem value="credit">{t("accounts.credit")}</SelectItem>
+                  <SelectItem value="investment">{t("accounts.investment")}</SelectItem>
+                  <SelectItem value="savings">{t("accounts.savings")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-              {/* Status */}
-              <div className="space-y-1.5">
-                <Label htmlFor="filterStatus">{t("transactions.status")}</Label>
-                <Select
-                  value={filterStatus}
-                  onValueChange={(value: any) => setFilterStatus(value)}
+            {/* Conta Específica */}
+            <div>
+              <Label htmlFor="filterAccount" className="text-caption">{t("transactions.account")}</Label>
+              <Select value={filterAccount} onValueChange={setFilterAccount}>
+                <SelectTrigger
+                  className="touch-target mt-2"
+                  id="filterAccount"
                 >
-                  <SelectTrigger className="h-9 text-xs sm:text-sm" id="filterStatus">
-                    <SelectValue placeholder={t('transactions.status')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t("common.all")}</SelectItem>
-                    <SelectItem value="completed">{t("transactions.completed")}</SelectItem>
-                    <SelectItem value="pending">{t("transactions.pending")}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                  <SelectValue placeholder={t('transactions.specificAccount')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t("common.all")}</SelectItem>
+                  {accountsByType.map((account) => (
+                    <SelectItem key={account.id} value={account.id}>
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="w-2 h-2 sm:w-3 sm:h-3 rounded-full flex-shrink-0"
+                          style={{
+                            backgroundColor: account.color || "#6b7280",
+                          }}
+                        />
+                        <span className="truncate">{account.name}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-              {/* Tipo de Conta */}
-              <div className="space-y-1.5">
-                <Label htmlFor="filterAccountType">{t("accounts.accountType")}</Label>
-                <Select
-                  value={filterAccountType}
-                  onValueChange={setFilterAccountType}
+            {/* Categoria */}
+            <div>
+              <Label htmlFor="filterCategory" className="text-caption">{t("transactions.category")}</Label>
+              <Select
+                value={filterCategory}
+                onValueChange={setFilterCategory}
+              >
+                <SelectTrigger
+                  className="touch-target mt-2"
+                  id="filterCategory"
                 >
-                  <SelectTrigger
-                    className="h-9 text-xs sm:text-sm"
-                    id="filterAccountType"
-                  >
-                    <SelectValue placeholder={t('transactions.accountType')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t("common.all")}</SelectItem>
-                    <SelectItem value="checking">{t("accounts.checking")}</SelectItem>
-                    <SelectItem value="credit">{t("accounts.credit")}</SelectItem>
-                    <SelectItem value="investment">{t("accounts.investment")}</SelectItem>
-                    <SelectItem value="savings">{t("accounts.savings")}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                  <SelectValue placeholder={t('transactions.category')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t("common.all")}</SelectItem>
+                  {categories.map((category) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="w-2 h-2 sm:w-3 sm:h-3 rounded-full flex-shrink-0"
+                          style={{
+                            backgroundColor: category.color || "#6b7280",
+                          }}
+                        />
+                        <span className="truncate">{category.name}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-              {/* Conta Específica */}
-              <div className="space-y-1.5">
-                <Label htmlFor="filterAccount">{t("transactions.account")}</Label>
-                <Select value={filterAccount} onValueChange={setFilterAccount}>
-                  <SelectTrigger
-                    className="h-9 text-xs sm:text-sm"
-                    id="filterAccount"
-                  >
-                    <SelectValue placeholder={t('transactions.specificAccount')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t("common.all")}</SelectItem>
-                    {accounts.map((account) => (
-                      <SelectItem key={account.id} value={account.id}>
-                        <div className="flex items-center gap-2">
-                          <div
-                            className="w-2 h-2 sm:w-3 sm:h-3 rounded-full flex-shrink-0"
-                            style={{
-                              backgroundColor: account.color || "#6b7280",
-                            }}
-                          />
-                          <span className="truncate">{account.name}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+            {/* Período */}
+            <div>
+              <Label htmlFor="dateFilter" className="text-caption">{t("dateFilter.custom")}</Label>
+              <Select
+                value={dateFilter}
+                onValueChange={
+                  (value: "all" | "current_month" | "month_picker" | "custom") =>
+                    setDateFilter(value)
+                }
+              >
+                <SelectTrigger className="touch-target mt-2" id="dateFilter">
+                  <SelectValue placeholder={t('dashboard.period')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t("dateFilter.all")}</SelectItem>
+                  <SelectItem value="current_month">{t("dateFilter.currentMonth")}</SelectItem>
+                  <SelectItem value="month_picker">{t("dateFilter.monthPicker")}</SelectItem>
+                  <SelectItem value="custom">{t("dateFilter.custom")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-              {/* Categoria */}
-              <div className="space-y-1.5">
-                <Label htmlFor="filterCategory">{t("transactions.category")}</Label>
+            {/* Ordenação */}
+            <div>
+              <Label className="text-caption">{t("common.sortBy")}</Label>
+              <div className="flex gap-1 mt-2">
                 <Select
-                  value={filterCategory}
-                  onValueChange={setFilterCategory}
+                  value={sortBy}
+                  onValueChange={(value: any) => setSortBy(value)}
                 >
-                  <SelectTrigger
-                    className="h-9 text-xs sm:text-sm"
-                    id="filterCategory"
-                  >
-                    <SelectValue placeholder={t('transactions.category')} />
+                  <SelectTrigger className="flex-1 touch-target">
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">{t("common.all")}</SelectItem>
-                    {categories.map((category) => (
-                      <SelectItem key={category.id} value={category.id}>
-                        <div className="flex items-center gap-2">
-                          <div
-                            className="w-2 h-2 sm:w-3 sm:h-3 rounded-full flex-shrink-0"
-                            style={{
-                              backgroundColor: category.color || "#6b7280",
-                            }}
-                          />
-                          <span className="truncate">{category.name}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
+                    <SelectItem value="date">{t("transactions.date")}</SelectItem>
+                    <SelectItem value="amount">{t("transactions.amount")}</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-
-              {/* Período (Select) */}
-              <div className="space-y-1.5">
-                <Label htmlFor="dateFilter">{t("dateFilter.custom")}</Label>
-                <Select
-                  value={dateFilter}
-                  onValueChange={
-                    (value: "all" | "current_month" | "month_picker" | "custom") =>
-                      setDateFilter(value)
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="touch-target"
+                  onClick={() =>
+                    setSortOrder(sortOrder === "asc" ? "desc" : "asc")
                   }
                 >
-                  <SelectTrigger className="h-9 text-xs sm:text-sm" id="dateFilter">
-                    <SelectValue placeholder={t('dashboard.period')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t("dateFilter.all")}</SelectItem>
-                    <SelectItem value="current_month">{t("dateFilter.currentMonth")}</SelectItem>
-                    <SelectItem value="month_picker">{t("dateFilter.monthPicker")}</SelectItem>
-                    <SelectItem value="custom">{t("dateFilter.custom")}</SelectItem>
-                  </SelectContent>
-                </Select>
+                  {sortOrder === "asc" ? "↑" : "↓"}
+                </Button>
               </div>
+            </div>
 
-              {/* Ordenação */}
-              <div className="space-y-1.5">
-                <Label>{t("common.filter")}</Label>
-                <div className="flex gap-1">
-                  <Select
-                    value={sortBy}
-                    onValueChange={(value: any) => setSortBy(value)}
-                  >
-                    <SelectTrigger className="flex-1 h-9 text-xs sm:text-sm">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="date">{t("transactions.date")}</SelectItem>
-                      <SelectItem value="amount">{t("transactions.amount")}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-9 w-9 text-xs"
-                    onClick={() =>
-                      setSortOrder(sortOrder === "asc" ? "desc" : "asc")
-                    }
-                  >
-                    {sortOrder === "asc" ? "↑" : "↓"}
-                  </Button>
-                </div>
+            {/* Busca */}
+            <div className="sm:col-span-2">
+              <Label htmlFor="search" className="text-caption">{t("common.search")}</Label>
+              <div className="relative mt-2">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="search"
+                  placeholder={t("transactions.searchPlaceholder")}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 touch-target"
+                />
               </div>
-
-              {/* Busca */}
-              <div className="space-y-1.5 col-span-1 sm:col-span-2 lg:col-span-1">
-                <Label htmlFor="search">{t("common.search")}</Label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="search"
-                    placeholder={t("transactions.searchPlaceholder")}
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 h-9"
-                  />
-                </div>
-              </div>
-            </div>{" "}
-            {/* Fim do Grid */}
-            {/* Controles de data - mostrar apenas quando necessário */}
-            {dateFilter === "month_picker" && (
-              <div className="border-t border-border pt-4">
-                <div className="flex items-center gap-1 h-9 px-3 border border-input rounded-md bg-background max-w-xs mx-auto">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setSelectedMonth((prev) => subMonths(prev, 1))}
-                    className="h-6 w-6 p-0 flex-shrink-0"
-                  >
-                    <ChevronLeft className="h-3 w-3" />
-                  </Button>
-                  <span className="flex-1 text-center text-sm font-medium">
-                    {format(selectedMonth, "MMMM 'de' yyyy", {
-                      locale: ptBR,
-                    })}
-                  </span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setSelectedMonth((prev) => addMonths(prev, 1))}
-                    className="h-6 w-6 p-0 flex-shrink-0"
-                  >
-                    <ChevronRight className="h-3 w-3" />
-                  </Button>
-                </div>
-              </div>
-            )}
-            {dateFilter === "custom" && (
-              <div className="border-t border-border pt-4">
-                <div className="grid grid-cols-2 gap-2 sm:gap-3 max-w-xs mx-auto">
-                  <Popover
-                    open={startDatePickerOpen}
-                    onOpenChange={setStartDatePickerOpen}
-                  >
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "h-9 justify-start text-left font-normal text-xs sm:text-sm",
-                          !customStartDate && "text-muted-foreground",
-                        )}
-                      >
-                        <CalendarIcon className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
-                        <span className="truncate">
-                          {customStartDate
-                            ? format(customStartDate, "dd/MM/yyyy", {
-                                locale: ptBR,
-                              })
-                            : t("dateFilter.startDate")}
-                        </span>
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <CalendarComponent
-                        mode="single"
-                        selected={customStartDate}
-                        onSelect={(date) => {
-                          setCustomStartDate(date);
-                          setStartDatePickerOpen(false);
-                        }}
-                        initialFocus
-                        className="p-3"
-                      />
-                    </PopoverContent>
-                  </Popover>
-
-                  <Popover
-                    open={endDatePickerOpen}
-                    onOpenChange={setEndDatePickerOpen}
-                  >
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "h-9 justify-start text-left font-normal text-xs sm:text-sm",
-                          !customEndDate && "text-muted-foreground",
-                        )}
-                      >
-                        <CalendarIcon className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
-                        <span className="truncate">
-                          {customEndDate
-                            ? format(customEndDate, "dd/MM/yyyy", {
-                                locale: ptBR,
-                              })
-                            : t("dateFilter.endDate")}
-                        </span>
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <CalendarComponent
-                        mode="single"
-                        selected={customEndDate}
-                        onSelect={(date) => {
-                          setCustomEndDate(date);
-                          setEndDatePickerOpen(false);
-                        }}
-                        initialFocus
-                        className="p-3"
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-              </div>
-            )}
+            </div>
           </div>
+
+          {/* Controles de data - mostrar apenas quando necessário */}
+          {dateFilter === "month_picker" && (
+            <div className="border-t border-border mt-4 pt-4">
+              <div className="flex items-center gap-1 px-3 border border-input rounded-md bg-background max-w-xs mx-auto touch-target">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedMonth((prev) => subMonths(prev, 1))}
+                  className="h-6 w-6 p-0 flex-shrink-0"
+                >
+                  <ChevronLeft className="h-3 w-3" />
+                </Button>
+                <span className="flex-1 text-center text-system-body">
+                  {format(selectedMonth, "MMMM 'de' yyyy", {
+                    locale: ptBR,
+                  })}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedMonth((prev) => addMonths(prev, 1))}
+                  className="h-6 w-6 p-0 flex-shrink-0"
+                >
+                  <ChevronRight className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
+          )}
+          {dateFilter === "custom" && (
+            <div className="border-t border-border mt-4 pt-4">
+              <div className="grid grid-cols-2 gap-2 sm:gap-3 max-w-xs mx-auto">
+                <Popover
+                  open={startDatePickerOpen}
+                  onOpenChange={setStartDatePickerOpen}
+                >
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "h-9 justify-start text-left font-normal text-xs sm:text-sm",
+                        !customStartDate && "text-muted-foreground",
+                      )}
+                    >
+                      <CalendarIcon className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                      <span className="truncate">
+                        {customStartDate
+                          ? format(customStartDate, "dd/MM/yyyy", {
+                              locale: ptBR,
+                            })
+                          : t("dateFilter.startDate")}
+                      </span>
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarComponent
+                      mode="single"
+                      selected={customStartDate}
+                      onSelect={(date) => {
+                        setCustomStartDate(date);
+                        setStartDatePickerOpen(false);
+                      }}
+                      initialFocus
+                      className="p-3"
+                    />
+                  </PopoverContent>
+                </Popover>
+
+                <Popover
+                  open={endDatePickerOpen}
+                  onOpenChange={setEndDatePickerOpen}
+                >
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "h-9 justify-start text-left font-normal text-xs sm:text-sm",
+                        !customEndDate && "text-muted-foreground",
+                      )}
+                    >
+                      <CalendarIcon className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                      <span className="truncate">
+                        {customEndDate
+                          ? format(customEndDate, "dd/MM/yyyy", {
+                              locale: ptBR,
+                            })
+                          : t("dateFilter.endDate")}
+                      </span>
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarComponent
+                      mode="single"
+                      selected={customEndDate}
+                      onSelect={(date) => {
+                        setCustomEndDate(date);
+                        setEndDatePickerOpen(false);
+                      }}
+                      initialFocus
+                      className="p-3"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
-      {/* ================================================================= */}
-      {/* ================== FIM DO BLOCO MODIFICADO ================== */}
-      {/* ================================================================= */}
 
       {/* Transactions List */}
       <Card className="financial-card">
