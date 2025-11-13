@@ -813,7 +813,7 @@ export default function AnalyticsPage({
                 <p className="text-xs text-muted-foreground">{t("analytics.filteredPeriod")}</p>
               </div>
               <div className="col-start-2 text-responsive-xl font-bold balance-positive leading-tight truncate max-w-full">
-                {formatCurrency(totalsByType.income)}
+                {formatCurrency(totalsByType.income / 100)}
               </div>
             </div>
           </CardContent>
@@ -830,7 +830,7 @@ export default function AnalyticsPage({
                 <p className="text-xs text-muted-foreground">{t("analytics.filteredPeriod")}</p>
               </div>
               <div className="col-start-2 text-responsive-xl font-bold balance-negative leading-tight truncate max-w-full">
-                {formatCurrency(totalsByType.expenses)}
+                {formatCurrency(totalsByType.expenses / 100)}
               </div>
             </div>
           </CardContent>
@@ -847,9 +847,9 @@ export default function AnalyticsPage({
                 <p className="text-xs text-muted-foreground">{t("analytics.filteredPeriod")}</p>
               </div>
               <div className={`col-start-2 text-responsive-xl font-bold leading-tight truncate max-w-full ${
-                totalsByType.income - totalsByType.expenses >= 0 ? "balance-positive" : "balance-negative"
+                (totalsByType.income - totalsByType.expenses) / 100 >= 0 ? "balance-positive" : "balance-negative"
               }`}>
-                {formatCurrency(totalsByType.income - totalsByType.expenses)}
+                {formatCurrency((totalsByType.income - totalsByType.expenses) / 100)}
               </div>
             </div>
           </CardContent>
