@@ -166,7 +166,8 @@
     "searchPlaceholder": "Digite o nome da conta...",
     "filterByType": "Filtrar por tipo",
     "available": "Disponível",
-    "used": "Utilizado"
+    "used": "Utilizado",
+    "exportSuccess": "{{count}} contas exportadas."
   },
   "transactions": {
     "title": "Transações",
@@ -222,7 +223,8 @@
     "categoryUpdated": "Categoria atualizada",
     "categoryDeleted": "Categoria excluída",
     "both": "Ambos",
-    "searchPlaceholder": "Buscar categorias..."
+    "searchPlaceholder": "Buscar categorias...",
+    "exportSuccess": "{{count}} categorias exportadas."
   },
   "creditBills": {
     "title": "Faturas de Cartão",

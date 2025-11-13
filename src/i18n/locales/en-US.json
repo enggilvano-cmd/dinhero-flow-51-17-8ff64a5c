@@ -166,7 +166,8 @@
     "searchPlaceholder": "Type the account name...",
     "filterByType": "Filter by type",
     "available": "Available",
-    "used": "Used"
+    "used": "Used",
+    "exportSuccess": "{{count}} accounts exported."
   },
   "transactions": {
     "title": "Transactions",
@@ -222,7 +223,8 @@
     "categoryUpdated": "Category updated",
     "categoryDeleted": "Category deleted",
     "both": "Both",
-    "searchPlaceholder": "Search categories..."
+    "searchPlaceholder": "Search categories...",
+    "exportSuccess": "{{count}} categories exported."
   },
   "creditBills": {
     "title": "Credit Card Bills",

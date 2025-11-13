@@ -264,14 +264,14 @@ export function CategoriesPage({}: CategoriesPageProps) {
 
   const exportToExcel = () => {
     const dataToExport = filteredCategories.map((category) => ({
-      Nome: category.name,
-      Tipo: getTypeLabel(category.type),
-      Cor: category.color,
+      [t('categories.categoryName')]: category.name,
+      [t('categories.categoryType')]: getTypeLabel(category.type),
+      [t('categories.categoryColor')]: category.color,
     }));
 
     const ws = XLSX.utils.json_to_sheet(dataToExport);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Categorias");
+    XLSX.utils.book_append_sheet(wb, ws, t('categories.title'));
 
     const colWidths = [
       { wch: 30 }, // Nome
@@ -280,7 +280,7 @@ export function CategoriesPage({}: CategoriesPageProps) {
     ];
     ws['!cols'] = colWidths;
 
-    let fileName = "categorias";
+    let fileName = t('categories.title').toLowerCase();
     if (filterType !== "all") fileName += `_${filterType}`;
     fileName += ".xlsx";
 
@@ -288,7 +288,7 @@ export function CategoriesPage({}: CategoriesPageProps) {
 
     toast({
       title: t("common.success"),
-      description: `${filteredCategories.length} ${t("categories.title").toLowerCase()}`,
+      description: t('categories.exportSuccess', { count: filteredCategories.length }),
     });
   };
 
