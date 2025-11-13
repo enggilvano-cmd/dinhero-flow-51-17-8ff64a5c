@@ -1146,6 +1146,20 @@
       "active": "Ativo",
       "inactive": "Inativo"
     },
+    "success": {
+      "roleUpdated": "Função atualizada com sucesso",
+      "userActivated": "Usuário ativado com sucesso",
+      "userDeactivated": "Usuário desativado com sucesso",
+      "subscriptionSet": "Assinatura definida para {{days}} dias"
+    },
+    "errors": {
+      "loadUsers": "Erro ao carregar usuários",
+      "loadAuditLogs": "Erro ao carregar logs de auditoria",
+      "updateRole": "Erro ao atualizar função: {{message}}",
+      "updateStatus": "Erro ao atualizar status",
+      "deleteUser": "Erro ao excluir usuário",
+      "unknown": "Erro desconhecido"
+    },
     "noName": "Sem nome",
     "daysPlaceholder": "Dias",
     "expiresAt": "Exp",
