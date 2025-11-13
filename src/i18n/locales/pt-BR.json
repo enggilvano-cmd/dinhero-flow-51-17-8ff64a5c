@@ -284,6 +284,10 @@
     "subtitle": "Gerencie suas transações automáticas",
     "noTransactions": "Nenhuma transação recorrente encontrada",
     "endsOn": "Termina em",
+    "autoGeneration": "Geração Automática",
+    "autoGenerationEnabled": "Transações serão geradas automaticamente conforme configurado",
+    "autoGenerationDisabled": "Configure o cron job para ativar a geração automática",
+    "setupInstructions": "Ver instruções de configuração",
     "frequency": {
       "daily": "Diariamente",
       "weekly": "Semanalmente",

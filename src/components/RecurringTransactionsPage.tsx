@@ -193,6 +193,36 @@ export function RecurringTransactionsPage() {
         </div>
       </div>
 
+      <Card className="bg-primary/5 border-primary/20">
+        <CardHeader>
+          <div className="flex items-start gap-3">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Repeat className="h-5 w-5 text-primary" />
+            </div>
+            <div className="flex-1">
+              <CardTitle className="text-lg">{t("recurringTransactions.autoGeneration")}</CardTitle>
+              <CardDescription className="mt-1">
+                {t("recurringTransactions.autoGenerationEnabled")}
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground mb-3">
+            As transações recorrentes configuradas serão geradas automaticamente todos os dias às 00:01, 
+            respeitando a frequência e data final definidas.
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.open('https://github.com/yourusername/yourrepo/blob/main/RECURRING_TRANSACTIONS_CRON_SETUP.md', '_blank')}
+          >
+            <Calendar className="h-4 w-4 mr-2" />
+            {t("recurringTransactions.setupInstructions")}
+          </Button>
+        </CardContent>
+      </Card>
+
       {transactions.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
