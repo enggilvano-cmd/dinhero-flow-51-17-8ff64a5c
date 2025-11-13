@@ -80,8 +80,8 @@ function AppSidebar({ currentPage, onPageChange }: { currentPage: string; onPage
           isMobile 
             ? "px-4 py-4" 
             : isCollapsed 
-              ? "px-3 py-6" 
-              : "px-4 py-6"
+              ? "px-3 pt-6 pb-4" 
+              : "px-4 pt-6 pb-4"
         )}>
           <SidebarTrigger className={cn(
             "hover:bg-muted/50 rounded-xl transition-all duration-200 hover:scale-105",
@@ -95,8 +95,8 @@ function AppSidebar({ currentPage, onPageChange }: { currentPage: string; onPage
             isMobile 
               ? "px-4 py-3" 
               : isCollapsed 
-                ? "px-0 py-2 text-center" 
-                : "px-4 py-3"
+                ? "px-0 py-1 text-center" 
+                : "px-4 py-1"
           )}>
             {!isCollapsed || isMobile ? "Menu Principal" : (
               <div className="w-full flex justify-center">
