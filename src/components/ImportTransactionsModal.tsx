@@ -82,22 +82,28 @@ export function ImportTransactionsModal({
 
   // Suporte a cabeçalhos exportados em diferentes idiomas
   const HEADERS = {
-    date: ['Data', 'Date', 'Fecha'],
-    description: ['Descrição', 'Description', 'Descripción'],
-    category: ['Categoria', 'Category', 'Categoría'],
-    type: ['Tipo', 'Type', 'Tipo'],
-    account: ['Conta', 'Account', 'Cuenta'],
-    amount: ['Valor', 'Amount', 'Valor'],
-    status: ['Status', 'Status', 'Estado'],
-    installments: ['Parcelas', 'Installments', 'Cuotas']
+    date: ['Data', 'Date', 'Fecha', t('transactions.date')],
+    description: ['Descrição', 'Description', 'Descripción', t('transactions.description')],
+    category: ['Categoria', 'Category', 'Categoría', t('transactions.category')],
+    type: ['Tipo', 'Type', 'Tipo', t('transactions.type')],
+    account: ['Conta', 'Account', 'Cuenta', t('transactions.account')],
+    amount: ['Valor', 'Amount', 'Valor', t('transactions.amount')],
+    status: ['Status', 'Status', 'Estado', t('transactions.status')],
+    installments: ['Parcelas', 'Installments', 'Cuotas', t('transactions.installments')]
   } as const;
 
   const pick = (row: any, keys: readonly string[]) => {
+    // Mapa normalizado de chaves do Excel -> valor
+    const keyMap = new Map<string, any>();
+    for (const k of Object.keys(row)) {
+      keyMap.set(normalizeKey(k), row[k]);
+    }
     for (const key of keys) {
       const candidates = [key, key.toLowerCase()];
       for (const c of candidates) {
-        if (row[c] !== undefined && row[c] !== null && row[c] !== '') {
-          return row[c];
+        const nk = normalizeKey(c);
+        if (keyMap.has(nk)) {
+          return keyMap.get(nk);
         }
       }
     }
@@ -113,6 +119,7 @@ export function ImportTransactionsModal({
       .replace(/[\u0300-\u036f]/g, '') // Remove diacríticos (acentos)
       .replace(/\s+/g, ' '); // Normaliza espaços
   };
+  const normalizeKey = (str: string): string => normalizeString(str).replace(/[^a-z0-9]/g, '');
 
   const validateTransactionType = (tipo: string): 'income' | 'expense' | 'transfer' | null => {
     const normalizedType = normalizeString(tipo);
