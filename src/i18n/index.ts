@@ -5,7 +5,7 @@ import enUS from './locales/en-US.json';
 import esES from './locales/es-ES.json';
 
 // Versão dos arquivos de tradução - incremente quando atualizar traduções
-const TRANSLATION_VERSION = '1.0.6';
+const TRANSLATION_VERSION = '1.0.8';
 const VERSION_KEY = 'i18n_version';
 
 /**
@@ -25,11 +25,18 @@ const checkTranslationVersion = (): void => {
       });
     }
     
+    // Limpar localStorage de traduções
+    Object.keys(localStorage).forEach(key => {
+      if (key.startsWith('i18next_res_')) {
+        localStorage.removeItem(key);
+      }
+    });
+    
     // Atualizar versão armazenada
     localStorage.setItem(VERSION_KEY, TRANSLATION_VERSION);
     
-    // Forçar reload da página
-    window.location.reload();
+    // Forçar reload da página com hard refresh
+    window.location.href = window.location.href;
   } else if (!storedVersion) {
     // Primeira vez - apenas armazenar a versão
     localStorage.setItem(VERSION_KEY, TRANSLATION_VERSION);
