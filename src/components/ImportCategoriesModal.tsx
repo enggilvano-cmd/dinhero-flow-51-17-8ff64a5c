@@ -87,6 +87,7 @@ export function ImportCategoriesModal({
     }
     return '';
   };
+  const validateCategoryType = (tipo: string): 'income' | 'expense' | 'both' | null => {
     const normalizedType = normalizeString(tipo);
     // Suporte para PT-BR, EN-US, ES-ES (singular e plural)
     if (['receita', 'receitas', 'income', 'entrada', 'entradas', 'ingreso', 'ingresos'].includes(normalizedType)) return 'income';
@@ -100,17 +101,7 @@ export function ImportCategoriesModal({
     return /^#([0-9A-F]{3}){1,2}$/i.test(color);
   };
 
-  // Função para normalizar strings (remover acentos, espaços extras, etc.)
-  const normalizeString = (str: string): string => {
-    return str
-      .trim()
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '') // Remove diacríticos (acentos)
-      .replace(/\s+/g, ' '); // Normaliza espaços
-  };
-  // Normalização para chaves de cabeçalho
-  const normalizeKey = (str: string): string => normalizeString(str).replace(/[^a-z0-9]/g, '');
+  const validateAndCheckDuplicate = (row: any): ImportedCategory => {
     const errors: string[] = [];
     let isValid = true;
 
