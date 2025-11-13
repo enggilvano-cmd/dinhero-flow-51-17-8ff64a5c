@@ -401,7 +401,7 @@ export function Dashboard({
         locale: ptBR,
       })} - ${format(customEndDate, "dd/MM/yyyy", { locale: ptBR })}`;
     }
-    return "Período selecionado";
+    return t('dashboard.selectedPeriod');
   };
 
   // Função para determinar o filtro de data para navegação
@@ -500,7 +500,7 @@ export function Dashboard({
               <div className="space-y-3">
                 <div>
                   <label className="text-xs font-medium mb-1 block">
-                    Período
+                    {t('dashboard.period')}
                   </label>
                   <Select
                     value={dateFilter}
@@ -512,13 +512,13 @@ export function Dashboard({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Todas</SelectItem>
-                      <SelectItem value="current_month">Mês Atual</SelectItem>
+                      <SelectItem value="all">{t('dashboard.allTransactions')}</SelectItem>
+                      <SelectItem value="current_month">{t('dashboard.currentMonth')}</SelectItem>
                       <SelectItem value="month_picker">
-                        Navegar por Mês
+                        {t('dashboard.navigateByMonth')}
                       </SelectItem>
                       <SelectItem value="custom">
-                        Período Personalizado
+                        {t('dashboard.customPeriod')}
                       </SelectItem>
                     </SelectContent>
                   </Select>
@@ -527,7 +527,7 @@ export function Dashboard({
                 {dateFilter === "month_picker" && (
                   <div>
                     <label className="text-xs font-medium mb-1 block">
-                      Mês
+                      {t('dashboard.month')}
                     </label>
                     <div className="flex items-center gap-1 h-8 px-2 border border-input rounded-md">
                       <Button
@@ -557,7 +557,7 @@ export function Dashboard({
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <label className="text-xs font-medium mb-1 block">
-                        Início
+                        {t('dashboard.start')}
                       </label>
                       <Popover
                         open={startDatePickerOpen}
@@ -578,7 +578,7 @@ export function Dashboard({
                                 ? format(customStartDate, "dd/MM", {
                                     locale: ptBR,
                                   })
-                                : "Inicial"}
+                                : t('dashboard.initial')}
                             </span>
                           </Button>
                         </PopoverTrigger>
@@ -599,7 +599,7 @@ export function Dashboard({
 
                     <div>
                       <label className="text-xs font-medium mb-1 block">
-                        Fim
+                        {t('dashboard.end')}
                       </label>
                       <Popover
                         open={endDatePickerOpen}
@@ -620,7 +620,7 @@ export function Dashboard({
                                 ? format(customEndDate, "dd/MM", {
                                     locale: ptBR,
                                   })
-                                : "Final"}
+                                : t('dashboard.final')}
                             </span>
                           </Button>
                         </PopoverTrigger>
@@ -754,14 +754,14 @@ export function Dashboard({
                 </div>
               </div>
               <p className="text-xs font-medium text-muted-foreground mb-1">
-                Crédito Disponível
+                {t('dashboard.creditAvailable')}
               </p>
               <div className="text-base sm:text-lg font-bold text-primary leading-tight">
                 {/* CORREÇÃO AQUI */}
                 {formatCurrency(creditAvailable / 100)}
               </div>
               <p className="text-xs text-muted-foreground mt-1 opacity-70">
-                Limite dos cartões
+                {t('dashboard.cardLimit')}
               </p>
             </CardContent>
           </Card>
@@ -789,7 +789,7 @@ export function Dashboard({
                 </div>
               </div>
               <p className="text-xs font-medium text-muted-foreground mb-1">
-                Gastos Cartão
+                {t('dashboard.cardExpenses')}
               </p>
               <div className="text-base sm:text-lg font-bold text-warning leading-tight">
                 {/* CORREÇÃO AQUI */}
@@ -824,7 +824,7 @@ export function Dashboard({
                 </div>
               </div>
               <p className="text-xs font-medium text-muted-foreground mb-1">
-                Receitas Pendentes
+                {t('dashboard.pendingIncome')}
               </p>
               <div className="text-base sm:text-lg font-bold text-success leading-tight">
                 {/* CORREÇÃO AQUI */}
@@ -859,7 +859,7 @@ export function Dashboard({
                 </div>
               </div>
               <p className="text-xs font-medium text-muted-foreground mb-1">
-                Despesas Pendentes
+                {t('dashboard.pendingExpenses')}
               </p>
               <div className="text-base sm:text-lg font-bold text-destructive leading-tight">
                 {/* CORREÇÃO AQUI */}
@@ -879,8 +879,8 @@ export function Dashboard({
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                 <CardTitle className="flex items-center gap-2 text-sm">
                   <TrendingUp className="h-4 w-4" />
-                  Evolução {chartScale === "daily" ? "Diária" : "Mensal"} -
-                  Receitas vs Despesas
+                  {t('dashboard.financialEvolution')} {chartScale === "daily" ? t('dashboard.daily') : t('dashboard.monthly')} -
+                  {t('dashboard.revenuesVsExpenses')}
                 </CardTitle>
                 <div className={cn(
                   "w-full gap-2",
@@ -894,7 +894,7 @@ export function Dashboard({
                     className="h-7 px-2 text-xs w-full sm:w-auto"
                   >
                     <BarChart3 className="h-3 w-3 mr-1" />
-                    Mensal
+                    {t('dashboard.monthly')}
                   </Button>
                   <Button
                     variant={chartScale === "daily" ? "default" : "outline"}
@@ -903,7 +903,7 @@ export function Dashboard({
                     className="h-7 px-2 text-xs w-full sm:w-auto"
                   >
                     <BarChart3 className="h-3 w-3 mr-1" />
-                    Diário
+                    {t('dashboard.daily')}
                   </Button>
 
                   {chartScale === "monthly" && (
@@ -938,8 +938,8 @@ export function Dashboard({
                     <p className="text-sm font-medium">Nenhum dado disponível</p>
                     <p className="text-xs opacity-70">
                       {chartScale === "daily"
-                        ? "Não há transações no período selecionado"
-                        : `Não há transações em ${chartYear}`}
+                        ? t('dashboard.noTransactionsInPeriod')
+                        : t('dashboard.noTransactionsInYear', { year: chartYear })}
                     </p>
                   </div>
                 ) : (
@@ -1059,18 +1059,18 @@ export function Dashboard({
                           formatter={(value: number, name: string) => [
                             formatCurrency(value / 100),
                             name === "receitas"
-                              ? "Receitas"
+                              ? t('dashboard.revenues')
                               : name === "despesas"
-                              ? "Despesas"
+                              ? t('dashboard.expenses')
                               : name === "saldo"
-                              ? "Saldo Acumulado"
+                              ? t('dashboard.accumulatedBalance')
                               : name,
                           ]}
                           labelFormatter={(label) => {
                             if (chartScale === "daily") {
-                              return `Dia ${label}`;
+                              return t('dashboard.day', { day: label });
                             }
-                            return `Mês de ${label}`;
+                            return t('dashboard.monthOf', { month: label });
                           }}
                         />
 
@@ -1243,7 +1243,7 @@ export function Dashboard({
             <CardHeader className="pb-2">
               <CardTitle className="text-sm flex items-center gap-2">
                 <TrendingUp className="h-4 w-4" />
-                Transações Recentes
+                {t('dashboard.recentTransactions')}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-3 pt-0">
@@ -1315,8 +1315,9 @@ export function Dashboard({
                   {filteredTransactions.length >
                     Math.max(accounts.length, 3) && (
                     <p className="text-xs text-muted-foreground mt-2 text-center opacity-70">
-                      +{filteredTransactions.length - Math.max(accounts.length, 3)}{" "}
-                      transações • Clique para ver todas
+                      {t('dashboard.moreTransactions', { 
+                        count: filteredTransactions.length - Math.max(accounts.length, 3) 
+                      })}
                     </p>
                   )}
                 </>

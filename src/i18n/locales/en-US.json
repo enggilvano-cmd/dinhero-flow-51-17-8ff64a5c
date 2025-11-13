@@ -27,7 +27,8 @@
     "new": "New",
     "view": "View",
     "download": "Download",
-    "upload": "Upload"
+    "upload": "Upload",
+    "select": "Select"
   },
   "auth": {
     "login": "Login",
@@ -107,7 +108,30 @@
     "monthly": "Monthly",
     "revenues": "Revenues",
     "expenses": "Expenses",
-    "balance": "Balance"
+    "balance": "Balance",
+    "period": "Period",
+    "allTransactions": "All",
+    "currentMonth": "Current Month",
+    "chooseMonth": "Choose Month",
+    "navigateByMonth": "Navigate by Month",
+    "customPeriod": "Custom Period",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "selectedPeriod": "Selected period",
+    "cardLimit": "Card limit",
+    "cardExpenses": "Card Expenses",
+    "revenuesVsExpenses": "Revenues vs Expenses",
+    "noTransactionsInPeriod": "No transactions in the selected period",
+    "noTransactionsInYear": "No transactions in {{year}}",
+    "accumulatedBalance": "Accumulated Balance",
+    "day": "Day {{day}}",
+    "monthOf": "Month of {{month}}",
+    "moreTransactions": "+{{count}} transactions • Click to see all",
+    "month": "Month",
+    "start": "Start",
+    "end": "End",
+    "initial": "Initial",
+    "final": "Final"
   },
   "accounts": {
     "title": "Accounts",
