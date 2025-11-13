@@ -849,7 +849,7 @@ export function TransactionsPage({
 
             {/* Ordenação */}
             <div>
-              <Label className="text-caption">{t("common.sortBy")}</Label>
+              <Label className="text-caption">{t("common.filter")}</Label>
               <div className="flex gap-1 mt-2">
                 <Select
                   value={sortBy}
