@@ -665,6 +665,8 @@
         "balance": {
           "label": "Balance",
           "help": "Current account balance",
+          "debtLabel": "Current Debt",
+          "debtHelp": "Enter the total amount you owe on the card right now (open + closed unpaid invoices)",
           "currentDebt": "Current Debt",
           "initialBalance": "Initial Balance",
           "debtDescription": "Enter the total amount you owe on the card right now (open + closed unpaid invoices)",
@@ -674,13 +676,14 @@
           "label": "Account Limit",
           "optional": "(optional for credit cards)",
           "help": "Total credit limit of your card",
+          "creditHelp": "Total credit limit of your card",
           "description": "Set an optional limit for this account"
         },
-        "closingDay": {
+        "closingDate": {
           "label": "Closing Day",
           "help": "Day of the month when the invoice closes"
         },
-        "dueDay": {
+        "dueDate": {
           "label": "Due Day",
           "help": "Day of the month when the invoice is due"
         },

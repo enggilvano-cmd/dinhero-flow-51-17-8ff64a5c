@@ -766,6 +766,8 @@
         "balance": {
           "label": "Saldo",
           "help": "Saldo atual da conta",
+          "debtLabel": "Saldo Devedor Atual",
+          "debtHelp": "Insira o valor total que você deve no cartão neste momento (faturas abertas + fechadas não pagas)",
           "currentDebt": "Saldo Devedor Atual",
           "initialBalance": "Saldo Inicial",
           "debtDescription": "Insira o valor total que você deve no cartão neste momento (faturas abertas + fechadas não pagas)",
@@ -775,13 +777,14 @@
           "label": "Limite da Conta",
           "optional": "(opcional para cartões de crédito)",
           "help": "Limite total de compras do seu cartão",
+          "creditHelp": "Limite total de compras do seu cartão",
           "description": "Defina um limite opcional para esta conta"
         },
-        "closingDay": {
+        "closingDate": {
           "label": "Dia de Fechamento",
           "help": "Dia do mês em que a fatura fecha"
         },
-        "dueDay": {
+        "dueDate": {
           "label": "Dia de Vencimento",
           "help": "Dia do mês em que a fatura vence"
         },
