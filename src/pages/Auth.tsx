@@ -162,7 +162,7 @@ export default function Auth() {
   }
 
   return (
-    <div className="h-screen overflow-y-auto bg-gradient-surface flex justify-center p-4 pt-8 pb-8 sm:pt-12 sm:pb-12 md:pt-16 md:pb-16">
+    <div className="h-screen overflow-y-auto bg-gradient-surface flex justify-center p-4 pt-8 pb-12 sm:pt-12 sm:pb-16 md:pt-16 md:pb-20">
       <div className="w-full max-w-md mb-8 sm:mb-12 md:mb-16">
         <div className="text-center mb-6 sm:mb-8">
           <div className="flex justify-center mb-4">
