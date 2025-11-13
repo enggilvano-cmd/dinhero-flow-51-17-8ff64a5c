@@ -562,34 +562,53 @@
     "addAccount": {
       "title": "Añadir Nueva Cuenta",
       "subtitle": "Crear una nueva cuenta bancaria, tarjeta de crédito o inversión",
-      "name": "Nombre de la Cuenta",
-      "namePlaceholder": "Ej: Banco Santander - Cuenta Corriente",
-      "type": "Tipo de Cuenta",
-      "selectType": "Seleccionar tipo de cuenta",
-      "balance": "Saldo",
-      "currentDebt": "Saldo Deudor Actual",
-      "initialBalance": "Saldo Inicial",
-      "debtDescription": "Ingresa el valor total que debes en la tarjeta ahora (facturas abiertas + cerradas sin pagar)",
-      "investmentDescription": "Valor total invertido",
-      "balanceDescription": "Saldo actual de la cuenta",
-      "limit": "Límite de la Cuenta",
-      "limitOptional": "(opcional para tarjetas de crédito)",
-      "creditLimitDescription": "Límite total de compras de tu tarjeta",
-      "limitDescription": "Define un límite opcional para esta cuenta",
-      "closingDay": "Día de Cierre",
-      "closingDayDescription": "Día del mes en que la factura cierra",
-      "dueDay": "Día de Vencimiento",
-      "dueDayDescription": "Día del mes en que vence la factura",
-      "color": "Color de la Cuenta",
-      "adding": "Añadiendo...",
-      "add": "Añadir Cuenta",
-      "errorFillFields": "Por favor, completa todos los campos",
-      "errorCreditLimit": "El límite de la cuenta es obligatorio para tarjetas de crédito",
-      "errorClosingDate": "El día de cierre es obligatorio para tarjetas de crédito",
-      "errorDueDate": "El día de vencimiento es obligatorio para tarjetas de crédito",
-      "errorInvalidClosing": "Por favor, ingresa un día válido (1-31) para el cierre",
-      "errorInvalidDue": "Por favor, ingresa un día válido (1-31) para el vencimiento",
-      "errorAddAccount": "No se pudo añadir la cuenta. Inténtalo de nuevo más tarde",
+      "fields": {
+        "name": {
+          "label": "Nombre",
+          "placeholder": "Ej: Banco Santander - Cuenta Corriente"
+        },
+        "type": {
+          "label": "Tipo",
+          "placeholder": "Seleccionar tipo de cuenta"
+        },
+        "balance": {
+          "label": "Saldo",
+          "help": "Saldo actual de la cuenta",
+          "currentDebt": "Saldo Deudor Actual",
+          "initialBalance": "Saldo Inicial",
+          "debtDescription": "Ingresa el valor total que debes en la tarjeta ahora (facturas abiertas + cerradas sin pagar)",
+          "investmentDescription": "Valor total invertido"
+        },
+        "limit": {
+          "label": "Límite de la Cuenta",
+          "optional": "(opcional para tarjetas de crédito)",
+          "help": "Límite total de compras de tu tarjeta",
+          "description": "Define un límite opcional para esta cuenta"
+        },
+        "closingDay": {
+          "label": "Día de Cierre",
+          "help": "Día del mes en que la factura cierra"
+        },
+        "dueDay": {
+          "label": "Día de Vencimiento",
+          "help": "Día del mes en que vence la factura"
+        },
+        "color": {
+          "label": "Color"
+        }
+      },
+      "actions": {
+        "add": "Añadir Cuenta"
+      },
+      "errors": {
+        "required": "Por favor, completa todos los campos",
+        "creditLimit": "El límite de la cuenta es obligatorio para tarjetas de crédito",
+        "closingDate": "El día de cierre es obligatorio para tarjetas de crédito",
+        "dueDate": "El día de vencimiento es obligatorio para tarjetas de crédito",
+        "invalidClosing": "Por favor, ingresa un día válido (1-31) para el cierre",
+        "invalidDue": "Por favor, ingresa un día válido (1-31) para el vencimiento",
+        "addFailed": "No se pudo añadir la cuenta. Inténtalo de nuevo más tarde"
+      },
       "success": "Cuenta añadida con éxito"
     },
     "editAccount": {

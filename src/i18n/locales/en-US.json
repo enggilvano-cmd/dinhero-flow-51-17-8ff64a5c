@@ -653,34 +653,53 @@
     "addAccount": {
       "title": "Add New Account",
       "subtitle": "Create a new bank account, credit card or investment",
-      "name": "Account Name",
-      "namePlaceholder": "Ex: Bank of America - Checking",
-      "type": "Account Type",
-      "selectType": "Select account type",
-      "balance": "Balance",
-      "currentDebt": "Current Debt",
-      "initialBalance": "Initial Balance",
-      "debtDescription": "Enter the total amount you owe on the card right now (open + closed unpaid invoices)",
-      "investmentDescription": "Total amount invested",
-      "balanceDescription": "Current account balance",
-      "limit": "Account Limit",
-      "limitOptional": "(optional for credit cards)",
-      "creditLimitDescription": "Total credit limit of your card",
-      "limitDescription": "Set an optional limit for this account",
-      "closingDay": "Closing Day",
-      "closingDayDescription": "Day of the month when the invoice closes",
-      "dueDay": "Due Day",
-      "dueDayDescription": "Day of the month when the invoice is due",
-      "color": "Account Color",
-      "adding": "Adding...",
-      "add": "Add Account",
-      "errorFillFields": "Please fill in all fields",
-      "errorCreditLimit": "Credit card limit is required",
-      "errorClosingDate": "Closing date is required for credit cards",
-      "errorDueDate": "Due date is required for credit cards",
-      "errorInvalidClosing": "Please enter a valid day (1-31) for closing",
-      "errorInvalidDue": "Please enter a valid day (1-31) for due date",
-      "errorAddAccount": "Could not add account. Please try again later",
+      "fields": {
+        "name": {
+          "label": "Name",
+          "placeholder": "Ex: Bank of America - Checking"
+        },
+        "type": {
+          "label": "Type",
+          "placeholder": "Select account type"
+        },
+        "balance": {
+          "label": "Balance",
+          "help": "Current account balance",
+          "currentDebt": "Current Debt",
+          "initialBalance": "Initial Balance",
+          "debtDescription": "Enter the total amount you owe on the card right now (open + closed unpaid invoices)",
+          "investmentDescription": "Total amount invested"
+        },
+        "limit": {
+          "label": "Account Limit",
+          "optional": "(optional for credit cards)",
+          "help": "Total credit limit of your card",
+          "description": "Set an optional limit for this account"
+        },
+        "closingDay": {
+          "label": "Closing Day",
+          "help": "Day of the month when the invoice closes"
+        },
+        "dueDay": {
+          "label": "Due Day",
+          "help": "Day of the month when the invoice is due"
+        },
+        "color": {
+          "label": "Color"
+        }
+      },
+      "actions": {
+        "add": "Add Account"
+      },
+      "errors": {
+        "required": "Please fill in all fields",
+        "creditLimit": "Credit card limit is required",
+        "closingDate": "Closing date is required for credit cards",
+        "dueDate": "Due date is required for credit cards",
+        "invalidClosing": "Please enter a valid day (1-31) for closing",
+        "invalidDue": "Please enter a valid day (1-31) for due date",
+        "addFailed": "Could not add account. Please try again later"
+      },
       "success": "Account added successfully"
     },
     "editAccount": {
