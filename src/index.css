@@ -198,6 +198,16 @@
     overflow-y: hidden; /* prevent double scrollbars; main handles scroll */
   }
 
+  /* Hide scrollbar globally */
+  * {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+  }
+
+  *::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+
   /* Responsive container queries support */
   @supports (container-type: inline-size) {
     .container-query {
