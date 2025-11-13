@@ -216,11 +216,18 @@ export function UserProfile() {
   const getRoleLabel = (role: string) => {
     switch (role) {
       case 'admin': return t('profile.roleAdmin');
-      case 'user': return t('profile.roleLifetime');
+      case 'user': return t('profile.roleUser');
+      case 'lifetime': return t('profile.roleLifetime');
       case 'trial': return t('profile.roleTrial');
       case 'limited': return t('profile.roleLimited');
       default: return role;
     }
+  };
+
+  const getActivityLabel = (action: string) => {
+    const formattedAction = action.replace(/_/g, ' ');
+    const defaultValue = formattedAction.charAt(0).toUpperCase() + formattedAction.slice(1);
+    return t(`profile.activity.${action}`, { defaultValue: defaultValue });
   };
 
   if (!profile) {
@@ -431,7 +438,7 @@ export function UserProfile() {
                     <div key={activity.id} className="flex items-center justify-between py-2 border-b last:border-0">
                       <div>
                         <p className="text-sm font-medium">
-                          {activity.action.replace(/_/g, ' ')}
+                          {getActivityLabel(activity.action)}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {activity.resource_type}

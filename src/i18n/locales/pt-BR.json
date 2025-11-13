@@ -492,9 +492,21 @@
     "emailSentDescription": "Verifique seu email para redefinir a senha.",
     "resetEmailError": "Não foi possível enviar o email de redefinição.",
     "roleAdmin": "Administrador",
+    "roleUser": "Usuário",
     "roleLifetime": "Vitalício",
     "roleTrial": "Trial",
-    "roleLimited": "Usuário Limitado"
+    "roleLimited": "Usuário Limitado",
+    "activity": {
+      "profile_updated": "Perfil Atualizado",
+      "user_login": "Login realizado",
+      "user_logout": "Logout realizado",
+      "password_reset": "Senha redefinida",
+      "password_changed": "Senha alterada",
+      "mfa_enabled": "2FA ativado",
+      "mfa_disabled": "2FA desativado",
+      "account_created": "Conta criada",
+      "email_changed": "Email alterado"
+    }
   },
   "systemSettings": {
     "title": "Configurações do Sistema",
@@ -1243,10 +1255,6 @@
     "active": "Ativo",
     "inactive": "Inativo",
     "role": "Função",
-    "roleAdmin": "Administrador",
-    "roleLifetime": "Vitalício",
-    "roleTrial": "Trial",
-    "roleLimited": "Limitado",
     "memberSince": "Membro Desde",
     "recentActivity": "Atividade Recente",
     "recentActivityDescription": "Suas últimas 10 atividades no sistema",
