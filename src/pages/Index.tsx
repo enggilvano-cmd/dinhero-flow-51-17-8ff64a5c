@@ -195,6 +195,9 @@ const PlaniFlowApp = () => {
         parent_transaction_id: transactionData.parentTransactionId,
         invoice_month: transactionData.invoiceMonth || null,
         invoice_month_overridden: (transactionData.invoiceMonthOverridden ?? Boolean(transactionData.invoiceMonth)) || false,
+        is_recurring: transactionData.is_recurring || false,
+        recurrence_type: transactionData.recurrence_type || null,
+        recurrence_end_date: transactionData.recurrence_end_date || null,
       };
 
       const { data, error } = await supabase

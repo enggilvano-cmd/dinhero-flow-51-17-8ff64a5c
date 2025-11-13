@@ -45,6 +45,11 @@ interface Transaction {
   currentInstallment?: number;
   parentTransactionId?: string;
   createdAt?: Date;
+  invoiceMonth?: string;
+  invoiceMonthOverridden?: boolean;
+  is_recurring?: boolean;
+  recurrence_type?: "daily" | "weekly" | "monthly" | "yearly";
+  recurrence_end_date?: string;
 }
 
 interface Account {
@@ -654,6 +659,7 @@ export function AddTransactionModal({
               <Switch
                 id="installment"
                 checked={formData.isInstallment}
+                disabled={formData.isRecurring}
                 onCheckedChange={(checked) =>
                   setFormData((prev) => ({
                     ...prev,
