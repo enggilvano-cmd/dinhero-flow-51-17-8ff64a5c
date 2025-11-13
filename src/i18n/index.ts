@@ -4,6 +4,42 @@ import ptBR from './locales/pt-BR.json';
 import enUS from './locales/en-US.json';
 import esES from './locales/es-ES.json';
 
+// Versão dos arquivos de tradução - incremente quando atualizar traduções
+const TRANSLATION_VERSION = '1.0.0';
+const VERSION_KEY = 'i18n_version';
+
+/**
+ * Verifica se a versão das traduções mudou e força reload se necessário
+ */
+const checkTranslationVersion = (): void => {
+  const storedVersion = localStorage.getItem(VERSION_KEY);
+  
+  if (storedVersion && storedVersion !== TRANSLATION_VERSION) {
+    console.log(`🔄 Nova versão de tradução detectada: ${storedVersion} -> ${TRANSLATION_VERSION}`);
+    console.log('🔄 Limpando cache e recarregando...');
+    
+    // Limpar cache do navegador
+    if ('caches' in window) {
+      caches.keys().then(names => {
+        names.forEach(name => caches.delete(name));
+      });
+    }
+    
+    // Atualizar versão armazenada
+    localStorage.setItem(VERSION_KEY, TRANSLATION_VERSION);
+    
+    // Forçar reload da página
+    window.location.reload();
+  } else if (!storedVersion) {
+    // Primeira vez - apenas armazenar a versão
+    localStorage.setItem(VERSION_KEY, TRANSLATION_VERSION);
+    console.log(`✅ Versão de tradução inicializada: ${TRANSLATION_VERSION}`);
+  }
+};
+
+// Verificar versão antes de inicializar o i18n
+checkTranslationVersion();
+
 const resources = {
   'pt-BR': { translation: ptBR },
   'en-US': { translation: enUS },
