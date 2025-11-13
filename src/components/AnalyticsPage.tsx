@@ -418,8 +418,8 @@ export default function AnalyticsPage({
       // Scroll to top to ensure all content is visible
       window.scrollTo(0, 0);
       
-      // Wait a bit for any animations to complete
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Wait for charts to fully render (Recharts needs more time)
+      await new Promise(resolve => setTimeout(resolve, 1500));
 
       // Configuração do PDF
       const pdf = new jsPDF('p', 'mm', 'a4');
@@ -445,13 +445,22 @@ export default function AnalyticsPage({
       for (let i = 0; i < sections.length; i++) {
         const section = sections[i] as HTMLElement;
         
+        // Skip sections with no height (hidden or empty)
+        if (section.offsetHeight === 0) continue;
+        
         // Captura a seção como imagem
         const canvas = await html2canvas(section, {
           scale: 2,
           useCORS: true,
+          allowTaint: true,
           logging: false,
           backgroundColor: '#ffffff',
+          windowWidth: section.scrollWidth,
+          windowHeight: section.scrollHeight,
         });
+
+        // Skip if canvas is invalid
+        if (canvas.width === 0 || canvas.height === 0) continue;
 
         const imgData = canvas.toDataURL('image/png');
         const imgWidth = contentWidth;
