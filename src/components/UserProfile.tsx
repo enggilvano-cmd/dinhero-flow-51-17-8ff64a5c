@@ -11,6 +11,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { User, Shield, Key, Activity, ShieldCheck, ShieldOff } from 'lucide-react';
 import { TwoFactorSetup } from './TwoFactorSetup';
+import { useTranslation } from 'react-i18next';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,6 +33,7 @@ interface AuditLog {
 export function UserProfile() {
   const { user, profile, signOut } = useAuth();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [recentActivities, setRecentActivities] = useState<AuditLog[]>([]);
   const [mfaEnabled, setMfaEnabled] = useState(false);
@@ -91,7 +93,7 @@ export function UserProfile() {
 
       const totpFactor = factors?.totp?.[0];
       if (!totpFactor) {
-        throw new Error('Fator MFA não encontrado');
+        throw new Error(t('profile.mfaNotFound'));
       }
 
       const { error } = await supabase.auth.mfa.unenroll({ factorId: totpFactor.id });
@@ -101,14 +103,14 @@ export function UserProfile() {
       setShowDisableMfaDialog(false);
       
       toast({
-        title: '2FA Desativado',
-        description: 'A autenticação em dois fatores foi desativada.',
+        title: t('profile.mfaDisabled'),
+        description: t('profile.mfaDisabledDescription'),
       });
     } catch (error: any) {
       console.error('Error disabling MFA:', error);
       toast({
-        title: 'Erro',
-        description: 'Não foi possível desativar o 2FA.',
+        title: t('common.error'),
+        description: t('profile.mfaDisableError'),
         variant: 'destructive',
       });
     } finally {
@@ -131,10 +133,10 @@ export function UserProfile() {
         );
         if (authError) throw authError;
 
-        toast({
-          title: 'Verificação necessária',
-          description: 'Enviamos um email de confirmação para o novo endereço. Confirme para concluir a troca.',
-        });
+      toast({
+        title: t('profile.verificationRequired'),
+        description: t('profile.verificationRequiredDescription'),
+      });
       }
 
       // Update profile data (do NOT change profiles.email until confirmation)
@@ -161,16 +163,16 @@ export function UserProfile() {
       });
 
       toast({
-        title: 'Sucesso',
+        title: t('common.success'),
         description: emailChanged
-          ? 'Nome atualizado. Confirme o email enviado para finalizar a troca de email.'
-          : 'Perfil atualizado com sucesso.',
+          ? t('profile.nameUpdatedEmailPending')
+          : t('profile.profileUpdated'),
       });
     } catch (error) {
       console.error('Error updating profile:', error);
       toast({
-        title: 'Erro',
-        description: 'Não foi possível atualizar o perfil.',
+        title: t('common.error'),
+        description: t('profile.profileUpdateError'),
         variant: 'destructive',
       });
     } finally {
@@ -189,14 +191,14 @@ export function UserProfile() {
       if (error) throw error;
 
       toast({
-        title: 'Email enviado',
-        description: 'Verifique seu email para redefinir a senha.',
+        title: t('profile.emailSent'),
+        description: t('profile.emailSentDescription'),
       });
     } catch (error) {
       console.error('Error sending reset email:', error);
       toast({
-        title: 'Erro',
-        description: 'Não foi possível enviar o email de redefinição.',
+        title: t('common.error'),
+        description: t('profile.resetEmailError'),
         variant: 'destructive',
       });
     }
@@ -213,10 +215,10 @@ export function UserProfile() {
 
   const getRoleLabel = (role: string) => {
     switch (role) {
-      case 'admin': return 'Administrador';
-      case 'user': return 'Vitalício';
-      case 'trial': return 'Trial';
-      case 'limited': return 'Usuário Limitado';
+      case 'admin': return t('profile.roleAdmin');
+      case 'user': return t('profile.roleLifetime');
+      case 'trial': return t('profile.roleTrial');
+      case 'limited': return t('profile.roleLimited');
       default: return role;
     }
   };
@@ -227,7 +229,7 @@ export function UserProfile() {
         <CardContent className="pt-6">
           <div className="text-center">
             <User className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold">Carregando perfil...</h3>
+            <h3 className="text-lg font-semibold">{t('profile.loadingProfile')}</h3>
           </div>
         </CardContent>
       </Card>
@@ -237,9 +239,9 @@ export function UserProfile() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl sm:text-2xl font-bold leading-tight">Meu Perfil</h2>
+        <h2 className="text-xl sm:text-2xl font-bold leading-tight">{t('profile.title')}</h2>
         <p className="text-sm text-muted-foreground leading-tight">
-          Gerencie suas informações pessoais e configurações de segurança
+          {t('profile.subtitle')}
         </p>
       </div>
 
@@ -249,10 +251,10 @@ export function UserProfile() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <User className="h-5 w-5" />
-                Informações Pessoais
+                {t('profile.personalInfo')}
               </CardTitle>
               <CardDescription>
-                Atualize suas informações básicas de perfil
+                {t('profile.personalInfoDescription')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -264,7 +266,7 @@ export function UserProfile() {
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <h3 className="font-semibold">{profile.full_name || 'Sem nome'}</h3>
+                  <h3 className="font-semibold">{profile.full_name || t('profile.noName')}</h3>
                   <p className="text-sm text-muted-foreground">{profile.email}</p>
                   <Badge 
                     variant={getRoleBadgeVariant(profile.role)}
@@ -279,7 +281,7 @@ export function UserProfile() {
 
               <div className="grid gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="fullName">Nome Completo</Label>
+                  <Label htmlFor="fullName">{t('profile.fullName')}</Label>
                   <Input
                     id="fullName"
                     value={formData.fullName}
@@ -287,12 +289,12 @@ export function UserProfile() {
                       ...prev,
                       fullName: e.target.value
                     }))}
-                    placeholder="Seu nome completo"
+                    placeholder={t('profile.fullNamePlaceholder')}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">{t('common.email')}</Label>
                   <Input
                     id="email"
                     type="email"
@@ -301,7 +303,7 @@ export function UserProfile() {
                       ...prev,
                       email: e.target.value
                     }))}
-                    placeholder="seu@email.com"
+                    placeholder={t('profile.emailPlaceholder')}
                   />
                 </div>
 
@@ -310,7 +312,7 @@ export function UserProfile() {
                   disabled={loading}
                   className="w-fit"
                 >
-                  {loading ? 'Salvando...' : 'Salvar Alterações'}
+                  {loading ? t('common.saving') : t('profile.saveChanges')}
                 </Button>
               </div>
             </CardContent>
@@ -320,10 +322,10 @@ export function UserProfile() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Key className="h-5 w-5" />
-                Segurança
+                {t('profile.security')}
               </CardTitle>
               <CardDescription>
-                Gerencie sua senha e configurações de segurança
+                {t('profile.securityDescription')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -367,14 +369,14 @@ export function UserProfile() {
                     variant="outline" 
                     onClick={() => setShowDisableMfaDialog(true)}
                   >
-                    Desativar
+                    {t('profile.disable')}
                   </Button>
                 ) : (
                   <Button 
                     variant="default" 
                     onClick={() => setShowMfaSetup(true)}
                   >
-                    Ativar 2FA
+                    {t('profile.enable2FA')}
                   </Button>
                 )}
               </div>
@@ -387,24 +389,24 @@ export function UserProfile() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Shield className="h-5 w-5" />
-                Status da Conta
+                {t('profile.accountStatus')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Status</span>
+                <span className="text-sm font-medium">{t('common.status')}</span>
                 <Badge variant={profile.is_active ? 'default' : 'secondary'}>
-                  {profile.is_active ? 'Ativa' : 'Inativa'}
+                  {profile.is_active ? t('profile.active') : t('profile.inactive')}
                 </Badge>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Função</span>
+                <span className="text-sm font-medium">{t('profile.role')}</span>
                 <Badge variant={getRoleBadgeVariant(profile.role)}>
                   {getRoleLabel(profile.role)}
                 </Badge>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Membro desde</span>
+                <span className="text-sm font-medium">{t('profile.memberSince')}</span>
                 <span className="text-sm text-muted-foreground">
                   {new Date(profile.created_at).toLocaleDateString('pt-BR')}
                 </span>
@@ -416,10 +418,10 @@ export function UserProfile() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Activity className="h-5 w-5" />
-                Atividade Recente
+                {t('profile.recentActivity')}
               </CardTitle>
               <CardDescription>
-                Suas últimas ações no sistema
+                {t('profile.recentActivityDescription')}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -442,7 +444,7 @@ export function UserProfile() {
                   ))
                 ) : (
                   <p className="text-sm text-muted-foreground text-center py-4">
-                    Nenhuma atividade recente
+                    {t('profile.noRecentActivity')}
                   </p>
                 )}
               </div>
@@ -451,9 +453,9 @@ export function UserProfile() {
 
           <Card className="financial-card border-destructive/20">
             <CardHeader>
-              <CardTitle className="text-destructive">Área de Risco</CardTitle>
+              <CardTitle className="text-destructive">{t('profile.dangerZone')}</CardTitle>
               <CardDescription>
-                Ações que afetam permanentemente sua conta
+                {t('profile.dangerZoneDescription')}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -462,7 +464,7 @@ export function UserProfile() {
                 className="w-full"
                 onClick={signOut}
               >
-                Sair da Conta
+                {t('profile.signOut')}
               </Button>
             </CardContent>
           </Card>
