@@ -470,7 +470,48 @@
   "modals": {
     "addTransaction": {
       "title": "Nova Transação",
+      "titleIncome": "Nova Receita",
+      "titleExpense": "Nova Despesa",
       "subtitle": "Adicione uma nova receita, despesa ou transferência",
+      "subtitleIncome": "Registre uma nova receita",
+      "subtitleExpense": "Registre uma nova despesa",
+      "fields": {
+        "description": {
+          "label": "Descrição",
+          "placeholder": "Descrição da transação"
+        },
+        "amount": {
+          "label": "Valor"
+        },
+        "type": {
+          "label": "Tipo",
+          "placeholder": "Selecione o tipo de transação"
+        },
+        "category": {
+          "label": "Categoria",
+          "placeholder": "Selecione uma categoria"
+        },
+        "account": {
+          "label": "Conta",
+          "placeholder": "Selecione uma conta"
+        },
+        "date": {
+          "label": "Data"
+        },
+        "status": {
+          "label": "Status"
+        },
+        "installment": {
+          "label": "Parcelamento"
+        },
+        "installmentCount": {
+          "label": "Número de Parcelas",
+          "placeholder": "Selecionar"
+        },
+        "invoiceMonth": {
+          "label": "Fatura"
+        }
+      },
       "description": "Descrição",
       "descriptionPlaceholder": "Descrição da transação",
       "amount": "Valor",
@@ -489,6 +530,23 @@
       "invoiceMonth": "Fatura",
       "adding": "Adicionando...",
       "add": "Adicionar Transação",
+      "validation": {
+        "invalidAmount": "Por favor, insira um valor válido maior que zero",
+        "descriptionRequired": "Por favor, preencha a descrição",
+        "typeRequired": "Por favor, selecione o tipo de transação",
+        "categoryRequired": "Por favor, selecione uma categoria",
+        "accountRequired": "Por favor, selecione uma conta",
+        "installmentsRange": "O número de parcelas deve ser entre 2 e 360",
+        "accountNotFound": "Conta selecionada não encontrada"
+      },
+      "errors": {
+        "installmentFunctionMissing": "A função de parcelamento não foi fornecida",
+        "createFailed": "Erro ao criar transação. Tente novamente"
+      },
+      "success": {
+        "single": "Transação adicionada com sucesso",
+        "installment": "Transação dividida em {{count}}x adicionada com sucesso"
+      },
       "errorFillFields": "Por favor, preencha todos os campos obrigatórios",
       "errorSelectCategory": "Por favor, selecione uma categoria",
       "errorSelectAccount": "Por favor, selecione uma conta",

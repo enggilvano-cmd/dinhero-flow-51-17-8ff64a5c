@@ -470,7 +470,48 @@
   "modals": {
     "addTransaction": {
       "title": "New Transaction",
+      "titleIncome": "New Income",
+      "titleExpense": "New Expense",
       "subtitle": "Add a new income, expense or transfer",
+      "subtitleIncome": "Register a new income",
+      "subtitleExpense": "Register a new expense",
+      "fields": {
+        "description": {
+          "label": "Description",
+          "placeholder": "Transaction description"
+        },
+        "amount": {
+          "label": "Amount"
+        },
+        "type": {
+          "label": "Type",
+          "placeholder": "Select transaction type"
+        },
+        "category": {
+          "label": "Category",
+          "placeholder": "Select a category"
+        },
+        "account": {
+          "label": "Account",
+          "placeholder": "Select an account"
+        },
+        "date": {
+          "label": "Date"
+        },
+        "status": {
+          "label": "Status"
+        },
+        "installment": {
+          "label": "Installment"
+        },
+        "installmentCount": {
+          "label": "Number of Installments",
+          "placeholder": "Select"
+        },
+        "invoiceMonth": {
+          "label": "Invoice Month"
+        }
+      },
       "description": "Description",
       "descriptionPlaceholder": "Transaction description",
       "amount": "Amount",
@@ -489,6 +530,23 @@
       "invoiceMonth": "Invoice Month",
       "adding": "Adding...",
       "add": "Add Transaction",
+      "validation": {
+        "invalidAmount": "Please enter a valid amount greater than zero",
+        "descriptionRequired": "Please fill in the description",
+        "typeRequired": "Please select the transaction type",
+        "categoryRequired": "Please select a category",
+        "accountRequired": "Please select an account",
+        "installmentsRange": "Number of installments must be between 2 and 360",
+        "accountNotFound": "Selected account not found"
+      },
+      "errors": {
+        "installmentFunctionMissing": "Installment function not provided",
+        "createFailed": "Error creating transaction. Please try again"
+      },
+      "success": {
+        "single": "Transaction added successfully",
+        "installment": "Transaction split into {{count}}x added successfully"
+      },
       "errorFillFields": "Please fill in all required fields",
       "errorSelectCategory": "Please select a category",
       "errorSelectAccount": "Please select an account",
