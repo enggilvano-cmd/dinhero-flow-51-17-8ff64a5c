@@ -787,6 +787,52 @@
     "editAccount": {
       "title": "Editar Conta",
       "subtitle": "Atualizar informações da conta",
+      "fields": {
+        "name": {
+          "label": "Nome da Conta",
+          "placeholder": "Ex: Banco do Brasil - CC"
+        },
+        "type": {
+          "label": "Tipo de Conta",
+          "placeholder": "Selecione o tipo de conta"
+        },
+        "balance": {
+          "label": "Saldo",
+          "debtLabel": "Saldo Devedor Atual",
+          "investmentLabel": "Saldo Investido",
+          "help": "Saldo atual da conta",
+          "debtHelp": "Valor total devido no cartão de crédito",
+          "investmentHelp": "Valor total aplicado no investimento"
+        },
+        "limit": {
+          "label": "Limite da Conta",
+          "help": "Limite opcional (principalmente para cartões de crédito)"
+        },
+        "creditSettings": "Configurações do Cartão",
+        "closingDate": {
+          "label": "Dia de Fechamento",
+          "placeholder": "1-31",
+          "help": "Dia do mês em que a fatura fecha"
+        },
+        "dueDate": {
+          "label": "Dia de Vencimento",
+          "placeholder": "1-31",
+          "help": "Dia do mês em que a fatura vence"
+        },
+        "color": {
+          "label": "Cor"
+        }
+      },
+      "actions": {
+        "save": "Salvar Alterações",
+        "saving": "Salvando...",
+        "cancel": "Cancelar"
+      },
+      "errors": {
+        "required": "Por favor, preencha todos os campos obrigatórios",
+        "invalidDueDate": "Por favor, insira um dia válido (1-31) para o vencimento",
+        "invalidClosingDate": "Por favor, insira um dia válido (1-31) para o fechamento"
+      },
       "updating": "Atualizando...",
       "update": "Atualizar Conta",
       "success": "Conta atualizada com sucesso"

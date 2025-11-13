@@ -686,6 +686,52 @@
     "editAccount": {
       "title": "Edit Account",
       "subtitle": "Update account information",
+      "fields": {
+        "name": {
+          "label": "Account Name",
+          "placeholder": "e.g., Bank of Brazil - CC"
+        },
+        "type": {
+          "label": "Account Type",
+          "placeholder": "Select account type"
+        },
+        "balance": {
+          "label": "Balance",
+          "debtLabel": "Current Debt Balance",
+          "investmentLabel": "Invested Balance",
+          "help": "Current account balance",
+          "debtHelp": "Total amount owed on credit card",
+          "investmentHelp": "Total amount invested"
+        },
+        "limit": {
+          "label": "Account Limit",
+          "help": "Optional limit (mainly for credit cards)"
+        },
+        "creditSettings": "Card Settings",
+        "closingDate": {
+          "label": "Closing Date",
+          "placeholder": "1-31",
+          "help": "Day of the month when the statement closes"
+        },
+        "dueDate": {
+          "label": "Due Date",
+          "placeholder": "1-31",
+          "help": "Day of the month when the payment is due"
+        },
+        "color": {
+          "label": "Color"
+        }
+      },
+      "actions": {
+        "save": "Save Changes",
+        "saving": "Saving...",
+        "cancel": "Cancel"
+      },
+      "errors": {
+        "required": "Please fill in all required fields",
+        "invalidDueDate": "Please enter a valid day (1-31) for due date",
+        "invalidClosingDate": "Please enter a valid day (1-31) for closing date"
+      },
       "updating": "Updating...",
       "update": "Update Account",
       "success": "Account updated successfully"

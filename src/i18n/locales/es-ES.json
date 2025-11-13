@@ -595,6 +595,52 @@
     "editAccount": {
       "title": "Editar Cuenta",
       "subtitle": "Actualizar información de la cuenta",
+      "fields": {
+        "name": {
+          "label": "Nombre de la Cuenta",
+          "placeholder": "ej: Banco do Brasil - CC"
+        },
+        "type": {
+          "label": "Tipo de Cuenta",
+          "placeholder": "Seleccione el tipo de cuenta"
+        },
+        "balance": {
+          "label": "Saldo",
+          "debtLabel": "Saldo Deudor Actual",
+          "investmentLabel": "Saldo Invertido",
+          "help": "Saldo actual de la cuenta",
+          "debtHelp": "Monto total adeudado en la tarjeta de crédito",
+          "investmentHelp": "Monto total invertido"
+        },
+        "limit": {
+          "label": "Límite de la Cuenta",
+          "help": "Límite opcional (principalmente para tarjetas de crédito)"
+        },
+        "creditSettings": "Configuración de la Tarjeta",
+        "closingDate": {
+          "label": "Día de Cierre",
+          "placeholder": "1-31",
+          "help": "Día del mes en que cierra el estado de cuenta"
+        },
+        "dueDate": {
+          "label": "Día de Vencimiento",
+          "placeholder": "1-31",
+          "help": "Día del mes en que vence el pago"
+        },
+        "color": {
+          "label": "Color"
+        }
+      },
+      "actions": {
+        "save": "Guardar Cambios",
+        "saving": "Guardando...",
+        "cancel": "Cancelar"
+      },
+      "errors": {
+        "required": "Por favor, complete todos los campos obligatorios",
+        "invalidDueDate": "Por favor, ingrese un día válido (1-31) para el vencimiento",
+        "invalidClosingDate": "Por favor, ingrese un día válido (1-31) para el cierre"
+      },
       "updating": "Actualizando...",
       "update": "Actualizar Cuenta",
       "success": "Cuenta actualizada con éxito"
