@@ -749,8 +749,23 @@
     "editCategory": {
       "title": "Edit Category",
       "subtitle": "Update category information",
-      "updating": "Updating...",
-      "update": "Update Category"
+      "fields": {
+        "name": {
+          "label": "Name",
+          "placeholder": "Category name"
+        },
+        "type": {
+          "label": "Type",
+          "placeholder": "Select type",
+          "both": "Both"
+        }
+      },
+      "actions": {
+        "save": "Save Changes"
+      },
+      "errors": {
+        "required": "Please fill in all required fields"
+      }
     },
     "installmentScope": {
       "title": "Edit Installments",

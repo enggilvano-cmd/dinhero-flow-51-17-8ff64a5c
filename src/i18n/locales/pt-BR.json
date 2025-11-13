@@ -850,8 +850,23 @@
     "editCategory": {
       "title": "Editar Categoria",
       "subtitle": "Atualizar informações da categoria",
-      "updating": "Atualizando...",
-      "update": "Atualizar Categoria"
+      "fields": {
+        "name": {
+          "label": "Nome",
+          "placeholder": "Nome da categoria"
+        },
+        "type": {
+          "label": "Tipo",
+          "placeholder": "Selecione o tipo",
+          "both": "Ambos"
+        }
+      },
+      "actions": {
+        "save": "Salvar Alterações"
+      },
+      "errors": {
+        "required": "Por favor, preencha todos os campos obrigatórios"
+      }
     },
     "installmentScope": {
       "title": "Editar Parcelas",
