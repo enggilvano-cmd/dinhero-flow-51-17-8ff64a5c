@@ -5,7 +5,7 @@ import enUS from './locales/en-US.json';
 import esES from './locales/es-ES.json';
 
 // Versão dos arquivos de tradução - incremente quando atualizar traduções
-const TRANSLATION_VERSION = '1.0.5';
+const TRANSLATION_VERSION = '1.0.6';
 const VERSION_KEY = 'i18n_version';
 
 /**
