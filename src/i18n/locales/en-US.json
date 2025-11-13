@@ -890,6 +890,28 @@
       "deleteUser": "Could not remove user.",
       "unknown": "Unknown error"
     }
+  },
+  "systemSettings": {
+    "title": "System Settings",
+    "subtitle": "Global application settings for all users",
+    "restrictedArea": "This area is restricted to system administrators only. Changes made here will affect all users.",
+    "trialPeriod": "Trial Period Configuration",
+    "trialPeriodDescription": "Set the number of days for the trial period for new users",
+    "trialDays": "Trial Days",
+    "trialDaysDescription": "Number of days new users will have access before requiring a subscription",
+    "saveSettings": "Save Settings",
+    "loadError": "Error loading settings",
+    "loadErrorDescription": "Could not load system settings.",
+    "unexpectedLoadError": "Unexpected error loading settings.",
+    "invalidValue": "Invalid value",
+    "invalidValueDescription": "Please enter a valid number greater than 0.",
+    "success": {
+      "settingSaved": "New users will have {{days}} days of trial."
+    },
+    "errors": {
+      "saveSetting": "Could not save the setting.",
+      "unexpectedSave": "Unexpected error saving setting."
+    }
   }
 }
 }
