@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -65,7 +64,7 @@ export function AddCategoryModal({ open, onOpenChange, onAddCategory }: AddCateg
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{t("modals.addCategory.title")}</DialogTitle>
           <DialogDescription>
@@ -73,8 +72,7 @@ export function AddCategoryModal({ open, onOpenChange, onAddCategory }: AddCateg
           </DialogDescription>
         </DialogHeader>
         
-        <ScrollArea className="max-h-[60vh]">
-          <form onSubmit={handleSubmit} className="space-y-6 pr-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="name">{t("modals.addCategory.fields.name.label")}</Label>
             <Input
@@ -114,7 +112,6 @@ export function AddCategoryModal({ open, onOpenChange, onAddCategory }: AddCateg
             </Button>
           </div>
         </form>
-        </ScrollArea>
       </DialogContent>
     </Dialog>
   );
