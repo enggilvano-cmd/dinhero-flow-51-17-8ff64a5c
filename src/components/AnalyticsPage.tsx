@@ -70,6 +70,7 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { useCategories } from "@/hooks/useCategories";
 import { useTranslation } from "react-i18next";
+import { formatCurrency } from "@/lib/formatters";
 
 interface Account {
   id: string;
@@ -153,12 +154,6 @@ export default function AnalyticsPage({
   
   const contentRef = useRef<HTMLDivElement>(null);
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    }).format(value); // Esta função espera o valor em REAIS
-  };
 
   const getTransactionAccountId = (transaction: Transaction) => {
     return transaction.account_id || transaction.accountId || "";
@@ -831,7 +826,7 @@ export default function AnalyticsPage({
                 <p className="text-xs text-muted-foreground">{t("analytics.filteredPeriod")}</p>
               </div>
               <div className="col-start-2 text-responsive-xl font-bold balance-negative leading-tight truncate max-w-full">
-                {formatCurrency(-totalsByType.expenses)}
+                {formatCurrency(totalsByType.expenses)}
               </div>
             </div>
           </CardContent>
