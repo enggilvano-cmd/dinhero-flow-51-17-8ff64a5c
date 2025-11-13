@@ -29,7 +29,8 @@
     "download": "Download",
     "upload": "Upload",
     "select": "Select",
-    "noResults": "No results found"
+    "noResults": "No results found",
+    "ok": "OK"
   },
   "auth": {
     "login": "Login",
@@ -1074,6 +1075,30 @@
         "action": "Action",
         "resource": "Resource",
         "dateTime": "Date/Time"
+      },
+      "actions": {
+        "user_created": "User created",
+        "user_updated": "User updated",
+        "user_deleted": "User deleted",
+        "user_role_updated": "Role updated",
+        "user_activated": "User activated",
+        "user_deactivated": "User deactivated",
+        "subscription_updated": "Subscription updated",
+        "login": "Login",
+        "logout": "Logout",
+        "password_changed": "Password changed",
+        "mfa_enabled": "2FA enabled",
+        "mfa_disabled": "2FA disabled",
+        "account_created": "Account created",
+        "email_changed": "Email changed"
+      },
+      "resourceTypes": {
+        "profile": "Profile",
+        "user": "User",
+        "account": "Account",
+        "transaction": "Transaction",
+        "category": "Category",
+        "settings": "Settings"
       }
     },
     "success": {

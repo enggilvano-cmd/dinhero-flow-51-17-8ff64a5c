@@ -41,7 +41,7 @@ interface AuditLog {
 }
 
 export function UserManagement() {
-  const { t } = useT();
+  const { t, i18n } = useT();
   const { isAdmin, profile } = useAuth();
   const { toast } = useToast();
   const [users, setUsers] = useState<Profile[]>([]);
@@ -267,6 +267,20 @@ export function UserManagement() {
     }
   };
 
+  const getActionLabel = (action: string) => {
+    const actionKey = `userManagement.auditLog.actions.${action}`;
+    const translated = t(actionKey);
+    // Se a tradução retornar a chave, usar fallback com formatação
+    return translated !== actionKey ? translated : action.replace(/_/g, ' ');
+  };
+
+  const getResourceTypeLabel = (resourceType: string) => {
+    const resourceKey = `userManagement.auditLog.resourceTypes.${resourceType}`;
+    const translated = t(resourceKey);
+    // Se a tradução retornar a chave, usar o valor original
+    return translated !== resourceKey ? translated : resourceType;
+  };
+
   const setSubscriptionDays = async (userId: string, days: number) => {
     try {
       const expiresAt = new Date();
@@ -446,7 +460,7 @@ export function UserManagement() {
                                       }
                                     }}
                                   >
-                                    OK
+                                    {t('common.ok')}
                                   </Button>
                                   {user.subscription_expires_at && (
                                     <span className="text-xs text-muted-foreground">
@@ -558,25 +572,25 @@ export function UserManagement() {
                             </p>
                             {/* Show action on mobile */}
                             <p className="text-xs text-muted-foreground sm:hidden mt-0.5">
-                              {log.action.replace(/_/g, ' ')}
+                              {getActionLabel(log.action)}
                             </p>
                           </div>
                         </TableCell>
                         <TableCell className="hidden sm:table-cell py-3 sm:py-4">
                           <Badge variant="outline" className="text-xs">
-                            {log.action.replace(/_/g, ' ')}
+                            {getActionLabel(log.action)}
                           </Badge>
                         </TableCell>
                         <TableCell className="hidden md:table-cell py-3 sm:py-4 text-xs sm:text-sm text-muted-foreground">
-                          {log.resource_type}
+                          {getResourceTypeLabel(log.resource_type)}
                         </TableCell>
                         <TableCell className="py-3 sm:py-4 pr-3 sm:pr-4">
                           <div className="text-xs sm:text-sm text-muted-foreground">
                             <span className="hidden sm:inline">
-                              {new Date(log.created_at).toLocaleString()}
+                              {new Date(log.created_at).toLocaleString(i18n.language)}
                             </span>
                             <span className="sm:hidden">
-                              {new Date(log.created_at).toLocaleDateString('pt-BR', { 
+                              {new Date(log.created_at).toLocaleDateString(i18n.language, { 
                                 day: '2-digit',
                                 month: '2-digit'
                               })}
