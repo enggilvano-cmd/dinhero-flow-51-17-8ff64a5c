@@ -76,56 +76,17 @@ function AppSidebar({ currentPage, onPageChange }: { currentPage: string; onPage
       >
         {/* Header - Responsive design */}
         <div className={cn(
-          "border-b border-border/30 flex items-center justify-between",
+          "border-b border-border/30 flex items-center justify-end",
           isMobile 
             ? "px-4 py-4" 
             : isCollapsed 
-              ? "px-3 py-6 flex-col gap-4" 
+              ? "px-3 py-6" 
               : "px-4 py-6"
         )}>
-          {!isCollapsed || isMobile ? (
-            <div className={cn(
-              "flex items-center justify-between w-full",
-              isMobile && "flex-row"
-            )}>
-              <div className="flex items-center gap-3">
-                <div className={cn(
-                  "rounded-2xl bg-gradient-to-br from-emerald-600 to-emerald-700 flex items-center justify-center shadow-lg",
-                  isMobile ? "h-8 w-8" : "h-10 w-10"
-                )}>
-                  <BarChart3 className={cn(
-                    "text-yellow-400",
-                    isMobile ? "h-5 w-5" : "h-6 w-6"
-                  )} />
-                </div>
-                <div>
-                  <h1 className={cn(
-                    "font-bold tracking-tight text-foreground",
-                    isMobile ? "text-lg" : "text-xl"
-                  )}>
-                    PlaniFlow
-                  </h1>
-                  <p className={cn(
-                    "text-muted-foreground mt-1 font-medium",
-                    isMobile ? "text-xs" : "text-sm"
-                  )}>
-                    Gestão Financeira
-                  </p>
-                </div>
-              </div>
-              <SidebarTrigger className={cn(
-                "hover:bg-muted/50 rounded-xl transition-all duration-200 hover:scale-105",
-                isMobile ? "h-8 w-8" : "h-9 w-9"
-              )} />
-            </div>
-          ) : (
-            <div className="flex flex-col items-center gap-4">
-              <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-emerald-600 to-emerald-700 flex items-center justify-center shadow-lg">
-                <BarChart3 className="h-6 w-6 text-yellow-400" />
-              </div>
-              <SidebarTrigger className="h-8 w-8 hover:bg-muted/50 rounded-xl transition-all duration-200 hover:scale-105" />
-            </div>
-          )}
+          <SidebarTrigger className={cn(
+            "hover:bg-muted/50 rounded-xl transition-all duration-200 hover:scale-105",
+            isMobile ? "h-8 w-8" : "h-9 w-9"
+          )} />
         </div>
 
         <SidebarGroup>
@@ -378,6 +339,25 @@ function LayoutContent({ children, currentPage, onPageChange }: LayoutProps) {
           "flex-1 w-full overflow-x-hidden overflow-y-auto",
           "safe-bottom"
         )}>
+          {/* Desktop Logo Header */}
+          {!isMobile && (
+            <div className="flex justify-end items-center px-12 pt-6 pb-2">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-emerald-600 to-emerald-700 flex items-center justify-center shadow-lg">
+                  <BarChart3 className="h-6 w-6 text-yellow-400" />
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold tracking-tight text-foreground">
+                    PlaniFlow
+                  </h1>
+                  <p className="text-sm text-muted-foreground mt-1 font-medium">
+                    Gestão Financeira
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+          
           <div className={cn(
             "w-full h-full",
             isMobile 
