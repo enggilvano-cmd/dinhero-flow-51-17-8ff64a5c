@@ -73,7 +73,7 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
         applyTheme(loadedSettings.theme);
         
         // Aplicar idioma ao i18n
-        if (loadedSettings.language) {
+        if (loadedSettings.language && i18n.language !== loadedSettings.language) {
           i18n.changeLanguage(loadedSettings.language);
         }
       } catch (error) {
@@ -83,7 +83,8 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
       }
     };
     loadSettings();
-  }, [user, loading, i18n]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, loading]);
 
   // Apply theme when settings change and listen for system changes
   useEffect(() => {
@@ -105,9 +106,9 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     setSettings(newSettings);
     applyTheme(newSettings.theme);
     
-    // Atualizar idioma do i18n
-    if (newSettings.language) {
-      i18n.changeLanguage(newSettings.language);
+    // Atualizar idioma do i18n apenas se mudou
+    if (newSettings.language && i18n.language !== newSettings.language) {
+      await i18n.changeLanguage(newSettings.language);
     }
     
     // Save to Supabase if user is authenticated
