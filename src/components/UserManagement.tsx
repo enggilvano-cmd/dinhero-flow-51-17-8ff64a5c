@@ -41,7 +41,7 @@ interface AuditLog {
 }
 
 export function UserManagement() {
-  const { t } = useTranslation();
+  const { t } = useT();
   const { isAdmin, profile } = useAuth();
   const { toast } = useToast();
   const [users, setUsers] = useState<Profile[]>([]);
