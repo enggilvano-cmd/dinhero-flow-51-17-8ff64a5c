@@ -351,14 +351,14 @@ export function TransactionsPage({
       // Exportar valor sempre positivo em Reais (dividido por 100)
       // O tipo (Receita/Despesa) define se é entrada ou saída
       return {
-        Data: format(transactionDate, "dd/MM/yyyy", { locale: ptBR }),
-        Descrição: transaction.description,
-        Categoria: getCategoryName(transaction.category_id, isTransfer),
-        Tipo: getTransactionTypeLabel(transactionType),
-        Conta: getAccountName(transaction.account_id),
-        Valor: Math.abs(transaction.amount / 100), // Sempre positivo
-        Status: getStatusLabel(transaction.status),
-        Parcelas: transaction.installments
+        [t('transactions.date')]: format(transactionDate, "dd/MM/yyyy", { locale: ptBR }),
+        [t('transactions.description')]: transaction.description,
+        [t('transactions.category')]: getCategoryName(transaction.category_id, isTransfer),
+        [t('transactions.type')]: getTransactionTypeLabel(transactionType),
+        [t('transactions.account')]: getAccountName(transaction.account_id),
+        [t('transactions.amount')]: Math.abs(transaction.amount / 100), // Sempre positivo
+        [t('transactions.status')]: getStatusLabel(transaction.status),
+        [t('transactions.installments')]: transaction.installments
           ? `${transaction.current_installment}/${transaction.installments}`
           : "",
       };
@@ -389,7 +389,7 @@ export function TransactionsPage({
     }
 
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Transações");
+    XLSX.utils.book_append_sheet(wb, ws, t('transactions.title'));
 
     // Gerar nome do arquivo com filtros aplicados
     let fileName = "transacoes";
@@ -407,7 +407,7 @@ export function TransactionsPage({
 
     toast({
       title: t("common.success"),
-      description: `${filteredAndSortedTransactions.length} ${t("transactions.title").toLowerCase()} ${t("common.export").toLowerCase()}.`,
+      description: t('transactions.exportSuccess', { count: filteredAndSortedTransactions.length }),
     });
   };
 
@@ -709,7 +709,7 @@ export function TransactionsPage({
                   onValueChange={(value: any) => setFilterType(value)}
                 >
                   <SelectTrigger className="h-9 text-xs sm:text-sm" id="filterType">
-                    <SelectValue placeholder="Tipo" />
+                    <SelectValue placeholder={t('transactions.type')} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">{t("common.all")}</SelectItem>
@@ -728,7 +728,7 @@ export function TransactionsPage({
                   onValueChange={(value: any) => setFilterStatus(value)}
                 >
                   <SelectTrigger className="h-9 text-xs sm:text-sm" id="filterStatus">
-                    <SelectValue placeholder="Status" />
+                    <SelectValue placeholder={t('transactions.status')} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">{t("common.all")}</SelectItem>
@@ -749,7 +749,7 @@ export function TransactionsPage({
                     className="h-9 text-xs sm:text-sm"
                     id="filterAccountType"
                   >
-                    <SelectValue placeholder="Tipo de Conta" />
+                    <SelectValue placeholder={t('transactions.accountType')} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">{t("common.all")}</SelectItem>
@@ -769,7 +769,7 @@ export function TransactionsPage({
                     className="h-9 text-xs sm:text-sm"
                     id="filterAccount"
                   >
-                    <SelectValue placeholder="Conta Específica" />
+                    <SelectValue placeholder={t('transactions.specificAccount')} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">{t("common.all")}</SelectItem>
@@ -801,7 +801,7 @@ export function TransactionsPage({
                     className="h-9 text-xs sm:text-sm"
                     id="filterCategory"
                   >
-                    <SelectValue placeholder="Categoria" />
+                    <SelectValue placeholder={t('transactions.category')} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">{t("common.all")}</SelectItem>
@@ -833,7 +833,7 @@ export function TransactionsPage({
                   }
                 >
                   <SelectTrigger className="h-9 text-xs sm:text-sm" id="dateFilter">
-                    <SelectValue placeholder="Período" />
+                    <SelectValue placeholder={t('dashboard.period')} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">{t("dateFilter.all")}</SelectItem>

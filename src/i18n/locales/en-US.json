@@ -201,7 +201,10 @@
     "transactionDeleted": "Transaction deleted",
     "confirmDelete": "Are you sure you want to delete this transaction?",
     "invoiceMonth": "Invoice",
-    "selectInvoice": "Select invoice"
+    "selectInvoice": "Select invoice",
+    "accountType": "Account Type",
+    "specificAccount": "Specific Account",
+    "exportSuccess": "{{count}} transactions exported."
   },
   "categories": {
     "title": "Categories",
