@@ -555,15 +555,20 @@
         "status": {
           "label": "Status"
         },
-        "installment": {
-          "label": "Parcelamento"
-        },
-        "installmentCount": {
-          "label": "Número de Parcelas",
-          "placeholder": "Selecionar"
-        },
         "invoiceMonth": {
-          "label": "Fatura"
+          "label": "Fatura",
+          "placeholder": "Selecione o mês da fatura",
+          "help": "Escolha o mês de cobrança desta despesa no cartão de crédito"
+        },
+        "installment": {
+          "label": "Parcelamento",
+          "help": "Divida o valor em várias parcelas mensais",
+          "creditHelp": "Divide a compra em parcelas que serão lançadas nas próximas faturas",
+          "numberOfInstallments": "Número de Parcelas",
+          "selectPlaceholder": "Selecione o número de parcelas",
+          "custom": "Personalizar (61-360)",
+          "customLabel": "Número Personalizado de Parcelas",
+          "customPlaceholder": "Digite um número entre 61 e 360"
         }
       },
       "description": "Descrição",
@@ -582,8 +587,10 @@
       "installmentCount": "Número de Parcelas",
       "selectInstallmentCount": "Selecionar",
       "invoiceMonth": "Fatura",
-      "adding": "Adicionando...",
-      "add": "Adicionar Transação",
+      "actions": {
+        "add": "Adicionar",
+        "adding": "Adicionando..."
+      },
       "validation": {
         "invalidAmount": "Por favor, insira um valor válido maior que zero",
         "descriptionRequired": "Por favor, preencha a descrição",
@@ -600,13 +607,7 @@
       "success": {
         "single": "Transação adicionada com sucesso",
         "installment": "Transação dividida em {{count}}x adicionada com sucesso"
-      },
-      "errorFillFields": "Por favor, preencha todos os campos obrigatórios",
-      "errorSelectCategory": "Por favor, selecione uma categoria",
-      "errorSelectAccount": "Por favor, selecione uma conta",
-      "errorAmount": "Por favor, insira um valor válido",
-      "errorAccountNotFound": "Conta selecionada não encontrada",
-      "success": "Transação adicionada com sucesso"
+      }
     },
     "editTransaction": {
       "title": "Editar Transação",
