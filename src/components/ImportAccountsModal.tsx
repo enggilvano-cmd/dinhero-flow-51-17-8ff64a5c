@@ -108,7 +108,7 @@ export function ImportAccountsModal({
   };
 
   // Suporte a cabeçalhos exportados em diferentes idiomas
-  const pick = (row: any, keys: string[]) => {
+  const pick = (row: any, keys: readonly string[]) => {
     for (const key of keys) {
       const candidates = [key, key.toLowerCase()];
       for (const c of candidates) {
@@ -134,13 +134,14 @@ export function ImportAccountsModal({
     const errors: string[] = [];
     let isValid = true;
 
-    const nome = (row.Nome || row.nome || '').toString().trim();
-    const tipo = (row.Tipo || row.tipo || '').toString().trim();
-    const saldo = parseNumber(row.Saldo || row.saldo || 0);
-    const limite = parseNumber(row.Limite || row.limite || 0);
-    const fechamento = parseInt((row.Fechamento || row.fechamento || 0).toString()) || 0;
-    const vencimento = parseInt((row.Vencimento || row.vencimento || 0).toString()) || 0;
-    const cor = (row.Cor || row.cor || '').toString().trim();
+    // Usar o mapeador de cabeçalhos para suportar diferentes idiomas
+    const nome = pick(row, HEADERS.name).toString().trim();
+    const tipo = pick(row, HEADERS.type).toString().trim();
+    const saldo = parseNumber(pick(row, HEADERS.balance) || 0);
+    const limite = parseNumber(pick(row, HEADERS.limit) || 0);
+    const fechamento = parseInt(pick(row, HEADERS.closing)?.toString() || '0') || 0;
+    const vencimento = parseInt(pick(row, HEADERS.due)?.toString() || '0') || 0;
+    const cor = pick(row, HEADERS.color).toString().trim();
 
     if (!nome) {
       errors.push(t('modals.import.errors.nameRequired'));
