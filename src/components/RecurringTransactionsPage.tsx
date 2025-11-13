@@ -1,13 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Repeat, Pencil, Trash2, Calendar, DollarSign } from "lucide-react";
+import { Repeat, Pencil, Trash2, Calendar, DollarSign, TrendingUp, TrendingDown, Search } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
+import { useSettings } from "@/context/SettingsContext";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -39,8 +43,18 @@ export function RecurringTransactionsPage() {
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [editTransaction, setEditTransaction] = useState<RecurringTransaction | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterType, setFilterType] = useState<"all" | "income" | "expense">("all");
   const { toast } = useToast();
   const { t } = useTranslation();
+  const { formatCurrency: formatCurrencyFromSettings } = useSettings();
+
+  const formatCurrency = (value: number) => {
+    return formatCurrencyFromSettings(value);
+  };
+
+  const formatCents = (valueInCents: number) =>
+    formatCurrency(valueInCents / 100);
 
   useEffect(() => {
     loadRecurringTransactions();
@@ -169,12 +183,33 @@ export function RecurringTransactionsPage() {
     return labels[type] || type;
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    }).format(amount / 100);
-  };
+  const filteredTransactions = useMemo(() => {
+    return transactions.filter((transaction) => {
+      const matchesSearch = transaction.description
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+      const matchesType = 
+        filterType === "all" || 
+        transaction.type === filterType;
+      return matchesSearch && matchesType;
+    });
+  }, [transactions, searchTerm, filterType]);
+
+  const stats = useMemo(() => {
+    const monthlyIncome = filteredTransactions
+      .filter(t => t.type === "income" && t.recurrence_type === "monthly")
+      .reduce((sum, t) => sum + t.amount, 0);
+    
+    const monthlyExpenses = filteredTransactions
+      .filter(t => t.type === "expense" && t.recurrence_type === "monthly")
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    return {
+      total: filteredTransactions.length,
+      monthlyIncome,
+      monthlyExpenses,
+    };
+  }, [filteredTransactions]);
 
   if (loading) {
     return (
@@ -185,19 +220,111 @@ export function RecurringTransactionsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">{t("recurringTransactions.title")}</h1>
-          <p className="text-muted-foreground mt-2">{t("recurringTransactions.subtitle")}</p>
+    <div className="spacing-responsive-lg fade-in">
+      {/* Header */}
+      <div className="flex flex-col gap-3">
+        <div className="min-w-0 w-full">
+          <h1 className="text-xl sm:text-2xl font-bold leading-tight">{t("recurringTransactions.title")}</h1>
+          <p className="text-sm text-muted-foreground leading-tight">{t("recurringTransactions.subtitle")}</p>
         </div>
       </div>
+
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+        <Card className="financial-card">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Repeat className="h-5 w-5 text-primary" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm font-medium text-muted-foreground">
+                  {t("recurringTransactions.totalRecurring")}
+                </p>
+                <div className="text-base sm:text-lg lg:text-xl font-bold leading-tight">
+                  {stats.total}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="financial-card">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center flex-shrink-0">
+                <TrendingUp className="h-5 w-5 text-green-500" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm font-medium text-muted-foreground">
+                  {t("recurringTransactions.monthlyIncome")}
+                </p>
+                <div className="text-base sm:text-lg lg:text-xl font-bold balance-positive leading-tight">
+                  {formatCents(stats.monthlyIncome)}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="financial-card sm:col-span-2 lg:col-span-1">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center flex-shrink-0">
+                <TrendingDown className="h-5 w-5 text-destructive" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm font-medium text-muted-foreground">
+                  {t("recurringTransactions.monthlyExpenses")}
+                </p>
+                <div className="text-base sm:text-lg lg:text-xl font-bold balance-negative leading-tight">
+                  {formatCents(stats.monthlyExpenses)}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Filters */}
+      <Card>
+        <CardContent className="p-2 sm:p-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="search" className="text-caption">{t('common.search')}</Label>
+              <div className="relative mt-2">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="search"
+                  placeholder={t("recurringTransactions.searchPlaceholder")}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 touch-target"
+                />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="filter" className="text-caption">{t("recurringTransactions.filterByType")}</Label>
+              <Select value={filterType} onValueChange={(value: any) => setFilterType(value)}>
+                <SelectTrigger id="filter" className="touch-target mt-2">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t('common.all')}</SelectItem>
+                  <SelectItem value="income">{t('transactions.income')}</SelectItem>
+                  <SelectItem value="expense">{t('transactions.expense')}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       <Card className="bg-primary/5 border-primary/20">
         <CardHeader>
           <div className="flex items-start gap-3">
             <div className="p-2 bg-primary/10 rounded-lg">
-              <Repeat className="h-5 w-5 text-primary" />
+              <Calendar className="h-5 w-5 text-primary" />
             </div>
             <div className="flex-1">
               <CardTitle className="text-lg">{t("recurringTransactions.autoGeneration")}</CardTitle>
@@ -215,18 +342,20 @@ export function RecurringTransactionsPage() {
         </CardContent>
       </Card>
 
-      {transactions.length === 0 ? (
+      {filteredTransactions.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Repeat className="h-12 w-12 text-muted-foreground/50 mb-4" />
             <p className="text-muted-foreground text-center">
-              {t("recurringTransactions.noTransactions")}
+              {searchTerm || filterType !== "all"
+                ? t("common.noResults")
+                : t("recurringTransactions.noTransactions")}
             </p>
           </CardContent>
         </Card>
       ) : (
         <div className="grid gap-4">
-          {transactions.map((transaction) => (
+          {filteredTransactions.map((transaction) => (
             <Card key={transaction.id} className="overflow-hidden hover:shadow-md transition-shadow">
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">

@@ -28,7 +28,8 @@
     "view": "View",
     "download": "Download",
     "upload": "Upload",
-    "select": "Select"
+    "select": "Select",
+    "noResults": "No results found"
   },
   "auth": {
     "login": "Login",
@@ -278,6 +279,36 @@
     "both": "Both",
     "searchPlaceholder": "Search categories...",
     "exportSuccess": "{{count}} categories exported."
+  },
+  "recurringTransactions": {
+    "title": "Recurring Transactions",
+    "subtitle": "Manage your automatic transactions",
+    "noTransactions": "No recurring transactions found",
+    "endsOn": "Ends on",
+    "autoGeneration": "Automatic Generation",
+    "autoGenerationEnabled": "Transactions will be generated automatically as configured",
+    "autoGenerationDisabled": "Configure the cron job to enable automatic generation",
+    "setupInstructions": "View setup instructions",
+    "totalRecurring": "Total Recurring",
+    "monthlyIncome": "Monthly Income",
+    "monthlyExpenses": "Monthly Expenses",
+    "searchPlaceholder": "Type the transaction description...",
+    "filterByType": "Filter by type",
+    "frequency": {
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "yearly": "Yearly"
+    },
+    "deleteTitle": "Delete recurring transaction?",
+    "deleteDescription": "This action cannot be undone. The recurring transaction will be permanently removed.",
+    "deleteSuccess": "Recurring transaction deleted successfully",
+    "editComingSoon": "Editing coming soon",
+    "errors": {
+      "loadFailed": "Error loading recurring transactions",
+      "deleteFailed": "Error deleting recurring transaction",
+      "updateFailed": "Error updating recurring transaction"
+    }
   },
   "creditBills": {
     "title": "Credit Card Bills",
