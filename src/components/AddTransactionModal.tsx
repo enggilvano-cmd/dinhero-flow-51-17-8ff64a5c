@@ -29,6 +29,7 @@ import { useCategories } from "@/hooks/useCategories";
 import { CurrencyInput } from "@/components/forms/CurrencyInput";
 // 2. REMOVER A IMPORTAÇÃO DA FUNÇÃO DE CONVERSÃO ANTIGA
 // import { currencyStringToCents } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 interface Transaction {
   id?: string;
@@ -98,6 +99,7 @@ export function AddTransactionModal({
   const [customInstallments, setCustomInstallments] = useState("");
   const { toast } = useToast();
   const { categories } = useCategories();
+  const { t } = useTranslation();
 
   // Atualiza o tipo inicial quando o modal é aberto e reseta quando fechar
   useEffect(() => {
@@ -420,26 +422,26 @@ export function AddTransactionModal({
         <DialogHeader>
           <DialogTitle>
             {initialType === "income" 
-              ? "Adicionar Receita" 
+              ? t("modals.addTransaction.titleIncome")
               : initialType === "expense" 
-              ? "Adicionar Despesa" 
-              : "Adicionar Nova Transação"}
+              ? t("modals.addTransaction.titleExpense")
+              : t("modals.addTransaction.title")}
           </DialogTitle>
           <DialogDescription>
             {initialType === "income" 
-              ? "Registre uma nova receita" 
+              ? t("modals.addTransaction.subtitleIncome")
               : initialType === "expense" 
-              ? "Registre uma nova despesa, com opção de parcelamento" 
-              : "Registre uma nova receita ou despesa, com opção de parcelamento"}
+              ? t("modals.addTransaction.subtitleExpense")
+              : t("modals.addTransaction.subtitle")}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="description">Descrição</Label>
+            <Label htmlFor="description">{t("modals.addTransaction.fields.description.label")}</Label>
             <Input
               id="description"
-              placeholder="Ex: Compra no supermercado"
+              placeholder={t("modals.addTransaction.fields.description.placeholder")}
               value={formData.description}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, description: e.target.value }))
@@ -449,7 +451,7 @@ export function AddTransactionModal({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="type">Tipo</Label>
+              <Label htmlFor="type">{t("modals.addTransaction.fields.type.label")}</Label>
               <Select
                 value={formData.type}
                 onValueChange={(value) =>
@@ -462,17 +464,17 @@ export function AddTransactionModal({
                 disabled={lockType}
               >
                 <SelectTrigger disabled={lockType}>
-                  <SelectValue placeholder="Tipo" />
+                  <SelectValue placeholder={t("modals.addTransaction.fields.type.placeholder")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="income">Receita</SelectItem>
-                  <SelectItem value="expense">Despesa</SelectItem>
+                  <SelectItem value="income">{t("transactions.income")}</SelectItem>
+                  <SelectItem value="expense">{t("transactions.expense")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="amount">Valor (R$)</Label>
+              <Label htmlFor="amount">{t("modals.addTransaction.fields.amount.label")}</Label>
               {/* 5. SUBSTITUIR O INPUT PELO CURRENCYINPUT */}
               <CurrencyInput
                 id="amount"
@@ -487,7 +489,7 @@ export function AddTransactionModal({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="category_id">Categoria</Label>
+              <Label htmlFor="category_id">{t("modals.addTransaction.fields.category.label")}</Label>
               <Select
                 value={formData.category_id}
                 onValueChange={(value) =>
@@ -497,7 +499,7 @@ export function AddTransactionModal({
                 <SelectTrigger
                   disabled={!formData.type || formData.type === "transfer"}
                 >
-                  <SelectValue placeholder="Selecione" />
+                  <SelectValue placeholder={t("modals.addTransaction.fields.category.placeholder")} />
                 </SelectTrigger>
                 <SelectContent>
                   {filteredCategories.map((category) => (
@@ -516,7 +518,7 @@ export function AddTransactionModal({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="date">Data</Label>
+              <Label htmlFor="date">{t("modals.addTransaction.fields.date.label")}</Label>
               <Input
                 id="date"
                 type="date"
@@ -531,7 +533,7 @@ export function AddTransactionModal({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="account_id">Conta</Label>
+              <Label htmlFor="account_id">{t("modals.addTransaction.fields.account.label")}</Label>
               <Select
                 value={formData.account_id}
                 onValueChange={(value) =>
@@ -539,7 +541,7 @@ export function AddTransactionModal({
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione a conta" />
+                  <SelectValue placeholder={t("modals.addTransaction.fields.account.placeholder")} />
                 </SelectTrigger>
                 <SelectContent>
                   {filteredAccounts.map((account) => (
@@ -560,7 +562,7 @@ export function AddTransactionModal({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
+              <Label htmlFor="status">{t("modals.addTransaction.fields.status.label")}</Label>
               <Select
                 value={formData.status}
                 onValueChange={(value) =>
@@ -571,11 +573,11 @@ export function AddTransactionModal({
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Status" />
+                  <SelectValue placeholder={t("modals.addTransaction.fields.status.placeholder")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="completed">Efetuada</SelectItem>
-                  <SelectItem value="pending">Pendente</SelectItem>
+                  <SelectItem value="completed">{t("transactions.completed")}</SelectItem>
+                  <SelectItem value="pending">{t("transactions.pending")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -585,7 +587,7 @@ export function AddTransactionModal({
           {formData.account_id && 
            accounts.find(acc => acc.id === formData.account_id)?.type === "credit" && (
             <div className="space-y-2 border-t pt-4">
-              <Label htmlFor="invoiceMonth">Mês da Fatura</Label>
+              <Label htmlFor="invoiceMonth">{t("modals.addTransaction.fields.invoiceMonth.label")}</Label>
               <Select
                 value={formData.invoiceMonth}
                 onValueChange={(value) =>
@@ -593,7 +595,7 @@ export function AddTransactionModal({
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione o mês" />
+                  <SelectValue placeholder={t("modals.addTransaction.fields.invoiceMonth.placeholder")} />
                 </SelectTrigger>
                 <SelectContent>
                   {(() => {
@@ -614,7 +616,7 @@ export function AddTransactionModal({
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
-                Selecione em qual fatura esta compra será lançada
+                {t("modals.addTransaction.fields.invoiceMonth.help")}
               </p>
             </div>
           )}
@@ -623,12 +625,12 @@ export function AddTransactionModal({
           <div className="space-y-4 border-t pt-4">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label htmlFor="installment">Compra Parcelada</Label>
+                <Label htmlFor="installment">{t("modals.addTransaction.fields.installment.label")}</Label>
                 <p className="text-sm text-muted-foreground">
                   {formData.account_id &&
                   filteredAccounts.find((acc) => acc.id === formData.account_id)
-                    ?.type === "credit" ? "Lançar parcelas na fatura do cartão."
-                    : "Dividir esta transação em parcelas mensais"}
+                    ?.type === "credit" ? t("modals.addTransaction.fields.installment.creditHelp")
+                    : t("modals.addTransaction.fields.installment.help")}
                 </p>
               </div>
               <Switch
@@ -645,7 +647,7 @@ export function AddTransactionModal({
 
             {formData.isInstallment && (
               <div className="space-y-2">
-                <Label htmlFor="installments">Número de Parcelas</Label>
+                <Label htmlFor="installments">{t("modals.addTransaction.fields.installment.numberOfInstallments")}</Label>
                 <Select
                   value={formData.installments}
                   onValueChange={(value) => {
@@ -656,7 +658,7 @@ export function AddTransactionModal({
                   }}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Selecione" />
+                    <SelectValue placeholder={t("modals.addTransaction.fields.installment.selectPlaceholder")} />
                   </SelectTrigger>
                   <SelectContent>
                         {Array.from({ length: 59 }, (_, i) => i + 2).map((num) => (
@@ -673,19 +675,19 @@ export function AddTransactionModal({
                         })()}
                       </SelectItem>
                     ))}
-                    <SelectItem value="custom">Personalizar (acima de 60x)</SelectItem>
+                    <SelectItem value="custom">{t("modals.addTransaction.fields.installment.custom")}</SelectItem>
                   </SelectContent>
                 </Select>
                 
                 {formData.installments === "custom" && (
                   <div className="space-y-2 pt-2">
-                    <Label htmlFor="customInstallments">Número personalizado de parcelas</Label>
+                    <Label htmlFor="customInstallments">{t("modals.addTransaction.fields.installment.customLabel")}</Label>
                     <Input
                       id="customInstallments"
                       type="number"
                       min="61"
                       max="360"
-                      placeholder="Ex: 72"
+                      placeholder={t("modals.addTransaction.fields.installment.customPlaceholder")}
                       value={customInstallments}
                       onChange={(e) => setCustomInstallments(e.target.value)}
                     />
@@ -711,10 +713,10 @@ export function AddTransactionModal({
               onClick={() => onOpenChange(false)}
               className="flex-1"
             >
-              Cancelar
+              {t("common.cancel")}
             </Button>
             <Button type="submit" className="flex-1">
-              Adicionar Transação
+              {t("modals.addTransaction.actions.add")}
             </Button>
           </div>
         </form>

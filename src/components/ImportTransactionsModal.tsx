@@ -9,6 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Upload, FileSpreadsheet, AlertCircle, MoreVertical, Copy, AlertTriangle, PlusCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 import * as XLSX from 'xlsx';
 import { parse, isValid } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -71,6 +72,7 @@ export function ImportTransactionsModal({
   accounts, 
   onImportTransactions 
 }: ImportTransactionsModalProps) {
+  const { t } = useTranslation();
   const [file, setFile] = useState<File | null>(null);
   const [importedData, setImportedData] = useState<ImportedTransaction[]>([]);
   const [excludedIndexes, setExcludedIndexes] = useState<Set<number>>(new Set());
@@ -138,59 +140,59 @@ export function ImportTransactionsModal({
     const valor = parseFloat(row.Valor || row.valor || '0');
 
     if (!data) {
-      errors.push('Data é obrigatória');
+      errors.push(t('modals.import.errors.dateRequired'));
       isValid = false;
     }
 
     if (!descricao) {
-      errors.push('Descrição é obrigatória');
+      errors.push(t('modals.import.errors.descriptionRequired'));
       isValid = false;
     }
 
     if (!categoria) {
-      errors.push('Categoria é obrigatória');
+      errors.push(t('modals.import.errors.categoryRequired'));
       isValid = false;
     }
 
     if (!tipo) {
-      errors.push('Tipo é obrigatório');
+      errors.push(t('modals.import.errors.typeRequired'));
       isValid = false;
     }
 
     if (!conta) {
-      errors.push('Conta é obrigatória');
+      errors.push(t('modals.import.errors.accountRequired'));
       isValid = false;
     }
 
     if (isNaN(valor) || valor <= 0) {
-      errors.push('Valor deve ser um número positivo');
+      errors.push(t('modals.import.errors.invalidAmount'));
       isValid = false;
     }
 
     // Validações específicas (Bloco único e corrigido)
     const parsedDate = parseDate(data);
     if (!parsedDate) {
-      errors.push('Formato de data inválido');
+      errors.push(t('modals.import.errors.invalidDateFormat'));
       isValid = false;
     }
 
     const parsedType = validateTransactionType(tipo);
     if (!parsedType) {
-      errors.push('Tipo deve ser: Receita, Despesa ou Transferência');
+      errors.push(t('modals.import.errors.invalidTransactionType'));
       isValid = false;
     }
 
     const account = findAccountByName(conta);
     const accountId = account?.id; // Definir accountId aqui
     if (!account) {
-      errors.push('Conta não encontrada');
+      errors.push(t('modals.import.errors.accountNotFound'));
       isValid = false;
     }
 
     const status = row.Status || row.status || 'completed';
     const parsedStatus = validateStatus(status);
     if (!parsedStatus) {
-      errors.push('Status inválido');
+      errors.push(t('modals.import.errors.invalidStatus'));
       isValid = false;
     }
 
@@ -248,8 +250,8 @@ export function ImportTransactionsModal({
 
     if (!selectedFile.name.match(/\.(xlsx|xls)$/)) {
       toast({
-        title: "Formato inválido",
-        description: "Por favor, selecione um arquivo Excel (.xlsx ou .xls)",
+        title: t('common.error'),
+        description: t('modals.import.errorInvalidFile'),
         variant: "destructive"
       });
       return;
@@ -258,7 +260,7 @@ export function ImportTransactionsModal({
     setFile(selectedFile);
     setIsProcessing(true);
 
-    try {
+    try{
       const fileBuffer = await selectedFile.arrayBuffer();
       const workbook = XLSX.read(fileBuffer, { type: 'array' });
       const sheetName = workbook.SheetNames[0];
@@ -267,8 +269,8 @@ export function ImportTransactionsModal({
 
       if (rawData.length === 0) {
         toast({
-          title: "Arquivo vazio",
-          description: "O arquivo não contém dados para importar",
+          title: t('common.error'),
+          description: t('modals.import.errorEmpty'),
           variant: "destructive"
         });
         setIsProcessing(false);
@@ -290,14 +292,18 @@ export function ImportTransactionsModal({
       }, { new: 0, duplicates: 0, invalid: 0 });
 
       toast({
-        title: "Arquivo processado",
-        description: `${summary.new} novas, ${summary.duplicates} duplicadas, ${summary.invalid} com erros.`,
+        title: t('modals.import.fileProcessed'),
+        description: t('modals.import.summaryDesc', {
+          new: summary.new,
+          duplicates: summary.duplicates,
+          errors: summary.invalid
+        }),
       });
 
     } catch (error) {
       toast({
-        title: "Erro ao processar arquivo",
-        description: "Não foi possível ler o arquivo Excel",
+        title: t('common.error'),
+        description: t('modals.import.errorReadFile'),
         variant: "destructive"
       });
     }
@@ -346,8 +352,8 @@ export function ImportTransactionsModal({
     onImportTransactions(transactionsToAdd, transactionsToReplaceIds);
     
     toast({
-      title: "Transações importadas",
-      description: `${transactionsToAdd.length} transações foram processadas com sucesso.`,
+      title: t('common.success'),
+      description: t('modals.import.transactionsImported', { count: transactionsToAdd.length }),
     });
 
     // Reset
@@ -456,8 +462,8 @@ export function ImportTransactionsModal({
     XLSX.writeFile(wb, 'modelo-importacao-transacoes.xlsx');
 
     toast({
-      title: "Modelo baixado",
-      description: "Use este arquivo como exemplo para importar suas transações.",
+      title: t('common.success'),
+      description: t('modals.import.templateDownloaded'),
     });
   };
 
@@ -491,10 +497,10 @@ export function ImportTransactionsModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Upload className="h-5 w-5" />
-            Importar Transações do Excel
+            {t('modals.import.titleTransactions')}
           </DialogTitle>
           <DialogDescription>
-            Faça o upload de um arquivo Excel (.xlsx ou .xls) para importar múltiplas transações de uma vez.
+            {t('modals.import.subtitleTransactions')}
           </DialogDescription>
         </DialogHeader>
 
@@ -720,13 +726,13 @@ export function ImportTransactionsModal({
         {/* Actions */}
         <div className="flex justify-end gap-3 pt-4 border-t">
           <Button variant="outline" onClick={handleCancel}>
-            Cancelar
+            {t('common.cancel')}
           </Button>
           <Button 
             onClick={handleImport}
             disabled={transactionsToImportCount === 0 || isProcessing}
           >
-            Importar {transactionsToImportCount} Transações
+            {t('modals.import.importButton', { count: transactionsToImportCount, type: t('modals.import.typeTransactions') })}
           </Button>
         </div>
       </DialogContent>

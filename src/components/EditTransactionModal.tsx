@@ -15,7 +15,8 @@ import { Transaction, Account } from "@/types";
 import { useCategories } from "@/hooks/useCategories";
 import { createDateFromString } from "@/lib/dateUtils";
 import { InstallmentEditScopeDialog, EditScope } from "./InstallmentEditScopeDialog";
-import { CurrencyInput } from "@/components/forms/CurrencyInput"; // Importa o CurrencyInput
+import { CurrencyInput } from "@/components/forms/CurrencyInput";
+import { useTranslation } from "react-i18next";
 
 interface EditTransactionModalProps {
   open: boolean;
@@ -45,6 +46,7 @@ export function EditTransactionModal({
   const [scopeDialogOpen, setScopeDialogOpen] = useState(false);
   const { toast } = useToast();
   const { categories } = useCategories();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (open && transaction) {
@@ -84,8 +86,8 @@ export function EditTransactionModal({
     
     if (!formData.description.trim() || formData.amountInCents <= 0 || !formData.account_id) {
       toast({
-        title: "Erro",
-        description: "Por favor, preencha todos os campos obrigatórios.",
+        title: t("common.error"),
+        description: t("modals.editTransaction.errors.required"),
         variant: "destructive",
       });
       return;
@@ -93,8 +95,8 @@ export function EditTransactionModal({
 
     if (!formData.category_id) {
       toast({
-        title: "Erro",
-        description: "Por favor, selecione uma categoria.",
+        title: t("common.error"),
+        description: t("modals.editTransaction.errors.categoryRequired"),
         variant: "destructive",
       });
       return;
@@ -136,13 +138,13 @@ export function EditTransactionModal({
 
     onEditTransaction(updatedTransaction, editScope);
     
-    const scopeDescription = editScope === "current" ? "A transação" : 
-                             editScope === "all" ? "Todas as parcelas" :
-                             "As parcelas selecionadas";
+    const scopeDescription = editScope === "current" ? t("modals.editTransaction.success.current") : 
+                             editScope === "all" ? t("modals.editTransaction.success.all") :
+                             t("modals.editTransaction.success.selected");
     
     toast({
-      title: "Transação atualizada",
-      description: `${scopeDescription} foi atualizada com sucesso.`,
+      title: t("modals.editTransaction.success.title"),
+      description: scopeDescription,
     });
 
     onOpenChange(false);
@@ -161,31 +163,34 @@ export function EditTransactionModal({
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>
-              Editar Transação
+              {t("modals.editTransaction.title")}
               {isInstallment && (
                 <span className="text-sm font-normal text-muted-foreground block">
-                  Parcela {transaction.current_installment}/{transaction.installments}
+                  {t("modals.editTransaction.installmentInfo", { 
+                    current: transaction.current_installment, 
+                    total: transaction.installments 
+                  })}
                 </span>
               )}
               <DialogDescription>
-                Modifique os detalhes da sua transação.
+                {t("modals.editTransaction.subtitle")}
               </DialogDescription>
             </DialogTitle>
           </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="description">Descrição</Label>
+            <Label htmlFor="description">{t("modals.editTransaction.fields.description.label")}</Label>
             <Input
               id="description"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Ex: Almoço no restaurante"
+              placeholder={t("modals.editTransaction.fields.description.placeholder")}
               required
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="amount">Valor</Label>
+            <Label htmlFor="amount">{t("modals.editTransaction.fields.amount.label")}</Label>
             {/* USO CORRETO DO CURRENCY INPUT:
               Ele lida com a formatação e garante que 'amountInCents'
               seja sempre um número positivo.
@@ -198,7 +203,7 @@ export function EditTransactionModal({
           </div>
 
           <div className="space-y-2">
-            <Label>Data</Label>
+            <Label>{t("modals.editTransaction.fields.date.label")}</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -212,7 +217,7 @@ export function EditTransactionModal({
                   {formData.date ? (
                     format(formData.date, "dd/MM/yyyy", { locale: ptBR })
                   ) : (
-                    <span>Selecione uma data</span>
+                    <span>{t("modals.editTransaction.fields.date.placeholder")}</span>
                   )}
                 </Button>
               </PopoverTrigger>
@@ -228,7 +233,7 @@ export function EditTransactionModal({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="type">Tipo</Label>
+            <Label htmlFor="type">{t("modals.editTransaction.fields.type.label")}</Label>
             <Select
               value={formData.type}
               onValueChange={(value: "income" | "expense") => 
@@ -236,23 +241,23 @@ export function EditTransactionModal({
               }
             >
               <SelectTrigger>
-                <SelectValue placeholder="Selecione o tipo" />
+                <SelectValue placeholder={t("modals.editTransaction.fields.type.placeholder")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="income">Receita</SelectItem>
-                <SelectItem value="expense">Despesa</SelectItem>
+                <SelectItem value="income">{t("transactions.income")}</SelectItem>
+                <SelectItem value="expense">{t("transactions.expense")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="category">Categoria</Label>
+            <Label htmlFor="category">{t("modals.editTransaction.fields.category.label")}</Label>
             <Select
               value={formData.category_id}
               onValueChange={(value) => setFormData({ ...formData, category_id: value })}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Selecione uma categoria" />
+                <SelectValue placeholder={t("modals.editTransaction.fields.category.placeholder")} />
               </SelectTrigger>
               <SelectContent>
                 {filteredCategories.map((category) => (
@@ -271,13 +276,13 @@ export function EditTransactionModal({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="account">Conta</Label>
+            <Label htmlFor="account">{t("modals.editTransaction.fields.account.label")}</Label>
             <Select
               value={formData.account_id}
               onValueChange={(value) => setFormData({ ...formData, account_id: value })}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Selecione uma conta" />
+                <SelectValue placeholder={t("modals.editTransaction.fields.account.placeholder")} />
               </SelectTrigger>
               <SelectContent>
                 {accounts.map((account) => (
@@ -296,17 +301,17 @@ export function EditTransactionModal({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="status">Status</Label>
+            <Label htmlFor="status">{t("modals.editTransaction.fields.status.label")}</Label>
             <Select
               value={formData.status}
               onValueChange={(value: "pending" | "completed") => setFormData({ ...formData, status: value })}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Selecione o status" />
+                <SelectValue placeholder={t("modals.editTransaction.fields.status.placeholder")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="pending">Pendente</SelectItem>
-                <SelectItem value="completed">Concluída</SelectItem>
+                <SelectItem value="pending">{t("transactions.pending")}</SelectItem>
+                <SelectItem value="completed">{t("transactions.completed")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -315,7 +320,7 @@ export function EditTransactionModal({
           {formData.account_id && 
            accounts.find(acc => acc.id === formData.account_id)?.type === "credit" && (
             <div className="space-y-2 border-t pt-4">
-              <Label htmlFor="invoiceMonth">Mês da Fatura</Label>
+              <Label htmlFor="invoiceMonth">{t("modals.editTransaction.fields.invoiceMonth.label")}</Label>
               <Select
                 value={formData.invoiceMonth}
                 onValueChange={(value) =>
@@ -323,7 +328,7 @@ export function EditTransactionModal({
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione o mês" />
+                  <SelectValue placeholder={t("modals.editTransaction.fields.invoiceMonth.placeholder")} />
                 </SelectTrigger>
                 <SelectContent>
                   {(() => {
@@ -344,17 +349,17 @@ export function EditTransactionModal({
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
-                Selecione em qual fatura esta compra será lançada
+                {t("modals.editTransaction.fields.invoiceMonth.help")}
               </p>
             </div>
           )}
 
           <div className="flex gap-3 pt-4">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
-              Cancelar
+              {t("common.cancel")}
             </Button>
             <Button type="submit" className="flex-1">
-              Salvar Alterações
+              {t("modals.editTransaction.actions.save")}
             </Button>
           </div>
         </form>
