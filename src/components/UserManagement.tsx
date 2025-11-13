@@ -318,255 +318,277 @@ export function UserManagement() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl sm:text-2xl font-bold leading-tight">{t('userManagement.title')}</h2>
-          <p className="text-sm text-muted-foreground leading-tight">
+    <div className="space-y-4 sm:space-y-6 pb-6">
+      {/* Header Section */}
+      <div className="space-y-3 sm:space-y-0 sm:flex sm:items-center sm:justify-between">
+        <div className="space-y-1">
+          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight">{t('userManagement.title')}</h2>
+          <p className="text-sm sm:text-base text-muted-foreground">
             {t('userManagement.subtitle')}
           </p>
         </div>
+        {/* Tab Buttons - Stacked on mobile, inline on desktop */}
         <div className="flex gap-2">
           <Button
             variant={selectedTab === 'users' ? 'default' : 'outline'}
             onClick={() => setSelectedTab('users')}
-            className="flex items-center gap-2"
+            className="flex-1 sm:flex-none items-center gap-2 text-sm"
           >
             <Users className="h-4 w-4" />
-            {t('userManagement.tabs.users')}
+            <span className="hidden xs:inline">{t('userManagement.tabs.users')}</span>
           </Button>
           <Button
             variant={selectedTab === 'audit' ? 'default' : 'outline'}
             onClick={() => setSelectedTab('audit')}
-            className="flex items-center gap-2"
+            className="flex-1 sm:flex-none items-center gap-2 text-sm"
           >
             <Activity className="h-4 w-4" />
-            {t('userManagement.tabs.audit')}
+            <span className="hidden xs:inline">{t('userManagement.tabs.audit')}</span>
           </Button>
         </div>
       </div>
 
+      {/* Users Tab */}
       {selectedTab === 'users' && (
         <Card className="financial-card">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+          <CardHeader className="space-y-1">
+            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
               <Users className="h-4 w-4 sm:h-5 sm:w-5" />
-              <span className="block sm:hidden">{t('userManagement.tabs.users')}</span>
-              <span className="hidden sm:block">{t('userManagement.usersCard.title')}</span>
+              {t('userManagement.usersCard.title')}
             </CardTitle>
             <CardDescription className="text-xs sm:text-sm">
-              <span className="block sm:hidden">{t('userManagement.usersCard.descriptionShort')}</span>
-              <span className="hidden sm:block">{t('userManagement.usersCard.description')}</span>
+              {t('userManagement.usersCard.description')}
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-3 sm:px-6">
             {loading ? (
-              <div className="flex justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              <div className="flex justify-center py-12">
+                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="text-xs sm:text-sm">{t('userManagement.table.user')}</TableHead>
-                      <TableHead className="text-xs sm:text-sm hidden sm:table-cell">{t('userManagement.table.role')}</TableHead>
-                      <TableHead className="text-xs sm:text-sm">{t('userManagement.table.status')}</TableHead>
-                      <TableHead className="text-xs sm:text-sm hidden md:table-cell">{t('userManagement.table.created')}</TableHead>
-                      <TableHead className="text-xs sm:text-sm">{t('userManagement.table.actions')}</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {users.map((user) => (
-                      <TableRow key={user.id}>
-                        <TableCell className="py-2 sm:py-4">
-                          <div className="flex items-center gap-2 sm:gap-3">
-                            <Avatar className="h-6 w-6 sm:h-8 sm:w-8">
-                              <AvatarImage src={user.avatar_url} />
-                              <AvatarFallback className="text-xs">
-                                {user.full_name?.charAt(0) || user.email.charAt(0)}
-                              </AvatarFallback>
-                            </Avatar>  
-                            <div className="min-w-0 flex-1">
-                              <p className="font-medium text-xs sm:text-sm truncate">
-                                {user.full_name || t('userManagement.noName')}
-                              </p>
-                              <p className="text-xs text-muted-foreground truncate">
-                                {user.email}
-                              </p>
-                              <div className="sm:hidden mt-1">
-                                <Badge 
-                                  variant={getRoleBadgeVariant(user.role)}
-                                  className="text-xs"
-                                >
-                                  {getRoleLabel(user.role)}
-                                </Badge>
+              <div className="overflow-x-auto -mx-3 sm:mx-0">
+                <div className="inline-block min-w-full align-middle">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-xs sm:text-sm pl-3 sm:pl-4">{t('userManagement.table.user')}</TableHead>
+                        <TableHead className="text-xs sm:text-sm hidden sm:table-cell">{t('userManagement.table.role')}</TableHead>
+                        <TableHead className="text-xs sm:text-sm">{t('userManagement.table.status')}</TableHead>
+                        <TableHead className="text-xs sm:text-sm hidden md:table-cell">{t('userManagement.table.created')}</TableHead>
+                        <TableHead className="text-xs sm:text-sm pr-3 sm:pr-4">{t('userManagement.table.actions')}</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {users.map((user) => (
+                        <TableRow key={user.id} className="hover:bg-muted/50">
+                          <TableCell className="py-3 sm:py-4 pl-3 sm:pl-4">
+                            <div className="flex items-center gap-2 sm:gap-3">
+                              <Avatar className="h-8 w-8 sm:h-10 sm:w-10 shrink-0">
+                                <AvatarImage src={user.avatar_url} />
+                                <AvatarFallback className="text-xs sm:text-sm">
+                                  {user.full_name?.charAt(0) || user.email.charAt(0)}
+                                </AvatarFallback>
+                              </Avatar>  
+                              <div className="min-w-0 flex-1">
+                                <p className="text-xs sm:text-sm font-medium truncate">
+                                  {user.full_name || t('userManagement.noName')}
+                                </p>
+                                <p className="text-xs text-muted-foreground truncate">
+                                  {user.email}
+                                </p>
+                                {/* Show role badge on mobile (hidden on desktop where it has its own column) */}
+                                <div className="mt-1 sm:hidden">
+                                  <Badge 
+                                    variant={getRoleBadgeVariant(user.role)}
+                                    className="text-xs"
+                                  >
+                                    {getRoleLabel(user.role)}
+                                  </Badge>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        </TableCell>
-                        <TableCell className="hidden sm:table-cell py-2 sm:py-4">
-                          <div className="flex flex-col gap-2">
-                            <Select
-                              value={user.role}
-                              onValueChange={(value: 'admin' | 'user' | 'subscriber') => 
-                                updateUserRole(user.user_id, value)
-                              }
-                              disabled={user.user_id === profile?.user_id}
-                            >
-                              <SelectTrigger className="w-32 sm:w-40 text-xs sm:text-sm">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="admin">{t('userManagement.roles.admin')}</SelectItem>
-                                <SelectItem value="trial">{t('userManagement.roles.trial')}</SelectItem>
-                                <SelectItem value="user">{t('userManagement.roles.lifetime')}</SelectItem>
-                                <SelectItem value="subscriber">{t('userManagement.roles.subscriber')}</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            {user.role === 'subscriber' && (
-                              <div className="flex gap-2 items-center">
-                                <input
-                                  type="number"
-                                  placeholder={t('userManagement.daysPlaceholder')}
-                                  className="w-16 px-2 py-1 text-xs border rounded"
-                                  id={`days-${user.user_id}`}
-                                />
-                                <Button
-                                  size="sm"
-                                  className="text-xs h-6"
-                                  onClick={() => {
-                                    const input = document.getElementById(`days-${user.user_id}`) as HTMLInputElement;
-                                    const days = parseInt(input.value);
-                                    if (days > 0) {
-                                      setSubscriptionDays(user.user_id, days);
-                                    }
-                                  }}
-                                >
-                                  OK
-                                </Button>
-                                {user.subscription_expires_at && (
-                                  <span className="text-xs text-muted-foreground">
-                                    {t('userManagement.expiresAt')}: {new Date(user.subscription_expires_at).toLocaleDateString()}
-                                  </span>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell className="py-2 sm:py-4">
-                          <div className="flex items-center gap-1 sm:gap-2">
-                            <Switch
-                              checked={user.is_active}
-                              onCheckedChange={(checked) => 
-                                toggleUserStatus(user.user_id, checked)
-                              }
-                              disabled={user.user_id === profile?.user_id}
-                              className="scale-75 sm:scale-100"
-                            />
-                            <Badge 
-                              variant={user.is_active ? 'default' : 'secondary'}
-                              className="text-xs hidden sm:inline-flex"
-                            >
-                              {user.is_active ? t('userManagement.status.active') : t('userManagement.status.inactive')}
-                            </Badge>
-                          </div>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell py-2 sm:py-4 text-xs sm:text-sm">
-                          {new Date(user.created_at).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell className="py-2 sm:py-4">
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button
-                                variant="outline"
-                                size="sm"
+                          </TableCell>
+                          <TableCell className="hidden sm:table-cell py-3 sm:py-4">
+                            <div className="flex flex-col gap-2">
+                              <Select
+                                value={user.role}
+                                onValueChange={(value: 'admin' | 'user' | 'subscriber') => 
+                                  updateUserRole(user.user_id, value)
+                                }
                                 disabled={user.user_id === profile?.user_id}
-                                className="text-destructive hover:text-destructive h-6 w-6 sm:h-8 sm:w-8 p-0"
                               >
-                                <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle className="text-sm sm:text-base">
-                                  {t('userManagement.confirmDelete.title')}
-                                </AlertDialogTitle>
-                                <AlertDialogDescription className="text-xs sm:text-sm">
-                                  {t('userManagement.confirmDelete.description', { email: user.email })}
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel className="text-xs sm:text-sm">
-                                  {t('common.cancel')}
-                                </AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => deleteUser(user.user_id)}
-                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90 text-xs sm:text-sm"
+                                <SelectTrigger className="w-full sm:w-40 text-xs sm:text-sm">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="admin">{t('userManagement.roles.admin')}</SelectItem>
+                                  <SelectItem value="trial">{t('userManagement.roles.trial')}</SelectItem>
+                                  <SelectItem value="user">{t('userManagement.roles.lifetime')}</SelectItem>
+                                  <SelectItem value="subscriber">{t('userManagement.roles.subscriber')}</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              {user.role === 'subscriber' && (
+                                <div className="flex gap-2 items-center flex-wrap">
+                                  <input
+                                    type="number"
+                                    placeholder={t('userManagement.daysPlaceholder')}
+                                    className="w-16 px-2 py-1 text-xs border rounded"
+                                    id={`days-${user.user_id}`}
+                                  />
+                                  <Button
+                                    size="sm"
+                                    className="text-xs h-6 px-2"
+                                    onClick={() => {
+                                      const input = document.getElementById(`days-${user.user_id}`) as HTMLInputElement;
+                                      const days = parseInt(input.value);
+                                      if (days > 0) {
+                                        setSubscriptionDays(user.user_id, days);
+                                      }
+                                    }}
+                                  >
+                                    OK
+                                  </Button>
+                                  {user.subscription_expires_at && (
+                                    <span className="text-xs text-muted-foreground">
+                                      {t('userManagement.expiresAt')}: {new Date(user.subscription_expires_at).toLocaleDateString()}
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell className="py-3 sm:py-4">
+                            <div className="flex items-center gap-1 sm:gap-2">
+                              <Switch
+                                checked={user.is_active}
+                                onCheckedChange={(checked) => 
+                                  toggleUserStatus(user.user_id, checked)
+                                }
+                                disabled={user.user_id === profile?.user_id}
+                                className="scale-90 sm:scale-100"
+                              />
+                              <Badge 
+                                variant={user.is_active ? 'default' : 'secondary'}
+                                className="text-xs hidden lg:inline-flex"
+                              >
+                                {user.is_active ? t('userManagement.status.active') : t('userManagement.status.inactive')}
+                              </Badge>
+                            </div>
+                          </TableCell>
+                          <TableCell className="hidden md:table-cell py-3 sm:py-4 text-xs sm:text-sm text-muted-foreground">
+                            {new Date(user.created_at).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell className="py-3 sm:py-4 pr-3 sm:pr-4">
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  disabled={user.user_id === profile?.user_id}
+                                  className="text-destructive hover:text-destructive h-8 w-8 p-0"
                                 >
-                                  {t('common.delete')}
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent className="max-w-[90vw] sm:max-w-md">
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle className="text-sm sm:text-base">
+                                    {t('userManagement.confirmDelete.title')}
+                                  </AlertDialogTitle>
+                                  <AlertDialogDescription className="text-xs sm:text-sm">
+                                    {t('userManagement.confirmDelete.description', { email: user.email })}
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+                                  <AlertDialogCancel className="text-xs sm:text-sm m-0">
+                                    {t('common.cancel')}
+                                  </AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => deleteUser(user.user_id)}
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90 text-xs sm:text-sm m-0"
+                                  >
+                                    {t('common.delete')}
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               </div>
             )}
           </CardContent>
         </Card>
       )}
 
+      {/* Audit Log Tab */}
       {selectedTab === 'audit' && (
         <Card className="financial-card">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Activity className="h-5 w-5" />
+          <CardHeader className="space-y-1">
+            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+              <Activity className="h-4 w-4 sm:h-5 sm:w-5" />
               {t('userManagement.auditLog.title')}
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-xs sm:text-sm">
               {t('userManagement.auditLog.description')}
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t('userManagement.auditLog.columns.user')}</TableHead>
-                  <TableHead>{t('userManagement.auditLog.columns.action')}</TableHead>
-                  <TableHead>{t('userManagement.auditLog.columns.resource')}</TableHead>
-                  <TableHead>{t('userManagement.auditLog.columns.dateTime')}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {auditLogs.map((log) => (
-                  <TableRow key={log.id}>
-                     <TableCell>
-                      <div>
-                        <p className="font-medium">
-                          {log.profiles?.full_name || log.profiles?.email || t('userManagement.auditLog.system')}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          ID: {log.user_id.substring(0, 8)}...
-                        </p>
-                      </div>
-                     </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">
-                        {log.action.replace(/_/g, ' ')}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{log.resource_type}</TableCell>
-                    <TableCell>
-                      {new Date(log.created_at).toLocaleString()}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+          <CardContent className="px-3 sm:px-6">
+            <div className="overflow-x-auto -mx-3 sm:mx-0">
+              <div className="inline-block min-w-full align-middle">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-xs sm:text-sm pl-3 sm:pl-4">{t('userManagement.auditLog.columns.user')}</TableHead>
+                      <TableHead className="text-xs sm:text-sm hidden sm:table-cell">{t('userManagement.auditLog.columns.action')}</TableHead>
+                      <TableHead className="text-xs sm:text-sm hidden md:table-cell">{t('userManagement.auditLog.columns.resource')}</TableHead>
+                      <TableHead className="text-xs sm:text-sm pr-3 sm:pr-4">{t('userManagement.auditLog.columns.dateTime')}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {auditLogs.map((log) => (
+                      <TableRow key={log.id} className="hover:bg-muted/50">
+                        <TableCell className="py-3 sm:py-4 pl-3 sm:pl-4">
+                          <div className="min-w-0">
+                            <p className="text-xs sm:text-sm font-medium truncate">
+                              {log.profiles?.full_name || log.profiles?.email || t('userManagement.auditLog.system')}
+                            </p>
+                            {/* Show action on mobile */}
+                            <p className="text-xs text-muted-foreground sm:hidden mt-0.5">
+                              {log.action.replace(/_/g, ' ')}
+                            </p>
+                          </div>
+                        </TableCell>
+                        <TableCell className="hidden sm:table-cell py-3 sm:py-4">
+                          <Badge variant="outline" className="text-xs">
+                            {log.action.replace(/_/g, ' ')}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell py-3 sm:py-4 text-xs sm:text-sm text-muted-foreground">
+                          {log.resource_type}
+                        </TableCell>
+                        <TableCell className="py-3 sm:py-4 pr-3 sm:pr-4">
+                          <div className="text-xs sm:text-sm text-muted-foreground">
+                            <span className="hidden sm:inline">
+                              {new Date(log.created_at).toLocaleString()}
+                            </span>
+                            <span className="sm:hidden">
+                              {new Date(log.created_at).toLocaleDateString('pt-BR', { 
+                                day: '2-digit',
+                                month: '2-digit'
+                              })}
+                            </span>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
           </CardContent>
         </Card>
       )}
