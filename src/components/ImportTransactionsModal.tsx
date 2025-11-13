@@ -126,6 +126,11 @@ export function ImportTransactionsModal({
     return accounts.find(acc => acc.name.toLowerCase().trim() === normalizedName) || null;
   };
 
+  // Suporte a diferentes formas de representar a conta nas transações existentes
+  const getTxAccountId = (tx: any): string | null => {
+    return (tx.account_id ?? tx.accountId ?? tx.account?.id ?? null) as string | null;
+  };
+
   const parseDate = (dateString: string): Date | null => {
     // Tentar diferentes formatos de data
     const formats = [
@@ -238,13 +243,27 @@ export function ImportTransactionsModal({
           txDate.getUTCFullYear() === parsedNorm.getUTCFullYear() &&
           txDate.getUTCMonth() === parsedNorm.getUTCMonth() &&
           txDate.getUTCDate() === parsedNorm.getUTCDate();
-        
         const isSameAmount = Math.abs(tx.amount) === valorInCents;
-        const isSameDescription = tx.description.trim().toLowerCase() === descricao.trim().toLowerCase();
-        const isSameAccount = tx.accountId === accountId;
-        
+        const isSameDescription = (tx.description || '').trim().toLowerCase() === descricao.trim().toLowerCase();
+        const isSameAccount = getTxAccountId(tx) === accountId;
         return isSameAccount && isSameDate && isSameAmount && isSameDescription;
       });
+
+      if (!existingTx) {
+        // Logs de diagnóstico para entender por que não casou
+        const sameAccDesc = transactions.filter(tx => {
+          const isSameDescription = (tx.description || '').trim().toLowerCase() === descricao.trim().toLowerCase();
+          const isSameAccount = getTxAccountId(tx) === accountId;
+          return isSameAccount && isSameDescription;
+        }).map(tx => ({ id: tx.id, amount: tx.amount, date: (createDateFromString(tx.date as any)).toISOString().slice(0,10) }));
+        console.info('[ImportTx] Sem duplicata. Contexto:', {
+          descricao,
+          valorInCents,
+          data: parsedNorm.toISOString().slice(0,10),
+          accountId,
+          candidatos: sameAccDesc
+        });
+      }
 
       if (existingTx) {
         isDuplicate = true;
