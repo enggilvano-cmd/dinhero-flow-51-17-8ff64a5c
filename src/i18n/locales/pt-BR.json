@@ -296,7 +296,8 @@
     "editComingSoon": "Edição em breve",
     "errors": {
       "loadFailed": "Erro ao carregar transações recorrentes",
-      "deleteFailed": "Erro ao excluir transação recorrente"
+      "deleteFailed": "Erro ao excluir transação recorrente",
+      "updateFailed": "Erro ao atualizar transação recorrente"
     }
   },
   "creditBills": {
@@ -697,6 +698,48 @@
         "all": "Todas as parcelas foram atualizadas com sucesso",
         "selected": "Parcelas selecionadas foram atualizadas com sucesso"
       }
+    },
+    "editRecurringTransaction": {
+      "title": "Editar Transação Recorrente",
+      "subtitle": "Atualize os detalhes da transação recorrente",
+      "fields": {
+        "description": {
+          "label": "Descrição",
+          "placeholder": "Descrição da transação"
+        },
+        "amount": {
+          "label": "Valor"
+        },
+        "type": {
+          "label": "Tipo",
+          "placeholder": "Selecione o tipo"
+        },
+        "category": {
+          "label": "Categoria",
+          "placeholder": "Selecione uma categoria"
+        },
+        "account": {
+          "label": "Conta",
+          "placeholder": "Selecione uma conta"
+        },
+        "frequency": {
+          "label": "Frequência"
+        },
+        "endDate": {
+          "label": "Data Final (opcional)",
+          "placeholder": "Selecione a data final",
+          "help": "Deixe em branco para repetir indefinidamente"
+        }
+      },
+      "actions": {
+        "save": "Salvar",
+        "cancel": "Cancelar"
+      },
+      "errors": {
+        "required": "Por favor, preencha todos os campos obrigatórios",
+        "categoryRequired": "Por favor, selecione uma categoria"
+      },
+      "success": "Transação recorrente atualizada com sucesso"
     },
     "addAccount": {
       "title": "Adicionar Nova Conta",

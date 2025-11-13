@@ -18,6 +18,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { EditRecurringTransactionModal } from "./EditRecurringTransactionModal";
 
 interface RecurringTransaction {
   id: string;
@@ -34,14 +35,34 @@ interface RecurringTransaction {
 
 export function RecurringTransactionsPage() {
   const [transactions, setTransactions] = useState<RecurringTransaction[]>([]);
+  const [accounts, setAccounts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [editTransaction, setEditTransaction] = useState<RecurringTransaction | null>(null);
   const { toast } = useToast();
   const { t } = useTranslation();
 
   useEffect(() => {
     loadRecurringTransactions();
+    loadAccounts();
   }, []);
+
+  const loadAccounts = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('accounts')
+        .select('*')
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+      setAccounts(data || []);
+    } catch (error) {
+      console.error('Error loading accounts:', error);
+    }
+  };
 
   const loadRecurringTransactions = async () => {
     try {
@@ -75,6 +96,38 @@ export function RecurringTransactionsPage() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleEdit = async (updatedTransaction: RecurringTransaction) => {
+    try {
+      const { error } = await supabase
+        .from('transactions')
+        .update({
+          description: updatedTransaction.description,
+          amount: updatedTransaction.amount,
+          type: updatedTransaction.type,
+          category_id: updatedTransaction.category_id,
+          account_id: updatedTransaction.account_id,
+          recurrence_type: updatedTransaction.recurrence_type,
+          recurrence_end_date: updatedTransaction.recurrence_end_date,
+        })
+        .eq('id', updatedTransaction.id);
+
+      if (error) throw error;
+
+      setTransactions(prev => prev.map(t => 
+        t.id === updatedTransaction.id ? { ...t, ...updatedTransaction } : t
+      ));
+      
+      loadRecurringTransactions();
+    } catch (error) {
+      console.error('Error updating recurring transaction:', error);
+      toast({
+        title: t("common.error"),
+        description: t("recurringTransactions.errors.updateFailed"),
+        variant: "destructive",
+      });
     }
   };
 
@@ -199,12 +252,7 @@ export function RecurringTransactionsPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => {
-                        toast({
-                          title: t("common.comingSoon"),
-                          description: t("recurringTransactions.editComingSoon"),
-                        });
-                      }}
+                      onClick={() => setEditTransaction(transaction)}
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
