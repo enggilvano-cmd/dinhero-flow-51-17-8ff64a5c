@@ -1049,6 +1049,7 @@
     },
     "roles": {
       "admin": "Administrator",
+      "user": "User",
       "lifetime": "Lifetime",
       "trial": "Trial",
       "subscriber": "Subscriber"

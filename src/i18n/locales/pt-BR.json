@@ -1150,6 +1150,7 @@
     },
     "roles": {
       "admin": "Administrador",
+      "user": "Usuário",
       "lifetime": "Vitalício",
       "trial": "Trial",
       "subscriber": "Assinante"
