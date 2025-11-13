@@ -110,6 +110,10 @@ i18n
     resources,
     lng: detectedLanguage, // idioma detectado do navegador
     fallbackLng: 'pt-BR',
+    defaultNS: 'translation',
+    nsSeparator: ':',
+    keySeparator: '.',
+    initImmediate: false, // garantir init síncrono com recursos embutidos
     interpolation: {
       escapeValue: false, // React já faz escape
     },
@@ -118,6 +122,7 @@ i18n
     },
     returnNull: false,
     returnEmptyString: false,
+    debug: false,
   });
 
 export default i18n;
