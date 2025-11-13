@@ -307,15 +307,8 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="pt-BR">🇧🇷 Português (Brasil)</SelectItem>
-                  <SelectItem value="pt-PT">🇵🇹 Português (Portugal)</SelectItem>
                   <SelectItem value="en-US">🇺🇸 English (US)</SelectItem>
-                  <SelectItem value="en-GB">🇬🇧 English (UK)</SelectItem>
                   <SelectItem value="es-ES">🇪🇸 Español (España)</SelectItem>
-                  <SelectItem value="es-MX">🇲🇽 Español (México)</SelectItem>
-                  <SelectItem value="fr-FR">🇫🇷 Français</SelectItem>
-                  <SelectItem value="de-DE">🇩🇪 Deutsch</SelectItem>
-                  <SelectItem value="it-IT">🇮🇹 Italiano</SelectItem>
-                  <SelectItem value="ja-JP">🇯🇵 日本語</SelectItem>
                 </SelectContent>
               </Select>
             </div>
