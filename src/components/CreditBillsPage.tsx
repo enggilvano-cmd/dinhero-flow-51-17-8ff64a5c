@@ -211,9 +211,9 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
-          <h1 className="text-title-1">Faturas de Cartão</h1>
-          <p className="text-body text-muted-foreground">
-            Acompanhe o vencimento e o limite dos seus cartões de crédito.
+          <h1 className="text-xl sm:text-2xl font-bold leading-tight">Faturas de Cartão</h1>
+          <p className="text-sm text-muted-foreground leading-tight">
+            Acompanhe o vencimento e o limite dos seus cartões de crédito
           </p>
         </div>
       </div>

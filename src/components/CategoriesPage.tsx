@@ -345,8 +345,8 @@ export function CategoriesPage({}: CategoriesPageProps) {
       {/* Header */}
       <div className="flex flex-col gap-3">
         <div className="min-w-0 w-full">
-          <h1 className="text-title-1">Categorias</h1>
-          <p className="text-body text-muted-foreground">
+          <h1 className="text-xl sm:text-2xl font-bold leading-tight">Categorias</h1>
+          <p className="text-sm text-muted-foreground leading-tight">
             Gerencie as categorias das suas transações
           </p>
         </div>

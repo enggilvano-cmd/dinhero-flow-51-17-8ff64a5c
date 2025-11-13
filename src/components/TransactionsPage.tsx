@@ -574,8 +574,8 @@ export function TransactionsPage({
       {/* Header */}
       <div className="flex flex-col gap-3">
         <div className="min-w-0 w-full">
-          <h1 className="text-title-1">Transações</h1>
-          <p className="text-body text-muted-foreground">
+          <h1 className="text-xl sm:text-2xl font-bold leading-tight">Transações</h1>
+          <p className="text-sm text-muted-foreground leading-tight">
             Histórico completo de receitas, despesas e transferências
           </p>
         </div>

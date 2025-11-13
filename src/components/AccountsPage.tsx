@@ -205,9 +205,9 @@ export function AccountsPage({
       {/* Header */}
       <div className="flex flex-col gap-3">
         <div className="min-w-0 w-full">
-          <h1 className="text-title-1 truncate">Contas</h1>
-          <p className="text-body text-muted-foreground truncate">
-            Gerencie suas contas bancárias e cartões de crédito.
+          <h1 className="text-xl sm:text-2xl font-bold leading-tight">Contas</h1>
+          <p className="text-sm text-muted-foreground leading-tight">
+            Gerencie suas contas bancárias e cartões de crédito
           </p>
         </div>
         <div className="grid grid-cols-2 gap-2 w-full md:grid-cols-4 lg:flex lg:flex-nowrap lg:gap-2 lg:w-auto lg:ml-auto">

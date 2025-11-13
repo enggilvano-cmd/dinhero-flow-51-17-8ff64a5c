@@ -251,8 +251,8 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
     <div className="space-y-8 fade-in">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold">Configurações</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-xl sm:text-2xl font-bold leading-tight">Configurações</h1>
+        <p className="text-sm text-muted-foreground leading-tight">
           Personalize seu aplicativo e gerencie seus dados
         </p>
       </div>

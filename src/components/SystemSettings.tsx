@@ -110,7 +110,12 @@ export default function SystemSettings() {
     <div className="space-y-6">
       <div className="flex items-center gap-2">
         <Settings className="h-6 w-6" />
-        <h1 className="text-2xl font-bold">Configurações do Sistema</h1>
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold leading-tight">Configurações do Sistema</h1>
+          <p className="text-sm text-muted-foreground leading-tight">
+            Gerencie as configurações globais do aplicativo
+          </p>
+        </div>
       </div>
 
       <Alert>

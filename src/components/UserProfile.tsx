@@ -237,8 +237,8 @@ export function UserProfile() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-foreground">Meu Perfil</h2>
-        <p className="text-muted-foreground">
+        <h2 className="text-xl sm:text-2xl font-bold leading-tight">Meu Perfil</h2>
+        <p className="text-sm text-muted-foreground leading-tight">
           Gerencie suas informações pessoais e configurações de segurança
         </p>
       </div>

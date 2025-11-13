@@ -319,8 +319,8 @@ export function UserManagement() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Gerenciamento de Usuários</h2>
-          <p className="text-muted-foreground">
+          <h2 className="text-xl sm:text-2xl font-bold leading-tight">Gerenciamento de Usuários</h2>
+          <p className="text-sm text-muted-foreground leading-tight">
             Controle total sobre usuários e permissões do sistema
           </p>
         </div>
