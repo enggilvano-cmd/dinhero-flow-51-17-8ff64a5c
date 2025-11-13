@@ -77,22 +77,22 @@ export default function SystemSettings() {
       if (error) {
         console.error('Error updating setting:', error);
         toast({
-          title: "Erro ao salvar",
-          description: "Não foi possível salvar a configuração.",
+          title: t('common.error'),
+          description: t('systemSettings.errors.saveSetting'),
           variant: "destructive",
         });
         return;
       }
 
       toast({
-        title: "Configuração salva",
-        description: `Novos usuários terão ${trialDays} dias de trial.`,
+        title: t('common.success'),
+        description: t('systemSettings.success.settingSaved', { days: trialDays }),
       });
     } catch (error) {
       console.error('Error updating setting:', error);
       toast({
-        title: "Erro ao salvar",
-        description: "Erro inesperado ao salvar configuração.",
+        title: t('common.error'),
+        description: t('systemSettings.errors.unexpectedSave'),
         variant: "destructive",
       });
     } finally {

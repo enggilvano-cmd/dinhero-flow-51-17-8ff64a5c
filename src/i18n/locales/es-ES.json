@@ -899,6 +899,28 @@
       "deleteUser": "No se pudo eliminar el usuario.",
       "unknown": "Error desconocido"
     }
+  },
+  "systemSettings": {
+    "title": "Configuración del Sistema",
+    "subtitle": "Configuración global de la aplicación para todos los usuarios",
+    "restrictedArea": "Esta área está restringida solo para administradores del sistema. Los cambios realizados aquí afectarán a todos los usuarios.",
+    "trialPeriod": "Configuración del Período de Prueba",
+    "trialPeriodDescription": "Establezca el número de días del período de prueba para nuevos usuarios",
+    "trialDays": "Días de Prueba",
+    "trialDaysDescription": "Número de días que los nuevos usuarios tendrán acceso antes de requerir una suscripción",
+    "saveSettings": "Guardar Configuración",
+    "loadError": "Error al cargar la configuración",
+    "loadErrorDescription": "No se pudo cargar la configuración del sistema.",
+    "unexpectedLoadError": "Error inesperado al cargar la configuración.",
+    "invalidValue": "Valor inválido",
+    "invalidValueDescription": "Por favor, ingrese un número válido mayor que 0.",
+    "success": {
+      "settingSaved": "Los nuevos usuarios tendrán {{days}} días de prueba."
+    },
+    "errors": {
+      "saveSetting": "No se pudo guardar la configuración.",
+      "unexpectedSave": "Error inesperado al guardar la configuración."
+    }
   }
 }
 }
