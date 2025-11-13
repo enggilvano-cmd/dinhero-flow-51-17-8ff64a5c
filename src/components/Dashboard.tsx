@@ -93,6 +93,7 @@ interface DashboardProps {
   categories: Category[];
   onTransfer: () => void;
   onAddTransaction: () => void;
+  onAddAccount?: () => void;
   onAddExpense?: () => void;
   onAddIncome?: () => void;
   onAddCreditExpense?: () => void;
@@ -113,6 +114,7 @@ export function Dashboard({
   transactions,
   onTransfer,
   onAddTransaction,
+  onAddAccount,
   onAddExpense,
   onAddIncome,
   onAddCreditExpense,
@@ -1178,7 +1180,7 @@ export function Dashboard({
                     size="sm"
                     onClick={(e) => {
                       e.stopPropagation();
-                      onTransfer();
+                      onAddAccount?.();
                     }}
                     className="mt-2 h-7 text-xs"
                   >

@@ -1293,6 +1293,7 @@ const PlaniFlowApp = () => {
             accounts={accounts}
             categories={categories}
             onTransfer={() => setTransferModalOpen(true)}
+            onAddAccount={() => setAddAccountModalOpen(true)}
             onAddTransaction={() => {
               setTransactionInitialType("");
               setTransactionInitialAccountType("");
@@ -1370,6 +1371,7 @@ const PlaniFlowApp = () => {
             transactions={transactions}
             categories={categories}
             onTransfer={() => setTransferModalOpen(true)}
+            onAddAccount={() => setAddAccountModalOpen(true)}
             onAddTransaction={() => {
               setTransactionInitialType("");
               setTransactionInitialAccountType("");
