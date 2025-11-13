@@ -121,28 +121,33 @@ export function UserProfile() {
 
     setLoading(true);
     try {
-      // Update email in Supabase Auth if changed
-      if (formData.email !== profile.email) {
+      const emailChanged = formData.email !== profile.email;
+
+      // If email changed, request Auth email update with redirect for confirmation
+      if (emailChanged) {
         const { error: authError } = await supabase.auth.updateUser(
           { email: formData.email },
           { emailRedirectTo: `${window.location.origin}/auth` }
         );
-
         if (authError) throw authError;
 
         toast({
           title: 'Verificação necessária',
-          description: 'Um email de confirmação foi enviado para o novo endereço. Confirme para completar a alteração.',
+          description: 'Enviamos um email de confirmação para o novo endereço. Confirme para concluir a troca.',
         });
       }
 
-      // Update profile data
+      // Update profile data (do NOT change profiles.email until confirmation)
+      const updates: any = {
+        full_name: formData.fullName,
+      };
+      if (!emailChanged) {
+        updates.email = formData.email;
+      }
+
       const { error } = await supabase
         .from('profiles')
-        .update({
-          full_name: formData.fullName,
-          email: formData.email,
-        })
+        .update(updates)
         .eq('user_id', profile.user_id);
 
       if (error) throw error;
@@ -157,7 +162,9 @@ export function UserProfile() {
 
       toast({
         title: 'Sucesso',
-        description: 'Perfil atualizado com sucesso.',
+        description: emailChanged
+          ? 'Nome atualizado. Confirme o email enviado para finalizar a troca de email.'
+          : 'Perfil atualizado com sucesso.',
       });
     } catch (error) {
       console.error('Error updating profile:', error);

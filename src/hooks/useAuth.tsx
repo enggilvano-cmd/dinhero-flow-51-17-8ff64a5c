@@ -135,6 +135,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const syncProfileEmail = async (userId: string, newEmail?: string | null) => {
+    try {
+      if (!newEmail) return;
+      const { error } = await supabase
+        .from('profiles')
+        .update({ email: newEmail })
+        .eq('user_id', userId)
+        .neq('email', newEmail);
+      if (error) {
+        console.error('Error syncing profile email:', error);
+      } else {
+        console.log('Profile email synced to auth email');
+      }
+    } catch (error) {
+      console.error('Unexpected error syncing profile email:', error);
+    }
+  };
+
   useEffect(() => {
     console.log('Setting up auth state listener...');
     
@@ -149,6 +167,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (session?.user) {
           setTimeout(() => {
             fetchProfile(session.user.id);
+          }, 0);
+
+          // Ensure profiles.email matches Auth email after any auth change
+          setTimeout(() => {
+            syncProfileEmail(session.user!.id, session.user!.email);
           }, 0);
           
           if (event === 'SIGNED_IN') {
@@ -173,6 +196,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(session?.user ?? null);
       if (session?.user) {
         fetchProfile(session.user.id);
+        // Also sync profile.email to the current auth email
+        setTimeout(() => {
+          syncProfileEmail(session.user!.id, session.user!.email);
+        }, 0);
       }
       setLoading(false);
     });
