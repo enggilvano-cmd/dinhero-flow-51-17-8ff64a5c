@@ -1,17 +1,19 @@
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Account, AppTransaction } from "@/types"; // Importa AppTransaction
-import { CreditCard, RotateCcw, FileText } from "lucide-react"; // Importa RotateCcw e FileText
+import { Account, AppTransaction } from "@/types";
+import { CreditCard, RotateCcw, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { isPast } from 'date-fns';
 import { Badge } from "@/components/ui/badge";
+import { useTranslation } from "react-i18next";
+import { useSettings } from "@/context/SettingsContext";
 
 // Helper para formatar moeda
-const formatCents = (valueInCents: number) => {
-  return new Intl.NumberFormat("pt-BR", {
+const formatCentsHelper = (valueInCents: number, currency: string, language: string) => {
+  return new Intl.NumberFormat(language === 'pt-BR' ? 'pt-BR' : language === 'es-ES' ? 'es-ES' : 'en-US', {
     style: "currency",
-    currency: "BRL",
+    currency: currency,
   }).format(valueInCents / 100);
 };
 
@@ -33,11 +35,17 @@ interface CreditCardBillCardProps {
 export function CreditCardBillCard({ 
   account, 
   billDetails,
-  selectedMonth, // <-- Prop ADICIONADA
+  selectedMonth,
   onPayBill, 
   onReversePayment,
   onViewDetails
 }: CreditCardBillCardProps) {
+  const { t } = useTranslation();
+  const { settings } = useSettings();
+  
+  const formatCents = (valueInCents: number) => {
+    return formatCentsHelper(valueInCents, settings.currency, settings.language);
+  };
   
   if (!account || !billDetails) {
     return null
@@ -95,8 +103,8 @@ export function CreditCardBillCard({
     : "text-muted-foreground";
   
   const billLabel = currentBillAmount < 0 
-    ? "Crédito na Fatura" 
-    : `Fatura Atual (Vence dia ${due_date || 'N/A'})`;
+    ? t("creditBills.currentBill")
+    : `${t("creditBills.currentBill")} (${t("creditBills.dueDate")} ${due_date || 'N/A'})`;
 
   return (
     <Card className="financial-card flex flex-col shadow-md hover:shadow-lg transition-shadow">
@@ -112,11 +120,11 @@ export function CreditCardBillCard({
         </CardTitle>
         <div className="flex gap-2 flex-shrink-0">
           <Badge variant={isClosed ? 'secondary' : 'outline'}>
-            {isClosed ? 'Fechada' : 'Aberta'}
+            {isClosed ? t("transactions.completed") : t("transactions.pending")}
           </Badge>
           {/* Badge de Pago/Pendente baseado no fechamento + pagamentos */}
           <Badge variant={isPaid ? 'default' : 'destructive'}>
-            {isPaid ? 'Pago' : 'Pendente'}
+            {isPaid ? t("transactions.completed") : t("transactions.pending")}
           </Badge>
         </div>
       </CardHeader>
@@ -133,23 +141,23 @@ export function CreditCardBillCard({
         {/* Detalhes de Limite */}
         <div className="space-y-2">
           <div className="flex justify-between text-xs text-muted-foreground">
-            <span>Limite Utilizado</span>
+            <span>{t("accounts.used")}</span>
             <span>{formatCents(totalBalance)} / {formatCents(limit_amount)}</span>
           </div>
           <Progress value={limitUsedPercentage} className="h-2" />
           <div className="flex justify-between text-xs">
-            <span className="text-muted-foreground">Próxima Fatura (Parcial)</span>
+            <span className="text-muted-foreground">{t("creditBills.nextBill")}</span>
             <span className="font-medium text-muted-foreground">{formatCents(nextBillAmount)}</span>
           </div>
           <div className="flex justify-between text-xs">
-            <span className="text-muted-foreground">Limite Disponível</span>
+            <span className="text-muted-foreground">{t("accounts.available")}</span>
             <span className={cn("font-medium", availableLimit >= 0 ? "balance-positive" : "balance-negative")}>
               {formatCents(availableLimit)}
             </span>
           </div>
           <div className="flex justify-between text-xs border-t pt-2 mt-2">
-            <span className="text-muted-foreground">Fechamento</span>
-            <span className="font-medium">Dia {closing_date || 'N/A'}</span>
+            <span className="text-muted-foreground">{t("creditBills.closingDate")}</span>
+            <span className="font-medium">{t("dashboard.daily")} {closing_date || 'N/A'}</span>
           </div>
         </div>
       </CardContent>
@@ -164,7 +172,7 @@ export function CreditCardBillCard({
               onClick={onReversePayment}
             >
               <RotateCcw className="h-4 w-4 mr-2" />
-              Estornar
+              {t("common.cancel")}
             </Button>
           )}
           
@@ -173,7 +181,7 @@ export function CreditCardBillCard({
           className="flex-1" 
           onClick={onPayBill} 
         >
-          {isBillPaid && !isFullyPaid ? "Pagar Avulso" : "Pagar Fatura"}
+          {isBillPaid && !isFullyPaid ? t("accounts.payBill") : t("accounts.payBill")}
         </Button>
         </div>
         
@@ -183,7 +191,7 @@ export function CreditCardBillCard({
           onClick={onViewDetails}
         >
           <FileText className="h-4 w-4 mr-2" />
-          Ver Detalhes da Fatura
+          {t("creditBills.viewDetails")}
         </Button>
       </CardFooter>
       {/* --- FIM DO NOVO --- */}
