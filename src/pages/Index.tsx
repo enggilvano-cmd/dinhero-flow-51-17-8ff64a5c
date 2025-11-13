@@ -776,7 +776,9 @@ const PlaniFlowApp = () => {
             due_date: acc.due_date || undefined,
             closing_date: acc.closing_date || undefined,
           }));
-          updateGlobalAccounts([...accounts.filter(acc => !accountsToReplaceIds.includes(acc.id)), ...accountsWithDefaults]);
+          // Usar setGlobalAccounts para substituir todo o array
+          const remainingAccounts = accounts.filter(acc => !accountsToReplaceIds.includes(acc.id));
+          setGlobalAccounts([...remainingAccounts, ...accountsWithDefaults]);
         }
 
         toast({
