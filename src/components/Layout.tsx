@@ -396,7 +396,7 @@ export function Layout({ children, currentPage, onPageChange }: LayoutProps) {
   
   return (
     <SidebarProvider defaultOpen={!isMobile}>
-      <div className="h-screen w-full bg-gradient-surface overflow-hidden">
+      <div className="min-h-screen flex w-full bg-gradient-surface">
         <LayoutContent currentPage={currentPage} onPageChange={onPageChange}>
           {children}
         </LayoutContent>
