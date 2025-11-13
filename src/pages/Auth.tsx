@@ -185,9 +185,10 @@ export default function Auth() {
               {t('auth.accessDescription')}
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-0">
-            <ScrollArea className="h-[500px] px-6">
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="pb-4">
+          <CardContent>
+            <ScrollArea className="max-h-[60vh]">
+              <div className="pr-4">
+                <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="signin">{t('auth.signIn')}</TabsTrigger>
                 <TabsTrigger value="signup">{t('auth.signUp')}</TabsTrigger>
@@ -404,9 +405,8 @@ export default function Auth() {
                 </form>
               </TabsContent>
             </Tabs>
-            </ScrollArea>
 
-            <div className="mt-6 p-4 px-6 bg-muted/50 rounded-lg">
+            <div className="mt-6 p-4 bg-muted/50 rounded-lg">
               <h4 className="font-medium text-sm mb-2">{t('auth.securityFeatures.title')}</h4>
               <ul className="text-xs text-muted-foreground space-y-1">
                 <li>• {t('auth.securityFeatures.encryption')}</li>
@@ -415,6 +415,8 @@ export default function Auth() {
                 <li>• {t('auth.securityFeatures.roleAccess')}</li>
               </ul>
             </div>
+              </div>
+            </ScrollArea>
           </CardContent>
         </Card>
       </div>
