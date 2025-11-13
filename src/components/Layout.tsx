@@ -79,7 +79,7 @@ function AppSidebar({ currentPage, onPageChange }: { currentPage: string; onPage
       >
         {/* Header - Responsive design */}
         <div className={cn(
-          "border-b-2 border-border/60 flex items-center justify-end",
+          "border-b border-border/30 flex items-center justify-end",
           isMobile 
             ? "px-4 py-4" 
             : isCollapsed 
@@ -208,7 +208,7 @@ function AppSidebar({ currentPage, onPageChange }: { currentPage: string; onPage
 
         {/* User Profile Section */}
         <div className={cn(
-          "mt-auto border-t-2 border-b-2 border-border/60",
+          "mt-auto border-t border-border/30",
            isMobile 
              ? "px-4 py-4" 
              : isCollapsed 
