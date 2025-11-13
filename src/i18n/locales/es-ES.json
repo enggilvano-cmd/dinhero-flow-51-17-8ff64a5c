@@ -648,12 +648,23 @@
     "addCategory": {
       "title": "Añadir Nueva Categoría",
       "subtitle": "Crear una nueva categoría para organizar tus transacciones",
-      "name": "Nombre de la Categoría",
-      "type": "Tipo de Categoría",
-      "selectType": "Seleccionar tipo",
-      "color": "Color de la Categoría",
-      "adding": "Añadiendo...",
-      "add": "Añadir Categoría"
+      "fields": {
+        "name": {
+          "label": "Nombre",
+          "placeholder": "Nombre de la categoría"
+        },
+        "type": {
+          "label": "Tipo",
+          "placeholder": "Seleccionar tipo",
+          "both": "Ambos"
+        }
+      },
+      "actions": {
+        "add": "Añadir Categoría"
+      },
+      "errors": {
+        "required": "Por favor, complete todos los campos obligatorios"
+      }
     },
     "editCategory": {
       "title": "Editar Categoría",
