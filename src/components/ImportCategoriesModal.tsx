@@ -71,9 +71,10 @@ export function ImportCategoriesModal({
   };
 
   const validateCategoryType = (tipo: string): 'income' | 'expense' | 'both' | null => {
-    const normalizedType = tipo.toLowerCase().trim();
-    if (['receita', 'income', 'entrada'].includes(normalizedType)) return 'income';
-    if (['despesa', 'expense', 'saída', 'saida'].includes(normalizedType)) return 'expense';
+    const normalizedType = normalizeString(tipo);
+    // Suporte para PT-BR, EN-US, ES-ES (singular e plural)
+    if (['receita', 'receitas', 'income', 'entrada', 'entradas', 'ingreso', 'ingresos'].includes(normalizedType)) return 'income';
+    if (['despesa', 'despesas', 'expense', 'expenses', 'saida', 'saidas', 'gasto', 'gastos'].includes(normalizedType)) return 'expense';
     if (['ambos', 'both', 'misto', 'mista'].includes(normalizedType)) return 'both';
     return null;
   };
@@ -81,6 +82,16 @@ export function ImportCategoriesModal({
   const isValidColor = (color: string): boolean => {
     // Valida cor em formato hexadecimal (#RRGGBB ou #RGB)
     return /^#([0-9A-F]{3}){1,2}$/i.test(color);
+  };
+
+  // Função para normalizar strings (remover acentos, espaços extras, etc.)
+  const normalizeString = (str: string): string => {
+    return str
+      .trim()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Remove diacríticos (acentos)
+      .replace(/\s+/g, ' '); // Normaliza espaços
   };
 
   const validateAndCheckDuplicate = (row: any): ImportedCategory => {
@@ -118,18 +129,34 @@ export function ImportCategoriesModal({
       isValid = false;
     }
 
-    // Verificação de duplicata (por nome)
+    // Verificação de duplicata (por nome normalizado)
     let isDuplicate = false;
     let existingCategoryId: string | undefined;
     
     if (isValid && nome) {
+      const normalizedNome = normalizeString(nome);
       const existingCategory = categories.find(cat => 
-        cat.name.trim().toLowerCase() === nome.toLowerCase()
+        normalizeString(cat.name) === normalizedNome
       );
+
+      if (!existingCategory) {
+        // Logs de diagnóstico para entender por que não casou
+        const candidatos = categories
+          .filter(cat => normalizeString(cat.name).includes(normalizedNome.substring(0, Math.min(5, normalizedNome.length))))
+          .map(cat => ({ id: cat.id, name: cat.name, normalized: normalizeString(cat.name), type: cat.type, color: cat.color }));
+        console.info('[ImportCat] Sem duplicata. Contexto:', {
+          nome,
+          normalizedNome,
+          tipo: parsedType,
+          cor,
+          candidatos
+        });
+      }
 
       if (existingCategory) {
         isDuplicate = true;
         existingCategoryId = existingCategory.id;
+        console.info('[ImportCat] Duplicata encontrada:', { nome, existingCategory });
       }
     }
 
@@ -219,7 +246,7 @@ export function ImportCategoriesModal({
       .map(c => ({
         name: c.nome.trim(),
         type: c.parsedType as 'income' | 'expense' | 'both',
-        color: c.cor.toUpperCase(),
+        color: c.cor.trim().toUpperCase(), // Normaliza cor para maiúsculas
       }));
 
     const categoriesToReplaceIds = importedData
