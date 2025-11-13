@@ -344,6 +344,7 @@
     "dataClearedDescription": "All data has been removed from the app."
   },
   "menu": {
+    "mainMenu": "Main Menu",
     "dashboard": "Dashboard",
     "accounts": "Accounts",
     "transactions": "Transactions",

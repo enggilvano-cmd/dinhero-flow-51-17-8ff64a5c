@@ -100,7 +100,7 @@ function AppSidebar({ currentPage, onPageChange }: { currentPage: string; onPage
                 ? "px-0 py-1 text-center" 
                 : "px-4 py-1"
           )}>
-            {!isCollapsed || isMobile ? "Menu Principal" : (
+            {!isCollapsed || isMobile ? t('menu.mainMenu') : (
               <div className="w-full flex justify-center">
                 <div className="w-8 h-px bg-border rounded-full"></div>
               </div>
