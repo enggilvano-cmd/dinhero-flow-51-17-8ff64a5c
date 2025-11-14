@@ -75,8 +75,8 @@ export function UserManagement() {
     } catch (error) {
       console.error('Error fetching users:', error);
       toast({
-        title: t('common.error'),
-        description: t('userManagement.errors.loadUsers'),
+        title: 'Erro',
+        description: 'Não foi possível carregar os usuários.',
         variant: 'destructive',
       });
     } finally {
@@ -105,8 +105,8 @@ export function UserManagement() {
     } catch (error) {
       console.error('Error fetching audit logs:', error);
       toast({
-        title: t('common.error'),
-        description: t('userManagement.errors.loadAuditLogs'),
+        title: 'Erro',
+        description: 'Não foi possível carregar os logs de auditoria.',
         variant: 'destructive',
       });
     }
@@ -147,14 +147,14 @@ export function UserManagement() {
       ));
 
       toast({
-        title: t('common.success'),
-        description: t('userManagement.success.roleUpdated'),
+        title: 'Sucesso',
+        description: 'Função do usuário atualizada com sucesso.',
       });
     } catch (error: any) {
       console.error('Error updating user role:', error);
       toast({
-        title: t('common.error'),
-        description: t('userManagement.errors.updateRole', { message: error?.message || t('userManagement.errors.unknown') }),
+        title: 'Erro',
+        description: `Não foi possível atualizar a função do usuário: ${error?.message || 'Erro desconhecido'}`,
         variant: 'destructive',
       });
     }
@@ -182,14 +182,14 @@ export function UserManagement() {
       ));
 
       toast({
-        title: t('common.success'),
-        description: t(isActive ? 'userManagement.success.userActivated' : 'userManagement.success.userDeactivated'),
+        title: 'Sucesso',
+        description: isActive ? 'Usuário ativado com sucesso.' : 'Usuário desativado com sucesso.',
       });
     } catch (error) {
       console.error('Error updating user status:', error);
       toast({
-        title: t('common.error'),
-        description: t('userManagement.errors.updateStatus'),
+        title: 'Erro',
+        description: 'Não foi possível atualizar o status do usuário.',
         variant: 'destructive',
       });
     }
@@ -230,14 +230,14 @@ export function UserManagement() {
       setUsers(prev => prev.filter(user => user.user_id !== userId));
 
       toast({
-        title: t('common.success'),
-        description: t('userManagement.success.userDeleted'),
+        title: 'Sucesso',
+        description: 'Usuário removido com sucesso do sistema e autenticação.',
       });
     } catch (error: any) {
       console.error('Error deleting user:', error);
       toast({
-        title: t('common.error'),
-        description: error.message || t('userManagement.errors.deleteUser'),
+        title: 'Erro',
+        description: error.message || 'Não foi possível remover o usuário.',
         variant: 'destructive',
       });
     }
@@ -255,13 +255,13 @@ export function UserManagement() {
   const getRoleLabel = (role: string) => {
     switch (role) {
       case 'admin':
-        return t('userManagement.roles.admin');
+        return 'Administrador';
       case 'user':
-        return t('userManagement.roles.user');
+        return 'Usuário';
       case 'trial':
-        return t('userManagement.roles.trial');
+        return 'Trial';
       case 'subscriber':
-        return t('userManagement.roles.subscriber');
+        return 'Assinante';
       default:
         return role;
     }
@@ -301,8 +301,8 @@ export function UserManagement() {
       });
 
       toast({
-        title: t('common.success'),
-        description: t('userManagement.success.subscriptionSet', { days }),
+        title: 'Sucesso',
+        description: `Assinatura configurada para ${days} dias.`,
       });
 
       fetchUsers();
@@ -321,9 +321,9 @@ export function UserManagement() {
         <CardContent className="pt-6">
           <div className="text-center">
             <Shield className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold">{t('userManagement.restrictedAccess')}</h3>
+            <h3 className="text-lg font-semibold">Acesso Restrito</h3>
             <p className="text-muted-foreground">
-              {t('userManagement.restrictedAccessDescription')}
+              Você precisa de permissões de administrador para acessar esta área.
             </p>
           </div>
         </CardContent>
@@ -384,7 +384,7 @@ export function UserManagement() {
                               </Avatar>  
                               <div className="min-w-0 flex-1">
                                 <p className="text-xs sm:text-sm font-medium truncate">
-                                  {user.full_name || t('userManagement.noName')}
+                                  {user.full_name || 'Sem nome'}
                                 </p>
                                 <p className="text-xs text-muted-foreground truncate">
                                   {user.email}
@@ -414,17 +414,17 @@ export function UserManagement() {
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="admin">{t('userManagement.roles.admin')}</SelectItem>
-                                  <SelectItem value="trial">{t('userManagement.roles.trial')}</SelectItem>
-                                  <SelectItem value="user">{t('userManagement.roles.user')}</SelectItem>
-                                  <SelectItem value="subscriber">{t('userManagement.roles.subscriber')}</SelectItem>
+                                  <SelectItem value="admin">Administrador</SelectItem>
+                                  <SelectItem value="trial">Trial</SelectItem>
+                                  <SelectItem value="user">Usuário</SelectItem>
+                                  <SelectItem value="subscriber">Assinante</SelectItem>
                                 </SelectContent>
                               </Select>
                               {user.role === 'subscriber' && (
                                 <div className="flex gap-2 items-center flex-wrap">
                                   <input
                                     type="number"
-                                    placeholder={t('userManagement.daysPlaceholder')}
+                                    placeholder="Dias"
                                     className="w-16 px-2 py-1 text-xs border rounded"
                                     id={`days-${user.user_id}`}
                                   />
@@ -443,7 +443,7 @@ export function UserManagement() {
                                   </Button>
                                   {user.subscription_expires_at && (
                                     <span className="text-xs text-muted-foreground">
-                                      {t('userManagement.expiresAt')}: {new Date(user.subscription_expires_at).toLocaleDateString()}
+                                      Exp: {new Date(user.subscription_expires_at).toLocaleDateString()}
                                     </span>
                                   )}
                                 </div>
@@ -464,7 +464,7 @@ export function UserManagement() {
                                 variant={user.is_active ? 'default' : 'secondary'}
                                 className="text-xs hidden lg:inline-flex"
                               >
-                                {user.is_active ? t('userManagement.status.active') : t('userManagement.status.inactive')}
+                                {user.is_active ? 'Ativo' : 'Inativo'}
                               </Badge>
                             </div>
                           </TableCell>
@@ -486,10 +486,10 @@ export function UserManagement() {
                               <AlertDialogContent className="max-w-[90vw] sm:max-w-md">
                                 <AlertDialogHeader>
                                   <AlertDialogTitle className="text-sm sm:text-base">
-                                    {t('userManagement.confirmDelete.title')}
+                                    Confirmar Exclusão
                                   </AlertDialogTitle>
                                   <AlertDialogDescription className="text-xs sm:text-sm">
-                                    {t('userManagement.confirmDelete.description', { email: user.email })}
+                                    Tem certeza que deseja remover o usuário {user.email}? Esta ação não pode ser desfeita.
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter className="flex-col sm:flex-row gap-2">
@@ -547,7 +547,7 @@ export function UserManagement() {
                         <TableCell className="py-3 sm:py-4 pl-3 sm:pl-4">
                           <div className="min-w-0">
                             <p className="text-xs sm:text-sm font-medium truncate">
-                              {log.profiles?.full_name || log.profiles?.email || t('userManagement.auditLog.system')}
+                              {log.profiles?.full_name || log.profiles?.email || 'Sistema'}
                             </p>
                             {/* Show action on mobile */}
                             <p className="text-xs text-muted-foreground sm:hidden mt-0.5">
