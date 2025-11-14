@@ -383,6 +383,15 @@ export function Dashboard({
     .filter((t) => t.type === "income" && t.status === "pending")
     .reduce((sum, t) => sum + t.amount, 0);
 
+  // Contadores de transações pendentes
+  const pendingExpensesCount = filteredTransactions
+    .filter((t) => t.type === "expense" && t.status === "pending")
+    .length;
+
+  const pendingIncomeCount = filteredTransactions
+    .filter((t) => t.type === "income" && t.status === "pending")
+    .length;
+
   const getPeriodLabel = () => {
     if (dateFilter === "all") {
       return "Todas as transações";
@@ -821,6 +830,11 @@ export function Dashboard({
                 <div className="w-7 h-7 rounded-full bg-success/10 flex items-center justify-center">
                   <Clock className="h-3.5 w-3.5 text-success" />
                 </div>
+                {pendingIncomeCount > 0 && (
+                  <div className="flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-success text-success-foreground">
+                    <span className="text-xs font-semibold">{pendingIncomeCount}</span>
+                  </div>
+                )}
               </div>
               <p className="text-xs font-medium text-muted-foreground mb-1">
                 {t('dashboard.pendingIncome')}
@@ -856,6 +870,11 @@ export function Dashboard({
                 <div className="w-7 h-7 rounded-full bg-destructive/10 flex items-center justify-center">
                   <Clock className="h-3.5 w-3.5 text-destructive" />
                 </div>
+                {pendingExpensesCount > 0 && (
+                  <div className="flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-destructive text-destructive-foreground">
+                    <span className="text-xs font-semibold">{pendingExpensesCount}</span>
+                  </div>
+                )}
               </div>
               <p className="text-xs font-medium text-muted-foreground mb-1">
                 {t('dashboard.pendingExpenses')}
