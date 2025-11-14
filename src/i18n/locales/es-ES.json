@@ -408,7 +408,7 @@
     "analytics": "Análisis",
     "settings": "Configuración",
     "profile": "Perfil",
-    "users": "Usuarios",
+    "users": "Usuários",
     "systemSettings": "Configuración del Sistema"
   },
   "transfer": {
@@ -998,25 +998,25 @@
     }
   },
   "userManagement": {
-    "title": "Gestión de Usuarios",
-    "subtitle": "Control total sobre usuarios y permisos del sistema",
+    "title": "Gerenciamento de Usuários",
+    "subtitle": "Controle total sobre usuários e permissões do sistema",
     "restrictedAccess": "Acceso Restringido",
     "restrictedAccessDescription": "Necesita permisos de administrador para acceder a esta área.",
     "tabs": {
-      "users": "Usuarios",
-      "audit": "Auditoría"
+      "users": "Usuários",
+      "audit": "Auditoria"
     },
     "usersCard": {
-      "title": "Usuarios del Sistema",
-      "description": "Gestione usuarios, sus roles y permisos de acceso",
-      "descriptionShort": "Gestione usuarios y permisos"
+      "title": "Usuários do Sistema",
+      "description": "Gerencie usuários, suas funções e permissões de acesso",
+      "descriptionShort": "Gerencie usuários e permissões"
     },
     "table": {
-      "user": "Usuario",
-      "role": "Rol",
-      "status": "Estado",
-      "created": "Creado",
-      "actions": "Acciones"
+      "user": "Usuário",
+      "role": "Função",
+      "status": "Status",
+      "created": "Criado",
+      "actions": "Ações"
     },
     "roles": {
       "admin": "Administrador",
@@ -1037,8 +1037,8 @@
       "description": "¿Está seguro de que desea eliminar al usuario {{email}}? Esta acción no se puede deshacer."
     },
     "auditLog": {
-      "title": "Registro de Auditoría",
-      "description": "Historial completo de actividades del sistema para monitoreo de seguridad",
+      "title": "Log de Auditoria",
+      "description": "Histórico completo de atividades do sistema para monitoramento de segurança",
       "system": "Sistema",
       "columns": {
         "user": "Usuario",

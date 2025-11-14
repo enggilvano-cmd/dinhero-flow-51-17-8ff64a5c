@@ -438,7 +438,7 @@
     "analytics": "Analytics",
     "settings": "Settings",
     "profile": "Profile",
-    "users": "Users",
+    "users": "Usuários",
     "systemSettings": "System Settings"
   },
   "profile": {
@@ -1028,25 +1028,25 @@
       "success": "Imported successfully"
   },
   "userManagement": {
-    "title": "User Management",
-    "subtitle": "Full control over users and system permissions",
+    "title": "Gerenciamento de Usuários",
+    "subtitle": "Controle total sobre usuários e permissões do sistema",
     "restrictedAccess": "Restricted Access",
     "restrictedAccessDescription": "You need administrator permissions to access this area.",
     "tabs": {
-      "users": "Users",
-      "audit": "Audit"
+      "users": "Usuários",
+      "audit": "Auditoria"
     },
     "usersCard": {
-      "title": "System Users",
-      "description": "Manage users, their roles and access permissions",
-      "descriptionShort": "Manage users and permissions"
+      "title": "Usuários do Sistema",
+      "description": "Gerencie usuários, suas funções e permissões de acesso",
+      "descriptionShort": "Gerencie usuários e permissões"
     },
     "table": {
-      "user": "User",
-      "role": "Role",
+      "user": "Usuário",
+      "role": "Função",
       "status": "Status",
-      "created": "Created",
-      "actions": "Actions"
+      "created": "Criado",
+      "actions": "Ações"
     },
     "roles": {
       "admin": "Administrator",
@@ -1067,8 +1067,8 @@
       "description": "Are you sure you want to remove the user {{email}}? This action cannot be undone."
     },
     "auditLog": {
-      "title": "Audit Log",
-      "description": "Complete history of system activities for security monitoring",
+      "title": "Log de Auditoria",
+      "description": "Histórico completo de atividades do sistema para monitoramento de segurança",
       "system": "System",
       "columns": {
         "user": "User",
