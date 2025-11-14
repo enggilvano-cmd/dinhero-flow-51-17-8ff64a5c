@@ -359,8 +359,131 @@ export function UserManagement() {
                 <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
               </div>
             ) : (
-              <div className="overflow-x-auto -mx-3 sm:mx-0">
-                <div className="inline-block min-w-full align-middle">
+              <>
+                {/* Mobile Card View */}
+                <div className="space-y-3 md:hidden">
+                  {users.map((user) => (
+                    <Card key={user.id} className="overflow-hidden">
+                      <CardContent className="p-4">
+                        <div className="flex items-start gap-3 mb-3">
+                          <Avatar className="h-12 w-12 shrink-0">
+                            <AvatarImage src={user.avatar_url} />
+                            <AvatarFallback className="text-sm">
+                              {user.full_name?.charAt(0) || user.email.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-sm truncate">
+                              {user.full_name || 'Sem nome'}
+                            </p>
+                            <p className="text-xs text-muted-foreground truncate">
+                              {user.email}
+                            </p>
+                            <div className="flex gap-2 mt-2">
+                              <Badge variant={getRoleBadgeVariant(user.role)} className="text-xs">
+                                {getRoleLabel(user.role)}
+                              </Badge>
+                              <Badge variant={user.is_active ? 'default' : 'secondary'} className="text-xs">
+                                {user.is_active ? 'Ativo' : 'Inativo'}
+                              </Badge>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2 pt-3 border-t">
+                          <Select
+                            value={user.role}
+                            onValueChange={(value: 'admin' | 'user' | 'subscriber' | 'trial') => 
+                              updateUserRole(user.user_id, value)
+                            }
+                            disabled={user.user_id === profile?.user_id}
+                          >
+                            <SelectTrigger className="w-full text-xs">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="admin">Administrador</SelectItem>
+                              <SelectItem value="trial">Trial</SelectItem>
+                              <SelectItem value="user">Usuário</SelectItem>
+                              <SelectItem value="subscriber">Assinante</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          
+                          {user.role === 'subscriber' && (
+                            <div className="flex gap-2">
+                              <input
+                                type="number"
+                                placeholder="Dias"
+                                className="flex-1 px-2 py-1.5 text-xs border rounded"
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    const days = parseInt((e.target as HTMLInputElement).value);
+                                    if (days > 0) {
+                                      setSubscriptionDays(user.user_id, days);
+                                      (e.target as HTMLInputElement).value = '';
+                                    }
+                                  }
+                                }}
+                              />
+                              {user.subscription_expires_at && (
+                                <span className="text-xs text-muted-foreground self-center">
+                                  Exp: {new Date(user.subscription_expires_at).toLocaleDateString()}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                          
+                          <div className="flex gap-2 pt-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => toggleUserStatus(user.user_id, !user.is_active)}
+                              disabled={user.user_id === profile?.user_id}
+                              className="flex-1 text-xs"
+                            >
+                              {user.is_active ? 'Desativar' : 'Ativar'}
+                            </Button>
+                            
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  disabled={user.user_id === profile?.user_id}
+                                  className="text-xs"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle className="text-sm">
+                                    Confirmar Exclusão
+                                  </AlertDialogTitle>
+                                  <AlertDialogDescription className="text-xs">
+                                    Tem certeza que deseja remover o usuário {user.email}? Esta ação não pode ser desfeita.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel className="text-xs">Cancelar</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => deleteUser(user.user_id)}
+                                    className="text-xs bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  >
+                                    Excluir
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -511,7 +634,7 @@ export function UserManagement() {
                     </TableBody>
                   </Table>
                 </div>
-              </div>
+              </>
             )}
           </CardContent>
         </Card>
