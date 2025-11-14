@@ -360,8 +360,8 @@ export function UserManagement() {
               </div>
             ) : (
               <>
-                {/* Mobile Card View */}
-                <div className="space-y-3 md:hidden">
+                {/* Mobile & Tablet Card View */}
+                <div className="space-y-3 lg:hidden">
                   {users.map((user) => (
                     <Card key={user.id} className="overflow-hidden">
                       <CardContent className="p-4">
@@ -483,7 +483,7 @@ export function UserManagement() {
                 </div>
 
                 {/* Desktop Table View */}
-                <div className="hidden md:block overflow-x-auto">
+                <div className="hidden lg:block overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
