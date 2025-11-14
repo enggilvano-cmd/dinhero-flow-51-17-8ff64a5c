@@ -332,9 +332,9 @@ export function UserManagement() {
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6 pb-6">
+    <div className="space-y-4 sm:space-y-6 pb-6 px-2 sm:px-0">
       {/* Header Section */}
-      <div className="space-y-1">
+      <div className="space-y-1 px-2 sm:px-0">
         <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight">Gerenciamento de Usuários</h2>
         <p className="text-sm sm:text-base text-muted-foreground">
           Controle total sobre usuários e permissões do sistema
@@ -343,17 +343,17 @@ export function UserManagement() {
 
       {/* Users Tab */}
       {selectedTab === 'users' && (
-        <Card className="financial-card">
-          <CardHeader className="space-y-1">
-            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-              <Users className="h-4 w-4 sm:h-5 sm:w-5" />
-              Usuários do Sistema
+        <Card className="financial-card w-full overflow-hidden">
+          <CardHeader className="space-y-1 px-4 sm:px-6 py-4 sm:py-6">
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg lg:text-xl">
+              <Users className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
+              <span className="truncate">Usuários do Sistema</span>
             </CardTitle>
             <CardDescription className="text-xs sm:text-sm">
               Gerencie usuários, suas funções e permissões de acesso
             </CardDescription>
           </CardHeader>
-          <CardContent className="px-3 sm:px-6">
+          <CardContent className="px-2 sm:px-4 lg:px-6 pb-4 sm:pb-6">
             {loading ? (
               <div className="flex justify-center py-12">
                 <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
@@ -519,18 +519,18 @@ export function UserManagement() {
 
       {/* Audit Log Tab */}
       {selectedTab === 'audit' && (
-        <Card className="financial-card">
-          <CardHeader className="space-y-1">
-            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-              <Activity className="h-4 w-4 sm:h-5 sm:w-5" />
-              Log de Auditoria
+        <Card className="financial-card w-full overflow-hidden">
+          <CardHeader className="space-y-1 px-4 sm:px-6 py-4 sm:py-6">
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg lg:text-xl">
+              <Activity className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
+              <span className="truncate">Log de Auditoria</span>
             </CardTitle>
             <CardDescription className="text-xs sm:text-sm">
               Histórico completo de atividades do sistema para monitoramento de segurança
             </CardDescription>
           </CardHeader>
-          <CardContent className="px-3 sm:px-6">
-            <div className="overflow-x-auto -mx-3 sm:mx-0">
+          <CardContent className="px-2 sm:px-4 lg:px-6 pb-4 sm:pb-6">
+            <div className="overflow-x-auto -mx-2 sm:-mx-4 lg:-mx-6">
               <div className="inline-block min-w-full align-middle">
                 <Table>
                   <TableHeader>
@@ -586,23 +586,23 @@ export function UserManagement() {
         </Card>
       )}
 
-      {/* Tab Buttons - Moved to bottom */}
-      <div className="flex justify-center gap-2 pt-4">
+      {/* Tab Buttons - Fully responsive */}
+      <div className="flex flex-col xs:flex-row justify-center gap-2 sm:gap-3 pt-4 px-2 sm:px-0 max-w-md mx-auto w-full">
         <Button
           variant={selectedTab === 'users' ? 'default' : 'outline'}
           onClick={() => setSelectedTab('users')}
-          className="flex-1 sm:flex-none items-center gap-2 text-sm"
+          className="w-full xs:flex-1 sm:min-w-[140px] items-center justify-center gap-2 text-sm sm:text-base py-3 sm:py-2"
         >
-          <Users className="h-4 w-4" />
-          <span className="whitespace-nowrap">Usuários</span>
+          <Users className="h-4 w-4 sm:h-5 sm:w-5" />
+          <span className="font-medium">Usuários</span>
         </Button>
         <Button
           variant={selectedTab === 'audit' ? 'default' : 'outline'}
           onClick={() => setSelectedTab('audit')}
-          className="flex-1 sm:flex-none items-center gap-2 text-sm"
+          className="w-full xs:flex-1 sm:min-w-[140px] items-center justify-center gap-2 text-sm sm:text-base py-3 sm:py-2"
         >
-          <Activity className="h-4 w-4" />
-          <span className="whitespace-nowrap">Auditoria</span>
+          <Activity className="h-4 w-4 sm:h-5 sm:w-5" />
+          <span className="font-medium">Auditoria</span>
         </Button>
       </div>
     </div>
