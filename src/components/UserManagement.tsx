@@ -335,9 +335,9 @@ export function UserManagement() {
     <div className="space-y-4 sm:space-y-6 pb-6">
       {/* Header Section */}
       <div className="space-y-1">
-        <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight">{t('userManagement.title')}</h2>
+        <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight">Gerenciamento de Usuários</h2>
         <p className="text-sm sm:text-base text-muted-foreground">
-          {t('userManagement.subtitle')}
+          Controle total sobre usuários e permissões do sistema
         </p>
       </div>
 
@@ -347,10 +347,10 @@ export function UserManagement() {
           <CardHeader className="space-y-1">
             <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
               <Users className="h-4 w-4 sm:h-5 sm:w-5" />
-              {t('userManagement.usersCard.title')}
+              Usuários do Sistema
             </CardTitle>
             <CardDescription className="text-xs sm:text-sm">
-              {t('userManagement.usersCard.description')}
+              Gerencie usuários, suas funções e permissões de acesso
             </CardDescription>
           </CardHeader>
           <CardContent className="px-3 sm:px-6">
@@ -364,11 +364,11 @@ export function UserManagement() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="text-xs sm:text-sm pl-3 sm:pl-4">{t('userManagement.table.user')}</TableHead>
-                        <TableHead className="text-xs sm:text-sm hidden sm:table-cell">{t('userManagement.table.role')}</TableHead>
-                        <TableHead className="text-xs sm:text-sm">{t('userManagement.table.status')}</TableHead>
-                        <TableHead className="text-xs sm:text-sm hidden md:table-cell">{t('userManagement.table.created')}</TableHead>
-                        <TableHead className="text-xs sm:text-sm pr-3 sm:pr-4">{t('userManagement.table.actions')}</TableHead>
+                        <TableHead className="text-xs sm:text-sm pl-3 sm:pl-4">Usuário</TableHead>
+                        <TableHead className="text-xs sm:text-sm hidden sm:table-cell">Função</TableHead>
+                        <TableHead className="text-xs sm:text-sm">Status</TableHead>
+                        <TableHead className="text-xs sm:text-sm hidden md:table-cell">Criado</TableHead>
+                        <TableHead className="text-xs sm:text-sm pr-3 sm:pr-4">Ações</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -523,10 +523,10 @@ export function UserManagement() {
           <CardHeader className="space-y-1">
             <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
               <Activity className="h-4 w-4 sm:h-5 sm:w-5" />
-              {t('userManagement.auditLog.title')}
+              Log de Auditoria
             </CardTitle>
             <CardDescription className="text-xs sm:text-sm">
-              {t('userManagement.auditLog.description')}
+              Histórico completo de atividades do sistema para monitoramento de segurança
             </CardDescription>
           </CardHeader>
           <CardContent className="px-3 sm:px-6">
@@ -535,10 +535,10 @@ export function UserManagement() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="text-xs sm:text-sm pl-3 sm:pl-4">{t('userManagement.auditLog.columns.user')}</TableHead>
-                      <TableHead className="text-xs sm:text-sm hidden sm:table-cell">{t('userManagement.auditLog.columns.action')}</TableHead>
-                      <TableHead className="text-xs sm:text-sm hidden md:table-cell">{t('userManagement.auditLog.columns.resource')}</TableHead>
-                      <TableHead className="text-xs sm:text-sm pr-3 sm:pr-4">{t('userManagement.auditLog.columns.dateTime')}</TableHead>
+                      <TableHead className="text-xs sm:text-sm pl-3 sm:pl-4">Usuário</TableHead>
+                      <TableHead className="text-xs sm:text-sm hidden sm:table-cell">Ação</TableHead>
+                      <TableHead className="text-xs sm:text-sm hidden md:table-cell">Recurso</TableHead>
+                      <TableHead className="text-xs sm:text-sm pr-3 sm:pr-4">Data/Hora</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
