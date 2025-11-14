@@ -274,7 +274,7 @@ function AppSidebar({ currentPage, onPageChange }: { currentPage: string; onPage
                   <>
                     <DropdownMenuItem onClick={() => onPageChange('users')}>
                       <Users className="mr-2 h-4 w-4" />
-                      {t('menu.users')}
+                      Usuários
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => onPageChange('system-settings')}>
                       <Settings className="mr-2 h-4 w-4" />
