@@ -594,7 +594,7 @@ export function UserManagement() {
           className="flex-1 sm:flex-none items-center gap-2 text-sm"
         >
           <Users className="h-4 w-4" />
-          <span className="hidden xs:inline">{t('userManagement.tabs.users')}</span>
+          <span className="whitespace-nowrap">{t('userManagement.tabs.users')}</span>
         </Button>
         <Button
           variant={selectedTab === 'audit' ? 'default' : 'outline'}
@@ -602,7 +602,7 @@ export function UserManagement() {
           className="flex-1 sm:flex-none items-center gap-2 text-sm"
         >
           <Activity className="h-4 w-4" />
-          <span className="hidden xs:inline">{t('userManagement.tabs.audit')}</span>
+          <span className="whitespace-nowrap">{t('userManagement.tabs.audit')}</span>
         </Button>
       </div>
     </div>
