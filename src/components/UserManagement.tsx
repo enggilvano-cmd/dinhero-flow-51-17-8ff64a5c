@@ -334,32 +334,11 @@ export function UserManagement() {
   return (
     <div className="space-y-4 sm:space-y-6 pb-6">
       {/* Header Section */}
-      <div className="space-y-3 sm:space-y-0 sm:flex sm:items-center sm:justify-between">
-        <div className="space-y-1">
-          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight">{t('userManagement.title')}</h2>
-          <p className="text-sm sm:text-base text-muted-foreground">
-            {t('userManagement.subtitle')}
-          </p>
-        </div>
-        {/* Tab Buttons - Stacked on mobile, inline on desktop */}
-        <div className="flex gap-2">
-          <Button
-            variant={selectedTab === 'users' ? 'default' : 'outline'}
-            onClick={() => setSelectedTab('users')}
-            className="flex-1 sm:flex-none items-center gap-2 text-sm"
-          >
-            <Users className="h-4 w-4" />
-            <span className="hidden xs:inline">{t('userManagement.tabs.users')}</span>
-          </Button>
-          <Button
-            variant={selectedTab === 'audit' ? 'default' : 'outline'}
-            onClick={() => setSelectedTab('audit')}
-            className="flex-1 sm:flex-none items-center gap-2 text-sm"
-          >
-            <Activity className="h-4 w-4" />
-            <span className="hidden xs:inline">{t('userManagement.tabs.audit')}</span>
-          </Button>
-        </div>
+      <div className="space-y-1">
+        <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight">{t('userManagement.title')}</h2>
+        <p className="text-sm sm:text-base text-muted-foreground">
+          {t('userManagement.subtitle')}
+        </p>
       </div>
 
       {/* Users Tab */}
@@ -606,6 +585,26 @@ export function UserManagement() {
           </CardContent>
         </Card>
       )}
+
+      {/* Tab Buttons - Moved to bottom */}
+      <div className="flex justify-center gap-2 pt-4">
+        <Button
+          variant={selectedTab === 'users' ? 'default' : 'outline'}
+          onClick={() => setSelectedTab('users')}
+          className="flex-1 sm:flex-none items-center gap-2 text-sm"
+        >
+          <Users className="h-4 w-4" />
+          <span className="hidden xs:inline">{t('userManagement.tabs.users')}</span>
+        </Button>
+        <Button
+          variant={selectedTab === 'audit' ? 'default' : 'outline'}
+          onClick={() => setSelectedTab('audit')}
+          className="flex-1 sm:flex-none items-center gap-2 text-sm"
+        >
+          <Activity className="h-4 w-4" />
+          <span className="hidden xs:inline">{t('userManagement.tabs.audit')}</span>
+        </Button>
+      </div>
     </div>
   );
 }
