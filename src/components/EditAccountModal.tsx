@@ -39,7 +39,6 @@ export function EditAccountModal({
   const [formData, setFormData] = useState({
     name: "",
     type: "" as "checking" | "savings" | "credit" | "investment" | "",
-    balanceInCents: 0,
     limitInCents: 0,
     dueDate: "",
     closingDate: "",
@@ -57,13 +56,11 @@ export function EditAccountModal({
       setFormData({
         name: account.name,
         type: account.type,
-      // Carrega o saldo mantendo o sinal (positivo ou negativo)
-      balanceInCents: account.balance, 
-      limitInCents: account.limit_amount || 0,
-      dueDate: account.due_date?.toString() || "",
-      closingDate: account.closing_date?.toString() || "",
-      color: account.color || PREDEFINED_COLORS[0],
-    });
+        limitInCents: account.limit_amount || 0,
+        dueDate: account.due_date?.toString() || "",
+        closingDate: account.closing_date?.toString() || "",
+        color: account.color || PREDEFINED_COLORS[0],
+      });
     }
   }, [account]);
 
@@ -81,16 +78,8 @@ export function EditAccountModal({
       return;
     }
 
-    // Lógica de salvamento simplificada
-    let balanceInCents: number;
-    
-    if (formData.type === 'credit') {
-      // Cartão de crédito sempre salva como dívida (negativo)
-      balanceInCents = -Math.abs(formData.balanceInCents);
-    } else {
-      // Mantém o saldo como foi inserido pelo usuário
-      balanceInCents = formData.balanceInCents;
-    }
+    // Mantém o saldo atual da conta sem permitir edição
+    const balanceInCents = account.balance;
 
 
     const limitInCents =
@@ -219,34 +208,6 @@ export function EditAccountModal({
                 </SelectItem>
               </SelectContent>
             </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label
-              htmlFor="balance"
-              className="text-financial-secondary font-medium"
-            >
-              {formData.type === "credit"
-                ? t("modals.editAccount.fields.balance.debtLabel")
-                : formData.type === "investment"
-                ? t("modals.editAccount.fields.balance.investmentLabel")
-                : t("modals.editAccount.fields.balance.label")}
-            </Label>
-            <CurrencyInput
-              value={formData.balanceInCents}
-              onValueChange={(value) =>
-                setFormData((prev) => ({ ...prev, balanceInCents: value || 0 }))
-              }
-              allowNegative={formData.type !== "credit"}
-            />
-
-            <p className="text-financial-caption">
-              {formData.type === "credit"
-                ? t("modals.editAccount.fields.balance.debtHelp")
-                : formData.type === "investment"
-                ? t("modals.editAccount.fields.balance.investmentHelp")
-                : t("modals.editAccount.fields.balance.help")}
-            </p>
           </div>
 
           <div className="space-y-2">
