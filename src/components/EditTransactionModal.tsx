@@ -56,28 +56,18 @@ export function EditTransactionModal({
       
       const transactionType = transaction.type === "transfer" ? "expense" : transaction.type;
       
-      // NÃO definir mês da fatura por padrão ao editar
-      // Para evitar overrides involuntários, só setamos invoiceMonth se já houver override manual
-      
       setFormData({
-        description: transaction.description,
-        
-        // =================================================================
-        // CORREÇÃO CHAVE (que o seu código já tem):
-        // Usar Math.abs() para garantir que o valor no formulário
-        // seja sempre positivo, evitando o bug de sinal duplo.
-        // =================================================================
+        description: transaction.description || "",
         amountInCents: Math.abs(transaction.amount),
-        
         date: transactionDate,
         type: transactionType as "income" | "expense",
-        category_id: transaction.category_id,
-        account_id: transaction.account_id,
-        status: transaction.status,
+        category_id: transaction.category_id || "",
+        account_id: transaction.account_id || "",
+        status: transaction.status || "completed",
         invoiceMonth: transaction.invoice_month_overridden ? (transaction.invoice_month || "") : "",
       });
     }
-  }, [open, transaction, accounts]); // Depender do objeto 'transaction' é seguro aqui
+  }, [open, transaction, accounts]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
