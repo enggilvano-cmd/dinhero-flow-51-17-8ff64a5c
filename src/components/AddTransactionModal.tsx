@@ -411,12 +411,12 @@ export function AddTransactionModal({
 
         if (recurringError) throw recurringError;
 
-        // Gerar transações para os próximos 12 meses
+        // Gerar transações para os próximos 24 meses (2 anos)
         const transactionsToGenerate = [];
         const baseDate = new Date(date);
         const dayOfMonth = baseDate.getDate();
 
-        for (let i = 1; i <= 12; i++) {
+        for (let i = 1; i <= 24; i++) {
           const nextDate = new Date(baseDate);
           nextDate.setMonth(nextDate.getMonth() + i);
           
@@ -453,7 +453,7 @@ export function AddTransactionModal({
 
         toast({
           title: "Transação Fixa Adicionada",
-          description: `${transactionsToGenerate.length} transações foram geradas para os próximos 12 meses`,
+          description: `${transactionsToGenerate.length} transações foram geradas para os próximos 2 anos`,
           variant: "default",
         });
 
