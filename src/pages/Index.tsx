@@ -939,6 +939,9 @@ const PlaniFlowApp = () => {
 
       const idsToDelete = transactionsToDelete.map(t => t.id);
 
+      // Remove as transações do store PRIMEIRO para cálculos corretos
+      removeGlobalTransactions(idsToDelete);
+
       // Deleta as transações do banco de dados
       const { error: deleteError } = await supabase
         .from("transactions")
@@ -947,14 +950,16 @@ const PlaniFlowApp = () => {
         .eq("user_id", user.id);
       if (deleteError) throw deleteError;
 
-      // Recalcula o saldo das contas afetadas
+      // Recalcula o saldo das contas afetadas usando transações restantes
       let updatedAccountsList = [];
+      const remainingTransactions = transactions.filter(t => !idsToDelete.includes(t.id));
+      
       for (const accountId of accountsToRecalculate) {
         const account = accounts.find((acc) => acc.id === accountId);
         if (account) {
-          // Recalcula o saldo do zero para garantir consistência
-          const newBalance = transactions
-            .filter(t => t.account_id === accountId && t.status === 'completed' && !idsToDelete.includes(t.id))
+          // Recalcula o saldo usando apenas transações que NÃO foram deletadas
+          const newBalance = remainingTransactions
+            .filter(t => t.account_id === accountId && t.status === 'completed')
             .reduce((sum, t) => sum + (t.type === 'income' ? t.amount : -t.amount), 0);
 
           await supabase
@@ -966,9 +971,8 @@ const PlaniFlowApp = () => {
         }
       }
 
-      // Atualiza os stores locais
+      // Atualiza as contas no store
       updateGlobalAccounts(updatedAccountsList);
-      removeGlobalTransactions(idsToDelete);
 
       toast({
         title: "Transação excluída",
