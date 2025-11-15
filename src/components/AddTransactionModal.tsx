@@ -25,6 +25,7 @@ import {
   calculateInvoiceMonthByDue,
 } from "@/lib/dateUtils";
 import { useCategories } from "@/hooks/useCategories";
+import { supabase } from "@/integrations/supabase/client";
 // 1. IMPORTAR O COMPONENTE DE MOEDA CORRETO
 import { CurrencyInput } from "@/components/forms/CurrencyInput";
 // 2. REMOVER A IMPORTAÇÃO DA FUNÇÃO DE CONVERSÃO ANTIGA
@@ -382,28 +383,80 @@ export function AddTransactionModal({
 
       } else if (formData.isFixed) {
         // Fixed Transaction (monthly recurring without end date)
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("Usuário não autenticado");
+
+        // Criar a transação recorrente principal
         const transactionPayload = {
           description: description,
           amount: Math.abs(numericAmount),
-          date: createDateFromString(date),
+          date: date, // string no formato YYYY-MM-DD
           type: type as "income" | "expense",
           category_id: category_id,
           account_id: account_id,
           status: status,
-          invoiceMonth: formData.invoiceMonth || undefined,
-          invoiceMonthOverridden: Boolean(formData.invoiceMonth),
+          invoice_month: formData.invoiceMonth || undefined,
+          invoice_month_overridden: Boolean(formData.invoiceMonth),
           is_recurring: true,
           recurrence_type: "monthly" as const,
           recurrence_end_date: undefined,
+          user_id: user.id,
         };
 
-        await onAddTransaction(transactionPayload);
+        const { data: recurringTransaction, error: recurringError } = await supabase
+          .from("transactions")
+          .insert(transactionPayload)
+          .select()
+          .single();
+
+        if (recurringError) throw recurringError;
+
+        // Gerar transações para os próximos 12 meses
+        const transactionsToGenerate = [];
+        const baseDate = new Date(date);
+        const dayOfMonth = baseDate.getDate();
+
+        for (let i = 1; i <= 12; i++) {
+          const nextDate = new Date(baseDate);
+          nextDate.setMonth(nextDate.getMonth() + i);
+          
+          // Ajustar para o dia correto do mês
+          const targetMonth = nextDate.getMonth();
+          nextDate.setDate(dayOfMonth);
+          
+          // Se o mês mudou (ex: 31 de janeiro -> 3 de março), ajustar para o último dia do mês anterior
+          if (nextDate.getMonth() !== targetMonth) {
+            nextDate.setDate(0); // Volta para o último dia do mês anterior
+          }
+
+          transactionsToGenerate.push({
+            description: description,
+            amount: Math.abs(numericAmount),
+            date: nextDate.toISOString().split('T')[0],
+            type: type as "income" | "expense",
+            category_id: category_id,
+            account_id: account_id,
+            status: status,
+            user_id: user.id,
+            parent_transaction_id: recurringTransaction.id,
+          });
+        }
+
+        // Inserir todas as transações de uma vez
+        const { error: insertError } = await supabase
+          .from("transactions")
+          .insert(transactionsToGenerate);
+
+        if (insertError) {
+          console.error("Erro ao gerar transações futuras:", insertError);
+        }
 
         toast({
           title: "Transação Fixa Adicionada",
-          description: `${description} será gerada automaticamente todo mês`,
+          description: `${transactionsToGenerate.length} transações foram geradas para os próximos 12 meses`,
           variant: "default",
         });
+
 
       } else {
         // Cenário 3: Transação Única (sem parcelamento)

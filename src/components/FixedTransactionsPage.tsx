@@ -124,21 +124,71 @@ export function FixedTransactionsPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { error } = await supabase.from("transactions").insert({
-        ...transaction,
-        user_id: user.id,
-        status: "completed",
-        is_recurring: true,
-        recurrence_type: "monthly",
-        recurrence_end_date: null,
-      });
+      // Criar a transação recorrente principal
+      const { data: recurringTransaction, error: recurringError } = await supabase
+        .from("transactions")
+        .insert({
+          ...transaction,
+          user_id: user.id,
+          status: "completed",
+          is_recurring: true,
+          recurrence_type: "monthly",
+          recurrence_end_date: null,
+        })
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (recurringError) throw recurringError;
 
-      toast({
-        title: "Transação fixa adicionada",
-        description: "A transação fixa foi adicionada com sucesso.",
-      });
+      // Gerar transações para os próximos 12 meses
+      const transactionsToGenerate = [];
+      const baseDate = new Date(transaction.date);
+      const dayOfMonth = baseDate.getDate();
+
+      for (let i = 1; i <= 12; i++) {
+        const nextDate = new Date(baseDate);
+        nextDate.setMonth(nextDate.getMonth() + i);
+        
+        // Ajustar para o dia correto do mês
+        const targetMonth = nextDate.getMonth();
+        nextDate.setDate(dayOfMonth);
+        
+        // Se o mês mudou (ex: 31 de janeiro -> 3 de março), ajustar para o último dia do mês anterior
+        if (nextDate.getMonth() !== targetMonth) {
+          nextDate.setDate(0); // Volta para o último dia do mês anterior
+        }
+
+        transactionsToGenerate.push({
+          description: transaction.description,
+          amount: transaction.amount,
+          date: nextDate.toISOString().split('T')[0],
+          type: transaction.type,
+          category_id: transaction.category_id,
+          account_id: transaction.account_id,
+          status: "completed" as const,
+          user_id: user.id,
+          parent_transaction_id: recurringTransaction.id,
+        });
+      }
+
+      // Inserir todas as transações de uma vez
+      const { error: insertError } = await supabase
+        .from("transactions")
+        .insert(transactionsToGenerate);
+
+      if (insertError) {
+        console.error("Erro ao gerar transações futuras:", insertError);
+        toast({
+          title: "Transação fixa adicionada",
+          description: "A transação principal foi criada, mas houve um problema ao gerar as transações futuras.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Transação fixa adicionada",
+          description: `${transactionsToGenerate.length} transações foram geradas para os próximos 12 meses.`,
+        });
+      }
 
       loadFixedTransactions();
       setAddModalOpen(false);
