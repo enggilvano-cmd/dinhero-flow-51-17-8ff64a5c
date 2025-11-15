@@ -294,9 +294,9 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
       {/* SEÇÃO DE FILTROS */}
       <Card>
         <CardContent className="p-2 sm:p-3">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             {/* Cartão */}
-            <div>
+            <div className="lg:col-span-1">
               <Label htmlFor="filterCard" className="text-caption">{t("accounts.credit")}</Label>
               <Select value={selectedAccountId} onValueChange={setSelectedAccountId}>
                 <SelectTrigger className="touch-target mt-2" id="filterCard">
@@ -322,7 +322,7 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
             </div>
 
             {/* Status da Fatura (Aberta/Fechada) */}
-            <div>
+            <div className="lg:col-span-1">
               <Label htmlFor="filterBillStatus" className="text-caption">{t("transactions.status")}</Label>
               <Select value={filterBillStatus} onValueChange={(value: any) => setFilterBillStatus(value)}>
                 <SelectTrigger className="touch-target mt-2" id="filterBillStatus">
@@ -337,7 +337,7 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
             </div>
 
             {/* Status de Pagamento */}
-            <div>
+            <div className="sm:col-span-2 lg:col-span-1">
               <Label htmlFor="filterPaymentStatus" className="text-caption">{t("transactions.status")}</Label>
               <Select value={filterPaymentStatus} onValueChange={(value: any) => setFilterPaymentStatus(value)}>
                 <SelectTrigger className="touch-target mt-2" id="filterPaymentStatus">
@@ -353,7 +353,7 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
 
 
             {/* Busca */}
-            <div className="sm:col-span-2">
+            <div className="lg:col-span-1">
               <Label htmlFor="search" className="text-caption">{t("common.search")}</Label>
               <div className="relative mt-2">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -368,7 +368,7 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
             </div>
 
             {/* Navegação de Mês */}
-            <div>
+            <div className="lg:col-span-1">
               <Label className="text-caption">{t("dashboard.period")}</Label>
               <div className="flex items-center gap-1 px-3 border border-input rounded-md bg-background touch-target mt-2">
                 <Button
