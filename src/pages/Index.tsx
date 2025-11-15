@@ -939,7 +939,10 @@ const PlaniFlowApp = () => {
 
       const idsToDelete = transactionsToDelete.map(t => t.id);
 
-      // Remove as transações do store PRIMEIRO para cálculos corretos
+      // Calcula transações restantes ANTES de remover do store
+      const remainingTransactions = transactions.filter(t => !idsToDelete.includes(t.id));
+
+      // Remove as transações do store
       removeGlobalTransactions(idsToDelete);
 
       // Deleta as transações do banco de dados
@@ -952,7 +955,6 @@ const PlaniFlowApp = () => {
 
       // Recalcula o saldo das contas afetadas usando transações restantes
       let updatedAccountsList = [];
-      const remainingTransactions = transactions.filter(t => !idsToDelete.includes(t.id));
       
       for (const accountId of accountsToRecalculate) {
         const account = accounts.find((acc) => acc.id === accountId);
