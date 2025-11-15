@@ -223,9 +223,6 @@ export function EditAccountModal({
                 setFormData((prev) => ({ ...prev, limitInCents: value || 0 }))
               }
             />
-            <p className="text-financial-caption">
-              {t("modals.editAccount.fields.limit.help")}
-            </p>
           </div>
 
           {formData.type === "credit" && (
