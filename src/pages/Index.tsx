@@ -1231,6 +1231,7 @@ const PlaniFlowApp = () => {
             onEditTransaction={openEditTransaction}
             onDeleteTransaction={handleDeleteTransaction}
             onImportTransactions={handleImportTransactions}
+            onMarkAsPaid={handleEditTransaction}
             initialFilterType={transactionFilterType}
             initialFilterStatus={transactionFilterStatus}
             initialDateFilter={transactionDateFilter}
