@@ -49,6 +49,13 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
   const allTransactions = useTransactionStore((state) => state.transactions);
   const { t } = useTranslation();
   const { settings } = useSettings();
+  
+  // Força atualização quando contas ou transações mudam
+  const updateKey = useMemo(() => {
+    const key = `${allAccounts.length}-${allTransactions.length}-${allAccounts.map(a => a.balance).join(',').substring(0, 50)}`;
+    console.log('🔑 CreditBillsPage updateKey:', key);
+    return key;
+  }, [allAccounts, allTransactions]);
 
   // Helper para formatar moeda
   const formatCents = (valueInCents: number) => {
@@ -93,6 +100,7 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
 
   // Memo para calcular os detalhes da fatura do mês selecionado (alinhado ao mês exibido)
   const allBillDetails = useMemo(() => {
+    console.log('🔄 Recalculando faturas...', updateKey);
     const targetMonth = format(selectedMonthDate, 'yyyy-MM');
     const nextMonth = format(addMonths(selectedMonthDate, 1), 'yyyy-MM');
 
@@ -153,7 +161,7 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
         nextInvoiceMonth: nextMonth,
       };
     });
-  }, [filteredCreditAccounts, allTransactions, selectedMonthDate, selectedMonthOffset]);
+  }, [filteredCreditAccounts, allTransactions, selectedMonthDate, selectedMonthOffset, updateKey]);
 
   // Memo para aplicar os filtros de status
   const billDetails = useMemo(() => {
@@ -196,7 +204,7 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
 
       return true;
     });
-  }, [allBillDetails, filterBillStatus, filterPaymentStatus]);
+  }, [allBillDetails, filterBillStatus, filterPaymentStatus, updateKey]);
 
   // Memo para os TOTAIS (baseado nos cartões filtrados)
   const totalSummary = useMemo(() => {
@@ -420,7 +428,7 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
 
             return (
               <CreditCardBillCard
-                key={details.account.id}
+                key={`${details.account.id}-${updateKey}`}
                 account={details.account} 
                 billDetails={details}
                 selectedMonth={selectedMonthDate}
