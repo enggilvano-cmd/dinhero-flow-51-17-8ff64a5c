@@ -59,6 +59,8 @@ import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import * as XLSX from "xlsx";
 import { ImportTransactionsModal } from "./ImportTransactionsModal";
+import { MarkAsPaidModal } from "./MarkAsPaidModal";
+import { CheckCircle } from "lucide-react";
 
 interface TransactionsPageProps {
   transactions: any[];
@@ -98,6 +100,8 @@ export function TransactionsPage({
     useState<"all" | "income" | "expense" | "transfer">(initialFilterType);
   const [filterAccount, setFilterAccount] = useState<string>("all");
   const [filterCategory, setFilterCategory] = useState<string>("all");
+  const [markAsPaidModalOpen, setMarkAsPaidModalOpen] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState<any | null>(null);
   const [filterStatus, setFilterStatus] = useState<
     "all" | "pending" | "completed"
   >(initialFilterStatus);
@@ -326,6 +330,28 @@ export function TransactionsPage({
         description: `${transaction.description}`,
       });
     }
+  };
+
+  const handleMarkAsPaid = (transactionId: string, date: Date, amount: number, accountId: string) => {
+    // Atualizar a transação para status "completed" e atualizar os campos
+    const updatedTransaction = {
+      ...transactions.find(t => t.id === transactionId),
+      status: "completed",
+      date: date.toISOString(),
+      amount,
+      account_id: accountId,
+    };
+    
+    onEditTransaction(updatedTransaction);
+    toast({
+      title: t("transactions.markedAsPaid"),
+      description: t("transactions.transactionUpdated"),
+    });
+  };
+
+  const handleOpenMarkAsPaidModal = (transaction: any) => {
+    setSelectedTransaction(transaction);
+    setMarkAsPaidModalOpen(true);
   };
 
   const totals = useMemo(() => {
@@ -563,6 +589,12 @@ export function TransactionsPage({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            {transaction.status === "pending" && (
+              <DropdownMenuItem onClick={() => handleOpenMarkAsPaidModal(transaction)}>
+                <CheckCircle className="h-4 w-4 mr-2" />
+                {t("transactions.markAsPaid")}
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem onClick={() => onEditTransaction(transaction)}>
               <Edit className="h-4 w-4 mr-2" />
               {t("common.edit")}
@@ -1036,6 +1068,14 @@ export function TransactionsPage({
         accounts={accounts}
         transactions={transactions}
         onImportTransactions={onImportTransactions}
+      />
+
+      <MarkAsPaidModal
+        open={markAsPaidModalOpen}
+        onOpenChange={setMarkAsPaidModalOpen}
+        transaction={selectedTransaction}
+        accounts={accounts}
+        onConfirm={handleMarkAsPaid}
       />
     </div>
   );
