@@ -241,11 +241,28 @@ const PlaniFlowApp = () => {
         const account = accounts.find(acc => acc.id === transactionData.account_id);
         if (account) {
           const newBalance = account.balance + balanceChange;
-          await supabase
+          
+          console.info("[Add Transaction - Balance Update]", {
+            transactionId: data.id,
+            accountId: transactionData.account_id,
+            accountName: account.name,
+            oldBalance: account.balance,
+            balanceChange,
+            newBalance,
+            transactionType: transactionData.type
+          });
+
+          const { error: balanceError } = await supabase
             .from("accounts")
             .update({ balance: newBalance })
             .eq("id", transactionData.account_id)
             .eq("user_id", user.id);
+          
+          if (balanceError) {
+            console.error("[Add Transaction - Balance Update Error]", balanceError);
+            throw balanceError;
+          }
+          
           updateGlobalAccounts({ ...account, balance: newBalance });
         }
       }
@@ -299,16 +316,33 @@ const PlaniFlowApp = () => {
         }
         return sum;
       }, 0);
+      
       if (totalAmount !== 0) {
         const accountId = transactionsData[0].account_id;
         const account = accounts.find((acc) => acc.id === accountId);
         if (account) {
           const newBalance = account.balance + totalAmount;
-          await supabase
+          
+          console.info("[Add Installments - Balance Update]", {
+            accountId,
+            accountName: account.name,
+            oldBalance: account.balance,
+            totalAmount,
+            newBalance,
+            completedCount: newTransactions.filter(t => t.status === 'completed').length
+          });
+
+          const { error: balanceError } = await supabase
             .from("accounts")
             .update({ balance: newBalance })
             .eq("id", accountId)
             .eq("user_id", user.id);
+          
+          if (balanceError) {
+            console.error("[Add Installments - Balance Update Error]", balanceError);
+            throw balanceError;
+          }
+
           updateGlobalAccounts({ ...account, balance: newBalance });
         }
       }
@@ -599,11 +633,24 @@ const PlaniFlowApp = () => {
               return sum + (t.type === 'income' ? t.amount : -t.amount);
             }, 0);
 
-            await supabase
+            console.info("[Balance Update]", {
+              accountId,
+              accountName: account.name,
+              oldBalance: account.balance,
+              newBalance,
+              transactionsCount: refreshedTransactions?.length || 0
+            });
+
+            const { error: updateError } = await supabase
               .from('accounts')
               .update({ balance: newBalance })
               .eq('id', accountId)
               .eq('user_id', user.id);
+            
+            if (updateError) {
+              console.error("[Balance Update Error]", updateError);
+              throw updateError;
+            }
             
             updatedAccountsList.push({ ...account, balance: newBalance });
           }
