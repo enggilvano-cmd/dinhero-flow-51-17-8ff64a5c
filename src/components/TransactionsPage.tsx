@@ -70,6 +70,7 @@ interface TransactionsPageProps {
   onEditTransaction: (transaction: any) => void;
   onDeleteTransaction: (transactionId: string) => void;
   onImportTransactions: (transactions: any[], transactionsToReplace: string[]) => void;
+  onMarkAsPaid?: (transaction: any) => Promise<void>;
   initialFilterType?: "income" | "expense" | "transfer" | "all";
   initialFilterStatus?: "all" | "pending" | "completed";
   initialDateFilter?: "all" | "current_month" | "month_picker" | "custom";
@@ -87,6 +88,7 @@ export function TransactionsPage({
   onEditTransaction,
   onDeleteTransaction,
   onImportTransactions,
+  onMarkAsPaid,
   initialFilterType = "all",
   initialFilterStatus = "all",
   initialDateFilter = "all",
@@ -332,21 +334,25 @@ export function TransactionsPage({
     }
   };
 
-  const handleMarkAsPaid = (transactionId: string, date: Date, amount: number, accountId: string) => {
-    // Atualizar a transação para status "completed" e atualizar os campos
+  const handleMarkAsPaid = async (transactionId: string, date: Date, amount: number, accountId: string) => {
+    const transaction = transactions.find(t => t.id === transactionId);
+    if (!transaction) return;
+
     const updatedTransaction = {
-      ...transactions.find(t => t.id === transactionId),
+      ...transaction,
       status: "completed",
-      date: date.toISOString(),
+      date: date,
       amount,
       account_id: accountId,
     };
     
-    onEditTransaction(updatedTransaction);
-    toast({
-      title: t("transactions.markedAsPaid"),
-      description: t("transactions.transactionUpdated"),
-    });
+    if (onMarkAsPaid) {
+      await onMarkAsPaid(updatedTransaction);
+      toast({
+        title: t("transactions.markedAsPaid"),
+        description: t("transactions.transactionUpdated"),
+      });
+    }
   };
 
   const handleOpenMarkAsPaidModal = (transaction: any) => {
