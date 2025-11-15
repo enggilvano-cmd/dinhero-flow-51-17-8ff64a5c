@@ -163,14 +163,17 @@ export function FixedTransactionsPage() {
           nextDate.setDate(0);
         }
 
+        const transactionDate = nextDate.toISOString().split('T')[0];
+        const today = new Date().toISOString().split('T')[0];
+        
         transactionsToGenerate.push({
           description: transaction.description,
           amount: transaction.amount,
-          date: nextDate.toISOString().split('T')[0],
+          date: transactionDate,
           type: transaction.type,
           category_id: transaction.category_id,
           account_id: transaction.account_id,
-          status: "completed" as const,
+          status: transactionDate <= today ? "completed" as const : "pending" as const,
           user_id: user.id,
           parent_transaction_id: recurringTransaction.id,
         });
@@ -197,7 +200,7 @@ export function FixedTransactionsPage() {
           type: transaction.type,
           category_id: transaction.category_id,
           account_id: transaction.account_id,
-          status: "completed" as const,
+          status: "pending" as const,
           user_id: user.id,
           parent_transaction_id: recurringTransaction.id,
         });
@@ -273,6 +276,16 @@ export function FixedTransactionsPage() {
     if (!transactionToDelete) return;
 
     try {
+      // Primeiro, excluir todas as transações filhas pendentes
+      const { error: childrenError } = await supabase
+        .from("transactions")
+        .delete()
+        .eq("parent_transaction_id", transactionToDelete)
+        .eq("status", "pending");
+
+      if (childrenError) throw childrenError;
+
+      // Depois, excluir a transação principal
       const { error } = await supabase
         .from("transactions")
         .delete()
@@ -282,7 +295,7 @@ export function FixedTransactionsPage() {
 
       toast({
         title: "Transação removida",
-        description: "A transação fixa foi removida com sucesso.",
+        description: "A transação fixa e todas as transações pendentes foram removidas com sucesso.",
       });
 
       loadFixedTransactions();
@@ -533,9 +546,9 @@ export function FixedTransactionsPage() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-            <AlertDialogDescription>
-              Tem certeza que deseja excluir esta transação fixa? As transações já geradas permanecerão no sistema.
-            </AlertDialogDescription>
+          <AlertDialogDescription>
+            Tem certeza que deseja excluir esta transação fixa? Todas as transações pendentes também serão removidas. Transações já concluídas permanecerão no sistema.
+          </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>

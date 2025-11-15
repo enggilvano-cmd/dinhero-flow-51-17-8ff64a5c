@@ -434,20 +434,23 @@ export function AddTransactionModal({
             nextDate.setDate(0);
           }
 
+          const transactionDate = nextDate.toISOString().split('T')[0];
+          const today = new Date().toISOString().split('T')[0];
+
           transactionsToGenerate.push({
             description: description,
             amount: Math.abs(numericAmount),
-            date: nextDate.toISOString().split('T')[0],
+            date: transactionDate,
             type: type as "income" | "expense",
             category_id: category_id,
             account_id: account_id,
-            status: status,
+            status: (transactionDate <= today ? "completed" : "pending") as "completed" | "pending",
             user_id: user.id,
             parent_transaction_id: recurringTransaction.id,
           });
         }
 
-        // Gerar transações para todos os 12 meses do próximo ano
+        // Gerar transações para todos os 12 meses do próximo ano (todas como pendentes)
         const nextYear = currentYear + 1;
         for (let month = 0; month < 12; month++) {
           const nextDate = new Date(nextYear, month, dayOfMonth);
@@ -468,7 +471,7 @@ export function AddTransactionModal({
             type: type as "income" | "expense",
             category_id: category_id,
             account_id: account_id,
-            status: status,
+            status: "pending" as "pending",
             user_id: user.id,
             parent_transaction_id: recurringTransaction.id,
           });
