@@ -267,10 +267,13 @@ export function calculateBillDetails(
 
     // 1. Calcula o Saldo Total (Limite Utilizado)
     // Soma despesas (aumenta dívida) e subtrai pagamentos (diminui dívida)
-    if (t.type === 'expense') {
-      newTotalBalance += Math.abs(t.amount);
-    } else if (t.type === 'income') {
-      newTotalBalance -= Math.abs(t.amount); // Subtrai pagamentos
+    // APENAS transações concluídas são contabilizadas
+    if (t.status === 'completed') {
+      if (t.type === 'expense') {
+        newTotalBalance += Math.abs(t.amount);
+      } else if (t.type === 'income') {
+        newTotalBalance -= Math.abs(t.amount); // Subtrai pagamentos
+      }
     }
 
     // 2. Calcula o Saldo da Fatura Atual (currentBillAmount)
@@ -284,17 +287,21 @@ export function calculateBillDetails(
     const belongsToCurrentBill = effectiveInvoiceMonth === currentInvoiceMonth;
 
     if (belongsToCurrentBill) {
-      if (t.type === 'expense') {
-        currentBillAmount += Math.abs(t.amount);
-      } else if (t.type === 'income') {
-        currentBillAmount -= Math.abs(t.amount);
-        paymentTransactions.push(t);
+      // APENAS transações concluídas são contabilizadas na fatura
+      if (t.status === 'completed') {
+        if (t.type === 'expense') {
+          currentBillAmount += Math.abs(t.amount);
+        } else if (t.type === 'income') {
+          currentBillAmount -= Math.abs(t.amount);
+          paymentTransactions.push(t);
+        }
       }
     }
     // 3. Calcula a Próxima Fatura (nextBillAmount)
     else {
       const belongsToNextBill = effectiveInvoiceMonth === nextInvoiceMonth;
-      if (belongsToNextBill && t.type === 'expense') {
+      // APENAS transações concluídas são contabilizadas na próxima fatura
+      if (belongsToNextBill && t.type === 'expense' && t.status === 'completed') {
         nextBillAmount += Math.abs(t.amount);
       }
     }
