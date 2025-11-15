@@ -146,6 +146,19 @@ export function Dashboard({
   // Estado para ano específico do gráfico
   const [chartYear, setChartYear] = useState<number>(new Date().getFullYear());
 
+  // Anos únicos com transações
+  const availableYears = useMemo(() => {
+    const years = new Set<number>();
+    transactions.forEach((transaction) => {
+      const transactionDate =
+        typeof transaction.date === "string"
+          ? createDateFromString(transaction.date)
+          : transaction.date;
+      years.add(transactionDate.getFullYear());
+    });
+    return Array.from(years).sort((a, b) => b - a); // Ordem descendente
+  }, [transactions]);
+
   // Função para filtrar transações por período
   const getFilteredTransactions = () => {
     let filtered = transactions;
@@ -933,14 +946,17 @@ export function Dashboard({
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {Array.from(
-                          { length: 10 },
-                          (_, i) => new Date().getFullYear() - 5 + i
-                        ).map((year) => (
-                          <SelectItem key={year} value={year.toString()}>
-                            {year}
+                        {availableYears.length > 0 ? (
+                          availableYears.map((year) => (
+                            <SelectItem key={year} value={year.toString()}>
+                              {year}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <SelectItem value={new Date().getFullYear().toString()}>
+                            {new Date().getFullYear()}
                           </SelectItem>
-                        ))}
+                        )}
                       </SelectContent>
                     </Select>
                   )}
