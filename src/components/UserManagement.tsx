@@ -341,6 +341,26 @@ export function UserManagement() {
         </p>
       </div>
 
+      {/* Tab Buttons */}
+      <div className="flex flex-col xs:flex-row justify-center gap-2 sm:gap-3 px-2 sm:px-0 max-w-md mx-auto w-full">
+        <Button
+          variant={selectedTab === 'users' ? 'default' : 'outline'}
+          onClick={() => setSelectedTab('users')}
+          className="w-full xs:flex-1 sm:min-w-[140px] items-center justify-center gap-2 text-sm sm:text-base py-3 sm:py-2"
+        >
+          <Users className="h-4 w-4 sm:h-5 sm:w-5" />
+          <span className="font-medium">Usuários</span>
+        </Button>
+        <Button
+          variant={selectedTab === 'audit' ? 'default' : 'outline'}
+          onClick={() => setSelectedTab('audit')}
+          className="w-full xs:flex-1 sm:min-w-[140px] items-center justify-center gap-2 text-sm sm:text-base py-3 sm:py-2"
+        >
+          <Activity className="h-4 w-4 sm:h-5 sm:w-5" />
+          <span className="font-medium">Auditoria</span>
+        </Button>
+      </div>
+
       {/* Users Tab */}
       {selectedTab === 'users' && (
         <Card className="financial-card w-full overflow-hidden">
@@ -708,26 +728,6 @@ export function UserManagement() {
           </CardContent>
         </Card>
       )}
-
-      {/* Tab Buttons - Fully responsive */}
-      <div className="flex flex-col xs:flex-row justify-center gap-2 sm:gap-3 pt-4 px-2 sm:px-0 max-w-md mx-auto w-full">
-        <Button
-          variant={selectedTab === 'users' ? 'default' : 'outline'}
-          onClick={() => setSelectedTab('users')}
-          className="w-full xs:flex-1 sm:min-w-[140px] items-center justify-center gap-2 text-sm sm:text-base py-3 sm:py-2"
-        >
-          <Users className="h-4 w-4 sm:h-5 sm:w-5" />
-          <span className="font-medium">Usuários</span>
-        </Button>
-        <Button
-          variant={selectedTab === 'audit' ? 'default' : 'outline'}
-          onClick={() => setSelectedTab('audit')}
-          className="w-full xs:flex-1 sm:min-w-[140px] items-center justify-center gap-2 text-sm sm:text-base py-3 sm:py-2"
-        >
-          <Activity className="h-4 w-4 sm:h-5 sm:w-5" />
-          <span className="font-medium">Auditoria</span>
-        </Button>
-      </div>
     </div>
   );
 }
