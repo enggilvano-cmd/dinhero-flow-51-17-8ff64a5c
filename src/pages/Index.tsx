@@ -11,6 +11,7 @@ import { SettingsPage } from "@/components/SettingsPage";
 import { UserManagement } from "@/components/UserManagement";
 import { UserProfile } from "@/components/UserProfile";
 import { RecurringTransactionsPage } from "@/components/RecurringTransactionsPage";
+import { FixedTransactionsPage } from "@/components/FixedTransactionsPage";
 import { AddAccountModal } from "@/components/AddAccountModal";
 import { AddTransactionModal } from "@/components/AddTransactionModal";
 import { EditAccountModal } from "@/components/EditAccountModal";
@@ -1217,6 +1218,8 @@ const PlaniFlowApp = () => {
         );
       case "recurring":
         return <RecurringTransactionsPage />;
+      case "fixed":
+        return <FixedTransactionsPage />;
       case "categories":
         return <CategoriesPage />;
       case "analytics":
