@@ -386,31 +386,6 @@ export function AddTransactionModal({
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error("Usuário não autenticado");
 
-        // Criar a transação recorrente principal
-        const transactionPayload = {
-          description: description,
-          amount: Math.abs(numericAmount),
-          date: date, // string no formato YYYY-MM-DD
-          type: type as "income" | "expense",
-          category_id: category_id,
-          account_id: account_id,
-          status: status,
-          invoice_month: formData.invoiceMonth || undefined,
-          invoice_month_overridden: Boolean(formData.invoiceMonth),
-          is_recurring: true,
-          recurrence_type: "monthly" as const,
-          recurrence_end_date: undefined,
-          user_id: user.id,
-        };
-
-        const { data: recurringTransaction, error: recurringError } = await supabase
-          .from("transactions")
-          .insert(transactionPayload)
-          .select()
-          .single();
-
-        if (recurringError) throw recurringError;
-
         // Gerar transações do mês atual até o final do ano corrente + todos os meses do próximo ano
         const transactionsToGenerate = [];
         // Parse da data de forma segura para evitar problemas de timezone
@@ -423,6 +398,7 @@ export function AddTransactionModal({
         const monthsLeftInCurrentYear = 12 - currentMonth;
 
         // Gerar transações para os meses restantes do ano corrente
+        // A primeira transação (i=0) será a transação principal recorrente
         for (let i = 0; i < monthsLeftInCurrentYear; i++) {
           const nextDate = new Date(currentYear, currentMonth + i, dayOfMonth);
           
@@ -438,17 +414,33 @@ export function AddTransactionModal({
           const transactionDate = nextDate.toISOString().split('T')[0];
           const today = new Date().toISOString().split('T')[0];
 
-          transactionsToGenerate.push({
-            description: description,
-            amount: Math.abs(numericAmount),
-            date: transactionDate,
-            type: type as "income" | "expense",
-            category_id: category_id,
-            account_id: account_id,
-            status: (transactionDate <= today ? "completed" : "pending") as "completed" | "pending",
-            user_id: user.id,
-            parent_transaction_id: recurringTransaction.id,
-          });
+          // A primeira transação é a principal com is_recurring = true
+          if (i === 0) {
+            transactionsToGenerate.push({
+              description: description,
+              amount: Math.abs(numericAmount),
+              date: transactionDate,
+              type: type as "income" | "expense",
+              category_id: category_id,
+              account_id: account_id,
+              status: (transactionDate <= today ? "completed" : "pending") as "completed" | "pending",
+              user_id: user.id,
+              is_recurring: true,
+              recurrence_type: "monthly" as const,
+              recurrence_end_date: null,
+            });
+          } else {
+            transactionsToGenerate.push({
+              description: description,
+              amount: Math.abs(numericAmount),
+              date: transactionDate,
+              type: type as "income" | "expense",
+              category_id: category_id,
+              account_id: account_id,
+              status: (transactionDate <= today ? "completed" : "pending") as "completed" | "pending",
+              user_id: user.id,
+            });
+          }
         }
 
         // Gerar transações para todos os 12 meses do próximo ano (todas como pendentes)
@@ -474,17 +466,32 @@ export function AddTransactionModal({
             account_id: account_id,
             status: "pending" as "pending",
             user_id: user.id,
-            parent_transaction_id: recurringTransaction.id,
           });
         }
 
         // Inserir todas as transações de uma vez
-        const { error: insertError } = await supabase
+        const { error: insertError, data: insertedTransactions } = await supabase
           .from("transactions")
-          .insert(transactionsToGenerate);
+          .insert(transactionsToGenerate)
+          .select();
 
-        if (insertError) {
-          console.error("Erro ao gerar transações futuras:", insertError);
+        if (insertError) throw insertError;
+
+        // Pegar o ID da transação principal (a primeira inserida)
+        const recurringTransaction = insertedTransactions[0];
+
+        // Atualizar as transações filhas com o parent_transaction_id
+        const childTransactionIds = insertedTransactions.slice(1).map(t => t.id);
+        
+        if (childTransactionIds.length > 0) {
+          const { error: updateError } = await supabase
+            .from("transactions")
+            .update({ parent_transaction_id: recurringTransaction.id })
+            .in("id", childTransactionIds);
+
+          if (updateError) {
+            console.error("Erro ao vincular transações filhas:", updateError);
+          }
         }
 
         toast({
