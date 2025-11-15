@@ -115,7 +115,7 @@ export function FixedTransactionsPage() {
     }
   };
 
-  const handleAdd = async (transaction: Omit<FixedTransaction, "id">) => {
+  const handleAdd = async (transaction: Omit<FixedTransaction, "id"> & { status?: "pending" | "completed" }) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
@@ -130,6 +130,9 @@ export function FixedTransactionsPage() {
 
       // Calcular meses restantes no ano corrente (incluindo o mês atual)
       const monthsLeftInCurrentYear = 12 - currentMonth;
+
+      // Usar o status escolhido pelo usuário, padrão é "pending"
+      const initialStatus = transaction.status || "pending";
 
       // Gerar transações para os meses restantes do ano corrente
       // A primeira transação (i=0) será a transação principal recorrente
@@ -148,19 +151,20 @@ export function FixedTransactionsPage() {
         const transactionDate = nextDate.toISOString().split('T')[0];
         const today = new Date().toISOString().split('T')[0];
         
-          // A primeira transação é a principal com is_fixed = true
-          if (i === 0) {
-            transactionsToGenerate.push({
-              description: transaction.description,
-              amount: transaction.amount,
-              date: transactionDate,
-              type: transaction.type,
-              category_id: transaction.category_id,
-              account_id: transaction.account_id,
-              status: transactionDate <= today ? "completed" as const : "pending" as const,
-              user_id: user.id,
-              is_fixed: true,
-            });
+        // A primeira transação usa o status escolhido pelo usuário
+        // As demais seguem a lógica de data (passado = completed, futuro = pending)
+        if (i === 0) {
+          transactionsToGenerate.push({
+            description: transaction.description,
+            amount: transaction.amount,
+            date: transactionDate,
+            type: transaction.type,
+            category_id: transaction.category_id,
+            account_id: transaction.account_id,
+            status: initialStatus,
+            user_id: user.id,
+            is_fixed: true,
+          });
         } else {
           transactionsToGenerate.push({
             description: transaction.description,
