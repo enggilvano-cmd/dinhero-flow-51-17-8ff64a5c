@@ -20,6 +20,7 @@ import { formatCurrency } from "@/lib/formatters";
 import { AddFixedTransactionModal } from "./AddFixedTransactionModal";
 import { EditFixedTransactionModal } from "./EditFixedTransactionModal";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTransactionStore } from "@/stores/TransactionStore";
 
 interface FixedTransaction {
   id: string;
@@ -48,6 +49,7 @@ export function FixedTransactionsPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<"all" | "income" | "expense">("all");
+  const { removeTransactions: removeGlobalTransactions } = useTransactionStore();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
   const [addModalOpen, setAddModalOpen] = useState(false);
@@ -285,7 +287,20 @@ export function FixedTransactionsPage() {
     if (!transactionToDelete) return;
 
     try {
-      // Primeiro, excluir todas as transações filhas pendentes
+      // Buscar todas as transações filhas pendentes para obter seus IDs
+      const { data: childTransactions } = await supabase
+        .from("transactions")
+        .select("id")
+        .eq("parent_transaction_id", transactionToDelete)
+        .eq("status", "pending");
+
+      // Criar array com todos os IDs que serão deletados (principal + filhas)
+      const idsToDelete = [transactionToDelete, ...(childTransactions?.map(t => t.id) || [])];
+
+      // Remover do store global PRIMEIRO
+      removeGlobalTransactions(idsToDelete);
+
+      // Excluir todas as transações filhas pendentes
       const { error: childrenError } = await supabase
         .from("transactions")
         .delete()
