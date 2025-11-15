@@ -319,7 +319,27 @@ export function Dashboard({
         monthsToShow.push(monthKey);
       }
 
-      let saldoAcumulado = 0;
+      // Calcular o saldo acumulado do ano anterior
+      const previousYearBalance = transactions.reduce((acc, transaction) => {
+        const transactionDate =
+          typeof transaction.date === "string"
+            ? createDateFromString(transaction.date)
+            : transaction.date;
+        const transactionYear = transactionDate.getFullYear();
+
+        // Somar apenas transações de anos anteriores ao ano selecionado
+        if (transactionYear < chartYear) {
+          if (transaction.type === "income") {
+            return acc + transaction.amount;
+          } else if (transaction.type === "expense") {
+            return acc - transaction.amount;
+          }
+        }
+
+        return acc;
+      }, 0);
+
+      let saldoAcumulado = previousYearBalance;
       const chartMonths = monthsToShow.map((monthKey) => {
         const data = monthlyTotals[monthKey] || { income: 0, expenses: 0 }; // data.expenses já é negativo
         const saldoMensal = data.income + data.expenses; // Saldo líquido correto
