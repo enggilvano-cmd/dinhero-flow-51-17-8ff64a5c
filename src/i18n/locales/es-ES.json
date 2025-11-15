@@ -256,6 +256,8 @@
     "transactionUpdated": "Transacción actualizada",
     "transactionDeleted": "Transacción eliminada",
     "confirmDelete": "¿Estás seguro de que deseas eliminar esta transacción?",
+    "markAsPaid": "Marcar como Pagada",
+    "markedAsPaid": "Transacción marcada como pagada",
     "invoiceMonth": "Factura",
     "selectInvoice": "Seleccionar factura",
     "accountType": "Tipo de Cuenta",
