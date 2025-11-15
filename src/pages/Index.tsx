@@ -163,6 +163,30 @@ const PlaniFlowApp = () => {
     loadData();
   }, [user, setGlobalAccounts, setGlobalTransactions]);
 
+  // Função para recarregar transações
+  const reloadTransactions = async () => {
+    if (!user) return;
+    try {
+      const { data: transactionsData, error: transactionsError } =
+        await supabase
+          .from("transactions")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false });
+
+      if (transactionsError) throw transactionsError;
+      const formattedTransactions = (transactionsData || []).map(
+        (trans) => ({
+          ...trans,
+          date: createDateFromString(trans.date),
+        })
+      );
+      setGlobalTransactions(formattedTransactions as Transaction[]);
+    } catch (error) {
+      console.error("Error reloading transactions:", error);
+    }
+  };
+
   const handleEditAccount = async (updatedAccount: any) => {
     if (!user) return;
     try {
@@ -1492,6 +1516,7 @@ const PlaniFlowApp = () => {
         }}
         onAddTransaction={handleAddTransaction}
         onAddInstallmentTransactions={handleAddInstallmentTransactions}
+        onSuccess={reloadTransactions}
         accounts={accounts}
         initialType={transactionInitialType}
         initialAccountType={transactionInitialAccountType}
