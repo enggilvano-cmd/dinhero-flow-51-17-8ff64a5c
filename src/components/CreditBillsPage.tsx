@@ -60,10 +60,9 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedAccountId, setSelectedAccountId] = useState("all");
-  const [selectedMonthOffset, setSelectedMonthOffset] = useState(0); // 0 = mês atual, 1 = próximo, -1 = anterior
+  const [selectedMonthOffset, setSelectedMonthOffset] = useState(1); // 1 = próximo mês (pré-selecionado)
   const [filterBillStatus, setFilterBillStatus] = useState<"all" | "open" | "closed">("all");
   const [filterPaymentStatus, setFilterPaymentStatus] = useState<"all" | "paid" | "pending">("all");
-  const [periodFilter, setPeriodFilter] = useState<"current_month" | "month_picker">("current_month");
   const [selectedBillForDetails, setSelectedBillForDetails] = useState<{
     account: Account;
     transactions: AppTransaction[];
@@ -87,14 +86,10 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
     });
   }, [creditAccounts, searchTerm, selectedAccountId]);
 
-  // Calcula a data base para o mês selecionado
+  // Calcula a data base para o mês selecionado (sempre navegação por mês)
   const selectedMonthDate = useMemo(() => {
-    if (periodFilter === "current_month") {
-      return new Date(); // Mês atual
-    } else {
-      return addMonths(new Date(), selectedMonthOffset); // Navegação por mês
-    }
-  }, [periodFilter, selectedMonthOffset]);
+    return addMonths(new Date(), selectedMonthOffset);
+  }, [selectedMonthOffset]);
 
   // Memo para calcular os detalhes da fatura do mês selecionado (alinhado ao mês exibido)
   const allBillDetails = useMemo(() => {
@@ -356,30 +351,9 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
               </Select>
             </div>
 
-            {/* Período/Mês */}
-            <div>
-              <Label htmlFor="periodFilter" className="text-caption">{t("dashboard.period")}</Label>
-              <Select
-                value={periodFilter}
-                onValueChange={(value: any) => {
-                  setPeriodFilter(value);
-                  if (value === "current_month") {
-                    setSelectedMonthOffset(0);
-                  }
-                }}
-              >
-                <SelectTrigger className="touch-target mt-2" id="periodFilter">
-                  <SelectValue placeholder={t("dateFilter.custom")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="current_month">{t("dateFilter.currentMonth")}</SelectItem>
-                  <SelectItem value="month_picker">{t("dateFilter.monthPicker")}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
 
             {/* Busca */}
-            <div className="sm:col-span-2">
+            <div className="sm:col-span-2 lg:col-span-3">
               <Label htmlFor="search" className="text-caption">{t("common.search")}</Label>
               <div className="relative mt-2">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -394,9 +368,8 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
             </div>
           </div>
 
-          {/* Controle de navegação de mês - mostrar apenas quando necessário */}
-          {periodFilter === "month_picker" && (
-            <div className="border-t border-border mt-4 pt-4">
+          {/* Controle de navegação de mês */}
+          <div className="border-t border-border mt-4 pt-4">
               <div className="flex items-center gap-1 px-3 border border-input rounded-md bg-background max-w-xs mx-auto touch-target">
                 <Button
                   variant="ghost"
@@ -419,7 +392,6 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
                 </Button>
               </div>
             </div>
-          )}
         </CardContent>
       </Card>
 
