@@ -82,7 +82,9 @@ export function CreditCardBillCard({
   const isPaid = amountDue <= 0 || (isClosed && paidAmount >= amountDue);
   const isBillPaid = isPaid;
   const isFullyPaid = isPaid && totalBalance <= 0;
-  const canReverse = paymentTransactions && paymentTransactions.length > 0;
+  
+  // Botão de estorno só aparece quando a fatura está PAGA e há pagamentos
+  const canReverse = isPaid && paymentTransactions && paymentTransactions.length > 0;
   
   console.info("[CreditCardBillCard] Status", {
     account: account.name,
