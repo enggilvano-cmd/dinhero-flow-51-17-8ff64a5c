@@ -232,11 +232,6 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
                 setFormData((prev) => ({ ...prev, limitInCents: value || 0 }))
               }
             />
-            <p className="text-xs sm:text-sm text-muted-foreground">
-              {formData.type === "credit"
-                ? t("modals.addAccount.fields.limit.creditHelp")
-                : t("modals.addAccount.fields.limit.help")}
-            </p>
           </div>
 
           {/* Campos específicos para Cartão de Crédito */}
