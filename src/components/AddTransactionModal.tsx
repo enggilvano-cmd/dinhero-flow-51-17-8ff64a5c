@@ -73,6 +73,7 @@ interface AddTransactionModalProps {
   onAddInstallmentTransactions?: (
     transactions: Omit<Transaction, "id" | "createdAt">[]
   ) => void; // Mantém a estrutura completa para parcelas
+  onSuccess?: () => void; // Callback opcional após sucesso
   accounts: Account[];
   initialType?: "income" | "expense" | ""; // Tipo inicial pré-selecionado
   initialAccountType?: "credit" | "checking" | ""; // Tipo de conta inicial
@@ -84,6 +85,7 @@ export function AddTransactionModal({
   onOpenChange,
   onAddTransaction,
   onAddInstallmentTransactions,
+  onSuccess,
   accounts,
   initialType = "",
   initialAccountType = "",
@@ -497,6 +499,11 @@ export function AddTransactionModal({
           description: `${transactionsToGenerate.length} transações foram geradas (até o final de ${nextYear})`,
           variant: "default",
         });
+
+        // Chamar callback de sucesso se fornecido
+        if (onSuccess) {
+          onSuccess();
+        }
 
 
       } else {
