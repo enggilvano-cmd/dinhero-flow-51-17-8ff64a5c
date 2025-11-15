@@ -353,7 +353,7 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
 
 
             {/* Busca */}
-            <div className="sm:col-span-2 lg:col-span-3">
+            <div className="sm:col-span-2">
               <Label htmlFor="search" className="text-caption">{t("common.search")}</Label>
               <div className="relative mt-2">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -366,11 +366,11 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
                 />
               </div>
             </div>
-          </div>
 
-          {/* Controle de navegação de mês */}
-          <div className="border-t border-border mt-4 pt-4">
-              <div className="flex items-center gap-1 px-3 border border-input rounded-md bg-background max-w-xs mx-auto touch-target">
+            {/* Navegação de Mês */}
+            <div>
+              <Label className="text-caption">{t("dashboard.period")}</Label>
+              <div className="flex items-center gap-1 px-3 border border-input rounded-md bg-background touch-target mt-2">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -392,6 +392,7 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
                 </Button>
               </div>
             </div>
+          </div>
         </CardContent>
       </Card>
 
