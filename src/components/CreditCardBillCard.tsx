@@ -43,6 +43,13 @@ export function CreditCardBillCard({
   const { t } = useTranslation();
   const { settings } = useSettings();
   
+  console.log('🃏 CreditCardBillCard renderizando:', {
+    account: account.name,
+    balance: account.balance,
+    currentBillAmount: billDetails.currentBillAmount,
+    paymentsCount: billDetails.paymentTransactions?.length || 0
+  });
+  
   const formatCents = (valueInCents: number) => {
     return formatCentsHelper(valueInCents, settings.currency, settings.language);
   };

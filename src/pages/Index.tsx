@@ -167,6 +167,7 @@ const PlaniFlowApp = () => {
   const reloadTransactions = async () => {
     if (!user) return;
     try {
+      console.log('🔄 Recarregando transações...');
       const { data: transactionsData, error: transactionsError } =
         await supabase
           .from("transactions")
@@ -182,8 +183,32 @@ const PlaniFlowApp = () => {
         })
       );
       setGlobalTransactions(formattedTransactions as Transaction[]);
+      console.log('✅ Transações recarregadas:', formattedTransactions.length);
     } catch (error) {
       console.error("Error reloading transactions:", error);
+    }
+  };
+
+  // Função para recarregar contas
+  const reloadAccounts = async () => {
+    if (!user) return;
+    try {
+      console.log('🔄 Recarregando contas...');
+      const { data: accountsData, error: accountsError } = await supabase
+        .from("accounts")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (accountsError) throw accountsError;
+      const formattedAccounts = (accountsData || []).map((acc) => ({
+        ...acc,
+        limit: acc.limit_amount,
+      }));
+      setGlobalAccounts(formattedAccounts as Account[]);
+      console.log('✅ Contas recarregadas:', formattedAccounts.length);
+    } catch (error) {
+      console.error("Error reloading accounts:", error);
     }
   };
 
@@ -1136,6 +1161,13 @@ const PlaniFlowApp = () => {
       const updatedBankAccount = { ...bankAccount, balance: newBankBalance };
 
       updateGlobalAccounts([updatedCreditAccount, updatedBankAccount]);
+      
+      // Força refetch para garantir sincronização
+      console.log('🔄 Refazendo fetch após pagamento...');
+      await Promise.all([
+        reloadAccounts(),
+        reloadTransactions()
+      ]);
 
       return {
         creditAccount: updatedCreditAccount,
@@ -1231,6 +1263,13 @@ const PlaniFlowApp = () => {
       // 5. Atualiza o estado global (stores)
       removeGlobalTransactions(transactionsToDelete_ids);
       updateGlobalAccounts(updatedAccountsList);
+      
+      // 6. Força refetch dos dados para garantir sincronização
+      console.log('🔄 Refazendo fetch após estorno...');
+      await Promise.all([
+        reloadAccounts(),
+        reloadTransactions()
+      ]);
 
       toast({ title: "Pagamento estornado com sucesso!" });
     } catch (error) {
