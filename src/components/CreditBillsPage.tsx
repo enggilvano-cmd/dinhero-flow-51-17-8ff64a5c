@@ -409,7 +409,6 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
                   variant="ghost"
                   size="sm"
                   onClick={() => setSelectedMonthOffset(selectedMonthOffset + 1)}
-                  disabled={selectedMonthOffset >= 0}
                   className="h-6 w-6 p-0 flex-shrink-0"
                 >
                   <ChevronRight className="h-3 w-3" />
