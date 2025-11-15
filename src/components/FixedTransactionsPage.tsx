@@ -142,10 +142,11 @@ export function FixedTransactionsPage() {
 
       // Gerar transações do mês atual até o final do ano corrente + todos os meses do próximo ano
       const transactionsToGenerate = [];
-      const baseDate = new Date(transaction.date);
-      const currentYear = baseDate.getFullYear();
-      const currentMonth = baseDate.getMonth(); // 0-11
-      const dayOfMonth = baseDate.getDate();
+      // Parse da data de forma segura para evitar problemas de timezone
+      const [year, month, day] = transaction.date.split('-').map(Number);
+      const currentYear = year;
+      const currentMonth = month - 1; // JavaScript usa 0-11 para meses
+      const dayOfMonth = day;
 
       // Calcular meses restantes no ano corrente (incluindo o mês atual)
       const monthsLeftInCurrentYear = 12 - currentMonth;
