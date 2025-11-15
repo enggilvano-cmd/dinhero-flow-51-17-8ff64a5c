@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Plus, Edit, Trash2, Search, Tag, TrendingUp, TrendingDown, ArrowUpDown, FileDown, Upload } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Plus, Edit, Trash2, Search, Tag, TrendingUp, TrendingDown, ArrowUpDown, FileDown, Upload, MoreVertical } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -27,6 +28,8 @@ export function CategoriesPage({}: CategoriesPageProps) {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<any | null>(null);
+  const [categoryToDelete, setCategoryToDelete] = useState<any | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const { t } = useTranslation();
@@ -507,61 +510,67 @@ export function CategoriesPage({}: CategoriesPageProps) {
         ) : (
           filteredCategories.map((category) => (
             <Card key={category.id} className="financial-card apple-interaction group">
-              <CardHeader className="pb-3">
-                <div className="space-y-2">
+              <CardContent className="p-3 sm:p-4">
+                <div className="space-y-3">
+                  {/* Header com Ícone, Nome e Menu */}
                   <div className="flex items-center gap-3">
-                    <div 
-                      className="w-4 h-4 rounded-full flex-shrink-0"
+                    {/* Ícone da Categoria */}
+                    <div
+                      className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm"
                       style={{ backgroundColor: category.color }}
-                    />
-                    <CardTitle className="text-headline">{category.name}</CardTitle>
+                    >
+                      <Tag className="h-5 w-5 text-white" />
+                    </div>
+
+                    {/* Nome e Badge */}
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-sm sm:text-base font-semibold truncate mb-1">
+                        {category.name}
+                      </h3>
+                      <Badge variant={getTypeVariant(category.type)} className="gap-1 text-xs h-5 px-2 inline-flex">
+                        {getTypeIcon(category.type)}
+                        <span>{getTypeLabel(category.type)}</span>
+                      </Badge>
+                    </div>
+
+                    {/* Menu de Ações */}
+                    <div className="flex-shrink-0">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 sm:opacity-70 sm:group-hover:opacity-100 transition-opacity"
+                          >
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => openEditModal(category)}>
+                            <Edit className="h-4 w-4 mr-2" />
+                            {t("common.edit")}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setCategoryToDelete(category);
+                              setDeleteDialogOpen(true);
+                            }}
+                            className="text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            {t("common.delete")}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </div>
-                  <Badge variant={getTypeVariant(category.type)} className="gap-1 w-fit">
-                    {getTypeIcon(category.type)}
-                    <span>{getTypeLabel(category.type)}</span>
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent className="pt-0 space-y-3">
-                <p className="text-caption text-muted-foreground">
-                  Criada em {new Date(category.created_at).toLocaleDateString('pt-BR')}
-                </p>
-                <div className="flex gap-2 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => openEditModal(category)}
-                    className="gap-1 touch-target apple-interaction flex-1 sm:flex-initial"
-                  >
-                    <Edit className="h-3 w-3" />
-                    <span className="sm:inline">{t("common.edit")}</span>
-                  </Button>
-                  
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="outline" size="sm" className="gap-1 touch-target text-destructive hover:text-destructive flex-1 sm:flex-initial">
-                        <Trash2 className="h-3 w-3" />
-                        <span className="sm:inline">{t("common.delete")}</span>
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>{t("categories.confirmDelete")}</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          {category.name}
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => handleDeleteCategory(category.id)}
-                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                        >
-                          {t("common.delete")}
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+
+                  {/* Informações Adicionais */}
+                  <div className="pl-[52px] sm:pl-[60px]">
+                    <p className="text-xs text-muted-foreground">
+                      Criada em {new Date(category.created_at).toLocaleDateString('pt-BR')}
+                    </p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -589,6 +598,33 @@ export function CategoriesPage({}: CategoriesPageProps) {
         categories={categories}
         onImportCategories={handleImportCategories}
       />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("categories.confirmDelete")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {categoryToDelete?.name}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (categoryToDelete) {
+                  handleDeleteCategory(categoryToDelete.id);
+                  setDeleteDialogOpen(false);
+                  setCategoryToDelete(null);
+                }
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {t("common.delete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
