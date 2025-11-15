@@ -224,8 +224,7 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
           <div className="space-y-2">
             {/* --- CORREÇÃO: Rótulo dinâmico --- */}
             <Label className="text-sm font-medium">
-              {t("modals.addAccount.fields.limit.label")}{" "}
-              {formData.type !== "credit" && `(${t("modals.addAccount.fields.limit.optional")})`}
+              {t("modals.addAccount.fields.limit.label")}
             </Label>
             <CurrencyInput
               value={formData.limitInCents || 0}
