@@ -49,6 +49,7 @@ export function AddFixedTransactionModal({
     type: "" as "income" | "expense" | "",
     category_id: "",
     account_id: "",
+    status: "pending" as "pending" | "completed",
   });
   const { toast } = useToast();
   const { categories } = useCategories();
@@ -62,6 +63,7 @@ export function AddFixedTransactionModal({
         type: "",
         category_id: "",
         account_id: "",
+        status: "pending",
       });
     }
   }, [open]);
@@ -119,6 +121,7 @@ export function AddFixedTransactionModal({
       type: formData.type,
       category_id: formData.category_id || null,
       account_id: formData.account_id,
+      status: formData.status,
     });
   };
 
@@ -234,6 +237,24 @@ export function AddFixedTransactionModal({
             <p className="text-xs text-muted-foreground">
               A transação será gerada automaticamente todo dia {new Date(formData.date).getDate()} de cada mês.
             </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="status">Status Inicial</Label>
+            <Select
+              value={formData.status}
+              onValueChange={(value: "pending" | "completed") =>
+                setFormData({ ...formData, status: value })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione o status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="pending">Pendente</SelectItem>
+                <SelectItem value="completed">Concluída</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex gap-3 pt-4">
