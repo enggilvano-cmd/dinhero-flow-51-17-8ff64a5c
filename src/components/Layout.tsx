@@ -315,13 +315,18 @@ function LayoutContent({ children, currentPage, onPageChange }: LayoutProps) {
                   <div className="w-full h-0.5 bg-foreground rounded-full"></div>
                 </div>
               </SidebarTrigger>
-              <div className="h-7 w-7 rounded-xl bg-gradient-to-br from-emerald-600 to-emerald-700 flex items-center justify-center shadow-lg">
-                <BarChart3 className="h-4 w-4 text-yellow-400" />
-              </div>
-              <div>
-                <h1 className="text-base font-bold tracking-tight text-foreground">
-                  PlaniFlow
-                </h1>
+              <div 
+                className="flex items-center gap-2 cursor-pointer touch-target"
+                onClick={() => onPageChange('dashboard')}
+              >
+                <div className="h-7 w-7 rounded-xl bg-gradient-to-br from-emerald-600 to-emerald-700 flex items-center justify-center shadow-lg">
+                  <BarChart3 className="h-4 w-4 text-yellow-400" />
+                </div>
+                <div>
+                  <h1 className="text-base font-bold tracking-tight text-foreground">
+                    PlaniFlow
+                  </h1>
+                </div>
               </div>
             </div>
             {profile && (
