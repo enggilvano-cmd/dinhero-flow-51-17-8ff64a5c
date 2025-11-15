@@ -923,6 +923,13 @@ const PlaniFlowApp = () => {
       updateGlobalAccounts(updatedAccountsList);
       removeGlobalTransactions(idsToDelete);
 
+      toast({
+        title: "Transação excluída",
+        description: idsToDelete.length > 1 
+          ? `${idsToDelete.length} transações excluídas com sucesso.` 
+          : "Transação excluída com sucesso.",
+      });
+
     } catch (error) {
       console.error("Error deleting transaction(s):", error);
       const message = (error as Error).message || "Ocorreu um erro inesperado.";
