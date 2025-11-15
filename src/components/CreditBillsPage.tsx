@@ -132,6 +132,10 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
       for (const t of accountTransactions) {
         const d = typeof t.date === 'string' ? new Date(t.date) : t.date;
         if (!d || isNaN(d.getTime())) continue;
+        
+        // APENAS transações concluídas devem ser contabilizadas
+        if (t.status !== 'completed') continue;
+        
         const eff = effectiveMonth(d, t.invoice_month, t.invoice_month_overridden);
         if (eff === targetMonth) {
           if (t.type === 'expense') currentBillAmount += Math.abs(t.amount);
@@ -460,6 +464,9 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
                   // Filtrar transações apenas da fatura corrente calculada (YYYY-MM)
                   const currentMonth = details.currentInvoiceMonth || '';
                   const filtered = accountTransactions.filter((t) => {
+                    // APENAS transações concluídas devem aparecer nos detalhes
+                    if (t.status !== 'completed') return false;
+                    
                     const tDate = typeof t.date === 'string' ? new Date(t.date) : t.date;
                     if (!tDate || isNaN(tDate.getTime())) return false;
                     const eff = (t.invoice_month_overridden && t.invoice_month)
