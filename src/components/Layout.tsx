@@ -34,10 +34,10 @@ const getFirstName = (fullName?: string | null) => {
 const getMenuItems = (t: any) => [
   { id: "dashboard", label: t('menu.dashboard'), icon: Home },
   { id: "accounts", label: t('menu.accounts'), icon: CreditCard },
+  { id: "categories", label: t('menu.categories'), icon: Tag },
   { id: "credit-bills", label: t('menu.creditBills'), icon: Receipt },
   { id: "transactions", label: t('menu.transactions'), icon: ArrowLeftRight },
   { id: "recurring", label: t('menu.recurring'), icon: Repeat },
-  { id: "categories", label: t('menu.categories'), icon: Tag },
   { id: "analytics", label: t('menu.analytics'), icon: BarChart3 },
 ];
 
