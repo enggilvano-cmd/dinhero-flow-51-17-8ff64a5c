@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslation } from 'react-i18next';
+import { NotificationBell } from "@/components/NotificationBell";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -329,14 +330,17 @@ function LayoutContent({ children, currentPage, onPageChange }: LayoutProps) {
                 </div>
               </div>
             </div>
-            {profile && (
-              <Avatar className="h-8 w-8 touch-target">
-                <AvatarImage src={profile.avatar_url} />
-                <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                  {profile.full_name?.charAt(0) || profile.email.charAt(0)}
-                </AvatarFallback>
-              </Avatar>
-            )}
+            <div className="flex items-center gap-2">
+              <NotificationBell />
+              {profile && (
+                <Avatar className="h-8 w-8 touch-target">
+                  <AvatarImage src={profile.avatar_url} />
+                  <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                    {profile.full_name?.charAt(0) || profile.email.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+              )}
+            </div>
           </div>
         </header>
       )}
@@ -354,7 +358,8 @@ function LayoutContent({ children, currentPage, onPageChange }: LayoutProps) {
           )}>
           {/* Desktop Logo Header */}
           {!isMobile && (
-            <div className="flex justify-end items-center px-12 pt-3 pb-0">
+            <div className="flex justify-end items-center px-12 pt-3 pb-0 gap-4">
+              <NotificationBell />
               <div 
                 className="flex items-center gap-3 cursor-pointer transition-all duration-200 hover:scale-105"
                 onClick={() => onPageChange('dashboard')}

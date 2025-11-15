@@ -378,12 +378,6 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
               />
             </div>
 
-            <div className="p-4 bg-muted rounded-lg">
-              <p className="text-sm text-muted-foreground">
-                <strong>Nota:</strong> As notificações são atualmente simuladas. Em uma versão completa, 
-                você receberia lembretes sobre vencimentos de faturas e outras informações importantes.
-              </p>
-            </div>
           </CardContent>
         </Card>
 
