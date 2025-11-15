@@ -327,7 +327,7 @@ export default function AnalyticsPage({
       if (transaction.type === "income") {
         acc[monthKey].income += transaction.amount;
       } else if (transaction.type === "expense") {
-        acc[monthKey].expenses += transaction.amount;
+        acc[monthKey].expenses -= transaction.amount; // Subtrair para tornar negativo
       }
 
       return acc;
@@ -337,7 +337,30 @@ export default function AnalyticsPage({
       a.localeCompare(b)
     );
 
-    let saldoAcumulado = 0;
+    // Calcular o saldo anterior ao período filtrado (todas as transações antes do primeiro mês)
+    const firstMonthKey = sortedEntries.length > 0 ? sortedEntries[0][0] : null;
+    const previousBalance = firstMonthKey
+      ? transactions.reduce((acc, transaction) => {
+          const transactionDate =
+            typeof transaction.date === "string"
+              ? createDateFromString(transaction.date)
+              : transaction.date;
+          const monthKey = format(transactionDate, "yyyy-MM");
+
+          // Somar apenas transações anteriores ao primeiro mês do período filtrado
+          if (monthKey < firstMonthKey) {
+            if (transaction.type === "income") {
+              return acc + transaction.amount;
+            } else if (transaction.type === "expense") {
+              return acc - transaction.amount;
+            }
+          }
+
+          return acc;
+        }, 0)
+      : 0;
+
+    let saldoAcumulado = previousBalance;
 
     const sortedMonths = sortedEntries.map(([monthKey, data]) => {
       const saldoMensal = data.income + data.expenses; // expenses já são negativas
