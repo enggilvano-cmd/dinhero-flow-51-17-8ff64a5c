@@ -97,7 +97,7 @@ Deno.serve(async (req) => {
           type: fixedTx.type,
           category_id: fixedTx.category_id,
           account_id: fixedTx.account_id,
-          status: 'completed',
+          status: 'pending',
           is_recurring: false,
           parent_transaction_id: fixedTx.id,
           invoice_month: `${year}-${monthStr}`,
