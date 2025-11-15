@@ -40,9 +40,7 @@ Deno.serve(async (req) => {
     const { data: fixedTransactions, error: fetchError } = await supabase
       .from('transactions')
       .select('*')
-      .eq('is_recurring', true)
-      .eq('recurrence_type', 'monthly')
-      .is('recurrence_end_date', null)
+      .eq('is_fixed', true)
       .neq('type', 'transfer')
 
     if (fetchError) {
@@ -98,7 +96,7 @@ Deno.serve(async (req) => {
           category_id: fixedTx.category_id,
           account_id: fixedTx.account_id,
           status: 'pending',
-          is_recurring: false,
+          is_fixed: false,
           parent_transaction_id: fixedTx.id,
           invoice_month: `${year}-${monthStr}`,
         })

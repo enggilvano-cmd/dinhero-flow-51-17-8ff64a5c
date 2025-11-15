@@ -28,8 +28,7 @@ interface FixedTransaction {
   type: "income" | "expense";
   category_id: string | null;
   account_id: string;
-  is_recurring: boolean;
-  recurrence_type: "monthly";
+  is_fixed: boolean;
 }
 
 interface Account {
@@ -124,8 +123,7 @@ export function EditFixedTransactionModal({
       type: formData.type,
       category_id: formData.category_id || null,
       account_id: formData.account_id,
-      is_recurring: true,
-      recurrence_type: "monthly",
+      is_fixed: true,
     });
   };
 
