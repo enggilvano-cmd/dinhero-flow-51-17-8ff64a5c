@@ -303,7 +303,7 @@ export function Dashboard({
           if (transaction.type === "income") {
             acc[monthKey].income += transaction.amount;
           } else if (transaction.type === "expense") {
-            acc[monthKey].expenses += transaction.amount;
+            acc[monthKey].expenses -= transaction.amount;
           }
         }
 
