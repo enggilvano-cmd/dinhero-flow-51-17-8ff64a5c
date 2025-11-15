@@ -2,14 +2,14 @@
 
 ## Visão Geral
 
-O sistema de transações fixas gera automaticamente transações para os próximos 2 anos quando uma transação fixa é criada. Para manter o sistema atualizado, existe uma Edge Function que deve ser executada todo dia 1º de janeiro para gerar as transações do próximo ano.
+O sistema de transações fixas gera automaticamente transações do mês atual até o final do ano corrente + todos os meses do próximo ano quando uma transação fixa é criada. Para manter o sistema atualizado, existe uma Edge Function que deve ser executada todo dia 31 de dezembro para gerar as transações do próximo ano.
 
 ## Edge Function
 
 A Edge Function `generate-fixed-transactions-yearly` foi criada para:
 1. Buscar todas as transações fixas (parent transactions)
 2. Gerar 12 transações mensais para o próximo ano
-3. Manter o ciclo de 2 anos sempre atualizado
+3. Manter o sistema sempre com transações até o final do próximo ano
 
 ## Como Configurar o Cron Job no Supabase
 
@@ -21,10 +21,10 @@ A Edge Function `generate-fixed-transactions-yearly` foi criada para:
 4. Vá para **SQL Editor** e execute o seguinte comando:
 
 ```sql
--- Criar o cron job para rodar todo dia 1º de janeiro às 00:00 UTC
+-- Criar o cron job para rodar todo dia 31 de dezembro às 23:59 UTC
 SELECT cron.schedule(
   'generate-fixed-transactions-yearly',
-  '0 0 1 1 *',
+  '59 23 31 12 *',
   $$
     SELECT
       net.http_post(
@@ -44,10 +44,10 @@ Se preferir, você pode criar uma migration SQL:
 -- Primeiro, certifique-se de que pg_cron está habilitado
 CREATE EXTENSION IF NOT EXISTS pg_cron;
 
--- Agendar a execução para todo dia 1º de janeiro às 00:00 UTC
+-- Agendar a execução para todo dia 31 de dezembro às 23:59 UTC
 SELECT cron.schedule(
   'generate-fixed-transactions-yearly',
-  '0 0 1 1 *',
+  '59 23 31 12 *',
   $$
     SELECT
       net.http_post(
@@ -98,11 +98,11 @@ SELECT cron.unschedule('generate-fixed-transactions-yearly');
 
 ## Formato do Cron
 
-O formato `0 0 1 1 *` significa:
-- `0` - minuto 0
-- `0` - hora 0 (meia-noite)
-- `1` - dia 1 do mês
-- `1` - mês 1 (janeiro)
+O formato `59 23 31 12 *` significa:
+- `59` - minuto 59
+- `23` - hora 23 (23:59)
+- `31` - dia 31 do mês
+- `12` - mês 12 (dezembro)
 - `*` - qualquer dia da semana
 
-Portanto, a função será executada todo dia 1º de janeiro às 00:00 UTC.
+Portanto, a função será executada todo dia 31 de dezembro às 23:59 UTC, garantindo que as transações do próximo ano sejam geradas antes da virada do ano.

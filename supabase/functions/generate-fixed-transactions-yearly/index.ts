@@ -65,35 +65,42 @@ Deno.serve(async (req) => {
     // Para cada transação fixa, gerar 12 meses do próximo ano
     for (const fixedTx of fixedTransactions as FixedTransaction[]) {
       const startDate = new Date(fixedTx.date)
-      const currentYear = new Date().getFullYear()
+      const dayOfMonth = startDate.getDate()
       
-      // Calcular a data inicial para o próximo ano
-      // Se a transação é no dia 15, começar do dia 15 do primeiro mês do próximo ano
-      const nextYearStart = new Date(currentYear + 1, 0, startDate.getDate())
+      // Ano que será gerado (próximo ano a partir de hoje)
+      const nextYear = new Date().getFullYear() + 1
       
       const futureTransactions = []
       
-      // Gerar 12 meses para o próximo ano
-      for (let i = 0; i < 12; i++) {
-        const futureDate = new Date(nextYearStart)
-        futureDate.setMonth(nextYearStart.getMonth() + i)
+      // Gerar todos os 12 meses do próximo ano
+      for (let month = 0; month < 12; month++) {
+        const futureDate = new Date(nextYear, month, dayOfMonth)
+        
+        // Ajustar para o dia correto do mês
+        const targetMonth = futureDate.getMonth()
+        futureDate.setDate(dayOfMonth)
+        
+        // Se o mês mudou (ex: 31 de janeiro -> 3 de março), ajustar para o último dia do mês anterior
+        if (futureDate.getMonth() !== targetMonth) {
+          futureDate.setDate(0)
+        }
         
         const year = futureDate.getFullYear()
-        const month = String(futureDate.getMonth() + 1).padStart(2, '0')
+        const monthStr = String(futureDate.getMonth() + 1).padStart(2, '0')
         const day = String(futureDate.getDate()).padStart(2, '0')
         
         futureTransactions.push({
           user_id: fixedTx.user_id,
           description: fixedTx.description,
           amount: fixedTx.amount,
-          date: `${year}-${month}-${day}`,
+          date: `${year}-${monthStr}-${day}`,
           type: fixedTx.type,
           category_id: fixedTx.category_id,
           account_id: fixedTx.account_id,
           status: 'completed',
           is_recurring: false,
           parent_transaction_id: fixedTx.id,
-          invoice_month: `${year}-${month}`,
+          invoice_month: `${year}-${monthStr}`,
         })
       }
 

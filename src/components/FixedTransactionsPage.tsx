@@ -140,14 +140,19 @@ export function FixedTransactionsPage() {
 
       if (recurringError) throw recurringError;
 
-      // Gerar transações para os próximos 24 meses (2 anos)
+      // Gerar transações do mês atual até o final do ano corrente + todos os meses do próximo ano
       const transactionsToGenerate = [];
       const baseDate = new Date(transaction.date);
+      const currentYear = baseDate.getFullYear();
+      const currentMonth = baseDate.getMonth(); // 0-11
       const dayOfMonth = baseDate.getDate();
 
-      for (let i = 1; i <= 24; i++) {
-        const nextDate = new Date(baseDate);
-        nextDate.setMonth(nextDate.getMonth() + i);
+      // Calcular meses restantes no ano corrente (incluindo o mês atual)
+      const monthsLeftInCurrentYear = 12 - currentMonth;
+
+      // Gerar transações para os meses restantes do ano corrente
+      for (let i = 0; i < monthsLeftInCurrentYear; i++) {
+        const nextDate = new Date(currentYear, currentMonth + i, dayOfMonth);
         
         // Ajustar para o dia correto do mês
         const targetMonth = nextDate.getMonth();
@@ -155,7 +160,34 @@ export function FixedTransactionsPage() {
         
         // Se o mês mudou (ex: 31 de janeiro -> 3 de março), ajustar para o último dia do mês anterior
         if (nextDate.getMonth() !== targetMonth) {
-          nextDate.setDate(0); // Volta para o último dia do mês anterior
+          nextDate.setDate(0);
+        }
+
+        transactionsToGenerate.push({
+          description: transaction.description,
+          amount: transaction.amount,
+          date: nextDate.toISOString().split('T')[0],
+          type: transaction.type,
+          category_id: transaction.category_id,
+          account_id: transaction.account_id,
+          status: "completed" as const,
+          user_id: user.id,
+          parent_transaction_id: recurringTransaction.id,
+        });
+      }
+
+      // Gerar transações para todos os 12 meses do próximo ano
+      const nextYear = currentYear + 1;
+      for (let month = 0; month < 12; month++) {
+        const nextDate = new Date(nextYear, month, dayOfMonth);
+        
+        // Ajustar para o dia correto do mês
+        const targetMonth = nextDate.getMonth();
+        nextDate.setDate(dayOfMonth);
+        
+        // Se o mês mudou (ex: 31 de janeiro -> 3 de março), ajustar para o último dia do mês anterior
+        if (nextDate.getMonth() !== targetMonth) {
+          nextDate.setDate(0);
         }
 
         transactionsToGenerate.push({
@@ -184,9 +216,11 @@ export function FixedTransactionsPage() {
           variant: "destructive",
         });
       } else {
+        const baseDate = new Date(transaction.date);
+        const nextYear = baseDate.getFullYear() + 1;
         toast({
           title: "Transação fixa adicionada",
-          description: `${transactionsToGenerate.length} transações foram geradas para os próximos 2 anos`,
+          description: `${transactionsToGenerate.length} transações foram geradas (até o final de ${nextYear})`,
         });
       }
 
