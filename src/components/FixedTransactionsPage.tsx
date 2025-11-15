@@ -29,8 +29,7 @@ interface FixedTransaction {
   type: "income" | "expense";
   category_id: string | null;
   account_id: string;
-  is_recurring: boolean;
-  recurrence_type: "monthly";
+  is_fixed: boolean;
   category?: { name: string; color: string } | null;
   account?: { name: string } | null;
 }
@@ -76,15 +75,12 @@ export function FixedTransactionsPage() {
           type,
           category_id,
           account_id,
-          is_recurring,
-          recurrence_type,
+          is_fixed,
           category:categories(name, color),
           account:accounts!transactions_account_id_fkey(name)
         `)
         .eq("user_id", user.id)
-        .eq("is_recurring", true)
-        .eq("recurrence_type", "monthly")
-        .is("recurrence_end_date", null)
+        .eq("is_fixed", true)
         .neq("type", "transfer")
         .order("date", { ascending: false });
 
@@ -152,21 +148,19 @@ export function FixedTransactionsPage() {
         const transactionDate = nextDate.toISOString().split('T')[0];
         const today = new Date().toISOString().split('T')[0];
         
-        // A primeira transação é a principal com is_recurring = true
-        if (i === 0) {
-          transactionsToGenerate.push({
-            description: transaction.description,
-            amount: transaction.amount,
-            date: transactionDate,
-            type: transaction.type,
-            category_id: transaction.category_id,
-            account_id: transaction.account_id,
-            status: transactionDate <= today ? "completed" as const : "pending" as const,
-            user_id: user.id,
-            is_recurring: true,
-            recurrence_type: "monthly" as const,
-            recurrence_end_date: null,
-          });
+          // A primeira transação é a principal com is_fixed = true
+          if (i === 0) {
+            transactionsToGenerate.push({
+              description: transaction.description,
+              amount: transaction.amount,
+              date: transactionDate,
+              type: transaction.type,
+              category_id: transaction.category_id,
+              account_id: transaction.account_id,
+              status: transactionDate <= today ? "completed" as const : "pending" as const,
+              user_id: user.id,
+              is_fixed: true,
+            });
         } else {
           transactionsToGenerate.push({
             description: transaction.description,
@@ -470,13 +464,13 @@ export function FixedTransactionsPage() {
             • <strong>Geração Automática:</strong> As transações fixas são geradas automaticamente todo dia 1º do mês.
           </p>
           <p>
-            • <strong>Sem Data de Término:</strong> Diferente das transações recorrentes, as fixas não têm data de término e continuam sendo geradas indefinidamente.
+            • <strong>Sem Data de Término:</strong> As transações fixas não têm data de término e continuam sendo geradas indefinidamente.
           </p>
           <p>
             • <strong>Edição:</strong> Ao editar uma transação fixa, você altera apenas o modelo. As transações já geradas não são modificadas.
           </p>
           <p>
-            • <strong>Exclusão:</strong> Ao excluir uma transação fixa, você remove apenas o modelo. As transações já geradas permanecem no sistema.
+            • <strong>Exclusão:</strong> Ao excluir uma transação fixa, o modelo e todas as transações pendentes são removidos. As transações já concluídas permanecem.
           </p>
         </CardContent>
       </Card>

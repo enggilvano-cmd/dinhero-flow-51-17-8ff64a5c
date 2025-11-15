@@ -414,7 +414,7 @@ export function AddTransactionModal({
           const transactionDate = nextDate.toISOString().split('T')[0];
           const today = new Date().toISOString().split('T')[0];
 
-          // A primeira transação é a principal com is_recurring = true
+          // A primeira transação é a principal com is_fixed = true
           if (i === 0) {
             transactionsToGenerate.push({
               description: description,
@@ -425,9 +425,7 @@ export function AddTransactionModal({
               account_id: account_id,
               status: (transactionDate <= today ? "completed" : "pending") as "completed" | "pending",
               user_id: user.id,
-              is_recurring: true,
-              recurrence_type: "monthly" as const,
-              recurrence_end_date: null,
+              is_fixed: true,
             });
           } else {
             transactionsToGenerate.push({
