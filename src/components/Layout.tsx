@@ -262,21 +262,21 @@ function AppSidebar({ currentPage, onPageChange }: { currentPage: string; onPage
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel>{t('auth.email')}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => onPageChange('profile')}>
+                <DropdownMenuItem onClick={() => handlePageChange('profile')}>
                   <User className="mr-2 h-4 w-4" />
                   {t('menu.profile')}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onPageChange('settings')}>
+                <DropdownMenuItem onClick={() => handlePageChange('settings')}>
                   <Settings className="mr-2 h-4 w-4" />
                   {t('menu.settings')}
                 </DropdownMenuItem>
                 {isAdmin() && (
                   <>
-                    <DropdownMenuItem onClick={() => onPageChange('users')}>
+                    <DropdownMenuItem onClick={() => handlePageChange('users')}>
                       <Users className="mr-2 h-4 w-4" />
                       Usuários
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => onPageChange('system-settings')}>
+                    <DropdownMenuItem onClick={() => handlePageChange('system-settings')}>
                       <Settings className="mr-2 h-4 w-4" />
                       {t('menu.systemSettings')}
                     </DropdownMenuItem>
