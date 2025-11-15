@@ -32,7 +32,6 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
   const [formData, setFormData] = useState({
     name: "",
     type: "" as "checking" | "savings" | "credit" | "investment" | "",
-    balanceInCents: 0,
     limitInCents: 0,
     dueDate: "",
     closingDate: "",
@@ -88,11 +87,8 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
     }
     // --- Fim da Correção ---
 
-    // Se for cartão de crédito, sempre armazene o saldo como negativo (dívida).
-    const balanceInCents =
-      formData.type === "credit"
-        ? -Math.abs(formData.balanceInCents)
-        : formData.balanceInCents;
+    // Saldo inicial sempre começa em 0
+    const balanceInCents = 0;
 
     const limitInCents =
       formData.limitInCents > 0 ? formData.limitInCents : undefined;
@@ -145,7 +141,6 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
       setFormData({
         name: "",
         type: "" as "checking" | "savings" | "credit" | "investment" | "",
-        balanceInCents: 0,
         limitInCents: 0,
         dueDate: "",
         closingDate: "",
@@ -223,31 +218,6 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
                 </SelectItem>
               </SelectContent>
             </Select>
-          </div>
-
-          {/* Saldo/Valor */}
-          <div className="space-y-2">
-            <Label htmlFor="balance" className="text-sm font-medium">
-              {formData.type === "credit"
-                ? t("modals.addAccount.fields.balance.debtLabel")
-                : formData.type === "investment"
-                ? t("modals.addAccount.fields.balance.investmentLabel")
-                : t("modals.addAccount.fields.balance.label")}
-            </Label>
-            <CurrencyInput
-              value={formData.balanceInCents}
-              onValueChange={(value) =>
-                setFormData((prev) => ({ ...prev, balanceInCents: value }))
-              }
-              allowNegative={formData.type !== "credit"}
-            />
-            <p className="text-xs sm:text-sm text-muted-foreground">
-              {formData.type === "credit"
-                ? t("modals.addAccount.fields.balance.debtHelp")
-                : formData.type === "investment"
-                ? t("modals.addAccount.fields.balance.investmentHelp")
-                : t("modals.addAccount.fields.balance.help")}
-            </p>
           </div>
 
           {/* Limite da Conta */}
