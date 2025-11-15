@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Dialog,
@@ -50,14 +50,13 @@ export function MarkAsPaidModal({
   const [accountId, setAccountId] = useState<string>("");
 
   // Quando o modal abre, pré-preenche os valores
-  const handleOpenChange = (newOpen: boolean) => {
-    if (newOpen && transaction) {
+  useEffect(() => {
+    if (open && transaction) {
       setDate(new Date());
       setAmount((transaction.amount / 100).toFixed(2));
       setAccountId(transaction.account_id);
     }
-    onOpenChange(newOpen);
-  };
+  }, [open, transaction]);
 
   const handleConfirm = () => {
     if (!transaction || !accountId) return;
@@ -76,7 +75,7 @@ export function MarkAsPaidModal({
   if (!transaction) return null;
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>{t("transactions.markAsPaid")}</DialogTitle>
