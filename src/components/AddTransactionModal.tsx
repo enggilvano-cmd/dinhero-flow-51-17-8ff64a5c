@@ -425,7 +425,7 @@ export function AddTransactionModal({
               type: type as "income" | "expense",
               category_id: category_id,
               account_id: account_id,
-              status: (transactionDate <= today ? "completed" : "pending") as "completed" | "pending",
+              status: formData.status as "pending" | "completed",
               user_id: user.id,
               is_fixed: true,
             });
