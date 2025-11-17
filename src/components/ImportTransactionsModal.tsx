@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -79,6 +79,16 @@ export function ImportTransactionsModal({
   const [excludedIndexes, setExcludedIndexes] = useState<Set<number>>(new Set());
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
+  const previewSectionRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll para preview após processar
+  useEffect(() => {
+    if (importedData.length > 0 && previewSectionRef.current) {
+      setTimeout(() => {
+        previewSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
+  }, [importedData.length]);
 
   // Suporte a cabeçalhos exportados em diferentes idiomas
   const HEADERS = {
@@ -701,6 +711,23 @@ export function ImportTransactionsModal({
                 </CardContent>
               </Card>
             </div>
+          )}
+
+          {/* Banner de Ação para Duplicadas */}
+          {importedData.length > 0 && summary.duplicates > 0 && (
+            <Alert className="border-amber-500 bg-amber-50 dark:bg-amber-950/30" ref={previewSectionRef}>
+              <AlertCircle className="h-5 w-5 text-amber-600" />
+              <AlertDescription className="text-amber-900 dark:text-amber-200">
+                <div className="space-y-2">
+                  <p className="font-semibold text-base">
+                    {t('modals.import.duplicatesFound')}: {summary.duplicates} {t('modals.import.typeTransactions').toLowerCase()}
+                  </p>
+                  <p className="text-sm">
+                    Para cada item duplicado, escolha uma ação clicando no menu ao lado: <strong>Pular</strong> (ignorar), <strong>Adicionar</strong> (criar novo) ou <strong>Substituir</strong> (sobrescrever existente).
+                  </p>
+                </div>
+              </AlertDescription>
+            </Alert>
           )}
 
           {/* Preview Table */}
