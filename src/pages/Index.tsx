@@ -1221,8 +1221,8 @@ const PlaniFlowApp = () => {
           transactionsToDelete_ids.push(linkedExpense.id);
           
           const debitAccountId = linkedExpense.account_id;
-          // Adiciona o valor de volta (ex: balance += -(-500))
-          const debitAccBalanceChange = -linkedExpense.amount; 
+          // Adiciona o valor de volta à conta (linkedExpense.amount é positivo)
+          const debitAccBalanceChange = linkedExpense.amount;
           
           accountsToUpdate.set(
             debitAccountId,
