@@ -253,7 +253,7 @@ export function ImportCategoriesModal({
       .map(c => ({
         name: c.nome.trim(),
         type: c.parsedType as 'income' | 'expense' | 'both',
-        color: c.cor.trim().toUpperCase(), // Normaliza cor para maiúsculas
+        color: c.cor.trim().toUpperCase(),
       }));
 
     const categoriesToReplaceIds = importedData
@@ -265,6 +265,15 @@ export function ImportCategoriesModal({
         c.existingCategoryId
       )
       .map(c => c.existingCategoryId!);
+
+    if (categoriesToAdd.length === 0 && categoriesToReplaceIds.length === 0) {
+      toast({
+        title: t('common.error'),
+        description: t('modals.import.noItemsToImport'),
+        variant: "destructive",
+      });
+      return;
+    }
 
     onImportCategories(categoriesToAdd, categoriesToReplaceIds);
     

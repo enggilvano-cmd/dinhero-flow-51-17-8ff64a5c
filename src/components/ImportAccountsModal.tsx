@@ -285,7 +285,8 @@ export function ImportAccountsModal({
       .map(a => {
         // Converter valores para centavos
         const balanceInCents = Math.round(a.saldo * 100);
-        const limitInCents = a.limite > 0 ? Math.round(a.limite * 100) : null;
+        // Corrigido: aceitar limite 0 como valor válido, não converter para null
+        const limitInCents = (a.limite !== undefined && a.limite !== null) ? Math.round(a.limite * 100) : null;
 
         return {
           name: a.nome.trim(),
@@ -307,6 +308,15 @@ export function ImportAccountsModal({
         a.existingAccountId
       )
       .map(a => a.existingAccountId!);
+
+    if (accountsToAdd.length === 0 && accountsToReplaceIds.length === 0) {
+      toast({
+        title: t('common.error'),
+        description: t('modals.import.noItemsToImport'),
+        variant: "destructive",
+      });
+      return;
+    }
 
     onImportAccounts(accountsToAdd, accountsToReplaceIds);
     
