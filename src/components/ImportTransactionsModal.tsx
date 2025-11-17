@@ -416,6 +416,15 @@ export function ImportTransactionsModal({
       )
       .map(t => t.existingTransactionId!);
 
+    if (transactionsToAdd.length === 0 && transactionsToReplaceIds.length === 0) {
+      toast({
+        title: t('common.error'),
+        description: t('modals.import.noItemsToImport'),
+        variant: "destructive",
+      });
+      return;
+    }
+
     onImportTransactions(transactionsToAdd, transactionsToReplaceIds);
     
     toast({
