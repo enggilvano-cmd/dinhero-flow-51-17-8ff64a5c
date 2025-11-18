@@ -294,7 +294,6 @@ export function AddTransactionModal({
         }
 
         const baseDate = createDateFromString(date);
-        const todayStr = getTodayString();
         const transactionsToCreate = [];
 
         // Para todos os tipos de conta, criaremos N transações.
@@ -313,11 +312,9 @@ export function AddTransactionModal({
                 ? baseInstallmentCents + remainderCents
                 : baseInstallmentCents;
             const installmentDate = addMonthsToDate(baseDate, i);
-            const installmentDateStr = installmentDate.toISOString().split("T")[0];
 
-            // No cartão, a primeira parcela afeta o saldo se a data for hoje ou no passado.
-            // As demais são sempre pendentes para aparecerem nas faturas futuras.
-            const installmentStatus: "completed" | "pending" = (i === 0 && installmentDateStr <= todayStr) ? "completed" : "pending";
+            // Todas as parcelas são criadas com status concluída
+            const installmentStatus: "completed" | "pending" = "completed";
 
             // CORREÇÃO: Calcular o invoice_month para cada parcela baseado na sua data e regras de fechamento/vencimento
             const invoiceMonth = (selectedAccount.closing_date && selectedAccount.due_date)
@@ -352,11 +349,9 @@ export function AddTransactionModal({
                 ? baseInstallmentCents + remainderCents
                 : baseInstallmentCents;
             const installmentDate = addMonthsToDate(baseDate, i);
-            const installmentDateStr = installmentDate.toISOString().split("T")[0];
 
-            // Para contas comuns, seguimos a mesma regra de status
-            const installmentStatus: "completed" | "pending" =
-              i === 0 && installmentDateStr <= todayStr ? status : "pending";
+            // Todas as parcelas são criadas com status concluída
+            const installmentStatus: "completed" | "pending" = "completed";
 
             const transaction = {
               description: `${description} (${i + 1}/${installments})`,
