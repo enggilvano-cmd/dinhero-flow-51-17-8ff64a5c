@@ -1,5 +1,6 @@
 // Supabase utilities for data persistence
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
 
 export interface Account {
   id: string;
@@ -79,7 +80,7 @@ export async function getAccounts(): Promise<Account[]> {
       userId: account.user_id
     }));
   } catch (error) {
-    console.error('Error loading accounts:', error);
+    logger.error('Error loading accounts:', error);
     return [];
   }
 }
@@ -119,7 +120,7 @@ export async function saveAccount(account: Omit<Account, 'id' | 'createdAt' | 'u
       userId: data.user_id
     };
   } catch (error) {
-    console.error('Error saving account:', error);
+    logger.error('Error saving account:', error);
     return null;
   }
 }
@@ -147,7 +148,7 @@ export async function updateAccount(id: string, updates: Partial<Omit<Account, '
     if (error) throw error;
     return true;
   } catch (error) {
-    console.error('Error updating account:', error);
+    logger.error('Error updating account:', error);
     return false;
   }
 }
@@ -166,7 +167,7 @@ export async function deleteAccount(id: string): Promise<boolean> {
     if (error) throw error;
     return true;
   } catch (error) {
-    console.error('Error deleting account:', error);
+    logger.error('Error deleting account:', error);
     return false;
   }
 }
@@ -208,7 +209,7 @@ export async function getTransactions(): Promise<Transaction[]> {
       userId: transaction.user_id
     }));
   } catch (error) {
-    console.error('Error loading transactions:', error);
+    logger.error('Error loading transactions:', error);
     return [];
   }
 }
@@ -262,7 +263,7 @@ export async function saveTransaction(transaction: Omit<Transaction, 'id' | 'cre
       userId: data.user_id
     };
   } catch (error) {
-    console.error('Error saving transaction:', error);
+    logger.error('Error saving transaction:', error);
     return null;
   }
 }
@@ -297,7 +298,7 @@ export async function updateTransaction(id: string, updates: Partial<Omit<Transa
     if (error) throw error;
     return true;
   } catch (error) {
-    console.error('Error updating transaction:', error);
+    logger.error('Error updating transaction:', error);
     return false;
   }
 }
@@ -316,7 +317,7 @@ export async function deleteTransaction(id: string): Promise<boolean> {
     if (error) throw error;
     return true;
   } catch (error) {
-    console.error('Error deleting transaction:', error);
+    logger.error('Error deleting transaction:', error);
     return false;
   }
 }
@@ -367,7 +368,7 @@ export async function getCategories(): Promise<Category[]> {
       userId: category.user_id
     }));
   } catch (error) {
-    console.error('Error loading categories:', error);
+    logger.error('Error loading categories:', error);
     return [];
   }
 }
@@ -399,7 +400,7 @@ export async function saveCategory(category: Omit<Category, 'id' | 'createdAt' |
       userId: data.user_id
     };
   } catch (error) {
-    console.error('Error saving category:', error);
+    logger.error('Error saving category:', error);
     return null;
   }
 }
@@ -423,7 +424,7 @@ export async function updateCategory(id: string, updates: Partial<Omit<Category,
     if (error) throw error;
     return true;
   } catch (error) {
-    console.error('Error updating category:', error);
+    logger.error('Error updating category:', error);
     return false;
   }
 }
@@ -442,7 +443,7 @@ export async function deleteCategory(id: string): Promise<boolean> {
     if (error) throw error;
     return true;
   } catch (error) {
-    console.error('Error deleting category:', error);
+    logger.error('Error deleting category:', error);
     return false;
   }
 }
@@ -499,7 +500,7 @@ export async function getSettings(): Promise<AppSettings> {
       userId: data.user_id
     };
   } catch (error) {
-    console.error('Error loading settings:', error);
+    logger.error('Error loading settings:', error);
     return {
       currency: 'BRL',
       theme: 'system',
@@ -533,7 +534,7 @@ export async function updateSettings(settings: Omit<AppSettings, 'userId'>): Pro
     if (error) throw error;
     return true;
   } catch (error) {
-    console.error('Error saving settings:', error);
+    logger.error('Error saving settings:', error);
     return false;
   }
 }
@@ -561,7 +562,7 @@ export async function exportData() {
       exportDate: new Date().toISOString()
     };
   } catch (error) {
-    console.error('Error exporting data:', error);
+    logger.error('Error exporting data:', error);
     throw error;
   }
 }
@@ -632,7 +633,7 @@ export async function importData(data: any): Promise<{ success: boolean; message
 
     return { success: true, message: 'Dados importados com sucesso!' };
   } catch (error) {
-    console.error('Error importing data:', error);
+    logger.error('Error importing data:', error);
     return { success: false, message: 'Erro ao importar dados: ' + error };
   }
 }

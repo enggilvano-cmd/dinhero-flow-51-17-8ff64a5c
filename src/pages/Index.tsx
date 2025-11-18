@@ -30,6 +30,7 @@ import { createDateFromString } from "@/lib/dateUtils";
 import { useAccountStore } from "@/stores/AccountStore";
 import { useTransactionStore, AppTransaction } from "@/stores/TransactionStore"; // Importa AppTransaction
 import { Account, Transaction } from "@/types";
+import { logger } from "@/lib/logger";
 
 const PlaniFlowApp = () => {
   const { settings, updateSettings } = useSettings();
@@ -155,7 +156,7 @@ const PlaniFlowApp = () => {
         );
         setGlobalTransactions(formattedTransactions as Transaction[]);
       } catch (error) {
-        console.error("Error loading data:", error);
+        logger.error("Error loading data:", error);
       } finally {
         setLoadingData(false);
       }
@@ -168,7 +169,7 @@ const PlaniFlowApp = () => {
   const reloadTransactions = async () => {
     if (!user) return;
     try {
-      console.log('🔄 Recarregando transações...');
+      logger.info('🔄 Recarregando transações...');
       const { data: transactionsData, error: transactionsError } =
         await supabase
           .from("transactions")
@@ -184,9 +185,9 @@ const PlaniFlowApp = () => {
         })
       );
       setGlobalTransactions(formattedTransactions as Transaction[]);
-      console.log('✅ Transações recarregadas:', formattedTransactions.length);
+      logger.info('✅ Transações recarregadas:', formattedTransactions.length);
     } catch (error) {
-      console.error("Error reloading transactions:", error);
+      logger.error("Error reloading transactions:", error);
     }
   };
 
@@ -194,7 +195,7 @@ const PlaniFlowApp = () => {
   const reloadAccounts = async () => {
     if (!user) return;
     try {
-      console.log('🔄 Recarregando contas...');
+      logger.info('🔄 Recarregando contas...');
       const { data: accountsData, error: accountsError } = await supabase
         .from("accounts")
         .select("*")
@@ -207,9 +208,9 @@ const PlaniFlowApp = () => {
         limit: acc.limit_amount,
       }));
       setGlobalAccounts(formattedAccounts as Account[]);
-      console.log('✅ Contas recarregadas:', formattedAccounts.length);
+      logger.info('✅ Contas recarregadas:', formattedAccounts.length);
     } catch (error) {
-      console.error("Error reloading accounts:", error);
+      logger.error("Error reloading accounts:", error);
     }
   };
 
@@ -225,7 +226,7 @@ const PlaniFlowApp = () => {
       updateGlobalAccounts(updatedAccount);
       setEditingAccount(null);
     } catch (error) {
-      console.error("Error updating account:", error);
+      logger.error("Error updating account:", error);
     }
   };
 
@@ -246,7 +247,7 @@ const PlaniFlowApp = () => {
         description: "Conta excluída com sucesso",
       });
     } catch (error) {
-      console.error("Error deleting account:", error);
+      logger.error("Error deleting account:", error);
       toast({
         title: "Erro",
         description: "Erro ao excluir conta",

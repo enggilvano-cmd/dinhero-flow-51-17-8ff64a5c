@@ -1,12 +1,13 @@
 import { addMonths, format } from "date-fns";
 import { Account } from "@/types";
 import { AppTransaction } from "@/stores/TransactionStore"; // Importar AppTransaction
+import { logger } from "@/lib/logger";
 
 /**
  * Helper para criar uma data de fallback (1970) quando o parse falha.
  */
 function createFallbackDate(invalidInput?: any): Date {
-  console.warn(
+  logger.warn(
     "createDateFromString não conseguiu parsear:",
     invalidInput,
     ". Usando data de fallback (1970)."
@@ -261,7 +262,7 @@ export function calculateBillDetails(
     const tDate = t.date; // t.date agora é um Objeto Date
     
     if (!tDate || isNaN(tDate.getTime())) {
-      console.warn('Transação com data inválida:', t.id, t.description);
+      logger.warn('Transação com data inválida:', t.id, t.description);
       continue; // Pula datas inválidas
     }
 
