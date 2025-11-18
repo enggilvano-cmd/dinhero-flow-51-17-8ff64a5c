@@ -44,6 +44,7 @@ const getMenuItems = (t: any) => [
   { id: "reports", label: t('menu.reports'), icon: FileText },
   { id: "accounting-reports", label: "Relatórios Contábeis", icon: BookOpen },
   { id: "ledger", label: "Livro Razão", icon: BookText },
+  { id: "period-closure", label: "Fechamento de Período", icon: Calendar },
   { id: "analytics", label: t('menu.analytics'), icon: BarChart3 },
 ];
 

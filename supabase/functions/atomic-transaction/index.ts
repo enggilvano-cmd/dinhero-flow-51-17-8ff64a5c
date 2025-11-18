@@ -108,6 +108,24 @@ Deno.serve(async (req) => {
     }
 
     // INICIAR TRANSAÇÃO ATÔMICA
+    // Verificar se o período está fechado
+    const { data: isLocked } = await supabaseClient
+      .rpc('is_period_locked', { 
+        p_user_id: user.id, 
+        p_date: transaction.date 
+      });
+
+    if (isLocked) {
+      console.error('[atomic-transaction] ERROR: Period is locked:', transaction.date);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Period is locked',
+          message: 'Cannot create transactions in a locked period. Please unlock the period first.' 
+        }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Buscar dados da conta
     const { data: accountData, error: accountError } = await supabaseClient
       .from('accounts')

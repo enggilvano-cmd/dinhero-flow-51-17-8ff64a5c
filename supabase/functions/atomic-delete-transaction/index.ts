@@ -57,6 +57,24 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Verificar se o período está fechado
+    const { data: isLocked } = await supabaseClient
+      .rpc('is_period_locked', { 
+        p_user_id: user.id, 
+        p_date: targetTx.date 
+      });
+
+    if (isLocked) {
+      console.error('[atomic-delete] ERROR: Period is locked:', targetTx.date);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Period is locked',
+          message: 'Cannot delete transactions in a locked period. Please unlock the period first.' 
+        }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const affectedAccounts = new Set<string>([targetTx.account_id]);
     let transactionsToDelete = [transaction_id];
 

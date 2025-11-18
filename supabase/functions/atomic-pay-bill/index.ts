@@ -85,6 +85,24 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Verificar se o período está fechado
+    const { data: isLocked } = await supabaseClient
+      .rpc('is_period_locked', { 
+        p_user_id: user.id, 
+        p_date: payment_date 
+      });
+
+    if (isLocked) {
+      console.error('[atomic-pay-bill] ERROR: Period is locked:', payment_date);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Period is locked',
+          message: 'Cannot create payments in a locked period. Please unlock the period first.' 
+        }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Buscar contas
     const { data: accounts, error: accError } = await supabaseClient
       .from('accounts')

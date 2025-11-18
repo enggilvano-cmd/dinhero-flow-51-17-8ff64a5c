@@ -102,6 +102,24 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Verificar se o período está fechado
+    const { data: isLocked } = await supabaseClient
+      .rpc('is_period_locked', { 
+        p_user_id: user.id, 
+        p_date: transfer.date 
+      });
+
+    if (isLocked) {
+      console.error('[atomic-transfer] ERROR: Period is locked:', transfer.date);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Period is locked',
+          message: 'Cannot create transfers in a locked period. Please unlock the period first.' 
+        }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Buscar contas
     const { data: accounts, error: accountsError } = await supabaseClient
       .from('accounts')
