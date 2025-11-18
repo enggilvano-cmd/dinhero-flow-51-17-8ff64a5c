@@ -43,7 +43,7 @@ Deno.serve(async (req) => {
 
     const { transfer }: { transfer: TransferInput } = await req.json();
 
-    console.log('[atomic-transfer] Processing transfer for user:', user.id);
+    console.log('[atomic-transfer] INFO: Processing transfer for user:', user.id);
 
     // Validações
     if (!transfer.from_account_id || !transfer.to_account_id || !transfer.amount) {
@@ -127,7 +127,7 @@ Deno.serve(async (req) => {
       .single();
 
     if (outError) {
-      console.error('[atomic-transfer] Outgoing transaction error:', outError);
+      console.error('[atomic-transfer] ERROR: Outgoing transaction failed:', outError);
       throw outError;
     }
 
@@ -149,7 +149,7 @@ Deno.serve(async (req) => {
       .single();
 
     if (inError) {
-      console.error('[atomic-transfer] Incoming transaction error:', inError);
+      console.error('[atomic-transfer] ERROR: Incoming transaction failed:', inError);
       // Reverter transação de saída
       await supabaseClient.from('transactions').delete().eq('id', outgoingTx.id);
       throw inError;
@@ -166,7 +166,7 @@ Deno.serve(async (req) => {
       .rpc('recalculate_account_balance', { p_account_id: transfer.from_account_id });
 
     if (fromBalError) {
-      console.error('[atomic-transfer] From balance error:', fromBalError);
+      console.error('[atomic-transfer] ERROR: From balance recalc failed:', fromBalError);
       // Reverter ambas transações
       await supabaseClient.from('transactions').delete().in('id', [outgoingTx.id, incomingTx.id]);
       throw fromBalError;
@@ -176,14 +176,14 @@ Deno.serve(async (req) => {
       .rpc('recalculate_account_balance', { p_account_id: transfer.to_account_id });
 
     if (toBalError) {
-      console.error('[atomic-transfer] To balance error:', toBalError);
+      console.error('[atomic-transfer] ERROR: To balance recalc failed:', toBalError);
       // Reverter tudo
       await supabaseClient.from('transactions').delete().in('id', [outgoingTx.id, incomingTx.id]);
       await supabaseClient.rpc('recalculate_account_balance', { p_account_id: transfer.from_account_id });
       throw toBalError;
     }
 
-    console.log('[atomic-transfer] Transfer completed successfully');
+    console.log('[atomic-transfer] INFO: Transfer completed successfully');
 
     return new Response(
       JSON.stringify({
@@ -197,7 +197,7 @@ Deno.serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('[atomic-transfer] Error:', error);
+    console.error('[atomic-transfer] ERROR:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

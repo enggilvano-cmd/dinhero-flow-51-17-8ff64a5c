@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from './useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
 import type { Notification, NotificationSettings } from '@/lib/notifications';
 import {
   getDueDateReminders,
@@ -82,7 +83,7 @@ export function useNotifications() {
         });
       }
     } catch (error) {
-      console.error('Error checking notifications:', error);
+      logger.error('Error checking notifications:', error);
     }
   }, [user, settings]);
 

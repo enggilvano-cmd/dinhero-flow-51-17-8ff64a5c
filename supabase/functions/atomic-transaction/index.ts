@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
     } = await supabaseClient.auth.getUser();
 
     if (userError || !user) {
-      console.error('[atomic-transaction] Auth error:', userError);
+      console.error('[atomic-transaction] ERROR: Auth failed:', userError);
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -49,7 +49,7 @@ Deno.serve(async (req) => {
 
     const { transaction }: { transaction: TransactionInput } = await req.json();
 
-    console.log('[atomic-transaction] Creating transaction for user:', user.id);
+    console.log('[atomic-transaction] INFO: Creating transaction for user:', user.id);
 
     // Validações
     if (!transaction.description || !transaction.amount || !transaction.account_id || !transaction.category_id) {
@@ -68,7 +68,7 @@ Deno.serve(async (req) => {
       .single();
 
     if (accountError) {
-      console.error('[atomic-transaction] Account fetch error:', accountError);
+      console.error('[atomic-transaction] ERROR: Account fetch failed:', accountError);
       throw accountError;
     }
 
@@ -99,7 +99,7 @@ Deno.serve(async (req) => {
       .single();
 
     if (insertError) {
-      console.error('[atomic-transaction] Insert error:', insertError);
+      console.error('[atomic-transaction] ERROR: Insert failed:', insertError);
       throw insertError;
     }
 
@@ -111,7 +111,7 @@ Deno.serve(async (req) => {
         });
 
       if (recalcError) {
-        console.error('[atomic-transaction] Balance recalc error:', recalcError);
+        console.error('[atomic-transaction] ERROR: Balance recalc failed:', recalcError);
         // Tentar reverter a transação
         await supabaseClient
           .from('transactions')
@@ -120,7 +120,7 @@ Deno.serve(async (req) => {
         throw recalcError;
       }
 
-      console.log('[atomic-transaction] Balance recalculated:', recalcResult[0]);
+      console.log('[atomic-transaction] INFO: Balance recalculated:', recalcResult[0]);
 
       return new Response(
         JSON.stringify({
@@ -142,7 +142,7 @@ Deno.serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('[atomic-transaction] Error:', error);
+    console.error('[atomic-transaction] ERROR:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

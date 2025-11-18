@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
 
     const { transaction_id, updates, scope }: EditInput = await req.json();
 
-    console.log('[atomic-edit] Editing transaction:', transaction_id, 'scope:', scope);
+    console.log('[atomic-edit] INFO: Editing transaction:', transaction_id, 'scope:', scope);
 
     // Buscar transação original
     const { data: oldTransaction, error: fetchError } = await supabaseClient
@@ -114,7 +114,7 @@ Deno.serve(async (req) => {
         .eq('user_id', user.id);
 
       if (updateError) {
-        console.error('[atomic-edit] Update error:', updateError);
+        console.error('[atomic-edit] ERROR:', updateError);
         throw updateError;
       }
 
@@ -125,7 +125,7 @@ Deno.serve(async (req) => {
           .rpc('recalculate_account_balance', { p_account_id: accountId });
 
         if (balError) {
-          console.error('[atomic-edit] Balance error:', balError);
+          console.error('[atomic-edit] ERROR: Balance recalc failed:', balError);
           throw balError;
         }
         balanceResults.push({ accountId, ...balData[0] });
@@ -169,11 +169,11 @@ Deno.serve(async (req) => {
     const { data: targetTransactions, error: targetsError } = await query;
 
     if (targetsError || !targetTransactions || targetTransactions.length === 0) {
-      console.error('[atomic-edit] Error fetching targets:', targetsError);
+      console.error('[atomic-edit] ERROR: Failed to fetch target transactions:', targetsError);
       throw targetsError || new Error('No transactions found');
     }
 
-    console.log('[atomic-edit] Updating', targetTransactions.length, 'transactions');
+    console.log('[atomic-edit] INFO: Updating', targetTransactions.length, 'transactions');
 
     // Atualizar todas as transações alvo
     const updatePromises = targetTransactions.map(tx =>
@@ -192,8 +192,8 @@ Deno.serve(async (req) => {
       const { data: balData, error: balError } = await supabaseClient
         .rpc('recalculate_account_balance', { p_account_id: accountId });
 
-      if (balError) {
-        console.error('[atomic-edit] Balance error:', balError);
+        if (balError) {
+          console.error('[atomic-edit] ERROR: Balance recalc failed:', balError);
         throw balError;
       }
       balanceResults.push({ accountId, ...balData[0] });
@@ -209,7 +209,7 @@ Deno.serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('[atomic-edit] Error:', error);
+    console.error('[atomic-edit] ERROR:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

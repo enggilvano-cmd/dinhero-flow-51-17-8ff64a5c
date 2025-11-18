@@ -2,6 +2,7 @@ import { useState, useEffect, createContext, useContext, ReactNode } from 'react
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/lib/logger';
 
 interface Profile {
   id: string;
@@ -45,7 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchProfile = async (userId: string) => {
     try {
-      console.log('Fetching profile for user:', userId);
+      logger.debug('Fetching profile for user:', userId);
       
       const { data, error } = await supabase
         .from('profiles')
@@ -54,7 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .maybeSingle();
 
       if (error) {
-        console.error('Error fetching profile:', error);
+        logger.error('Error fetching profile:', error);
         toast({
           title: "Erro",
           description: "Não foi possível carregar o perfil do usuário.",
@@ -63,7 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
       
-      console.log('Profile fetched:', data);
+      logger.debug('Profile fetched:', data);
       setProfile(data ? {
         ...data,
         full_name: data.full_name ?? undefined,
@@ -73,7 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         subscription_expires_at: data.subscription_expires_at ?? undefined,
       } : null);
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      logger.error('Error fetching profile:', error);
       toast({
         title: "Erro",
         description: "Erro inesperado ao carregar perfil.",
@@ -93,10 +94,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
         
         if (result.error) {
-          console.error('Error logging activity:', result.error);
+          logger.error('Error logging activity:', result.error);
         }
       } catch (error) {
-        console.error('Error logging activity:', error);
+        logger.error('Error logging activity:', error);
       }
     }
   };
@@ -105,7 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!user) return;
     
     try {
-      console.log('Initializing user data for:', user.id);
+      logger.debug('Initializing user data for:', user.id);
       
       // Initialize default categories if none exist
       const { data: categories } = await supabase
@@ -115,7 +116,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .limit(1);
 
       if (!categories || categories.length === 0) {
-        console.log('Initializing default categories');
+        logger.debug('Initializing default categories');
         await supabase.rpc('initialize_default_categories', { p_user_id: user.id });
       }
 
@@ -131,9 +132,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           language: 'pt-BR'
         }, { onConflict: 'user_id', ignoreDuplicates: true });
       
-      console.log('User data initialization completed');
+      logger.debug('User data initialization completed');
     } catch (error) {
-      console.error('Error initializing user data:', error);
+      logger.error('Error initializing user data:', error);
     }
   };
 
@@ -146,22 +147,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .eq('user_id', userId)
         .neq('email', newEmail);
       if (error) {
-        console.error('Error syncing profile email:', error);
+        logger.error('Error syncing profile email:', error);
       } else {
-        console.log('Profile email synced to auth email');
+        logger.success('Profile email synced to auth email');
       }
     } catch (error) {
-      console.error('Unexpected error syncing profile email:', error);
+      logger.error('Unexpected error syncing profile email:', error);
     }
   };
 
   useEffect(() => {
-    console.log('Setting up auth state listener...');
+    logger.debug('Setting up auth state listener...');
     
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.id);
+        logger.debug('Auth state changed:', event, session?.user?.id);
         
         setSession(session);
         setUser(session?.user ?? null);
@@ -192,7 +193,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('Initial session check:', session?.user?.id);
+      logger.debug('Initial session check:', session?.user?.id);
       
       setSession(session);
       setUser(session?.user ?? null);
@@ -211,7 +212,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      console.log('Attempting to sign in user:', email);
+      logger.debug('Attempting to sign in user:', email);
       
       const { error } = await supabase.auth.signInWithPassword({
         email,
@@ -219,14 +220,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
       if (error) {
-        console.error('Sign in error:', error);
+        logger.error('Sign in error:', error);
         toast({
           title: "Erro no login",
           description: error.message,
           variant: "destructive",
         });
       } else {
-        console.log('Sign in successful');
+        logger.success('Sign in successful');
         toast({
           title: "Login realizado",
           description: "Bem-vindo de volta!",
@@ -264,14 +265,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
       if (error) {
-        console.error('Sign up error:', error);
+        logger.error('Sign up error:', error);
         toast({
           title: "Erro no cadastro",
           description: error.message,
           variant: "destructive",
         });
       } else {
-        console.log('Sign up successful');
+        logger.success('Sign up successful');
         toast({
           title: "Cadastro realizado",
           description: "Verifique seu email para confirmar a conta.",
@@ -292,20 +293,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     try {
-      console.log('Attempting to sign out');
+      logger.debug('Attempting to sign out');
       
       await logActivity('signed_out', 'auth');
       const { error } = await supabase.auth.signOut();
       
       if (error) {
-        console.error('Sign out error:', error);
+        logger.error('Sign out error:', error);
         toast({
           title: "Erro ao sair",
           description: error.message,
           variant: "destructive",
         });
       } else {
-        console.log('Sign out successful');
+        logger.success('Sign out successful');
         toast({
           title: "Logout realizado",
           description: "Até logo!",
@@ -314,7 +315,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       return { error };
     } catch (error: any) {
-      console.error('Sign out error:', error);
+      logger.error('Sign out error:', error);
       toast({
         title: "Erro ao sair",
         description: error.message,
@@ -326,7 +327,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const resetPassword = async (email: string) => {
     try {
-      console.log('Attempting to reset password for:', email);
+      logger.debug('Attempting to reset password for:', email);
       
       const redirectUrl = `${window.location.origin}/auth?mode=reset`;
       
@@ -335,14 +336,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
       if (error) {
-        console.error('Reset password error:', error);
+        logger.error('Reset password error:', error);
         toast({
           title: "Erro na recuperação",
           description: error.message,
           variant: "destructive",
         });
       } else {
-        console.log('Reset password successful');
+        logger.success('Reset password successful');
         toast({
           title: "Email enviado",
           description: "Verifique seu email para redefinir a senha.",
@@ -363,7 +364,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const isAdmin = () => {
     const result = profile?.role === 'admin' && profile?.is_active;
-    console.log('isAdmin check:', { role: profile?.role, active: profile?.is_active, result });
+    logger.debug('isAdmin check:', { role: profile?.role, active: profile?.is_active, result });
     return result;
   };
 

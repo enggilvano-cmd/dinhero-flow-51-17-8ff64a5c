@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    console.log('🔄 Starting recurring transactions generation...');
+    console.log('[generate-recurring] INFO: Starting recurring transactions generation...');
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -43,11 +43,11 @@ Deno.serve(async (req) => {
       .order('user_id');
 
     if (fetchError) {
-      console.error('❌ Error fetching recurring transactions:', fetchError);
+      console.error('[generate-recurring] ERROR: Failed to fetch recurring transactions:', fetchError);
       throw fetchError;
     }
 
-    console.log(`📊 Found ${recurringTransactions?.length || 0} recurring transactions`);
+    console.log(`[generate-recurring] INFO: Found ${recurringTransactions?.length || 0} recurring transactions`);
 
     if (!recurringTransactions || recurringTransactions.length === 0) {
       return new Response(
@@ -74,7 +74,7 @@ Deno.serve(async (req) => {
           endDate.setHours(0, 0, 0, 0);
           
           if (today > endDate) {
-            console.log(`⏭️  Skipping expired recurring transaction: ${recurring.id}`);
+            console.log(`[generate-recurring] INFO: Skipping expired transaction: ${recurring.id}`);
             continue;
           }
         }
@@ -89,7 +89,7 @@ Deno.serve(async (req) => {
           .single();
 
         if (lastError && lastError.code !== 'PGRST116') { // PGRST116 = not found
-          console.error(`❌ Error fetching last generated for ${recurring.id}:`, lastError);
+          console.error(`[generate-recurring] ERROR: Failed to fetch last generated for ${recurring.id}:`, lastError);
           continue;
         }
 
@@ -110,7 +110,7 @@ Deno.serve(async (req) => {
             endDate.setHours(0, 0, 0, 0);
             
             if (nextDate > endDate) {
-              console.log(`⏭️  Next date exceeds end date for: ${recurring.id}`);
+              console.log(`[generate-recurring] INFO: Next date exceeds end date for: ${recurring.id}`);
               continue;
             }
           }
@@ -138,22 +138,22 @@ Deno.serve(async (req) => {
             .insert(newTransaction);
 
           if (insertError) {
-            console.error(`❌ Error inserting transaction for ${recurring.id}:`, insertError);
+            console.error(`[generate-recurring] ERROR: Failed to insert transaction for ${recurring.id}:`, insertError);
             errors.push({ recurring_id: recurring.id, error: insertError.message });
           } else {
-            console.log(`✅ Generated transaction for ${recurring.id} on ${formatDate(nextDate)}`);
+            console.log(`[generate-recurring] INFO: Generated transaction for ${recurring.id} on ${formatDate(nextDate)}`);
             generatedCount++;
           }
         } else {
-          console.log(`⏭️  Next date (${formatDate(nextDate)}) not reached for: ${recurring.id}`);
+          console.log(`[generate-recurring] INFO: Next date (${formatDate(nextDate)}) not reached for: ${recurring.id}`);
         }
       } catch (error) {
-        console.error(`❌ Error processing recurring transaction ${recurring.id}:`, error);
+        console.error(`[generate-recurring] ERROR: Failed to process ${recurring.id}:`, error);
         errors.push({ recurring_id: recurring.id, error: error.message });
       }
     }
 
-    console.log(`✨ Generation complete. Generated: ${generatedCount} transactions`);
+    console.log(`[generate-recurring] INFO: Generation complete. Generated: ${generatedCount} transactions`);
 
     return new Response(
       JSON.stringify({ 
@@ -169,7 +169,7 @@ Deno.serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('❌ Fatal error:', error);
+    console.error('[generate-recurring] ERROR:', error);
     return new Response(
       JSON.stringify({ 
         success: false, 

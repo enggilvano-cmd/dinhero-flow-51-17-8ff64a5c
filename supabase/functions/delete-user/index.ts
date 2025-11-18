@@ -81,14 +81,14 @@ Deno.serve(async (req) => {
       )
     }
 
-    console.log('Deleting user:', userId)
+    console.log('[delete-user] INFO: Deleting user:', userId);
 
     // Delete user from auth.users (this will cascade to profiles due to ON DELETE CASCADE)
     const { error: deleteError } = await supabaseClient.auth.admin.deleteUser(userId)
 
     if (deleteError) {
-      console.error('Error deleting user:', deleteError)
-      throw deleteError
+      console.error('[delete-user] ERROR:', deleteError);
+      throw deleteError;
     }
 
     // Log the activity
@@ -99,7 +99,7 @@ Deno.serve(async (req) => {
       p_resource_id: userId
     })
 
-    console.log('User deleted successfully')
+    console.log('[delete-user] INFO: User deleted successfully');
 
     return new Response(
       JSON.stringify({ success: true, message: 'User deleted successfully' }),
@@ -110,7 +110,7 @@ Deno.serve(async (req) => {
     )
 
   } catch (error) {
-    console.error('Error in delete-user function:', error)
+    console.error('[delete-user] ERROR:', error);
     const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred'
     return new Response(
       JSON.stringify({ error: errorMessage }),

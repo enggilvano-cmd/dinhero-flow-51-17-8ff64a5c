@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Category } from "@/types";
+import { logger } from "@/lib/logger";
 
 export function useCategories() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -23,13 +24,13 @@ export function useCategories() {
         .eq('user_id', user.id);
         
       if (error) {
-        console.error('Error loading categories:', error);
+        logger.error('Error loading categories:', error);
         return;
       }
       
       setCategories(data || []);
     } catch (error) {
-      console.error('Error loading categories:', error);
+      logger.error('Error loading categories:', error);
     } finally {
       setLoading(false);
     }
