@@ -1272,14 +1272,19 @@ export function Dashboard({
                         <div
                           className={`text-xs font-medium flex-shrink-0 ${
                             account.type === "credit"
-                              ? "balance-negative"
+                              ? account.balance < 0 
+                                ? "text-destructive"  // Dívida
+                                : "text-emerald-600"   // Crédito a favor
                               : account.balance >= 0
                               ? "balance-positive"
                               : "balance-negative"
                           }`}
                         >
-                          {/* CORREÇÃO AQUI */}
-                          {formatCurrency(account.balance / 100)}
+                          {/* Para cartões: mostrar dívida como positivo */}
+                          {account.type === "credit" 
+                            ? formatCurrency(Math.abs(account.balance) / 100)
+                            : formatCurrency(account.balance / 100)
+                          }
                         </div>
                       </div>
                     ))}
