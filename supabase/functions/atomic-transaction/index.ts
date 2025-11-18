@@ -61,13 +61,39 @@ Deno.serve(async (req) => {
     }
 
     // INICIAR TRANSAÇÃO ATÔMICA
+    // Verificar se é conta de crédito
+    const { data: accountData, error: accountError } = await supabaseClient
+      .from('accounts')
+      .select('type')
+      .eq('id', transaction.account_id)
+      .single();
+
+    if (accountError) {
+      console.error('[atomic-transaction] Account fetch error:', accountError);
+      throw accountError;
+    }
+
+    const isCreditCard = accountData.type === 'credit';
+    
+    // Para cartões de crédito, inverter a lógica:
+    // - Despesa: saldo fica mais negativo (aumenta dívida)
+    // - Receita/Pagamento: saldo fica menos negativo (diminui dívida)
+    let amount: number;
+    if (isCreditCard) {
+      // Cartão: expense aumenta dívida (negativo), income diminui (positivo)
+      amount = transaction.type === 'expense' ? -Math.abs(transaction.amount) : Math.abs(transaction.amount);
+    } else {
+      // Outras contas: comportamento normal
+      amount = transaction.type === 'expense' ? -Math.abs(transaction.amount) : Math.abs(transaction.amount);
+    }
+
     // 1. Inserir transação
     const { data: newTransaction, error: insertError } = await supabaseClient
       .from('transactions')
       .insert({
         user_id: user.id,
         description: transaction.description,
-        amount: transaction.type === 'expense' ? -Math.abs(transaction.amount) : Math.abs(transaction.amount),
+        amount: amount,
         date: transaction.date,
         type: transaction.type,
         category_id: transaction.category_id,

@@ -72,11 +72,24 @@ Deno.serve(async (req) => {
       affectedAccounts.add(updates.account_id);
     }
 
+    // Verificar se é conta de crédito para ajustar o sinal do amount
+    const accountsToCheck = Array.from(affectedAccounts);
+    const { data: accountsData } = await supabaseClient
+      .from('accounts')
+      .select('id, type')
+      .in('id', accountsToCheck);
+
     // Preparar dados de atualização
     const updateData: any = {};
     if (updates.description !== undefined) updateData.description = updates.description;
     if (updates.amount !== undefined) {
       const type = updates.type || oldTransaction.type;
+      const targetAccountId = updates.account_id || oldTransaction.account_id;
+      const targetAccount = accountsData?.find(a => a.id === targetAccountId);
+      const isCreditCard = targetAccount?.type === 'credit';
+      
+      // Para cartões: expense = negativo (dívida), income = positivo (pagamento)
+      // Para outras contas: mesmo comportamento
       updateData.amount = type === 'expense' ? -Math.abs(updates.amount) : Math.abs(updates.amount);
     }
     if (updates.date !== undefined) updateData.date = updates.date;

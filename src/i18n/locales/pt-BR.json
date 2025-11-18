@@ -222,6 +222,8 @@
     "filterByType": "Filtrar por tipo",
     "available": "Disponível",
     "used": "Utilizado",
+    "debt": "Dívida",
+    "creditInFavor": "Crédito a Favor",
     "exportSuccess": "{{count}} contas exportadas."
   },
   "transactions": {
