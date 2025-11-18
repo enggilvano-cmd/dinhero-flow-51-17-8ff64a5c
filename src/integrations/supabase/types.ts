@@ -635,6 +635,10 @@ export type Database = {
           total_debits: number
         }[]
       }
+      verify_journal_entries_balance: {
+        Args: { p_transaction_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       account_category:
