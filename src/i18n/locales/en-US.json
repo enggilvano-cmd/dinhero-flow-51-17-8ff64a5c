@@ -208,6 +208,7 @@
     "totalAccounts": "Total Accounts",
     "totalBalance": "Total Balance",
     "creditUsed": "Credit Used",
+    "totalDebt": "Total Debt",
     "payBill": "Pay Bill",
     "noAccounts": "No accounts registered",
     "addFirstAccount": "Start by adding your first bank account or credit card",
@@ -222,6 +223,8 @@
     "filterByType": "Filter by type",
     "available": "Available",
     "used": "Used",
+    "debt": "Debt",
+    "creditInFavor": "Credit in Favor",
     "exportSuccess": "{{count}} accounts exported."
   },
   "transactions": {

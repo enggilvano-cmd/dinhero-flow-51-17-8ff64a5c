@@ -667,7 +667,7 @@ const PlaniFlowApp = () => {
     setEditAccountModalOpen(true);
   };
 
-  // --- FUNÇÃO DE PAGAMENTO DE CRÉDITO (VERSÃO CORRIGIDA ÚNICA) ---
+  // --- FUNÇÃO DE PAGAMENTO DE CRÉDITO (VERSÃO ATÔMICA) ---
   const handleCreditPayment = async ({
     creditCardAccountId,
     debitAccountId,
@@ -677,7 +677,7 @@ const PlaniFlowApp = () => {
     creditCardAccountId: string;
     debitAccountId: string;
     amount: number;
-    paymentDate: string; // Recebe como string "YYYY-MM-DD"
+    paymentDate: string;
   }): Promise<{ creditAccount: Account; bankAccount: Account }> => {
     if (!user) throw new Error("Usuário não autenticado");
 
@@ -696,86 +696,74 @@ const PlaniFlowApp = () => {
         throw new Error("Conta de crédito ou conta bancária não encontrada.");
       }
 
-      // 1. Transação de DÉBITO (saída do banco)
-      const bankTransaction = {
-        description: `Pagamento fatura ${
-          creditAccount?.name || "cartão de crédito"
-        }`,
-        amount: Math.abs(amount), // Assegura que é positivo (lógica de saldo trata o resto)
-        date: paymentDate,
-        type: "expense" as const,
-        category_id: paymentCategory?.id || null,
-        account_id: debitAccountId,
-        to_account_id: creditCardAccountId, // Indica que é uma transferência para o cartão
-        status: "completed" as const,
-        user_id: user.id,
-      };
-      
-      const { data: newBankTransaction, error: bankError } = await supabase
-        .from("transactions")
-        .insert(bankTransaction)
-        .select()
-        .single();
-
-      if (bankError) {
-        console.error("Erro do Supabase (bankTransaction):", bankError);
-        throw new Error(`A transação (banco) falhou: ${bankError.message}`);
-      }
-
-      // 2. Transação de CRÉDITO (entrada no cartão)
-      const creditTransaction = {
-        description: `Pagamento recebido de ${bankAccount.name}`, // Descrição mais clara
-        amount: Math.abs(amount), // Assegura que é positivo
-        date: paymentDate,
-        type: "income" as const,
-        category_id: paymentCategory?.id || null,
-        account_id: creditCardAccountId,
-        to_account_id: debitAccountId, // Indica que veio do banco
-        status: "completed" as const,
-        user_id: user.id,
-        linked_transaction_id: newBankTransaction.id, // <-- CORREÇÃO: Usa linked_id
-      };
-
-      const { data: newCreditTransaction, error: creditError } = await supabase
-        .from("transactions")
-        .insert(creditTransaction)
-        .select()
-        .single();
+      // Usar atomic-transaction para ambas as transações
+      // 1. Income no cartão (pagamento recebido) - DIMINUI a dívida
+      const { data: creditData, error: creditError } = await supabase.functions.invoke('atomic-transaction', {
+        body: {
+          transaction: {
+            description: `Pagamento recebido de ${bankAccount.name}`,
+            amount: Math.abs(amount),
+            date: paymentDate,
+            type: 'income',
+            category_id: paymentCategory?.id || null,
+            account_id: creditCardAccountId,
+            status: 'completed',
+          }
+        }
+      });
 
       if (creditError) {
-         // Se esta falhar, precisamos reverter a primeira
-        console.error("Erro do Supabase (creditTransaction):", creditError);
-        await supabase.from("transactions").delete().eq("id", newBankTransaction.id);
-        throw new Error(`A transação (cartão) falhou: ${creditError.message}`);
+        console.error("Erro ao criar transação de pagamento no cartão:", creditError);
+        throw new Error(`Pagamento no cartão falhou: ${creditError.error}`);
       }
-      
-      // Adiciona ambas as transações ao store
-      addGlobalTransactions([newBankTransaction as Transaction, newCreditTransaction as Transaction]);
 
-      // Update account balances
-      // Saldo do cartão AUMENTA (dívida diminui)
-      const newCreditBalance = creditAccount.balance + Math.abs(amount);
-      // Saldo do banco DIMINUI
-      const newBankBalance = bankAccount.balance - Math.abs(amount);
+      // 2. Expense no banco (saída de dinheiro)
+      const { data: bankData, error: bankError } = await supabase.functions.invoke('atomic-transaction', {
+        body: {
+          transaction: {
+            description: `Pagamento fatura ${creditAccount.name}`,
+            amount: Math.abs(amount),
+            date: paymentDate,
+            type: 'expense',
+            category_id: paymentCategory?.id || null,
+            account_id: debitAccountId,
+            status: 'completed',
+          }
+        }
+      });
 
-      await Promise.all([
-        supabase
-          .from("accounts")
-          .update({ balance: newCreditBalance })
-          .eq("id", creditCardAccountId)
-          .eq("user_id", user.id),
-        supabase
-          .from("accounts")
-          .update({ balance: newBankBalance })
-          .eq("id", debitAccountId)
-          .eq("user_id", user.id),
+      if (bankError) {
+        console.error("Erro ao criar transação de débito no banco:", bankError);
+        // Tentar reverter a transação do cartão
+        if (creditData?.transaction?.id) {
+          await supabase.from("transactions").delete().eq("id", creditData.transaction.id);
+        }
+        throw new Error(`Débito no banco falhou: ${bankError.error}`);
+      }
+
+      // Vincular as transações
+      if (creditData?.transaction?.id && bankData?.transaction?.id) {
+        await supabase
+          .from("transactions")
+          .update({ linked_transaction_id: bankData.transaction.id })
+          .eq("id", creditData.transaction.id);
+      }
+
+      // Adicionar transações ao store
+      addGlobalTransactions([
+        creditData.transaction as Transaction,
+        bankData.transaction as Transaction,
       ]);
 
+      // Atualizar saldos no store
       const updatedCreditAccount = {
         ...creditAccount,
-        balance: newCreditBalance,
+        balance: creditData.balance.new_balance,
       };
-      const updatedBankAccount = { ...bankAccount, balance: newBankBalance };
+      const updatedBankAccount = {
+        ...bankAccount,
+        balance: bankData.balance.new_balance,
+      };
 
       updateGlobalAccounts([updatedCreditAccount, updatedBankAccount]);
       

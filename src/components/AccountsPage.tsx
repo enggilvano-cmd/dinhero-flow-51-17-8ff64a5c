@@ -135,13 +135,15 @@ export function AccountsPage({
   };
 
   // Os totais agora são calculados a partir das 'filteredAccounts'
+  // Saldo total: apenas contas não-crédito
   const totalBalance = filteredAccounts
     .filter((acc) => acc.type !== "credit")
     .reduce((sum, acc) => sum + acc.balance, 0);
 
+  // Dívida total de cartões: soma do valor absoluto dos saldos negativos
   const creditUsed = filteredAccounts
     .filter((acc) => acc.type === "credit")
-    .reduce((sum, acc) => sum + Math.abs(acc.balance), 0);
+    .reduce((sum, acc) => sum + Math.abs(Math.min(acc.balance, 0)), 0);
 
   const exportToExcel = () => {
     const dataToExport = filteredAccounts.map((account) => ({
@@ -278,9 +280,9 @@ export function AccountsPage({
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs sm:text-sm font-medium text-muted-foreground">
-                  {t('accounts.creditUsed')}
+                  {t('accounts.totalDebt')}
                 </p>
-                <div className="text-base sm:text-lg lg:text-xl font-bold balance-negative leading-tight">
+                <div className="text-base sm:text-lg lg:text-xl font-bold text-destructive leading-tight">
                   {formatCents(creditUsed)}
                 </div>
               </div>
