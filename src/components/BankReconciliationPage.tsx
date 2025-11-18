@@ -1,6 +1,5 @@
 import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { logger } from "@/lib/logger";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -33,6 +32,7 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { formatCurrency } from "@/lib/formatters";
+import { getUserId, withErrorHandling } from "@/lib/supabase-utils";
 
 interface BankReconciliationPageProps {
   transactions: any[];
@@ -102,16 +102,22 @@ export function BankReconciliationPage({
     setUpdatingIds((prev) => new Set(prev).add(transactionId));
 
     try {
-      const { error } = await supabase
-        .from("transactions")
-        .update({
-          reconciled: !currentStatus,
-          reconciled_at: !currentStatus ? new Date().toISOString() : null,
-          reconciled_by: !currentStatus ? (await supabase.auth.getUser()).data.user?.id : null,
-        })
-        .eq("id", transactionId);
+      await withErrorHandling(
+        async () => {
+          const userId = await getUserId();
+          const { error } = await supabase
+            .from("transactions")
+            .update({
+              reconciled: !currentStatus,
+              reconciled_at: !currentStatus ? new Date().toISOString() : null,
+              reconciled_by: !currentStatus ? userId : null,
+            })
+            .eq("id", transactionId);
 
-      if (error) throw error;
+          if (error) throw error;
+        },
+        t("reconciliation.updateError")
+      );
 
       toast({
         title: t("reconciliation.success"),
@@ -122,13 +128,6 @@ export function BankReconciliationPage({
 
       // Recarregar transações
       window.location.reload();
-    } catch (error: any) {
-      logger.error("Error updating reconciliation:", error);
-      toast({
-        title: t("common.error"),
-        description: error.message,
-        variant: "destructive",
-      });
     } finally {
       setUpdatingIds((prev) => {
         const newSet = new Set(prev);
