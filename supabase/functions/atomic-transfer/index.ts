@@ -183,6 +183,36 @@ Deno.serve(async (req) => {
       throw toBalError;
     }
 
+    // 5. Criar journal_entries (Débito destino, Crédito origem)
+    const { data: coa } = await supabaseClient
+      .from('chart_of_accounts')
+      .select('id, code')
+      .eq('user_id', user.id);
+
+    const anyAsset = coa?.find(a => a.code?.startsWith('1.01.'))?.id; // Conta de Ativo genérica
+    if (anyAsset) {
+      await supabaseClient.from('journal_entries').insert([
+        {
+          user_id: user.id,
+          transaction_id: incomingTx.id,
+          account_id: anyAsset,
+          entry_type: 'debit',
+          amount: Math.abs(transfer.amount),
+          description: incomingTx.description,
+          entry_date: transfer.date,
+        },
+        {
+          user_id: user.id,
+          transaction_id: outgoingTx.id,
+          account_id: anyAsset,
+          entry_type: 'credit',
+          amount: Math.abs(transfer.amount),
+          description: outgoingTx.description,
+          entry_date: transfer.date,
+        }
+      ]);
+    }
+
     console.log('[atomic-transfer] INFO: Transfer completed successfully');
 
     return new Response(
