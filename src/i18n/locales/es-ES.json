@@ -719,6 +719,24 @@
         }
       }
     },
+    "deleteInstallmentScope": {
+      "title": "Eliminar Cuotas",
+      "subtitle": "Estás eliminando la cuota {{current}} de {{total}}. Elige el alcance de la eliminación:",
+      "options": {
+        "current": {
+          "label": "Solo esta cuota",
+          "description": "Eliminar solo la cuota {{current}} de {{total}}"
+        },
+        "remaining": {
+          "label": "Esta y cuotas restantes",
+          "description": "Eliminar desde la cuota {{current}} hasta {{total}}"
+        },
+        "all": {
+          "label": "Todas las cuotas",
+          "description": "Eliminar todas las {{total}} cuotas"
+        }
+      }
+    },
     "transfer": {
       "title": "Nueva Transferencia",
       "subtitle": "Mover dinero entre tus cuentas",

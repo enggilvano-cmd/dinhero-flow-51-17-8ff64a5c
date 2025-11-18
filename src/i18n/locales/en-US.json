@@ -835,6 +835,24 @@
         }
       }
     },
+    "deleteInstallmentScope": {
+      "title": "Delete Installments",
+      "subtitle": "You are deleting installment {{current}} of {{total}}. Choose the scope of the deletion:",
+      "options": {
+        "current": {
+          "label": "Only this installment",
+          "description": "Delete only installment {{current}} of {{total}}"
+        },
+        "remaining": {
+          "label": "This and remaining installments",
+          "description": "Delete from installment {{current}} to {{total}}"
+        },
+        "all": {
+          "label": "All installments",
+          "description": "Delete all {{total}} installments"
+        }
+      }
+    },
     "transfer": {
       "title": "New Transfer",
       "subtitle": "Move money between your accounts",
