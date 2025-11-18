@@ -441,11 +441,28 @@
     "recurring": "Recorrentes",
     "categories": "Categorias",
     "creditBills": "Faturas de Cartão",
+    "reconciliation": "Reconciliação",
     "analytics": "Análises",
     "settings": "Configurações",
     "profile": "Perfil",
     "users": "Usuários",
     "systemSettings": "Configurações do Sistema"
+  },
+  "reconciliation": {
+    "title": "Reconciliação Bancária",
+    "subtitle": "Compare e reconcilie transações com extratos bancários",
+    "totalTransactions": "Total de Transações",
+    "reconciled": "Reconciliadas",
+    "notReconciled": "Não Reconciliadas",
+    "reconciledAmount": "Valor Reconciliado",
+    "status": "Status",
+    "reconciledAt": "Reconciliado em",
+    "transactions": "Transações",
+    "success": "Sucesso",
+    "markedAsReconciled": "Transação marcada como reconciliada",
+    "markedAsNotReconciled": "Transação desmarcada como reconciliada",
+    "pendingWarning": "Atenção: Existem transações pendentes de reconciliação",
+    "pendingWarningDescription": "Você tem {{count}} transação(ões) que ainda não foram reconciliadas com seu extrato bancário."
   },
   "profile": {
     "title": "Perfil",
