@@ -157,6 +157,56 @@ export type Database = {
         }
         Relationships: []
       }
+      chart_of_accounts: {
+        Row: {
+          category: Database["public"]["Enums"]["account_category"]
+          code: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          nature: Database["public"]["Enums"]["account_nature"]
+          parent_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["account_category"]
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          nature: Database["public"]["Enums"]["account_nature"]
+          parent_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["account_category"]
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          nature?: Database["public"]["Enums"]["account_nature"]
+          parent_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chart_of_accounts_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "chart_of_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       financial_audit: {
         Row: {
           action: string
@@ -204,6 +254,60 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      journal_entries: {
+        Row: {
+          account_id: string
+          amount: number
+          created_at: string
+          description: string
+          entry_date: string
+          entry_type: string
+          id: string
+          transaction_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_id: string
+          amount: number
+          created_at?: string
+          description: string
+          entry_date: string
+          entry_type: string
+          id?: string
+          transaction_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_id?: string
+          amount?: number
+          created_at?: string
+          description?: string
+          entry_date?: string
+          entry_type?: string
+          id?: string
+          transaction_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "journal_entries_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "chart_of_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "journal_entries_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -462,6 +566,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      initialize_chart_of_accounts: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
       initialize_default_categories: {
         Args: { p_user_id: string }
         Returns: undefined
@@ -496,8 +604,27 @@ export type Database = {
           success: boolean
         }[]
       }
+      validate_double_entry: {
+        Args: { p_transaction_id: string }
+        Returns: {
+          difference: number
+          is_valid: boolean
+          message: string
+          total_credits: number
+          total_debits: number
+        }[]
+      }
     }
     Enums: {
+      account_category:
+        | "asset"
+        | "liability"
+        | "equity"
+        | "revenue"
+        | "expense"
+        | "contra_asset"
+        | "contra_liability"
+      account_nature: "debit" | "credit"
       account_type: "checking" | "savings" | "credit" | "investment"
       category_type: "income" | "expense" | "both"
       recurrence_type: "daily" | "weekly" | "monthly" | "yearly"
@@ -631,6 +758,16 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      account_category: [
+        "asset",
+        "liability",
+        "equity",
+        "revenue",
+        "expense",
+        "contra_asset",
+        "contra_liability",
+      ],
+      account_nature: ["debit", "credit"],
       account_type: ["checking", "savings", "credit", "investment"],
       category_type: ["income", "expense", "both"],
       recurrence_type: ["daily", "weekly", "monthly", "yearly"],
