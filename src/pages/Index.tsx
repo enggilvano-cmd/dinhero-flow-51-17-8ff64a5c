@@ -12,6 +12,7 @@ import { UserManagement } from "@/components/UserManagement";
 import { UserProfile } from "@/components/UserProfile";
 import { RecurringTransactionsPage } from "@/components/RecurringTransactionsPage";
 import { FixedTransactionsPage } from "@/components/FixedTransactionsPage";
+import { BankReconciliationPage } from "@/components/BankReconciliationPage";
 import { AddAccountModal } from "@/components/AddAccountModal";
 import { AddTransactionModal } from "@/components/AddTransactionModal";
 import { EditAccountModal } from "@/components/EditAccountModal";
@@ -1095,6 +1096,14 @@ const PlaniFlowApp = () => {
               setTransactionCustomEndDate(customEndDate);
               setCurrentPage("transactions");
             }}
+          />
+        );
+      case "reconciliation":
+        return (
+          <BankReconciliationPage
+            transactions={transactions}
+            accounts={accounts}
+            categories={categories}
           />
         );
       case "profile":
