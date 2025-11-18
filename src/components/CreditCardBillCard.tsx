@@ -8,6 +8,7 @@ import { isPast } from 'date-fns';
 import { Badge } from "@/components/ui/badge";
 import { useTranslation } from "react-i18next";
 import { useSettings } from "@/context/SettingsContext";
+import { logger } from "@/lib/logger";
 
 // Helper para formatar moeda
 const formatCentsHelper = (valueInCents: number, currency: string, language: string) => {
@@ -43,7 +44,7 @@ export function CreditCardBillCard({
   const { t } = useTranslation();
   const { settings } = useSettings();
   
-  console.log('🃏 CreditCardBillCard renderizando:', {
+  logger.debug('CreditCardBillCard renderizando:', {
     account: account.name,
     balance: account.balance,
     currentBillAmount: billDetails.currentBillAmount,
@@ -93,7 +94,7 @@ export function CreditCardBillCard({
   // Botão de estorno aparece sempre que há pagamentos registrados
   const canReverse = paymentTransactions && paymentTransactions.length > 0;
   
-  console.info("[CreditCardBillCard] Status", {
+  logger.debug("[CreditCardBillCard] Status", {
     account: account.name,
     selectedMonth: selectedMonth.toISOString().split('T')[0],
     closingDate: closingDate.toISOString().split('T')[0],

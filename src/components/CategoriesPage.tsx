@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AddCategoryModal } from "@/components/AddCategoryModal";
 import { EditCategoryModal } from "@/components/EditCategoryModal";
 import { ImportCategoriesModal } from "@/components/ImportCategoriesModal";
+import { logger } from "@/lib/logger";
 import * as XLSX from 'xlsx';
 
 interface CategoriesPageProps {}
@@ -46,12 +47,12 @@ export function CategoriesPage({}: CategoriesPageProps) {
           .order('created_at', { ascending: false });
 
         if (error) {
-          console.error('Error loading categories:', error);
+          logger.error('Error loading categories:', error);
         } else {
           setCategories(data || []);
         }
       } catch (error) {
-        console.error('Error loading categories:', error);
+        logger.error('Error loading categories:', error);
       } finally {
         setLoading(false);
       }
@@ -74,7 +75,7 @@ export function CategoriesPage({}: CategoriesPageProps) {
         .single();
 
       if (error) {
-        console.error('Error adding category:', error);
+        logger.error('Error adding category:', error);
         toast({
           title: t("common.error"),
           description: t("messages.errorOccurred"),
@@ -90,7 +91,7 @@ export function CategoriesPage({}: CategoriesPageProps) {
         description: t("messages.saveSuccess"),
       });
     } catch (error) {
-      console.error('Error adding category:', error);
+      logger.error('Error adding category:', error);
       toast({
         title: t("common.error"),
         description: t("messages.errorOccurred"),
@@ -110,7 +111,7 @@ export function CategoriesPage({}: CategoriesPageProps) {
         .eq('user_id', user.id);
 
       if (error) {
-        console.error('Error updating category:', error);
+        logger.error('Error updating category:', error);
         toast({
           title: t("common.error"),
           description: t("messages.errorOccurred"),
@@ -129,7 +130,7 @@ export function CategoriesPage({}: CategoriesPageProps) {
         description: t("messages.updateSuccess"),
       });
     } catch (error) {
-      console.error('Error updating category:', error);
+      logger.error('Error updating category:', error);
       toast({
         title: t("common.error"),
         description: t("messages.errorOccurred"),
@@ -151,7 +152,7 @@ export function CategoriesPage({}: CategoriesPageProps) {
         .limit(1);
       
       if (transError) {
-        console.error('Error checking transactions:', transError);
+        logger.error('Error checking transactions:', transError);
         return;
       }
 
@@ -171,7 +172,7 @@ export function CategoriesPage({}: CategoriesPageProps) {
         .eq('user_id', user.id);
 
       if (error) {
-        console.error('Error deleting category:', error);
+        logger.error('Error deleting category:', error);
         toast({
           title: t("common.error"),
           description: t("messages.errorOccurred"),
@@ -187,7 +188,7 @@ export function CategoriesPage({}: CategoriesPageProps) {
         description: t("messages.deleteSuccess"),
       });
     } catch (error) {
-      console.error('Error deleting category:', error);
+      logger.error('Error deleting category:', error);
       toast({
         title: t("common.error"),
         description: t("messages.errorOccurred"),
@@ -214,7 +215,7 @@ export function CategoriesPage({}: CategoriesPageProps) {
           .eq('user_id', user.id);
 
         if (deleteError) {
-          console.error('Error deleting categories:', deleteError);
+          logger.error('Error deleting categories:', deleteError);
           toast({
             title: t("common.error"),
             description: t("messages.errorOccurred"),
@@ -235,7 +236,7 @@ export function CategoriesPage({}: CategoriesPageProps) {
           .select();
 
         if (error) {
-          console.error('Error importing categories:', error);
+          logger.error('Error importing categories:', error);
           toast({
             title: t("common.error"),
             description: t("messages.errorOccurred"),
@@ -256,7 +257,7 @@ export function CategoriesPage({}: CategoriesPageProps) {
         });
       }
     } catch (error) {
-      console.error('Error importing categories:', error);
+      logger.error('Error importing categories:', error);
       toast({
         title: t("common.error"),
         description: t("messages.errorOccurred"),

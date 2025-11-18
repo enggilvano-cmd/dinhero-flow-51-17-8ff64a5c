@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { logger } from "@/lib/logger";
 import { Account, PREDEFINED_COLORS, ACCOUNT_TYPE_LABELS } from "@/types";
 import { ColorPicker } from "@/components/forms/ColorPicker";
 import { useAccountStore } from "@/stores/AccountStore";
@@ -136,7 +137,7 @@ export function EditAccountModal({
         variant: "default",
       });
     } catch (error) {
-      console.error("Failed to edit account:", error);
+      logger.error("Failed to edit account:", error);
       // O toast de erro deve ser tratado dentro do onEditAccount ou aqui
     } finally {
       setIsSubmitting(false);

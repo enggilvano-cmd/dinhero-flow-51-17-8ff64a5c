@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { Repeat, Pencil, Trash2, Calendar, DollarSign, TrendingUp, TrendingDown, Search } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { logger } from "@/lib/logger";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
@@ -75,7 +76,7 @@ export function RecurringTransactionsPage() {
       if (error) throw error;
       setAccounts(data || []);
     } catch (error) {
-      console.error('Error loading accounts:', error);
+      logger.error('Error loading accounts:', error);
     }
   };
 
@@ -103,7 +104,7 @@ export function RecurringTransactionsPage() {
 
       setTransactions(data as any || []);
     } catch (error) {
-      console.error('Error loading recurring transactions:', error);
+      logger.error('Error loading recurring transactions:', error);
       toast({
         title: t("common.error"),
         description: t("recurringTransactions.errors.loadFailed"),
@@ -137,7 +138,7 @@ export function RecurringTransactionsPage() {
       
       loadRecurringTransactions();
     } catch (error) {
-      console.error('Error updating recurring transaction:', error);
+      logger.error('Error updating recurring transaction:', error);
       toast({
         title: t("common.error"),
         description: t("recurringTransactions.errors.updateFailed"),
@@ -165,7 +166,7 @@ export function RecurringTransactionsPage() {
       setTransactions(prev => prev.filter(t => t.id !== deleteId));
       setDeleteId(null);
     } catch (error) {
-      console.error('Error deleting recurring transaction:', error);
+      logger.error('Error deleting recurring transaction:', error);
       toast({
         title: t("common.error"),
         description: t("recurringTransactions.errors.deleteFailed"),

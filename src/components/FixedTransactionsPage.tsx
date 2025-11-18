@@ -17,6 +17,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/lib/formatters";
+import { logger } from "@/lib/logger";
 import { AddFixedTransactionModal } from "./AddFixedTransactionModal";
 import { EditFixedTransactionModal } from "./EditFixedTransactionModal";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -89,7 +90,7 @@ export function FixedTransactionsPage() {
       if (error) throw error;
       setTransactions(data as FixedTransaction[]);
     } catch (error) {
-      console.error("Error loading fixed transactions:", error);
+      logger.error("Error loading fixed transactions:", error);
       toast({
         title: "Erro ao carregar transações fixas",
         description: "Não foi possível carregar as transações fixas.",
@@ -113,7 +114,7 @@ export function FixedTransactionsPage() {
       if (error) throw error;
       setAccounts(data || []);
     } catch (error) {
-      console.error("Error loading accounts:", error);
+      logger.error("Error loading accounts:", error);
     }
   };
 
@@ -228,7 +229,7 @@ export function FixedTransactionsPage() {
           .in("id", childTransactionIds);
 
         if (updateError) {
-          console.error("Erro ao vincular transações filhas:", updateError);
+          logger.error("Erro ao vincular transações filhas:", updateError);
         }
       }
 
@@ -241,7 +242,7 @@ export function FixedTransactionsPage() {
       loadFixedTransactions();
       setAddModalOpen(false);
     } catch (error) {
-      console.error("Error adding fixed transaction:", error);
+      logger.error("Error adding fixed transaction:", error);
       toast({
         title: "Erro ao adicionar transação",
         description: "Não foi possível adicionar a transação fixa.",
@@ -274,7 +275,7 @@ export function FixedTransactionsPage() {
       loadFixedTransactions();
       setEditModalOpen(false);
     } catch (error) {
-      console.error("Error updating transaction:", error);
+      logger.error("Error updating transaction:", error);
       toast({
         title: "Erro ao atualizar",
         description: "Não foi possível atualizar a transação.",
@@ -324,7 +325,7 @@ export function FixedTransactionsPage() {
 
       loadFixedTransactions();
     } catch (error) {
-      console.error("Error deleting transaction:", error);
+      logger.error("Error deleting transaction:", error);
       toast({
         title: "Erro ao remover",
         description: "Não foi possível remover a transação.",

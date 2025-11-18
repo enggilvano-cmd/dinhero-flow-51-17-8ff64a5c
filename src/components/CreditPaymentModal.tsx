@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Account } from "@/types";
+import { logger } from "@/lib/logger";
 import { getTodayString } from "@/lib/dateUtils";
 import { getAvailableBalance } from "@/lib/formatters";
 import { AccountBalanceDetails } from "./AccountBalanceDetails";
@@ -174,7 +175,7 @@ export function CreditPaymentModal({
       });
       onOpenChange(false);
     } catch (error) {
-      console.error("Payment failed:", error);
+      logger.error("Payment failed:", error);
       toast({
         title: t("common.error"),
         description: t("modals.creditPayment.error", { 

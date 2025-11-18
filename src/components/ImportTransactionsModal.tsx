@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Upload, FileSpreadsheet, AlertCircle, MoreVertical, Copy, AlertTriangle, PlusCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
+import { logger } from "@/lib/logger";
 import * as XLSX from 'xlsx';
 import { parse, isValid } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -285,7 +286,7 @@ export function ImportTransactionsModal({
           const isSameAccount = getTxAccountId(tx) === accountId;
           return isSameAccount && isSameDescription;
         }).map(tx => ({ id: tx.id, amount: tx.amount, date: (createDateFromString(tx.date as any)).toISOString().slice(0,10) }));
-        console.info('[ImportTx] Sem duplicata. Contexto:', {
+        logger.debug('[ImportTx] Sem duplicata. Contexto:', {
           descricao,
           valorInCents,
           data: parsedNorm.toISOString().slice(0,10),

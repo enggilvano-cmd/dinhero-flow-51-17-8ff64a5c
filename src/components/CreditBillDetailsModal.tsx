@@ -6,6 +6,7 @@ import { ptBR } from 'date-fns/locale'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useTranslation } from 'react-i18next'
+import { logger } from '@/lib/logger'
 
 interface CreditBillDetailsModalProps {
   bill: (CreditBill & { account: Account } & { transactions: Transaction[] }) | null
@@ -38,7 +39,7 @@ export function CreditBillDetailsModal({ bill, onClose }: CreditBillDetailsModal
   // Uma fatura está "Paga" se não há valor a pagar OU se está fechada e foi paga
   const isPaid = amountDue <= 0 || (isClosed && paidAmount >= amountDue);
 
-  console.info("[CreditBillDetailsModal] Status", {
+  logger.debug("[CreditBillDetailsModal] Status", {
     billMonth,
     closingDateOfBill: format(closingDateOfBill, 'dd/MM/yyyy'),
     isClosed,

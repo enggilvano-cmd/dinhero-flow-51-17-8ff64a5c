@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Upload, FileSpreadsheet, AlertCircle, MoreVertical, Copy, AlertTriangle, PlusCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
+import { logger } from "@/lib/logger";
 import * as XLSX from 'xlsx';
 
 interface Category {
@@ -161,7 +162,7 @@ export function ImportCategoriesModal({
         const candidatos = categories
           .filter(cat => normalizeString(cat.name).includes(normalizedNome.substring(0, Math.min(5, normalizedNome.length))))
           .map(cat => ({ id: cat.id, name: cat.name, normalized: normalizeString(cat.name), type: cat.type, color: cat.color }));
-        console.info('[ImportCat] Sem duplicata. Contexto:', {
+        logger.debug('[ImportCat] Sem duplicata. Contexto:', {
           nome,
           normalizedNome,
           tipo: parsedType,
@@ -173,7 +174,7 @@ export function ImportCategoriesModal({
       if (existingCategory) {
         isDuplicate = true;
         existingCategoryId = existingCategory.id;
-        console.info('[ImportCat] Duplicata encontrada:', { nome, existingCategory });
+        logger.debug('[ImportCat] Duplicata encontrada:', { nome, existingCategory });
       }
     }
 
