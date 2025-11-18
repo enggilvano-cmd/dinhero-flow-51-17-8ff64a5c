@@ -1,15 +1,21 @@
 import { Account } from "@/types";
 
 /**
- * Formata um valor numérico (em centavos) para uma string de moeda BRL.
+ * Formata um valor numérico (em centavos) para uma string de moeda.
  * @param valueInCents O valor em centavos.
+ * @param currency Código da moeda (padrão: 'BRL').
+ * @param locale Locale para formatação (padrão: 'pt-BR').
  * @returns A string formatada, ex: "R$ 1.234,56".
  */
-export function formatCurrency(valueInCents: number): string {
+export function formatCurrency(
+  valueInCents: number, 
+  currency: string = 'BRL', 
+  locale: string = 'pt-BR'
+): string {
   const value = valueInCents / 100;
-  return new Intl.NumberFormat('pt-BR', {
+  return new Intl.NumberFormat(locale, {
     style: 'currency',
-    currency: 'BRL',
+    currency: currency,
   }).format(value);
 }
 

@@ -150,21 +150,19 @@ export function generateCashFlow(
     (a) => a.type === "checking" || a.type === "savings"
   );
 
-  // Saldo inicial = saldo atual - transações do período
+  // Filtrar transações do período
   const periodTransactions = transactions.filter((t) => {
     const date = new Date(t.date);
     return date >= startDate && date <= endDate;
   });
 
-  const periodChange = periodTransactions
-    .filter((t) => 
-      operationalAccounts.some((a) => a.id === t.account_id) && 
-      t.type !== "transfer"
-    )
-    .reduce((sum, t) => sum + t.amount, 0);
+  // CORREÇÃO: Calcular saldo inicial baseado em TODAS as transações ATÉ a data inicial
+  const transactionsUntilStart = transactions.filter((t) => {
+    const date = new Date(t.date);
+    return date < startDate && operationalAccounts.some((a) => a.id === t.account_id);
+  });
 
-  const currentBalance = operationalAccounts.reduce((sum, a) => sum + a.balance, 0);
-  const openingBalance = currentBalance - periodChange;
+  const openingBalance = transactionsUntilStart.reduce((sum, t) => sum + t.amount, 0);
 
   // Entradas de Caixa (receitas)
   const inflows = periodTransactions

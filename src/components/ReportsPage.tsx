@@ -89,19 +89,23 @@ export function ReportsPage({
 
   // Exportar para PDF
   const handleExportPDF = (reportType: "dre" | "balance" | "cashflow") => {
-    const reportData = {
-      dre: dreReport,
-      balance: balanceSheetReport,
-      cashflow: cashFlowReport,
-    }[reportType];
+    try {
+      const reportData = {
+        dre: dreReport,
+        balance: balanceSheetReport,
+        cashflow: cashFlowReport,
+      }[reportType];
 
-    exportReportToPDF(
-      reportType,
-      reportData,
-      startDate,
-      endDate,
-      t
-    );
+      exportReportToPDF(
+        reportType,
+        reportData,
+        startDate,
+        endDate,
+        t
+      );
+    } catch (error) {
+      console.error("Error exporting PDF:", error);
+    }
   };
 
   return (
