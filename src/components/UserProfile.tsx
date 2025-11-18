@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { User, Shield, Key, Activity, ShieldCheck, ShieldOff } from 'lucide-react';
 import { TwoFactorSetup } from './TwoFactorSetup';
 import { useTranslation } from 'react-i18next';
+import { logger } from '@/lib/logger';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -69,7 +70,7 @@ export function UserProfile() {
       if (error) throw error;
       setRecentActivities(data || []);
     } catch (error) {
-      console.error('Error fetching activities:', error);
+      logger.error('Error fetching activities:', error);
     }
   };
 
@@ -81,7 +82,7 @@ export function UserProfile() {
       const hasMfa = data?.totp && data.totp.length > 0;
       setMfaEnabled(hasMfa);
     } catch (error) {
-      console.error('Error checking MFA status:', error);
+      logger.error('Error checking MFA status:', error);
     }
   };
 
@@ -107,7 +108,7 @@ export function UserProfile() {
         description: t('profile.mfaDisabledDescription'),
       });
     } catch (error: any) {
-      console.error('Error disabling MFA:', error);
+      logger.error('Error disabling MFA:', error);
       toast({
         title: t('common.error'),
         description: t('profile.mfaDisableError'),
@@ -169,7 +170,7 @@ export function UserProfile() {
           : t('profile.profileUpdated'),
       });
     } catch (error) {
-      console.error('Error updating profile:', error);
+      logger.error('Error updating profile:', error);
       toast({
         title: t('common.error'),
         description: t('profile.profileUpdateError'),
@@ -195,7 +196,7 @@ export function UserProfile() {
         description: t('profile.emailSentDescription'),
       });
     } catch (error) {
-      console.error('Error sending reset email:', error);
+      logger.error('Error sending reset email:', error);
       toast({
         title: t('common.error'),
         description: t('profile.resetEmailError'),

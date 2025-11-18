@@ -18,6 +18,7 @@ import {
   RefreshCw
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { logger } from "@/lib/logger";
 import { AppSettings, exportData, importData } from "@/lib/supabase-storage";
 import { recalculateInvoiceMonthsForUser } from "@/lib/fixes/recalculateInvoiceMonths";
 import { useTranslation } from 'react-i18next';
@@ -38,7 +39,7 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
 
   // Sync local settings when props change
   useEffect(() => {
-    console.log('Settings props updated:', settings);
+    logger.debug('Settings props updated:', settings);
     setLocalSettings(settings);
   }, [settings]);
 
@@ -60,7 +61,7 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
         description: t('settings.settingsSavedDescription'),
       });
     } catch (error) {
-      console.error('Settings save error:', error);
+      logger.error('Settings save error:', error);
       toast({
         title: t('common.error'),
         description: t('settings.errorSaving'),
@@ -109,7 +110,7 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
         description: t('settings.backupCreatedDescription', { filename: `planiflow-backup-${dateStr}-${timeStr}.json` }),
       });
     } catch (error) {
-      console.error('Export error:', error);
+      logger.error('Export error:', error);
       toast({
         title: t('settings.backupError'),
         description: t('settings.backupErrorDescription'),
@@ -184,7 +185,7 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
           });
         }
       } catch (error) {
-        console.error('Import error:', error);
+        logger.error('Import error:', error);
         toast({
           title: t('settings.importError'),
           description: error instanceof Error ? error.message : t('settings.invalidOrCorruptedFile'),
@@ -229,7 +230,7 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
         }),
       });
     } catch (error) {
-      console.error('Fix error:', error);
+      logger.error('Fix error:', error);
       toast({
         title: t('settings.fixError'),
         description: t('settings.fixErrorDescription'),

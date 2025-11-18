@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useSettings } from "@/context/SettingsContext";
+import { logger } from "@/lib/logger";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -53,7 +54,7 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
   // Força atualização quando contas ou transações mudam
   const updateKey = useMemo(() => {
     const key = `${allAccounts.length}-${allTransactions.length}-${allAccounts.map(a => a.balance).join(',').substring(0, 50)}`;
-    console.log('🔑 CreditBillsPage updateKey:', key);
+    logger.debug('CreditBillsPage updateKey:', key);
     return key;
   }, [allAccounts, allTransactions]);
 
@@ -100,7 +101,7 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
 
   // Memo para calcular os detalhes da fatura do mês selecionado (alinhado ao mês exibido)
   const allBillDetails = useMemo(() => {
-    console.log('🔄 Recalculando faturas...', updateKey);
+    logger.debug('Recalculando faturas...', updateKey);
     const targetMonth = format(selectedMonthDate, 'yyyy-MM');
     const nextMonth = format(addMonths(selectedMonthDate, 1), 'yyyy-MM');
 
@@ -187,7 +188,7 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
       // Uma fatura está "Paga" se não há valor a pagar (crédito) OU se está fechada e foi paga
       const isPaid = amountDue <= 0 || (isClosed && paidAmount >= amountDue);
 
-      console.info("[CreditBillsPage] Status check", {
+      logger.debug("[CreditBillsPage] Status check", {
         account: details.account.name,
         targetMonth,
         closingDate: format(closingDate, 'dd/MM/yyyy'),

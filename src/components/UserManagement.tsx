@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { Users, Shield, Activity, Trash2 } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 interface Profile {
   id: string;
@@ -73,7 +74,7 @@ export function UserManagement() {
         subscription_expires_at: user.subscription_expires_at ?? undefined,
       })));
     } catch (error) {
-      console.error('Error fetching users:', error);
+      logger.error('Error fetching users:', error);
       toast({
         title: 'Erro',
         description: 'Não foi possível carregar os usuários.',
@@ -93,7 +94,7 @@ export function UserManagement() {
         .limit(100);
 
       if (error) {
-        console.error('Error fetching audit logs:', error);
+        logger.error('Error fetching audit logs:', error);
         return;
       }
       setAuditLogs((data || []).map(log => ({
@@ -103,7 +104,7 @@ export function UserManagement() {
         profiles: undefined,
       })));
     } catch (error) {
-      console.error('Error fetching audit logs:', error);
+      logger.error('Error fetching audit logs:', error);
       toast({
         title: 'Erro',
         description: 'Não foi possível carregar os logs de auditoria.',
@@ -114,7 +115,7 @@ export function UserManagement() {
 
   const updateUserRole = async (userId: string, newRole: 'admin' | 'user' | 'subscriber' | 'trial') => {
     try {
-      console.log('Updating user role:', { userId, newRole });
+      logger.debug('Updating user role:', { userId, newRole });
       
       const { error } = await supabase
         .from('profiles')
@@ -122,11 +123,11 @@ export function UserManagement() {
         .eq('user_id', userId);
 
       if (error) {
-        console.error('Supabase error updating role:', error);
+        logger.error('Supabase error updating role:', error);
         throw error;
       }
 
-      console.log('User role updated successfully');
+      logger.success('User role updated successfully');
 
       // Log the activity
       try {
@@ -137,9 +138,9 @@ export function UserManagement() {
           p_resource_id: userId,
           p_new_values: { role: newRole }
         });
-        console.log('Activity logged successfully');
+        logger.success('Activity logged successfully');
       } catch (logError) {
-        console.error('Error logging activity:', logError);
+        logger.error('Error logging activity:', logError);
       }
 
       setUsers(prev => prev.map(user => 
@@ -151,7 +152,7 @@ export function UserManagement() {
         description: 'Função do usuário atualizada com sucesso.',
       });
     } catch (error: any) {
-      console.error('Error updating user role:', error);
+      logger.error('Error updating user role:', error);
       toast({
         title: 'Erro',
         description: `Não foi possível atualizar a função do usuário: ${error?.message || 'Erro desconhecido'}`,

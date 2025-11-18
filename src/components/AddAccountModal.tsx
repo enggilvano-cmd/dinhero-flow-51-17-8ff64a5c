@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { PREDEFINED_COLORS, ACCOUNT_TYPE_LABELS } from "@/types";
+import { logger } from "@/lib/logger";
 import { ColorPicker } from "./forms/ColorPicker";
 import { CurrencyInput } from "@/components/forms/CurrencyInput";
 import { useAccountStore } from "@/stores/AccountStore";
@@ -149,7 +150,7 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
 
       onOpenChange(false);
     } catch (error) {
-      console.error("Failed to add account:", error);
+      logger.error("Failed to add account:", error);
       toast({
         title: t("modals.addAccount.errors.serverError"),
         description: t("modals.addAccount.errors.serverErrorDescription"),

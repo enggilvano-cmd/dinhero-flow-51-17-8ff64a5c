@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { toast } from '@/hooks/use-toast';
 import { Shield } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { logger } from '@/lib/logger';
 
 interface TwoFactorVerifyProps {
   onVerified: () => void;
@@ -55,7 +56,7 @@ export function TwoFactorVerify({ onVerified, onCancel }: TwoFactorVerifyProps) 
 
       onVerified();
     } catch (error: any) {
-      console.error('Erro ao verificar 2FA:', error);
+      logger.error('Erro ao verificar 2FA:', error);
       toast({
         title: t('twoFactor.verify.errors.invalidCode'),
         description: t('twoFactor.verify.errors.incorrectCode'),

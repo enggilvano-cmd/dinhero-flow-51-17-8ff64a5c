@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Settings, Save, Shield } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useTranslation } from 'react-i18next';
+import { logger } from '@/lib/logger';
 
 export default function SystemSettings() {
   const [trialDays, setTrialDays] = useState<string>('7');
@@ -30,7 +31,7 @@ export default function SystemSettings() {
         .single();
 
       if (error) {
-        console.error('Error fetching settings:', error);
+        logger.error('Error fetching settings:', error);
         toast({
           title: t('systemSettings.loadError'),
           description: t('systemSettings.loadErrorDescription'),
@@ -43,7 +44,7 @@ export default function SystemSettings() {
         setTrialDays(data.setting_value);
       }
     } catch (error) {
-      console.error('Error fetching settings:', error);
+      logger.error('Error fetching settings:', error);
       toast({
         title: t('systemSettings.loadError'),
         description: t('systemSettings.unexpectedLoadError'),
@@ -75,7 +76,7 @@ export default function SystemSettings() {
         .eq('setting_key', 'trial_period_days');
 
       if (error) {
-        console.error('Error updating setting:', error);
+        logger.error('Error updating setting:', error);
         toast({
           title: t('common.error'),
           description: t('systemSettings.errors.saveSetting'),
@@ -89,7 +90,7 @@ export default function SystemSettings() {
         description: t('systemSettings.success.settingSaved', { days: trialDays }),
       });
     } catch (error) {
-      console.error('Error updating setting:', error);
+      logger.error('Error updating setting:', error);
       toast({
         title: t('common.error'),
         description: t('systemSettings.errors.unexpectedSave'),

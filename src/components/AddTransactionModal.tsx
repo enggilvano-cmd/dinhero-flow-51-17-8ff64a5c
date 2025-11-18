@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
+import { logger } from "@/lib/logger";
 import {
   createDateFromString,
   getTodayString,
@@ -214,7 +215,7 @@ export function AddTransactionModal({
 
     // 4. REMOVER A CONVERSÃO. O VALOR JÁ ESTÁ EM CENTAVOS.
     const numericAmount = formData.amount;
-    console.log("DEBUG: Valor (em centavos) vindo do estado:", numericAmount);
+    logger.debug("Valor (em centavos) vindo do estado:", numericAmount);
 
     // Garantir que o valor convertido seja usado corretamente
     if (isNaN(numericAmount) || numericAmount <= 0) {
@@ -489,7 +490,7 @@ export function AddTransactionModal({
             .in("id", childTransactionIds);
 
           if (updateError) {
-            console.error("Erro ao vincular transações filhas:", updateError);
+            logger.error("Erro ao vincular transações filhas:", updateError);
           }
         }
 
@@ -554,7 +555,7 @@ export function AddTransactionModal({
       setCustomInstallments("");
       onOpenChange(false);
     } catch (error) {
-      console.error("Error creating transaction(s):", error);
+      logger.error("Error creating transaction(s):", error);
       toast({
         title: t("common.error"),
         description: t("modals.addTransaction.errors.createFailed"),

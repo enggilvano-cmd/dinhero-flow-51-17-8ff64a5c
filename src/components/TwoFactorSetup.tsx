@@ -7,6 +7,7 @@ import { toast } from '@/hooks/use-toast';
 import { Shield, QrCode, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useTranslation } from 'react-i18next';
+import { logger } from '@/lib/logger';
 
 interface TwoFactorSetupProps {
   onComplete: () => void;
@@ -36,7 +37,7 @@ export function TwoFactorSetup({ onComplete }: TwoFactorSetupProps) {
         setStep('verify');
       }
     } catch (error: any) {
-      console.error('Erro ao iniciar 2FA:', error);
+      logger.error('Erro ao iniciar 2FA:', error);
       toast({
         title: t('twoFactor.setup.errors.setupFailed'),
         description: error.message || t('twoFactor.setup.errors.setupFailedDescription'),
@@ -79,7 +80,7 @@ export function TwoFactorSetup({ onComplete }: TwoFactorSetupProps) {
 
       onComplete();
     } catch (error: any) {
-      console.error('Erro ao verificar código:', error);
+      logger.error('Erro ao verificar código:', error);
       toast({
         title: t('twoFactor.verify.errors.invalidCode'),
         description: t('twoFactor.verify.errors.verifyFailed'),

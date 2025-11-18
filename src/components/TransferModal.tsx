@@ -13,6 +13,7 @@ import { AccountBalanceDetails } from "./AccountBalanceDetails";
 import { useAccountStore } from "@/stores/AccountStore";
 import { Account } from "@/types";
 import { useTranslation } from "react-i18next";
+import { logger } from "@/lib/logger";
 
 interface TransferModalProps {
   open: boolean;
@@ -110,7 +111,7 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
       onOpenChange(false);
     } catch (error) {
       // A função onTransfer deve lançar um erro em caso de falha para este bloco ser ativado.
-      console.error("Transfer failed:", error);
+      logger.error("Transfer failed:", error);
       toast({
         title: t("modals.transfer.errors.title"),
         description: t("modals.transfer.errors.failed"),

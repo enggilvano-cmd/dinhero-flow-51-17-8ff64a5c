@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { logger } from "@/lib/logger";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -122,7 +123,7 @@ export function BankReconciliationPage({
       // Recarregar transações
       window.location.reload();
     } catch (error: any) {
-      console.error("Error updating reconciliation:", error);
+      logger.error("Error updating reconciliation:", error);
       toast({
         title: t("common.error"),
         description: error.message,

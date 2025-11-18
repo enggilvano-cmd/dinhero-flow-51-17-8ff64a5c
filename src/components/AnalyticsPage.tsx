@@ -1,4 +1,5 @@
 import { createDateFromString } from "@/lib/dateUtils";
+import { logger } from "@/lib/logger";
 
 import { useMemo, useState, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -545,7 +546,7 @@ export default function AnalyticsPage({
         description: t("analytics.pdfDownloadSuccess"),
       });
     } catch (error) {
-      console.error("Erro ao gerar PDF:", error);
+      logger.error("Erro ao gerar PDF:", error);
       toast({
         title: t("analytics.pdfError"),
         description: t("analytics.pdfErrorDescription"),
