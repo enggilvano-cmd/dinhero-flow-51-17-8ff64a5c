@@ -439,32 +439,76 @@ export function AccountsPage({
 
                   {/* Saldo e Informações Financeiras */}
                   <div className="flex flex-col gap-2">
-                    {/* Saldo */}
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs sm:text-sm text-muted-foreground font-medium">
-                        {t('accounts.balance')}:
-                      </span>
-                      <span
-                        className={`text-sm sm:text-base font-bold ${
-                          account.type === "credit"
-                            ? "balance-negative"
-                            : account.balance >= 0
-                            ? "balance-positive"
-                            : "balance-negative"
-                        }`}
-                      >
-                        {formatCents(account.balance)}
-                      </span>
-                    </div>
-
-                    {/* Informações do Limite */}
-                    {account.limit_amount && account.limit_amount > 0 && (
-                      <div className="space-y-2">
+                    {/* Para cartões de crédito */}
+                    {account.type === "credit" ? (
+                      <>
+                        {/* Dívida ou Crédito a favor */}
                         <div className="flex items-center justify-between">
-                          <span className="text-xs sm:text-sm text-muted-foreground">
-                            {t('accounts.limit')}:
+                          <span className="text-xs sm:text-sm text-muted-foreground font-medium">
+                            {account.balance < 0 ? t('accounts.debt') : t('accounts.creditInFavor')}:
                           </span>
-                          <span className="text-xs sm:text-sm font-medium">
+                          <span
+                            className={`text-sm sm:text-base font-bold ${
+                              account.balance < 0 ? "text-destructive" : "text-emerald-600"
+                            }`}
+                          >
+                            {formatCents(Math.abs(account.balance))}
+                          </span>
+                        </div>
+                        
+                        {/* Limite disponível */}
+                        {account.limit_amount && account.limit_amount > 0 && (
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs sm:text-sm text-muted-foreground">
+                              {t('accounts.available')}:
+                            </span>
+                            <span className="text-xs sm:text-sm font-medium text-blue-600">
+                              {formatCents((account.limit_amount || 0) - Math.abs(Math.min(account.balance, 0)))}
+                            </span>
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      /* Outras contas: comportamento normal */
+                      <>
+                        {/* Saldo */}
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs sm:text-sm text-muted-foreground font-medium">
+                            {t('accounts.balance')}:
+                          </span>
+                          <span
+                            className={`text-sm sm:text-base font-bold ${
+                              account.balance >= 0
+                                ? "balance-positive"
+                                : "balance-negative"
+                            }`}
+                          >
+                            {formatCents(account.balance)}
+                          </span>
+                        </div>
+
+                        {/* Disponível (com limite) */}
+                        {account.limit_amount && account.limit_amount > 0 && (
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs sm:text-sm text-muted-foreground">
+                              {t('accounts.available')}:
+                            </span>
+                            <span className="text-xs sm:text-sm font-medium text-blue-600">
+                              {formatCents(account.balance + (account.limit_amount || 0))}
+                            </span>
+                          </div>
+                        )}
+                      </>
+                    )}
+
+                    {/* Barra de progresso de uso */}
+                    {account.limit_amount && account.limit_amount > 0 && (
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-muted-foreground">
+                            {account.type === "credit" ? t('accounts.used') : t('accounts.limit')}:
+                          </span>
+                          <span className="text-xs font-medium">
                             {formatCents(account.limit_amount || 0)}
                           </span>
                         </div>
@@ -480,36 +524,34 @@ export function AccountsPage({
                               }`}
                               style={{
                                 width: `${Math.min(
-                                  Math.max(
-                                    account.type === "credit"
-                                      ? (Math.abs(account.balance) /
-                                          (account.limit_amount || 1)) *
-                                        100
-                                      : account.balance < 0
-                                      ? (Math.abs(account.balance) /
-                                          (account.limit_amount || 1)) *
-                                        100
-                                      : 0,
-                                    0
-                                  ),
+                                  account.type === "credit"
+                                    ? (Math.abs(Math.min(account.balance, 0)) /
+                                        (account.limit_amount || 1)) *
+                                      100
+                                    : account.balance < 0
+                                    ? (Math.abs(account.balance) /
+                                        (account.limit_amount || 1)) *
+                                      100
+                                    : 0,
                                   100
                                 )}%`,
                               }}
                             />
                           </div>
-                          <span className="text-xs text-muted-foreground font-medium min-w-[3rem] text-right">
-                            {Math.round(
-                              account.type === "credit"
-                                ? (Math.abs(account.balance) /
+                          <span className="text-xs font-medium">
+                            {account.type === "credit"
+                              ? `${Math.round(
+                                  (Math.abs(Math.min(account.balance, 0)) /
                                     (account.limit_amount || 1)) *
-                                  100
-                                : account.balance < 0
-                                ? (Math.abs(account.balance) /
+                                    100
+                                )}%`
+                              : account.balance < 0
+                              ? `${Math.round(
+                                  (Math.abs(account.balance) /
                                     (account.limit_amount || 1)) *
-                                  100
-                                : 0
-                            )}
-                            %
+                                    100
+                                )}%`
+                              : "0%"}
                           </span>
                         </div>
                       </div>
