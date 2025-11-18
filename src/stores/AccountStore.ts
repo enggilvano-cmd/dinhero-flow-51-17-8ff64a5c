@@ -120,7 +120,7 @@ export const useAccountStore = create<AccountStoreState>((set, get) => ({
 
     const creditTransaction = {
       type: "income" as const, // Pagamento é uma 'receita' para o cartão
-      amount,
+      amount: -amount, // Inverter o sinal: amount negativo vira positivo (reduz dívida)
       account_id: creditCardAccountId,
       description: `Pagamento Recebido de ${debitAccount.name}`,
       date: paymentDate,

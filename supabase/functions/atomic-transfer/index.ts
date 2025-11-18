@@ -77,15 +77,31 @@ Deno.serve(async (req) => {
     const fromAccount = accounts.find(a => a.id === transfer.from_account_id);
     const toAccount = accounts.find(a => a.id === transfer.to_account_id);
 
-    // Validar limite
-    if (fromAccount.type === 'checking' && fromAccount.limit_amount) {
+    // Validar limite para contas checking e savings
+    if (fromAccount.type === 'checking' || fromAccount.type === 'savings') {
+      const limit = fromAccount.limit_amount || 0;
       const futureBalance = fromAccount.balance - transfer.amount;
-      if (futureBalance < 0 && Math.abs(futureBalance) > fromAccount.limit_amount) {
+      
+      if (futureBalance < 0 && Math.abs(futureBalance) > limit) {
         return new Response(
           JSON.stringify({
             error: `Transfer exceeds limit of ${fromAccount.name}`,
-            limit: fromAccount.limit_amount,
+            limit: limit,
             futureBalance,
+          }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    } else if (fromAccount.type === 'credit') {
+      // Para cartão de crédito, verificar se não excede o limite disponível
+      const debt = Math.abs(Math.min(fromAccount.balance, 0));
+      const availableCredit = (fromAccount.limit_amount || 0) - debt;
+      
+      if (transfer.amount > availableCredit) {
+        return new Response(
+          JSON.stringify({
+            error: `Transfer exceeds available credit of ${fromAccount.name}`,
+            availableCredit,
           }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );

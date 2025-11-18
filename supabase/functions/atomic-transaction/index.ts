@@ -72,19 +72,13 @@ Deno.serve(async (req) => {
       throw accountError;
     }
 
-    const isCreditCard = accountData.type === 'credit';
-    
-    // Para cartões de crédito, inverter a lógica:
-    // - Despesa: saldo fica mais negativo (aumenta dívida)
-    // - Receita/Pagamento: saldo fica menos negativo (diminui dívida)
-    let amount: number;
-    if (isCreditCard) {
-      // Cartão: expense aumenta dívida (negativo), income diminui (positivo)
-      amount = transaction.type === 'expense' ? -Math.abs(transaction.amount) : Math.abs(transaction.amount);
-    } else {
-      // Outras contas: comportamento normal
-      amount = transaction.type === 'expense' ? -Math.abs(transaction.amount) : Math.abs(transaction.amount);
-    }
+    // Mesma lógica para todos os tipos de conta após migração:
+    // - Despesa: saldo diminui (negativo)
+    // - Receita: saldo aumenta (positivo)
+    // Para cartões de crédito: expense aumenta dívida (mais negativo), income diminui dívida (menos negativo)
+    const amount = transaction.type === 'expense' 
+      ? -Math.abs(transaction.amount) 
+      : Math.abs(transaction.amount);
 
     // 1. Inserir transação
     const { data: newTransaction, error: insertError } = await supabaseClient
