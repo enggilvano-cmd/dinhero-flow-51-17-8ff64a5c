@@ -16,6 +16,7 @@ import { BankReconciliationPage } from "@/components/BankReconciliationPage";
 import { ReportsPage } from "@/components/ReportsPage";
 import { AccountingReportsPage } from "@/components/AccountingReportsPage";
 import { LedgerPage } from "@/components/LedgerPage";
+import { PeriodClosurePage } from "@/components/PeriodClosurePage";
 import { AddAccountModal } from "@/components/AddAccountModal";
 import { AddTransactionModal } from "@/components/AddTransactionModal";
 import { EditAccountModal } from "@/components/EditAccountModal";
@@ -1122,6 +1123,8 @@ const PlaniFlowApp = () => {
         return <AccountingReportsPage />;
       case "ledger":
         return <LedgerPage />;
+      case "period-closure":
+        return <PeriodClosurePage />;
       case "profile":
         return <UserProfile />;
       case "settings":

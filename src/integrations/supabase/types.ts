@@ -309,6 +309,54 @@ export type Database = {
           },
         ]
       }
+      period_closures: {
+        Row: {
+          closed_at: string
+          closed_by: string
+          closure_type: string
+          created_at: string
+          id: string
+          is_locked: boolean
+          notes: string | null
+          period_end: string
+          period_start: string
+          unlocked_at: string | null
+          unlocked_by: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          closed_at?: string
+          closed_by: string
+          closure_type: string
+          created_at?: string
+          id?: string
+          is_locked?: boolean
+          notes?: string | null
+          period_end: string
+          period_start: string
+          unlocked_at?: string | null
+          unlocked_by?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          closed_at?: string
+          closed_by?: string
+          closure_type?: string
+          created_at?: string
+          id?: string
+          is_locked?: boolean
+          notes?: string | null
+          period_end?: string
+          period_start?: string
+          unlocked_at?: string | null
+          unlocked_by?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -600,6 +648,10 @@ export type Database = {
         Returns: undefined
       }
       is_admin: { Args: { check_user_id: string }; Returns: boolean }
+      is_period_locked: {
+        Args: { p_date: string; p_user_id: string }
+        Returns: boolean
+      }
       is_subscription_active: {
         Args: { check_user_id: string }
         Returns: boolean

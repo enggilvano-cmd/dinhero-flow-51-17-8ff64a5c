@@ -67,6 +67,44 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Verificar se o período original está fechado
+    const { data: isOldPeriodLocked } = await supabaseClient
+      .rpc('is_period_locked', { 
+        p_user_id: user.id, 
+        p_date: oldTransaction.date 
+      });
+
+    if (isOldPeriodLocked) {
+      console.error('[atomic-edit] ERROR: Original period is locked:', oldTransaction.date);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Period is locked',
+          message: 'Cannot edit transactions in a locked period. Please unlock the period first.' 
+        }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Se está mudando a data, verificar se o novo período também está fechado
+    if (updates.date && updates.date !== oldTransaction.date) {
+      const { data: isNewPeriodLocked } = await supabaseClient
+        .rpc('is_period_locked', { 
+          p_user_id: user.id, 
+          p_date: updates.date 
+        });
+
+      if (isNewPeriodLocked) {
+        console.error('[atomic-edit] ERROR: New period is locked:', updates.date);
+        return new Response(
+          JSON.stringify({ 
+            error: 'Period is locked',
+            message: 'Cannot move transactions to a locked period. Please unlock the period first.' 
+          }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
     const affectedAccounts = new Set<string>([oldTransaction.account_id]);
     if (updates.account_id && updates.account_id !== oldTransaction.account_id) {
       affectedAccounts.add(updates.account_id);
