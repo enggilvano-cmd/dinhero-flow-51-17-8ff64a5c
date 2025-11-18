@@ -14,6 +14,7 @@ import { RecurringTransactionsPage } from "@/components/RecurringTransactionsPag
 import { FixedTransactionsPage } from "@/components/FixedTransactionsPage";
 import { BankReconciliationPage } from "@/components/BankReconciliationPage";
 import { ReportsPage } from "@/components/ReportsPage";
+import { AccountingReportsPage } from "@/components/AccountingReportsPage";
 import { AddAccountModal } from "@/components/AddAccountModal";
 import { AddTransactionModal } from "@/components/AddTransactionModal";
 import { EditAccountModal } from "@/components/EditAccountModal";
@@ -1116,6 +1117,8 @@ const PlaniFlowApp = () => {
             categories={categories}
           />
         );
+      case "accounting-reports":
+        return <AccountingReportsPage />;
       case "profile":
         return <UserProfile />;
       case "settings":
