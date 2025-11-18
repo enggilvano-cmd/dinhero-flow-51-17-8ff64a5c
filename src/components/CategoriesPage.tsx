@@ -10,18 +10,16 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Plus, Edit, Trash2, Search, Tag, TrendingUp, TrendingDown, ArrowUpDown, FileDown, Upload, MoreVertical } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { AddCategoryModal } from "@/components/AddCategoryModal";
 import { EditCategoryModal } from "@/components/EditCategoryModal";
 import { ImportCategoriesModal } from "@/components/ImportCategoriesModal";
-import { logger } from "@/lib/logger";
+import { getUserId, withErrorHandling } from "@/lib/supabase-utils";
 import * as XLSX from 'xlsx';
 
 interface CategoriesPageProps {}
 
 export function CategoriesPage({}: CategoriesPageProps) {
-  const { user } = useAuth();
   const [categories, setCategories] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<"all" | "income" | "expense" | "both">("all");
@@ -36,90 +34,77 @@ export function CategoriesPage({}: CategoriesPageProps) {
   const { t } = useTranslation();
 
   useEffect(() => {
-    if (!user) return;
-    
     const loadCategories = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('categories')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false });
+      const { data } = await withErrorHandling(
+        async () => {
+          const userId = await getUserId();
+          const { data, error } = await supabase
+            .from('categories')
+            .select('*')
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false });
 
-        if (error) {
-          logger.error('Error loading categories:', error);
-        } else {
-          setCategories(data || []);
-        }
-      } catch (error) {
-        logger.error('Error loading categories:', error);
-      } finally {
-        setLoading(false);
+          if (error) throw error;
+          return data || [];
+        },
+        'Error loading categories',
+        false // Don't show toast on load error
+      );
+
+      if (data) {
+        setCategories(data);
       }
+      setLoading(false);
     };
 
     loadCategories();
-  }, [user]);
+  }, []);
 
   const handleAddCategory = async (categoryData: any) => {
-    if (!user) return;
-    
-    try {
-      const { data, error } = await supabase
-        .from('categories')
-        .insert([{
-          ...categoryData,
-          user_id: user.id
-        }])
-        .select()
-        .single();
+    const { data } = await withErrorHandling(
+      async () => {
+        const userId = await getUserId();
+        const { data, error } = await supabase
+          .from('categories')
+          .insert([{
+            ...categoryData,
+            user_id: userId
+          }])
+          .select()
+          .single();
 
-      if (error) {
-        logger.error('Error adding category:', error);
-        toast({
-          title: t("common.error"),
-          description: t("messages.errorOccurred"),
-          variant: "destructive"
-        });
-        return;
-      }
+        if (error) throw error;
+        return data;
+      },
+      'Error adding category'
+    );
 
+    if (data) {
       setCategories(prev => [...prev, data]);
-      
       toast({
         title: t("categories.categoryAdded"),
         description: t("messages.saveSuccess"),
-      });
-    } catch (error) {
-      logger.error('Error adding category:', error);
-      toast({
-        title: t("common.error"),
-        description: t("messages.errorOccurred"),
-        variant: "destructive"
       });
     }
   };
 
   const handleEditCategory = async (updatedCategory: any) => {
-    if (!user) return;
-    
-    try {
-      const { error } = await supabase
-        .from('categories')
-        .update(updatedCategory)
-        .eq('id', updatedCategory.id)
-        .eq('user_id', user.id);
+    const { data } = await withErrorHandling(
+      async () => {
+        const userId = await getUserId();
+        const { error } = await supabase
+          .from('categories')
+          .update(updatedCategory)
+          .eq('id', updatedCategory.id)
+          .eq('user_id', userId);
 
-      if (error) {
-        logger.error('Error updating category:', error);
-        toast({
-          title: t("common.error"),
-          description: t("messages.errorOccurred"),
-          variant: "destructive"
-        });
-        return;
-      }
+        if (error) throw error;
+        return true;
+      },
+      'Error updating category'
+    );
 
+    if (data) {
       setCategories(prev => prev.map(cat => 
         cat.id === updatedCategory.id ? { ...cat, ...updatedCategory } : cat
       ));
@@ -129,70 +114,51 @@ export function CategoriesPage({}: CategoriesPageProps) {
         title: t("categories.categoryUpdated"),
         description: t("messages.updateSuccess"),
       });
-    } catch (error) {
-      logger.error('Error updating category:', error);
-      toast({
-        title: t("common.error"),
-        description: t("messages.errorOccurred"),
-        variant: "destructive"
-      });
     }
   };
 
   const handleDeleteCategory = async (categoryId: string) => {
-    if (!user) return;
-    
-    try {
-      // Check if category is being used in transactions
-      const { data: transactions, error: transError } = await supabase
-        .from('transactions')
-        .select('id')
-        .eq('category_id', categoryId)
-        .eq('user_id', user.id)
-        .limit(1);
-      
-      if (transError) {
-        logger.error('Error checking transactions:', transError);
-        return;
-      }
+    const { data } = await withErrorHandling(
+      async () => {
+        const userId = await getUserId();
+        
+        // Check if category is being used in transactions
+        const { data: transactions, error: transError } = await supabase
+          .from('transactions')
+          .select('id')
+          .eq('category_id', categoryId)
+          .eq('user_id', userId)
+          .limit(1);
+        
+        if (transError) throw transError;
 
-      if (transactions && transactions.length > 0) {
-        toast({
-          title: t("common.error"),
-          description: t("messages.errorOccurred"),
-          variant: "destructive"
-        });
-        return;
-      }
+        if (transactions && transactions.length > 0) {
+          toast({
+            title: t("common.error"),
+            description: t("categories.cannotDeleteInUse"),
+            variant: "destructive"
+          });
+          return null;
+        }
 
-      const { error } = await supabase
-        .from('categories')
-        .delete()
-        .eq('id', categoryId)
-        .eq('user_id', user.id);
+        const { error } = await supabase
+          .from('categories')
+          .delete()
+          .eq('id', categoryId)
+          .eq('user_id', userId);
 
-      if (error) {
-        logger.error('Error deleting category:', error);
-        toast({
-          title: t("common.error"),
-          description: t("messages.errorOccurred"),
-          variant: "destructive"
-        });
-        return;
-      }
+        if (error) throw error;
+        return true;
+      },
+      'Error deleting category'
+    );
 
+    if (data) {
       setCategories(prev => prev.filter(cat => cat.id !== categoryId));
       
       toast({
         title: t("categories.categoryDeleted"),
         description: t("messages.deleteSuccess"),
-      });
-    } catch (error) {
-      logger.error('Error deleting category:', error);
-      toast({
-        title: t("common.error"),
-        description: t("messages.errorOccurred"),
-        variant: "destructive"
       });
     }
   };
@@ -203,65 +169,49 @@ export function CategoriesPage({}: CategoriesPageProps) {
   };
 
   const handleImportCategories = async (categoriesToAdd: any[], categoriesToReplaceIds: string[]) => {
-    if (!user) return;
+    const { data } = await withErrorHandling(
+      async () => {
+        const userId = await getUserId();
 
-    try {
-      // Deletar categorias que serão substituídas
-      if (categoriesToReplaceIds.length > 0) {
-        const { error: deleteError } = await supabase
-          .from('categories')
-          .delete()
-          .in('id', categoriesToReplaceIds)
-          .eq('user_id', user.id);
+        // Delete categories to be replaced
+        if (categoriesToReplaceIds.length > 0) {
+          const { error: deleteError } = await supabase
+            .from('categories')
+            .delete()
+            .in('id', categoriesToReplaceIds)
+            .eq('user_id', userId);
 
-        if (deleteError) {
-          logger.error('Error deleting categories:', deleteError);
-          toast({
-            title: t("common.error"),
-            description: t("messages.errorOccurred"),
-            variant: "destructive"
-          });
-          return;
-        }
-      }
-
-      // Inserir novas categorias
-      if (categoriesToAdd.length > 0) {
-        const { data, error } = await supabase
-          .from('categories')
-          .insert(categoriesToAdd.map(cat => ({
-            ...cat,
-            user_id: user.id
-          })))
-          .select();
-
-        if (error) {
-          logger.error('Error importing categories:', error);
-          toast({
-            title: t("common.error"),
-            description: t("messages.errorOccurred"),
-            variant: "destructive"
-          });
-          return;
+          if (deleteError) throw deleteError;
         }
 
-        // Atualizar lista local
-        setCategories(prev => {
-          const filtered = prev.filter(cat => !categoriesToReplaceIds.includes(cat.id));
-          return [...filtered, ...(data || [])];
-        });
+        // Insert new categories
+        if (categoriesToAdd.length > 0) {
+          const { data, error } = await supabase
+            .from('categories')
+            .insert(categoriesToAdd.map(cat => ({
+              ...cat,
+              user_id: userId
+            })))
+            .select();
 
-        toast({
-          title: t("common.success"),
-          description: `${categoriesToAdd.length} ${t("categories.title").toLowerCase()}`,
-        });
-      }
-    } catch (error) {
-      logger.error('Error importing categories:', error);
+          if (error) throw error;
+          return { data, categoriesToReplaceIds };
+        }
+
+        return null;
+      },
+      'Error importing categories'
+    );
+
+    if (data) {
+      setCategories(prev => {
+        const filtered = prev.filter(cat => !data.categoriesToReplaceIds.includes(cat.id));
+        return [...filtered, ...(data.data || [])];
+      });
+
       toast({
-        title: t("common.error"),
-        description: t("messages.errorOccurred"),
-        variant: "destructive"
+        title: t("common.success"),
+        description: `${categoriesToAdd.length} ${t("categories.title").toLowerCase()}`,
       });
     }
   };
