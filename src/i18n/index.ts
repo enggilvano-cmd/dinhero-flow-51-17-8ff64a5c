@@ -3,6 +3,7 @@ import { initReactI18next } from 'react-i18next';
 import ptBR from './locales/pt-BR.json';
 import enUS from './locales/en-US.json';
 import esES from './locales/es-ES.json';
+import { logger } from '@/lib/logger';
 
 // Versão dos arquivos de tradução - incremente quando atualizar traduções
 const TRANSLATION_VERSION = '1.0.10';
@@ -15,8 +16,8 @@ const checkTranslationVersion = (): void => {
   const storedVersion = localStorage.getItem(VERSION_KEY);
   
   if (storedVersion && storedVersion !== TRANSLATION_VERSION) {
-    console.log(`🔄 Nova versão de tradução detectada: ${storedVersion} -> ${TRANSLATION_VERSION}`);
-    console.log('🔄 Limpando cache e recarregando...');
+    logger.info(`🔄 Nova versão de tradução detectada: ${storedVersion} -> ${TRANSLATION_VERSION}`);
+    logger.info('🔄 Limpando cache e recarregando...');
     
     // Limpar cache do navegador
     if ('caches' in window) {
@@ -40,7 +41,7 @@ const checkTranslationVersion = (): void => {
   } else if (!storedVersion) {
     // Primeira vez - apenas armazenar a versão
     localStorage.setItem(VERSION_KEY, TRANSLATION_VERSION);
-    console.log(`✅ Versão de tradução inicializada: ${TRANSLATION_VERSION}`);
+    logger.info(`✅ Versão de tradução inicializada: ${TRANSLATION_VERSION}`);
   }
 };
 
@@ -84,7 +85,7 @@ export const detectBrowserLanguage = (): string => {
   for (const browserLang of browserLanguages) {
     // Tentar match exato
     if (supportedLanguages.includes(browserLang)) {
-      console.log(`🌍 Idioma detectado (match exato): ${browserLang}`);
+      logger.info(`🌍 Idioma detectado (match exato): ${browserLang}`);
       return browserLang;
     }
     
@@ -92,19 +93,19 @@ export const detectBrowserLanguage = (): string => {
     const langCode = browserLang.split('-')[0];
     const mappedLang = languageMap[langCode];
     if (mappedLang && supportedLanguages.includes(mappedLang)) {
-      console.log(`🌍 Idioma detectado (mapeado): ${browserLang} -> ${mappedLang}`);
+      logger.info(`🌍 Idioma detectado (mapeado): ${browserLang} -> ${mappedLang}`);
       return mappedLang;
     }
     
     // Tentar match completo no mapa
     if (languageMap[browserLang]) {
-      console.log(`🌍 Idioma detectado (mapa): ${browserLang} -> ${languageMap[browserLang]}`);
+      logger.info(`🌍 Idioma detectado (mapa): ${browserLang} -> ${languageMap[browserLang]}`);
       return languageMap[browserLang];
     }
   }
   
   // Fallback para português (Brasil)
-  console.log('🌍 Idioma não detectado, usando fallback: pt-BR');
+  logger.info('🌍 Idioma não detectado, usando fallback: pt-BR');
   return 'pt-BR';
 };
 

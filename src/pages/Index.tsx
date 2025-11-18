@@ -276,7 +276,7 @@ const PlaniFlowApp = () => {
         description: `${accountsToAdd.length} contas importadas com sucesso!`,
       });
     } catch (error) {
-      console.error("Error importing accounts:", error);
+      logger.error("Error importing accounts:", error);
       toast({
         title: "Erro",
         description: "Erro ao importar contas.",
@@ -317,7 +317,7 @@ const PlaniFlowApp = () => {
         }
       }
     } catch (error) {
-      console.error("Error adding transaction:", error);
+      logger.error("Error adding transaction:", error);
       if (error instanceof Error) {
         toast({
           title: "Erro",
@@ -370,7 +370,7 @@ const PlaniFlowApp = () => {
         }
       }
     } catch (error) {
-      console.error("Error adding installment transactions:", error);
+      logger.error("Error adding installment transactions:", error);
       throw error;
     }
   };
@@ -461,7 +461,7 @@ const PlaniFlowApp = () => {
         description: `${newTransactions.length} transações importadas com sucesso`,
       });
     } catch (error) {
-      console.error("Error importing transactions:", error);
+      logger.error("Error importing transactions:", error);
       toast({
         title: "Erro na importação",
         description: "Erro inesperado durante a importação",
@@ -506,7 +506,7 @@ const PlaniFlowApp = () => {
         { ...toAccount, balance: data.to_balance.new_balance },
       ]);
     } catch (error) {
-      console.error("Error processing transfer:", error);
+      logger.error("Error processing transfer:", error);
       if (error instanceof Error) {
         toast({
           title: "Erro na transferência",
@@ -573,7 +573,7 @@ const PlaniFlowApp = () => {
 
       setEditingTransaction(null);
     } catch (error) {
-      console.error("Error updating transaction:", error);
+      logger.error("Error updating transaction:", error);
       if (error instanceof Error) {
         toast({
           title: "Erro",
@@ -624,7 +624,7 @@ const PlaniFlowApp = () => {
         description: `${data.deleted} transação(ões) excluída(s)`,
       });
     } catch (error) {
-      console.error("Error deleting transaction:", error);
+      logger.error("Error deleting transaction:", error);
       if (error instanceof Error) {
         toast({
           title: "Erro",
@@ -636,7 +636,7 @@ const PlaniFlowApp = () => {
   };
 
   const handleUpdateSettings = (newSettings: typeof settings) => {
-    console.log("Updating settings:", newSettings);
+    logger.debug("Updating settings:", newSettings);
     updateSettings(newSettings);
   };
 
@@ -656,7 +656,7 @@ const PlaniFlowApp = () => {
         description: "Todos os dados foram removidos com sucesso",
       });
     } catch (error) {
-      console.error("Error clearing data:", error);
+      logger.error("Error clearing data:", error);
       toast({
         title: "Erro",
         description: "Erro ao limpar dados",
@@ -716,7 +716,7 @@ const PlaniFlowApp = () => {
       });
 
       if (creditError) {
-        console.error("Erro ao criar transação de pagamento no cartão:", creditError);
+        logger.error("Erro ao criar transação de pagamento no cartão:", creditError);
         throw new Error(`Pagamento no cartão falhou: ${creditError.error}`);
       }
 
@@ -736,7 +736,7 @@ const PlaniFlowApp = () => {
       });
 
       if (bankError) {
-        console.error("Erro ao criar transação de débito no banco:", bankError);
+        logger.error("Erro ao criar transação de débito no banco:", bankError);
         // Tentar reverter a transação do cartão
         if (creditData?.transaction?.id) {
           await supabase.from("transactions").delete().eq("id", creditData.transaction.id);
@@ -771,7 +771,7 @@ const PlaniFlowApp = () => {
       updateGlobalAccounts([updatedCreditAccount, updatedBankAccount]);
       
       // Força refetch para garantir sincronização
-      console.log('🔄 Refazendo fetch após pagamento...');
+      logger.info('🔄 Refazendo fetch após pagamento...');
       await Promise.all([
         reloadAccounts(),
         reloadTransactions()
@@ -782,7 +782,7 @@ const PlaniFlowApp = () => {
         bankAccount: updatedBankAccount,
       };
     } catch (error) {
-      console.error("Error processing credit payment:", error);
+      logger.error("Error processing credit payment:", error);
       throw error;
     }
   };
@@ -837,7 +837,7 @@ const PlaniFlowApp = () => {
             (accountsToUpdate.get(debitAccountId) || 0) + debitAccBalanceChange
           );
         } else {
-            console.warn(`Transação de débito vinculada ao pagamento ${payment.id} não encontrada no store.`);
+            logger.warn(`Transação de débito vinculada ao pagamento ${payment.id} não encontrada no store.`);
         }
       }
 
@@ -873,7 +873,7 @@ const PlaniFlowApp = () => {
       updateGlobalAccounts(updatedAccountsList);
       
       // 6. Força refetch dos dados para garantir sincronização
-      console.log('🔄 Refazendo fetch após estorno...');
+      logger.info('🔄 Refazendo fetch após estorno...');
       await Promise.all([
         reloadAccounts(),
         reloadTransactions()
@@ -881,7 +881,7 @@ const PlaniFlowApp = () => {
 
       toast({ title: "Pagamento estornado com sucesso!" });
     } catch (error) {
-      console.error("Erro ao estornar pagamento:", error);
+      logger.error("Erro ao estornar pagamento:", error);
       toast({
         title: "Erro ao estornar",
         description: (error as Error).message,
