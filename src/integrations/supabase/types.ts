@@ -621,6 +621,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_orphan_journal_entries: { Args: never; Returns: number }
       deactivate_expired_subscriptions: { Args: never; Returns: undefined }
       deactivate_expired_trials: { Args: never; Returns: undefined }
       get_system_setting: { Args: { p_setting_key: string }; Returns: string }
