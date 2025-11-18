@@ -599,17 +599,14 @@ const PlaniFlowApp = () => {
       );
       if (!oldTransaction) return;
 
-      console.info("[EditTransaction] scope=", editScope, {
-        txId: updatedTransaction.id,
-        isInstallment: Boolean(oldTransaction.parent_transaction_id),
-        hasInvoiceMonth: updatedTransaction.invoice_month !== undefined,
-      });
-
-      const isInstallment = Boolean(oldTransaction.installments && oldTransaction.installments > 1);
+      const isSeries = Boolean(
+        oldTransaction.parent_transaction_id ||
+        (oldTransaction.installments && oldTransaction.installments > 1)
+      );
       if (
         !editScope ||
         editScope === "current" ||
-        !isInstallment // Não editar em lote se não for parcela
+        !isSeries // Não editar em lote se não for parcela/série
       ) {
         const cleanTransaction = {
           description: updatedTransaction.description,
