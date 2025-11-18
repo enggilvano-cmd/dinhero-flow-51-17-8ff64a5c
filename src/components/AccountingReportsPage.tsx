@@ -176,18 +176,32 @@ export function AccountingReportsPage() {
     );
   }, [trialBalance]);
 
-  // DRE (Demonstração de Resultados)
+  // DRE (Demonstração de Resultados) - CORRIGIDO
   const incomeStatement = useMemo(() => {
+    // Receitas: contas 'revenue' com saldo credor (crédito - débito)
     const revenues = trialBalance.filter(entry => entry.category === "revenue");
+    
+    // Despesas: contas 'expense' com saldo devedor (débito - crédito)
     const expenses = trialBalance.filter(entry => entry.category === "expense");
 
-    const totalRevenue = revenues.reduce((sum, entry) => sum + entry.balance, 0);
-    const totalExpense = expenses.reduce((sum, entry) => sum + entry.balance, 0);
+    // Total de receitas (créditos em revenue)
+    const totalRevenue = revenues.reduce((sum, entry) => {
+      // Para contas de revenue, o saldo positivo representa crédito
+      return sum + Math.abs(entry.balance);
+    }, 0);
+    
+    // Total de despesas (débitos em expense)
+    const totalExpense = expenses.reduce((sum, entry) => {
+      // Para contas de expense, o saldo positivo representa débito
+      return sum + Math.abs(entry.balance);
+    }, 0);
+    
+    // Resultado: Receitas - Despesas
     const netIncome = totalRevenue - totalExpense;
 
     return {
-      revenues,
-      expenses,
+      revenues: revenues.map(r => ({ ...r, balance: Math.abs(r.balance) })),
+      expenses: expenses.map(e => ({ ...e, balance: Math.abs(e.balance) })),
       totalRevenue,
       totalExpense,
       netIncome,
