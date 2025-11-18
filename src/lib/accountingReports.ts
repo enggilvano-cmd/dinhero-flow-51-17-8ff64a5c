@@ -34,44 +34,45 @@ export interface CashFlowReport {
 }
 
 // Gerar DRE (Demonstração do Resultado do Exercício)
+// ATUALIZADO: Agora usa journal_entries ao invés de transactions
 export function generateDRE(
-  transactions: any[],
-  categories: any[],
+  journalEntries: any[],
+  chartOfAccounts: any[],
   _startDate: Date,
   _endDate: Date
 ): DREReport {
-  // Receitas
-  const revenueTransactions = transactions.filter((t) => t.type === "income");
-  const totalRevenue = revenueTransactions.reduce((sum, t) => sum + t.amount, 0);
+  // Receitas (contas de revenue com crédito)
+  const revenueAccounts = chartOfAccounts.filter(acc => acc.category === 'revenue');
+  const revenueByCategory = revenueAccounts.map(account => {
+    const accountEntries = journalEntries.filter(
+      je => je.account_id === account.id && je.entry_type === 'credit'
+    );
+    const amount = accountEntries.reduce((sum, je) => sum + je.amount, 0);
+    return {
+      category: `${account.code} - ${account.name}`,
+      amount
+    };
+  }).filter(item => item.amount > 0);
 
-  // Agrupar receitas por categoria
-  const revenueByCategory = categories
-    .filter((c) => c.type === "income" || c.type === "both")
-    .map((category) => ({
-      category: category.name,
-      amount: revenueTransactions
-        .filter((t) => t.category_id === category.id)
-        .reduce((sum, t) => sum + t.amount, 0),
-    }))
-    .filter((item) => item.amount > 0);
+  const totalRevenue = revenueByCategory.reduce((sum, item) => sum + item.amount, 0);
 
-  // Despesas
-  const expenseTransactions = transactions.filter((t) => t.type === "expense");
-  const totalExpenses = expenseTransactions.reduce((sum, t) => sum + t.amount, 0);
+  // Despesas (contas de expense com débito)
+  const expenseAccounts = chartOfAccounts.filter(acc => acc.category === 'expense');
+  const expensesByCategory = expenseAccounts.map(account => {
+    const accountEntries = journalEntries.filter(
+      je => je.account_id === account.id && je.entry_type === 'debit'
+    );
+    const amount = accountEntries.reduce((sum, je) => sum + je.amount, 0);
+    return {
+      category: `${account.code} - ${account.name}`,
+      amount: -amount // Negativo para exibição
+    };
+  }).filter(item => item.amount < 0);
 
-  // Agrupar despesas por categoria
-  const expensesByCategory = categories
-    .filter((c) => c.type === "expense" || c.type === "both")
-    .map((category) => ({
-      category: category.name,
-      amount: expenseTransactions
-        .filter((t) => t.category_id === category.id)
-        .reduce((sum, t) => sum + t.amount, 0),
-    }))
-    .filter((item) => item.amount < 0);
+  const totalExpenses = expensesByCategory.reduce((sum, item) => sum + item.amount, 0);
 
-  // Resultado Líquido
-  const netResult = totalRevenue + totalExpenses;
+  // Resultado Líquido (Receitas - Despesas)
+  const netResult = totalRevenue + totalExpenses; // totalExpenses já é negativo
 
   return {
     totalRevenue,
@@ -83,38 +84,60 @@ export function generateDRE(
 }
 
 // Gerar Balanço Patrimonial
+// ATUALIZADO: Agora usa chart_of_accounts e journal_entries
 export function generateBalanceSheet(
-  accounts: any[],
-  _transactions: any[],
+  journalEntries: any[],
+  chartOfAccounts: any[],
   _referenceDate: Date
 ): BalanceSheetReport {
-  // Ativo Circulante (checking e savings com saldo positivo)
-  const currentAssets = accounts
-    .filter((a) => (a.type === "checking" || a.type === "savings") && a.balance >= 0)
-    .map((account) => ({
-      account: account.name,
-      balance: account.balance,
-    }));
+  // Calcular saldo de cada conta contábil
+  const accountBalances = new Map<string, number>();
+  
+  chartOfAccounts.forEach(account => {
+    const entries = journalEntries.filter(je => je.account_id === account.id);
+    
+    let balance = 0;
+    entries.forEach(entry => {
+      if (account.nature === 'debit') {
+        // Contas de natureza devedora: débito aumenta, crédito diminui
+        balance += entry.entry_type === 'debit' ? entry.amount : -entry.amount;
+      } else {
+        // Contas de natureza credora: crédito aumenta, débito diminui
+        balance += entry.entry_type === 'credit' ? entry.amount : -entry.amount;
+      }
+    });
+    
+    if (balance !== 0) {
+      accountBalances.set(account.id, balance);
+    }
+  });
+
+  // Ativo Circulante (contas de asset)
+  const assetAccounts = chartOfAccounts.filter(acc => acc.category === 'asset');
+  const currentAssets = assetAccounts.map(account => ({
+    account: `${account.code} - ${account.name}`,
+    balance: accountBalances.get(account.id) || 0
+  })).filter(item => item.balance > 0);
 
   const totalCurrentAssets = currentAssets.reduce((sum, item) => sum + item.balance, 0);
 
-  // Investimentos
-  const investments = accounts
-    .filter((a) => a.type === "investment")
-    .map((account) => ({
-      account: account.name,
-      balance: account.balance,
-    }));
+  // Investimentos (subcategoria de ativos, se existir)
+  const investments = assetAccounts
+    .filter(acc => acc.name.toLowerCase().includes('investimento') || acc.code.startsWith('1.02'))
+    .map(account => ({
+      account: `${account.code} - ${account.name}`,
+      balance: accountBalances.get(account.id) || 0
+    }))
+    .filter(item => item.balance > 0);
 
   const totalInvestments = investments.reduce((sum, item) => sum + item.balance, 0);
 
-  // Passivo Circulante (cartões de crédito com dívida)
-  const currentLiabilities = accounts
-    .filter((a) => a.type === "credit" && a.balance < 0)
-    .map((account) => ({
-      account: account.name,
-      balance: account.balance,
-    }));
+  // Passivo Circulante (contas de liability)
+  const liabilityAccounts = chartOfAccounts.filter(acc => acc.category === 'liability');
+  const currentLiabilities = liabilityAccounts.map(account => ({
+    account: `${account.code} - ${account.name}`,
+    balance: accountBalances.get(account.id) || 0
+  })).filter(item => item.balance > 0);
 
   const totalCurrentLiabilities = currentLiabilities.reduce((sum, item) => sum + item.balance, 0);
 
