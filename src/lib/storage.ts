@@ -1,4 +1,5 @@
 // Local storage utilities for data persistence
+import { logger } from '@/lib/logger';
 
 export interface Account {
   id: string;
@@ -67,7 +68,7 @@ export function getAccounts(): Account[] {
       color: acc.color || "#6b7280" // Fallback color for existing accounts
     }));
   } catch (error) {
-    console.error('Error loading accounts:', error);
+    logger.error('Error loading accounts:', error);
     return [];
   }
 }
@@ -76,7 +77,7 @@ export function saveAccounts(accounts: Account[]): void {
   try {
     localStorage.setItem(STORAGE_KEYS.ACCOUNTS, JSON.stringify(accounts));
   } catch (error) {
-    console.error('Error saving accounts:', error);
+    logger.error('Error saving accounts:', error);
   }
 }
 
@@ -95,7 +96,7 @@ export function getTransactions(): Transaction[] {
       status: trans.status || "completed" // Default status for existing transactions
     }));
   } catch (error) {
-    console.error('Error loading transactions:', error);
+    logger.error('Error loading transactions:', error);
     return [];
   }
 }
@@ -104,7 +105,7 @@ export function saveTransactions(transactions: Transaction[]): void {
   try {
     localStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify(transactions));
   } catch (error) {
-    console.error('Error saving transactions:', error);
+    logger.error('Error saving transactions:', error);
   }
 }
 
@@ -123,7 +124,7 @@ export function getSettings(): AppSettings {
     }
     return JSON.parse(data);
   } catch (error) {
-    console.error('Error loading settings:', error);
+    logger.error('Error loading settings:', error);
     return {
       currency: 'BRL', 
       theme: 'system',
@@ -138,7 +139,7 @@ export function saveSettings(settings: AppSettings): void {
   try {
     localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
   } catch (error) {
-    console.error('Error saving settings:', error);
+    logger.error('Error saving settings:', error);
   }
 }
 
@@ -178,7 +179,7 @@ export function getCategories(): Category[] {
       createdAt: new Date(cat.createdAt)
     }));
   } catch (error) {
-    console.error('Error loading categories:', error);
+    logger.error('Error loading categories:', error);
     return [];
   }
 }
@@ -187,7 +188,7 @@ export function saveCategories(categories: Category[]): void {
   try {
     localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(categories));
   } catch (error) {
-    console.error('Error saving categories:', error);
+    logger.error('Error saving categories:', error);
   }
 }
 

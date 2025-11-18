@@ -3,6 +3,7 @@ import { AppSettings, getSettings, updateSettings as saveSettings } from '@/lib/
 import { useAuth } from '@/hooks/useAuth';
 import { useTranslation } from 'react-i18next';
 import { detectBrowserLanguage } from '@/i18n';
+import { logger } from '@/lib/logger';
 
 interface SettingsContextType {
   settings: AppSettings;
@@ -16,7 +17,7 @@ export function useSettings() {
   const context = useContext(SettingsContext);
   if (context === undefined) {
     // Durante o desenvolvimento, pode haver hot reload que causa esse erro temporariamente
-    console.warn('useSettings called outside SettingsProvider, returning defaults');
+    logger.warn('useSettings called outside SettingsProvider, returning defaults');
     return {
       settings: {
         currency: 'BRL',
@@ -95,7 +96,7 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
         // Se o usuário não tiver preferência de idioma salva, usar o detectado
         if (!loadedSettings.language) {
           loadedSettings.language = detectedLanguage;
-          console.log(`📝 Preferência de idioma não encontrada, usando idioma detectado: ${detectedLanguage}`);
+          logger.info(`📝 Preferência de idioma não encontrada, usando idioma detectado: ${detectedLanguage}`);
         }
         
         setSettings(loadedSettings);
@@ -103,11 +104,11 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
         
         // Aplicar idioma ao i18n
         if (loadedSettings.language && i18n.language !== loadedSettings.language) {
-          console.log(`🔄 Alterando idioma de ${i18n.language} para ${loadedSettings.language}`);
+          logger.info(`🔄 Alterando idioma de ${i18n.language} para ${loadedSettings.language}`);
           i18n.changeLanguage(loadedSettings.language);
         }
       } catch (error) {
-        console.error('Error loading settings:', error);
+        logger.error('Error loading settings:', error);
         // Use default settings on error (com idioma detectado)
         applyTheme('system');
         if (i18n.language !== detectedLanguage) {
