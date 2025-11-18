@@ -41,7 +41,6 @@ const PlaniFlowApp = () => {
   const updateGlobalAccounts = useAccountStore(
     (state) => state.updateAccounts
   );
-  const removeGlobalAccount = useAccountStore((state) => state.removeAccount);
 
   const transactions = useTransactionStore((state) => state.transactions);
   const setGlobalTransactions = useTransactionStore(
@@ -228,67 +227,90 @@ const PlaniFlowApp = () => {
     }
   };
 
+  const handleDeleteAccount = async (accountId: string) => {
+    if (!user) return;
+    try {
+      const { error } = await supabase
+        .from("accounts")
+        .delete()
+        .eq("id", accountId)
+        .eq("user_id", user.id);
+      
+      if (error) throw error;
+      
+      await reloadAccounts();
+      toast({
+        title: "Sucesso",
+        description: "Conta excluída com sucesso",
+      });
+    } catch (error) {
+      console.error("Error deleting account:", error);
+      toast({
+        title: "Erro",
+        description: "Erro ao excluir conta",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleImportAccounts = async (accountsData: any[]) => {
+    if (!user) return;
+    try {
+      const accountsToAdd = accountsData.map(acc => ({
+        ...acc,
+        user_id: user.id,
+      }));
+
+      const { error } = await supabase
+        .from("accounts")
+        .insert(accountsToAdd);
+      
+      if (error) throw error;
+      
+      await reloadAccounts();
+      toast({
+        title: "Sucesso",
+        description: `${accountsToAdd.length} contas importadas com sucesso!`,
+      });
+    } catch (error) {
+      console.error("Error importing accounts:", error);
+      toast({
+        title: "Erro",
+        description: "Erro ao importar contas.",
+        variant: "destructive"
+      });
+    }
+  };
+
   const handleAddTransaction = async (transactionData: any) => {
     if (!user) return;
     try {
-      const mappedData = {
-        description: transactionData.description,
-        amount: transactionData.type === 'expense' ? -Math.abs(transactionData.amount) : Math.abs(transactionData.amount),
-        date: transactionData.date.toISOString().split("T")[0],
-        type: transactionData.type,
-        account_id: transactionData.account_id,
-        category_id: transactionData.category_id,
-        status: transactionData.status,
-        user_id: user.id,
-        installments: transactionData.installments,
-        current_installment: transactionData.currentInstallment,
-        parent_transaction_id: transactionData.parentTransactionId,
-        invoice_month: transactionData.invoiceMonth || null,
-        invoice_month_overridden: (transactionData.invoiceMonthOverridden ?? Boolean(transactionData.invoiceMonth)) || false,
-        is_recurring: transactionData.is_recurring || false,
-        recurrence_type: transactionData.recurrence_type || null,
-        recurrence_end_date: transactionData.recurrence_end_date || null,
-      };
+      // Usar edge function atômica para garantir consistência
+      const { data, error } = await supabase.functions.invoke('atomic-transaction', {
+        body: {
+          transaction: {
+            description: transactionData.description,
+            amount: transactionData.amount,
+            date: transactionData.date.toISOString().split("T")[0],
+            type: transactionData.type,
+            category_id: transactionData.category_id,
+            account_id: transactionData.account_id,
+            status: transactionData.status,
+            invoice_month: transactionData.invoiceMonth || null,
+            invoice_month_overridden: !!transactionData.invoiceMonth,
+          }
+        }
+      });
 
-      const { data, error } = await supabase
-        .from("transactions")
-        .insert([mappedData])
-        .select()
-        .single();
       if (error) throw error;
 
-      addGlobalTransactions([data as Transaction]);
-
-      // Atualizar saldo da conta (apenas se 'completed')
-      if (transactionData.status === 'completed') {
-        // O 'amount' em mappedData já tem o sinal correto.
-        const balanceChange = mappedData.amount;
+      // Atualizar store com transação e saldo retornados
+      addGlobalTransactions([data.transaction as Transaction]);
+      
+      if (data.balance) {
         const account = accounts.find(acc => acc.id === transactionData.account_id);
         if (account) {
-          const newBalance = account.balance + balanceChange;
-          
-          console.info("[Add Transaction - Balance Update]", {
-            transactionId: data.id,
-            accountId: transactionData.account_id,
-            accountName: account.name,
-            oldBalance: account.balance,
-            balanceChange,
-            newBalance,
-            transactionType: transactionData.type
-          });
-
-          const { error: balanceError } = await supabase
-            .from("accounts")
-            .update({ balance: newBalance })
-            .eq("id", transactionData.account_id)
-            .eq("user_id", user.id);
-          
-          if (balanceError) {
-            console.error("[Add Transaction - Balance Update Error]", balanceError);
-            throw balanceError;
-          }
-          
-          updateGlobalAccounts({ ...account, balance: newBalance });
+          updateGlobalAccounts({ ...account, balance: data.balance.new_balance });
         }
       }
     } catch (error) {
@@ -306,75 +328,46 @@ const PlaniFlowApp = () => {
   const handleAddInstallmentTransactions = async (transactionsData: any[]) => {
     if (!user) return;
     try {
-      const transactionsToInsert = transactionsData.map((data) => {
-        const amount = data.type === 'expense' ? -Math.abs(data.amount) : Math.abs(data.amount);
-        
-        return {
-          description: data.description,
-          amount: amount,
-          date: data.date.toISOString().split("T")[0],
-          type: data.type,
-          account_id: data.account_id,
-          category_id: data.category_id,
-          status: data.status,
-          installments: data.installments,
-          current_installment: data.currentInstallment,
-          parent_transaction_id: data.parentTransactionId,
-          user_id: user.id,
-          invoice_month: data.invoiceMonth || null,
-        };
-      });
+      // Criar todas as parcelas atomicamente usando Promise.all
+      const results = await Promise.all(
+        transactionsData.map(data =>
+          supabase.functions.invoke('atomic-transaction', {
+            body: {
+              transaction: {
+                description: data.description,
+                amount: data.amount,
+                date: data.date.toISOString().split("T")[0],
+                type: data.type,
+                category_id: data.category_id,
+                account_id: data.account_id,
+                status: data.status,
+                invoice_month: data.invoiceMonth || null,
+                invoice_month_overridden: !!data.invoiceMonth,
+              }
+            }
+          })
+        )
+      );
 
-      const { data: newTransactions, error } = await supabase
-        .from("transactions")
-        .insert(transactionsToInsert)
-        .select();
-      if (error) throw error;
+      // Verificar erros
+      const errors = results.filter(r => r.error);
+      if (errors.length > 0) throw errors[0].error;
 
+      // Coletar transações criadas
+      const newTransactions = results.map(r => r.data?.transaction).filter(Boolean);
       addGlobalTransactions(newTransactions as Transaction[]);
 
-      // Atualizar saldo (apenas para transações 'completed')
-      const totalAmount = newTransactions.reduce((sum, trans) => {
-        if (trans.status === "completed") {
-          // O valor já vem com o sinal correto do DB
-          return sum + trans.amount;
-        }
-        return sum;
-      }, 0);
-      
-      if (totalAmount !== 0) {
+      // Atualizar saldo da conta (usar o último resultado)
+      const lastResult = results[results.length - 1];
+      if (lastResult.data?.balance) {
         const accountId = transactionsData[0].account_id;
-        const account = accounts.find((acc) => acc.id === accountId);
+        const account = accounts.find(acc => acc.id === accountId);
         if (account) {
-          const newBalance = account.balance + totalAmount;
-          
-          console.info("[Add Installments - Balance Update]", {
-            accountId,
-            accountName: account.name,
-            oldBalance: account.balance,
-            totalAmount,
-            newBalance,
-            completedCount: newTransactions.filter(t => t.status === 'completed').length
-          });
-
-          const { error: balanceError } = await supabase
-            .from("accounts")
-            .update({ balance: newBalance })
-            .eq("id", accountId)
-            .eq("user_id", user.id);
-          
-          if (balanceError) {
-            console.error("[Add Installments - Balance Update Error]", balanceError);
-            throw balanceError;
-          }
-
-          updateGlobalAccounts({ ...account, balance: newBalance });
+          updateGlobalAccounts({ ...account, balance: lastResult.data.balance.new_balance });
         }
       }
     } catch (error) {
       console.error("Error adding installment transactions:", error);
-      // Lança o erro para que o modal possa tratá-lo (ex: exibir toast de erro e não fechar)
-      // Isso garante que o `catch` no `AddTransactionModal` seja acionado.
       throw error;
     }
   };
@@ -487,94 +480,27 @@ const PlaniFlowApp = () => {
       const toAccount = accounts.find((acc) => acc.id === toAccountId);
       if (!fromAccount || !toAccount) throw new Error("Contas não encontradas");
 
-      const newFromBalance = fromAccount.balance - amount;
-      const newToBalance = toAccount.balance + amount;
-
-      if (
-        fromAccount.type === "checking" &&
-        newFromBalance < 0 &&
-        fromAccount.limit_amount
-      ) {
-        if (Math.abs(newFromBalance) > fromAccount.limit_amount) {
-          throw new Error(
-            `Transferência excede o limite da conta ${
-              fromAccount.name
-            } de ${fromAccount.limit_amount.toLocaleString("pt-BR", {
-              style: "currency",
-              currency: "BRL",
-            })}`
-          );
+      // Usar edge function atômica para transferência
+      const { data, error } = await supabase.functions.invoke('atomic-transfer', {
+        body: {
+          transfer: {
+            from_account_id: fromAccountId,
+            to_account_id: toAccountId,
+            amount: amount,
+            date: date.toISOString().split("T")[0],
+            description: `Transferência para ${toAccount.name}`,
+          }
         }
-      }
+      });
 
-      // --- CORREÇÃO: REMOVER parent_transaction_id DE TRANSFERÊNCIAS ---
-      // E ADICIONAR linked_transaction_id
+      if (error) throw error;
+
+      // Atualizar stores com transações e saldos
+      addGlobalTransactions([data.outgoing as Transaction, data.incoming as Transaction]);
       
-      // 1. Transação de Saída (Expense)
-      const outgoingTransaction = {
-        description: `Transferência para ${toAccount.name}`,
-        amount: Math.abs(amount), // Garante positivo
-        date: date.toISOString().split("T")[0],
-        type: "expense" as const,
-        category_id: null,
-        account_id: fromAccountId,
-        to_account_id: toAccountId,
-        status: "completed" as const,
-        user_id: user.id,
-      };
-
-      const { data: newOutgoingTransaction, error: outgoingError } = await supabase
-        .from("transactions")
-        .insert(outgoingTransaction)
-        .select()
-        .single();
-        
-      if (outgoingError) throw outgoingError;
-
-      // 2. Transação de Entrada (Income)
-      const incomingTransaction = {
-        description: `Transferência de ${fromAccount.name}`,
-        amount: Math.abs(amount), // Garante positivo
-        date: date.toISOString().split("T")[0],
-        type: "income" as const,
-        category_id: null,
-        account_id: toAccountId,
-        to_account_id: fromAccountId,
-        status: "completed" as const,
-        user_id: user.id,
-        linked_transaction_id: newOutgoingTransaction.id, // <-- VINCULA A TRANSAÇÃO
-      };
-      
-      const { data: newIncomingTransaction, error: incomingError } = await supabase
-        .from("transactions")
-        .insert(incomingTransaction)
-        .select()
-        .single();
-
-      if (incomingError) {
-        // Reverte a primeira transação
-        await supabase.from("transactions").delete().eq("id", newOutgoingTransaction.id);
-        throw incomingError;
-      }
-
-      addGlobalTransactions([newOutgoingTransaction as Transaction, newIncomingTransaction as Transaction]);
-
-      await Promise.all([
-        supabase
-          .from("accounts")
-          .update({ balance: newFromBalance })
-          .eq("id", fromAccountId)
-          .eq("user_id", user.id),
-        supabase
-          .from("accounts")
-          .update({ balance: newToBalance })
-          .eq("id", toAccountId)
-          .eq("user_id", user.id),
-      ]);
-
       updateGlobalAccounts([
-        { ...fromAccount, balance: newFromBalance },
-        { ...toAccount, balance: newToBalance },
+        { ...fromAccount, balance: data.from_balance.new_balance },
+        { ...toAccount, balance: data.to_balance.new_balance },
       ]);
     } catch (error) {
       console.error("Error processing transfer:", error);
@@ -585,6 +511,7 @@ const PlaniFlowApp = () => {
           variant: "destructive",
         });
       }
+      throw error;
     }
   };
 
@@ -599,98 +526,49 @@ const PlaniFlowApp = () => {
       );
       if (!oldTransaction) return;
 
-      const isSeries = Boolean(
-        oldTransaction.parent_transaction_id ||
-        (oldTransaction.installments && oldTransaction.installments > 1)
-      );
-      if (
-        !editScope ||
-        editScope === "current" ||
-        !isSeries // Não editar em lote se não for parcela/série
-      ) {
-        const cleanTransaction = {
-          description: updatedTransaction.description,
-          amount: updatedTransaction.amount,
-          date:
-            typeof updatedTransaction.date === "string"
+      // Usar edge function atômica para edição
+      const { data, error } = await supabase.functions.invoke('atomic-edit-transaction', {
+        body: {
+          transaction_id: updatedTransaction.id,
+          updates: {
+            description: updatedTransaction.description,
+            amount: updatedTransaction.amount,
+            date: typeof updatedTransaction.date === "string"
               ? updatedTransaction.date
               : updatedTransaction.date.toISOString().split("T")[0],
-          type: updatedTransaction.type,
-          category_id: updatedTransaction.category_id,
-          account_id: updatedTransaction.account_id,
-          status: updatedTransaction.status || "completed",
-          ...(updatedTransaction.invoice_month !== undefined
-            ? {
-                invoice_month: updatedTransaction.invoice_month || null,
-                invoice_month_overridden: updatedTransaction.invoice_month ? true : false,
-              }
-            : {}),
-        };
-
-        const { error } = await supabase
-          .from("transactions")
-          .update(cleanTransaction)
-          .eq("id", updatedTransaction.id)
-          .eq("user_id", user.id);
-
-        if (error) throw error;
-
-        // Recalcular saldo da(s) conta(s) afetada(s)
-        const accountsToRecalculate = new Set<string>([oldTransaction.account_id, updatedTransaction.account_id]);
-        const updatedAccountsList = [];
-
-        for (const accountId of accountsToRecalculate) {
-          const account = accounts.find(acc => acc.id === accountId);
-          if (account) {
-            // Recalcula o saldo do zero
-            const { data: refreshedTransactions, error: refreshError } = await supabase
-              .from('transactions')
-              .select('type, amount, status')
-              .eq('user_id', user.id)
-              .eq('account_id', accountId)
-              .eq('status', 'completed');
-            
-            if (refreshError) throw refreshError;
-
-            const newBalance = (refreshedTransactions || []).reduce((sum, t) => {
-              return sum + (t.type === 'income' ? t.amount : -t.amount);
-            }, 0);
-
-            console.info("[Balance Update]", {
-              accountId,
-              accountName: account.name,
-              oldBalance: account.balance,
-              newBalance,
-              transactionsCount: refreshedTransactions?.length || 0
-            });
-
-            const { error: updateError } = await supabase
-              .from('accounts')
-              .update({ balance: newBalance })
-              .eq('id', accountId)
-              .eq('user_id', user.id);
-            
-            if (updateError) {
-              console.error("[Balance Update Error]", updateError);
-              throw updateError;
-            }
-            
-            updatedAccountsList.push({ ...account, balance: newBalance });
-          }
+            type: updatedTransaction.type,
+            category_id: updatedTransaction.category_id,
+            account_id: updatedTransaction.account_id,
+            status: updatedTransaction.status || "completed",
+            invoice_month: updatedTransaction.invoice_month || null,
+          },
+          scope: editScope || "current",
         }
-        
-        updateGlobalAccounts(updatedAccountsList);
+      });
+
+      if (error) throw error;
+
+      // Atualizar stores
+      if (data.updated === 1) {
         updateGlobalTransaction(updatedTransaction);
-        setEditingTransaction(null);
-        return;
+      } else {
+        // Múltiplas transações atualizadas (parcelas)
+        await reloadTransactions();
       }
 
-      // Lógica para Edição em Lote (Parcelas)
-      await handleInstallmentScopeEdit(
-        updatedTransaction,
-        editScope,
-        oldTransaction
-      );
+      // Atualizar saldos das contas afetadas
+      if (data.balances) {
+        const updatedAccounts = data.balances.map((bal: any) => {
+          const account = accounts.find(acc => acc.id === bal.accountId);
+          return account ? { ...account, balance: bal.new_balance } : null;
+        }).filter(Boolean);
+        
+        if (updatedAccounts.length > 0) {
+          updateGlobalAccounts(updatedAccounts);
+        }
+      }
+
+      setEditingTransaction(null);
     } catch (error) {
       console.error("Error updating transaction:", error);
       if (error instanceof Error) {
@@ -700,214 +578,7 @@ const PlaniFlowApp = () => {
           variant: "destructive",
         });
       }
-    }
-  };
-
-  const handleInstallmentScopeEdit = async (
-    updatedTransaction: any,
-    editScope: EditScope,
-    oldTransaction: any
-  ) => {
-    if (!user) return;
-    const groupParentId = oldTransaction.parent_transaction_id || oldTransaction.id;
-    const isParent = !oldTransaction.parent_transaction_id;
-    try {
-      console.info("[InstallmentScopeEdit] start", { editScope, parentId: groupParentId });
-      const cleanTransactionData = {
-        description: updatedTransaction.description,
-        amount: updatedTransaction.amount,
-        // Aplicar a nova data para todas as parcelas conforme o escopo
-        date:
-          typeof updatedTransaction.date === "string"
-            ? updatedTransaction.date
-            : updatedTransaction.date.toISOString().split("T")[0],
-        type: updatedTransaction.type,
-        category_id: updatedTransaction.category_id,
-        account_id: updatedTransaction.account_id,
-        status: updatedTransaction.status,
-        ...(updatedTransaction.invoice_month !== undefined
-          ? {
-              invoice_month: updatedTransaction.invoice_month || null,
-              invoice_month_overridden: updatedTransaction.invoice_month ? true : false,
-            }
-          : {}),
-      };
-
-      // Evitar duplicar o sufixo (x/y) ao propagar a descrição
-      const baseDescription = cleanTransactionData.description.replace(/\s*\(\d+\/\d+\)\s*$/, "");
-
-      let queryBuilder = supabase
-        .from("transactions")
-        .select("*")
-        .eq("user_id", user.id)
-        .eq("parent_transaction_id", groupParentId);
-
-      if (editScope === "current-and-remaining") {
-        const startInstallment = oldTransaction.current_installment ?? 1;
-        queryBuilder = queryBuilder.gte(
-          "current_installment",
-          startInstallment
-        );
-      }
-
-      const { data: fetchedChildren, error: selectError } =
-        await queryBuilder;
-
-      const targetTransactions = [...(fetchedChildren || [])];
-      if (isParent && (editScope === "all" || editScope === "current-and-remaining")) {
-        // Incluir a própria transação "mãe" quando o usuário iniciou a edição por ela
-        targetTransactions.unshift(oldTransaction);
-      }
-
-      if (selectError) throw selectError;
-      if (!targetTransactions || targetTransactions.length === 0) return;
-
-      console.info("[InstallmentScopeEdit] targets", {
-        count: targetTransactions.length,
-        ids: targetTransactions.map(t => t.id),
-        scope: editScope,
-        parentId: groupParentId
-      });
-
-      const updates = targetTransactions.map((transaction) => {
-        const updatedData = {
-          ...cleanTransactionData,
-          description: `${baseDescription} (${transaction.current_installment}/${transaction.installments})`,
-        };
-        return supabase
-          .from("transactions")
-          .update(updatedData)
-          .eq("id", transaction.id)
-          .eq("user_id", user.id);
-      });
-
-      await Promise.all(updates);
-
-      // Recarregar TUDO é a forma mais segura
-      const { data: refreshedTransactions, error: refreshError } =
-        await supabase
-          .from("transactions")
-          .select("*")
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false });
-
-      if (refreshError) throw refreshError;
-      
-      const formattedTransactions = (refreshedTransactions || []).map((t) => ({
-        ...t,
-        date: createDateFromString(t.date),
-      }));
-      setGlobalTransactions(formattedTransactions as Transaction[]);
-
-      // Recalcula o balanço da(s) conta(s) afetada(s)
-      const accountIds = new Set<string>([oldTransaction.account_id, updatedTransaction.account_id]);
-      const updatedAccountsList = [];
-      
-      for (const accountId of accountIds) {
-        const account = accounts.find(acc => acc.id === accountId);
-        if(account) {
-          const newBalance = (refreshedTransactions || [])
-            .filter(t => t.account_id === accountId && t.status === 'completed')
-            .reduce((sum, t) => {
-              return sum + (t.type === 'income' ? t.amount : -t.amount);
-            }, 0);
-            
-          await supabase
-            .from("accounts")
-            .update({ balance: newBalance })
-            .eq("id", accountId)
-            .eq("user_id", user.id);
-          
-          updatedAccountsList.push({ ...account, balance: newBalance });
-        }
-      }
-      updateGlobalAccounts(updatedAccountsList);
-
-    } catch(error) {
-      console.error("Error in batch edit:", error);
-    } finally {
-      setEditingTransaction(null);
-    }
-  };
-
-  const handleDeleteAccount = async (accountId: string) => {
-    if (!user) return;
-    try {
-      const { error } = await supabase
-        .from("accounts")
-        .delete()
-        .eq("id", accountId)
-        .eq("user_id", user.id);
-      if (error) throw error;
-      
-      removeGlobalAccount(accountId);
-      
-      // Remove transações associadas do store
-      const transactionsToRemove = transactions
-        .filter(t => t.account_id === accountId)
-        .map(t => t.id);
-      removeGlobalTransactions(transactionsToRemove);
-
-    } catch (error) {
-      console.error("Error deleting account:", error);
-    }
-  };
-
-  const handleImportAccounts = async (accountsToAdd: any[], accountsToReplaceIds: string[]) => {
-    if (!user) return;
-    
-    try {
-      // Deletar contas que serão substituídas
-      if (accountsToReplaceIds.length > 0) {
-        const { error: deleteError } = await supabase
-          .from("accounts")
-          .delete()
-          .in("id", accountsToReplaceIds)
-          .eq("user_id", user.id);
-
-        if (deleteError) throw deleteError;
-
-        // Remover do store local
-        accountsToReplaceIds.forEach(id => removeGlobalAccount(id));
-      }
-
-      // Inserir novas contas
-      if (accountsToAdd.length > 0) {
-        const { data, error } = await supabase
-          .from("accounts")
-          .insert(accountsToAdd.map(acc => ({
-            ...acc,
-            user_id: user.id
-          })))
-          .select();
-
-        if (error) throw error;
-
-        // Atualizar store local
-        if (data) {
-          const accountsWithDefaults = data.map(acc => ({
-            ...acc,
-            limit_amount: acc.limit_amount || 0,
-            due_date: acc.due_date || undefined,
-            closing_date: acc.closing_date || undefined,
-          }));
-          // Usar setGlobalAccounts para substituir todo o array
-          const remainingAccounts = accounts.filter(acc => !accountsToReplaceIds.includes(acc.id));
-          setGlobalAccounts([...remainingAccounts, ...accountsWithDefaults]);
-        }
-
-        toast({
-          title: "Sucesso",
-          description: `${accountsToAdd.length} contas importadas com sucesso!`,
-        });
-      }
-    } catch (error) {
-      console.error("Error importing accounts:", error);
-      toast({
-        title: "Erro",
-        description: "Erro ao importar contas.",
-        variant: "destructive"
-      });
+      throw error;
     }
   };
 
@@ -920,156 +591,44 @@ const PlaniFlowApp = () => {
       );
       if (!transactionToDelete) return;
 
-      let transactionsToDelete = [transactionToDelete];
-      const accountsToRecalculate = new Set<string>([transactionToDelete.account_id]);
-
-      // Lógica para encontrar e incluir transações de transferência vinculadas
-      const isTransfer = transactionToDelete.to_account_id != null;
-      if (isTransfer) {
-        // Se a transação tem um 'linked_transaction_id', ela é a parte 'income' da transferência.
-        // A outra parte (expense) é o ID que ela referencia.
-        if (transactionToDelete.linked_transaction_id) {
-          const otherPart = transactions.find(t => t.id === transactionToDelete.linked_transaction_id);
-          if (otherPart) {
-            transactionsToDelete.push(otherPart);
-            accountsToRecalculate.add(otherPart.account_id);
-          }
-        } else {
-          // Se não tem, ela é a parte 'expense'. A outra parte (income) a referencia.
-          const otherPart = transactions.find(t => t.linked_transaction_id === transactionToDelete.id);
-          if (otherPart) {
-            transactionsToDelete.push(otherPart);
-            accountsToRecalculate.add(otherPart.account_id);
-          }
+      // Usar edge function atômica para deleção
+      const { data, error } = await supabase.functions.invoke('atomic-delete-transaction', {
+        body: {
+          transaction_id: transactionId,
+          scope: editScope || "current",
         }
-      }
-      // Lógica para encontrar e incluir transações de parcelamento baseado no escopo
-      else if (transactionToDelete.installments && transactionToDelete.installments > 1) {
-        const groupParentId = transactionToDelete.parent_transaction_id || transactionToDelete.id;
-        // Se editScope não foi fornecido (deleção antiga), deleta todas as parcelas
-        if (!editScope || editScope === "all") {
-          const { data: installmentTransactions, error: findError } = await supabase
-            .from("transactions")
-            .select("*")
-            .eq("parent_transaction_id", groupParentId)
-            .neq("id", transactionToDelete.id);
-
-          if (findError) console.error("Erro ao buscar transações de parcela:", findError);
-
-          if (installmentTransactions && installmentTransactions.length > 0) {
-            for (const installment of installmentTransactions) {
-              transactionsToDelete.push({
-                ...installment,
-                category_id: installment.category_id || "",
-                to_account_id: installment.to_account_id || undefined,
-                installments: installment.installments || undefined,
-                current_installment: installment.current_installment || undefined,
-                parent_transaction_id: installment.parent_transaction_id || undefined,
-                linked_transaction_id: installment.linked_transaction_id || undefined,
-                invoice_month: installment.invoice_month || undefined,
-                is_recurring: installment.is_recurring || undefined,
-                recurrence_type: installment.recurrence_type || undefined,
-                recurrence_end_date: installment.recurrence_end_date || undefined,
-                date: typeof installment.date === 'string' 
-                  ? createDateFromString(installment.date) 
-                  : installment.date
-              });
-              accountsToRecalculate.add(installment.account_id);
-            }
-          }
-        } else if (editScope === "current-and-remaining") {
-          // Deletar apenas esta parcela e as próximas
-          const currentInstallment = transactionToDelete.current_installment || 1;
-          const { data: installmentTransactions, error: findError } = await supabase
-            .from("transactions")
-            .select("*")
-            .eq("parent_transaction_id", groupParentId)
-            .gte("current_installment", currentInstallment)
-            .neq("id", transactionToDelete.id);
-
-          if (findError) console.error("Erro ao buscar transações de parcela:", findError);
-
-          if (installmentTransactions && installmentTransactions.length > 0) {
-            for (const installment of installmentTransactions) {
-              transactionsToDelete.push({
-                ...installment,
-                category_id: installment.category_id || "",
-                to_account_id: installment.to_account_id || undefined,
-                installments: installment.installments || undefined,
-                current_installment: installment.current_installment || undefined,
-                parent_transaction_id: installment.parent_transaction_id || undefined,
-                linked_transaction_id: installment.linked_transaction_id || undefined,
-                invoice_month: installment.invoice_month || undefined,
-                is_recurring: installment.is_recurring || undefined,
-                recurrence_type: installment.recurrence_type || undefined,
-                recurrence_end_date: installment.recurrence_end_date || undefined,
-                date: typeof installment.date === 'string' 
-                  ? createDateFromString(installment.date) 
-                  : installment.date
-              });
-              accountsToRecalculate.add(installment.account_id);
-            }
-          }
-        }
-        // Se editScope === "current", não adiciona nenhuma outra parcela
-      }
-
-      const idsToDelete = transactionsToDelete.map(t => t.id);
-      console.info("[DeleteInstallments] selected", {
-        scope: editScope ?? "all",
-        count: idsToDelete.length,
-        ids: idsToDelete,
-        parent: transactionToDelete.parent_transaction_id || transactionToDelete.id
       });
 
-      // Calcula transações restantes ANTES de remover do store
-      const remainingTransactions = transactions.filter(t => !idsToDelete.includes(t.id));
+      if (error) throw error;
 
-      // Remove as transações do store
-      removeGlobalTransactions(idsToDelete);
+      // Remover transações do store
+      await reloadTransactions();
 
-      // Deleta as transações do banco de dados
-      const { error: deleteError } = await supabase
-        .from("transactions")
-        .delete()
-        .in("id", idsToDelete)
-        .eq("user_id", user.id);
-      if (deleteError) throw deleteError;
-
-      // Recalcula o saldo das contas afetadas usando transações restantes
-      let updatedAccountsList = [];
-      
-      for (const accountId of accountsToRecalculate) {
-        const account = accounts.find((acc) => acc.id === accountId);
-        if (account) {
-          // Recalcula o saldo usando apenas transações que NÃO foram deletadas
-          const newBalance = remainingTransactions
-            .filter(t => t.account_id === accountId && t.status === 'completed')
-            .reduce((sum, t) => sum + (t.type === 'income' ? t.amount : -t.amount), 0);
-
-          await supabase
-            .from("accounts")
-            .update({ balance: newBalance })
-            .eq("id", accountId)
-            .eq("user_id", user.id);
-          updatedAccountsList.push({ ...account, balance: newBalance });
+      // Atualizar saldos das contas afetadas
+      if (data.balances) {
+        const updatedAccounts = data.balances.map((bal: any) => {
+          const account = accounts.find(acc => acc.id === bal.accountId);
+          return account ? { ...account, balance: bal.new_balance } : null;
+        }).filter(Boolean);
+        
+        if (updatedAccounts.length > 0) {
+          updateGlobalAccounts(updatedAccounts);
         }
       }
-
-      // Atualiza as contas no store
-      updateGlobalAccounts(updatedAccountsList);
 
       toast({
-        title: "Transação excluída",
-        description: idsToDelete.length > 1 
-          ? `${idsToDelete.length} transações excluídas com sucesso.` 
-          : "Transação excluída com sucesso.",
+        title: "Sucesso",
+        description: `${data.deleted} transação(ões) excluída(s)`,
       });
-
     } catch (error) {
-      console.error("Error deleting transaction(s):", error);
-      const message = (error as Error).message || "Ocorreu um erro inesperado.";
-      toast({ title: "Erro ao Excluir", description: message, variant: "destructive" });
+      console.error("Error deleting transaction:", error);
+      if (error instanceof Error) {
+        toast({
+          title: "Erro",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
     }
   };
 
