@@ -61,6 +61,7 @@ import * as XLSX from "xlsx";
 import { ImportTransactionsModal } from "./ImportTransactionsModal";
 import { MarkAsPaidModal } from "./MarkAsPaidModal";
 import { CheckCircle } from "lucide-react";
+import { InstallmentEditScopeDialog, EditScope } from "./InstallmentEditScopeDialog";
 
 interface TransactionsPageProps {
   transactions: any[];
@@ -68,7 +69,7 @@ interface TransactionsPageProps {
   categories: any[];
   onAddTransaction: () => void;
   onEditTransaction: (transaction: any) => void;
-  onDeleteTransaction: (transactionId: string) => void;
+  onDeleteTransaction: (transactionId: string, scope?: EditScope) => void;
   onImportTransactions: (transactions: any[], transactionsToReplace: string[]) => void;
   onMarkAsPaid?: (transaction: any) => Promise<void>;
   initialFilterType?: "income" | "expense" | "transfer" | "all";
@@ -104,6 +105,8 @@ export function TransactionsPage({
   const [filterCategory, setFilterCategory] = useState<string>("all");
   const [markAsPaidModalOpen, setMarkAsPaidModalOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<any | null>(null);
+  const [deleteScopeDialogOpen, setDeleteScopeDialogOpen] = useState(false);
+  const [transactionToDelete, setTransactionToDelete] = useState<any | null>(null);
   const [filterStatus, setFilterStatus] = useState<
     "all" | "pending" | "completed"
   >(initialFilterStatus);
@@ -321,17 +324,44 @@ export function TransactionsPage({
   ]);
 
   const handleDeleteTransaction = (transaction: any) => {
-    if (
-      window.confirm(
-        t("transactions.confirmDelete"),
-      )
-    ) {
-      onDeleteTransaction(transaction.id);
-      toast({
-        title: t("transactions.transactionDeleted"),
-        description: `${transaction.description}`,
-      });
+    const isInstallment = transaction.installments && transaction.installments > 1;
+    
+    if (isInstallment) {
+      // Se é parcela, abre o diálogo de escopo
+      setTransactionToDelete(transaction);
+      setDeleteScopeDialogOpen(true);
+    } else {
+      // Se não é parcela, confirma normalmente
+      if (
+        window.confirm(
+          t("transactions.confirmDelete"),
+        )
+      ) {
+        onDeleteTransaction(transaction.id);
+        toast({
+          title: t("transactions.transactionDeleted"),
+          description: `${transaction.description}`,
+        });
+      }
     }
+  };
+
+  const handleDeleteScopeSelected = (scope: EditScope) => {
+    if (!transactionToDelete) return;
+    
+    onDeleteTransaction(transactionToDelete.id, scope);
+    
+    const scopeDescription = scope === "current" ? t("modals.installmentScope.options.current.label") : 
+                             scope === "all" ? t("modals.installmentScope.options.all.label") :
+                             t("modals.installmentScope.options.remaining.label");
+    
+    toast({
+      title: t("transactions.transactionDeleted"),
+      description: `${transactionToDelete.description} - ${scopeDescription}`,
+    });
+    
+    setTransactionToDelete(null);
+    setDeleteScopeDialogOpen(false);
   };
 
   const handleMarkAsPaid = async (transactionId: string, date: Date, amount: number, accountId: string) => {
@@ -1082,6 +1112,14 @@ export function TransactionsPage({
         transaction={selectedTransaction}
         accounts={accounts}
         onConfirm={handleMarkAsPaid}
+      />
+      
+      <InstallmentEditScopeDialog
+        open={deleteScopeDialogOpen}
+        onOpenChange={setDeleteScopeDialogOpen}
+        onScopeSelected={handleDeleteScopeSelected}
+        currentInstallment={transactionToDelete?.current_installment || 1}
+        totalInstallments={transactionToDelete?.installments || 1}
       />
     </div>
   );
