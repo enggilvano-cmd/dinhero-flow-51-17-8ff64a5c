@@ -14,6 +14,38 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_locks: {
+        Row: {
+          account_id: string
+          locked_at: string | null
+          locked_by: string | null
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          account_id: string
+          locked_at?: string | null
+          locked_by?: string | null
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          account_id?: string
+          locked_at?: string | null
+          locked_by?: string | null
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "account_locks_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: true
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       accounts: {
         Row: {
           balance: number
@@ -125,6 +157,54 @@ export type Database = {
         }
         Relationships: []
       }
+      financial_audit: {
+        Row: {
+          action: string
+          balance_after: number | null
+          balance_before: number | null
+          created_at: string
+          created_by: string | null
+          id: string
+          ip_address: unknown
+          new_values: Json | null
+          old_values: Json | null
+          record_id: string
+          table_name: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          balance_after?: number | null
+          balance_before?: number | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          ip_address?: unknown
+          new_values?: Json | null
+          old_values?: Json | null
+          record_id: string
+          table_name: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          balance_after?: number | null
+          balance_before?: number | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          ip_address?: unknown
+          new_values?: Json | null
+          old_values?: Json | null
+          record_id?: string
+          table_name?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -201,6 +281,8 @@ export type Database = {
         Row: {
           account_id: string
           amount: number
+          bank_import_id: string | null
+          bank_reference: string | null
           category_id: string | null
           created_at: string
           current_installment: number | null
@@ -214,6 +296,9 @@ export type Database = {
           is_recurring: boolean | null
           linked_transaction_id: string | null
           parent_transaction_id: string | null
+          reconciled: boolean | null
+          reconciled_at: string | null
+          reconciled_by: string | null
           recurrence_end_date: string | null
           recurrence_type: Database["public"]["Enums"]["recurrence_type"] | null
           status: Database["public"]["Enums"]["transaction_status"]
@@ -225,6 +310,8 @@ export type Database = {
         Insert: {
           account_id: string
           amount: number
+          bank_import_id?: string | null
+          bank_reference?: string | null
           category_id?: string | null
           created_at?: string
           current_installment?: number | null
@@ -238,6 +325,9 @@ export type Database = {
           is_recurring?: boolean | null
           linked_transaction_id?: string | null
           parent_transaction_id?: string | null
+          reconciled?: boolean | null
+          reconciled_at?: string | null
+          reconciled_by?: string | null
           recurrence_end_date?: string | null
           recurrence_type?:
             | Database["public"]["Enums"]["recurrence_type"]
@@ -251,6 +341,8 @@ export type Database = {
         Update: {
           account_id?: string
           amount?: number
+          bank_import_id?: string | null
+          bank_reference?: string | null
           category_id?: string | null
           created_at?: string
           current_installment?: number | null
@@ -264,6 +356,9 @@ export type Database = {
           is_recurring?: boolean | null
           linked_transaction_id?: string | null
           parent_transaction_id?: string | null
+          reconciled?: boolean | null
+          reconciled_at?: string | null
+          reconciled_by?: string | null
           recurrence_end_date?: string | null
           recurrence_type?:
             | Database["public"]["Enums"]["recurrence_type"]
@@ -391,6 +486,15 @@ export type Database = {
           p_user_id: string
         }
         Returns: string
+      }
+      recalculate_account_balance: {
+        Args: { p_account_id: string; p_expected_version?: number }
+        Returns: {
+          error_message: string
+          new_balance: number
+          new_version: number
+          success: boolean
+        }[]
       }
     }
     Enums: {

@@ -8,3 +8,27 @@ verify_jwt = false
 
 [functions.generate-fixed-transactions-yearly]
 verify_jwt = false
+
+[functions.atomic-transaction]
+verify_jwt = true
+
+[functions.atomic-transfer]
+verify_jwt = true
+
+[functions.atomic-edit-transaction]
+verify_jwt = true
+
+[functions.atomic-delete-transaction]
+verify_jwt = true
+
+[functions.atomic-transaction]
+verify_jwt = true
+
+[functions.atomic-transfer]
+verify_jwt = true
+
+[functions.atomic-edit-transaction]
+verify_jwt = true
+
+[functions.atomic-delete-transaction]
+verify_jwt = true
