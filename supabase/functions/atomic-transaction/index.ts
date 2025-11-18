@@ -17,6 +17,44 @@ interface TransactionInput {
   invoice_month_overridden?: boolean;
 }
 
+// Validação de inputs
+function validateTransactionInput(input: TransactionInput): { valid: boolean; error?: string } {
+  if (!input.description || input.description.trim().length === 0) {
+    return { valid: false, error: 'Description is required and cannot be empty' };
+  }
+  if (input.description.length > 200) {
+    return { valid: false, error: 'Description must be less than 200 characters' };
+  }
+  if (typeof input.amount !== 'number' || input.amount <= 0) {
+    return { valid: false, error: 'Amount must be a positive number' };
+  }
+  if (input.amount > 1000000000) { // 1 bilhão - limite razoável
+    return { valid: false, error: 'Amount exceeds maximum allowed value' };
+  }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(input.date)) {
+    return { valid: false, error: 'Date must be in YYYY-MM-DD format' };
+  }
+  if (!['income', 'expense'].includes(input.type)) {
+    return { valid: false, error: 'Type must be either income or expense' };
+  }
+  if (!['pending', 'completed'].includes(input.status)) {
+    return { valid: false, error: 'Status must be either pending or completed' };
+  }
+  // Validar UUID format (básico)
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!uuidRegex.test(input.account_id)) {
+    return { valid: false, error: 'Invalid account_id format' };
+  }
+  if (!uuidRegex.test(input.category_id)) {
+    return { valid: false, error: 'Invalid category_id format' };
+  }
+  if (input.invoice_month && !/^\d{4}-\d{2}$/.test(input.invoice_month)) {
+    return { valid: false, error: 'Invoice month must be in YYYY-MM format' };
+  }
+  
+  return { valid: true };
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -51,7 +89,7 @@ Deno.serve(async (req) => {
 
     console.log('[atomic-transaction] INFO: Creating transaction for user:', user.id);
 
-    // Validações
+    // Validações básicas
     if (!transaction.description || !transaction.amount || !transaction.account_id || !transaction.category_id) {
       return new Response(
         JSON.stringify({ error: 'Missing required fields' }),
@@ -59,11 +97,21 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Validação detalhada de inputs
+    const validation = validateTransactionInput(transaction);
+    if (!validation.valid) {
+      console.error('[atomic-transaction] ERROR: Invalid input:', validation.error);
+      return new Response(
+        JSON.stringify({ error: validation.error }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // INICIAR TRANSAÇÃO ATÔMICA
-    // Verificar se é conta de crédito
+    // Buscar dados da conta
     const { data: accountData, error: accountError } = await supabaseClient
       .from('accounts')
-      .select('type')
+      .select('type, balance, limit_amount')
       .eq('id', transaction.account_id)
       .single();
 
@@ -72,13 +120,38 @@ Deno.serve(async (req) => {
       throw accountError;
     }
 
-    // Mesma lógica para todos os tipos de conta após migração:
-    // - Despesa: saldo diminui (negativo)
-    // - Receita: saldo aumenta (positivo)
-    // Para cartões de crédito: expense aumenta dívida (mais negativo), income diminui dívida (menos negativo)
+    // Calcular amount com sinal correto
     const amount = transaction.type === 'expense' 
       ? -Math.abs(transaction.amount) 
       : Math.abs(transaction.amount);
+
+    // VALIDAÇÃO DE LIMITE DE CRÉDITO
+    if (accountData.type === 'credit' && transaction.type === 'expense' && transaction.status === 'completed') {
+      const currentDebt = Math.abs(Math.min(accountData.balance, 0));
+      const availableCredit = (accountData.limit_amount || 0) - currentDebt;
+      const transactionAmount = Math.abs(amount);
+
+      if (transactionAmount > availableCredit) {
+        console.error('[atomic-transaction] ERROR: Credit limit exceeded', {
+          currentDebt,
+          availableCredit,
+          transactionAmount,
+          limit: accountData.limit_amount
+        });
+        return new Response(
+          JSON.stringify({
+            error: 'Credit limit exceeded',
+            details: {
+              available: availableCredit,
+              requested: transactionAmount,
+              limit: accountData.limit_amount,
+              currentDebt
+            }
+          }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
 
     // 1. Inserir transação
     const { data: newTransaction, error: insertError } = await supabaseClient

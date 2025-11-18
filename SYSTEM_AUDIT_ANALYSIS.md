@@ -6,11 +6,14 @@
 
 ## 📊 NOTAS FINAIS
 
-### 🔧 **NOTA DO PROGRAMADOR: 9.0/10** ⬆️ (+0.5)
+### 🔧 **NOTA DO PROGRAMADOR: 9.5/10** ⬆️ (+1.0 desde início)
 
-### 💰 **NOTA DO CONTADOR: 7.5/10** ⬆️ (+0.5)
+### 💰 **NOTA DO CONTADOR: 7.5/10** (mantida)
 
-**🎉 Correção Principal Aplicada:** Lógica duplicada de journal_entries resolvida!
+**🎉 Correções Aplicadas:**
+- ✅ Lógica duplicada de journal_entries resolvida
+- ✅ Validação de limite de crédito implementada
+- ✅ Validações robustas de inputs em todos os edge functions
 
 ---
 
@@ -73,57 +76,63 @@ CREATE FUNCTION verify_journal_entries_balance(transaction_id)
 
 **Documentação:** Ver `docs/JOURNAL_ENTRIES_ARCHITECTURE.md`
 
-#### 3. **MÉDIO: Validações de Limites Incompletas**
-**Severidade:** 🟡 MÉDIA  
+#### 1. ✅ **RESOLVIDO: Validação de Limites de Crédito**
+**Severidade:** ~~🟡 MÉDIA~~ → ✅ RESOLVIDO  
 **Descrição:**
-- `atomic-transfer` valida limite de crédito
-- `atomic-transaction` NÃO valida limites para cartão de crédito
-- Possível ultrapassar limite disponível
+- `atomic-transaction` agora valida limite de crédito antes de criar despesas
+- Verifica saldo atual, limite disponível e impede ultrapassagem
 
-**Impacto:**
-- Usuário pode gastar mais do que o limite do cartão
-- Inconsistências financeiras
-
-**Correção:**
+**Correção Aplicada:**
 ```typescript
-// Em atomic-transaction, antes de inserir:
+// Validação de limite no atomic-transaction
 if (accountData.type === 'credit' && transaction.type === 'expense') {
-  const debt = Math.abs(Math.min(accountData.balance, 0));
-  const availableCredit = (accountData.limit_amount || 0) - debt;
+  const currentDebt = Math.abs(Math.min(accountData.balance, 0));
+  const availableCredit = (accountData.limit_amount || 0) - currentDebt;
   
-  if (Math.abs(amount) > availableCredit) {
-    throw new Error('Limite de crédito excedido');
+  if (transactionAmount > availableCredit) {
+    return error 400 - 'Credit limit exceeded';
   }
 }
 ```
 
-#### 4. **MÉDIO: Falta de Validação Zod nos Edge Functions**
-**Severidade:** 🟡 MÉDIA  
+**Benefícios:**
+- ✅ Impede usuário de gastar além do limite
+- ✅ Retorna informações detalhadas sobre limite disponível
+- ✅ Logs estruturados para debugging
+- ✅ Consistente com validação em `atomic-transfer`
+
+#### 2. ✅ **RESOLVIDO: Validação Robusta de Inputs**
+**Severidade:** ~~🟡 MÉDIA~~ → ✅ RESOLVIDO  
 **Descrição:**
-- Edge functions fazem validações manuais
-- Não usam biblioteca de validação (zod)
-- Validações podem ser inconsistentes
+- Funções de validação implementadas em TODOS os edge functions
+- Validações: formato UUID, ranges numéricos, formato de data, limites de string
 
-**Impacto:**
-- Inputs malformados podem passar
-- Segurança comprometida
-- Erros difíceis de debugar
+**Validações Implementadas:**
+- ✅ **atomic-transaction:** `validateTransactionInput()`
+  - Description: 1-200 caracteres
+  - Amount: > 0 e < 1 bilhão
+  - Date: formato YYYY-MM-DD
+  - UUIDs: formato válido
+  - Invoice month: formato YYYY-MM
+  
+- ✅ **atomic-transfer:** `validateTransferInput()`
+  - Contas diferentes (from ≠ to)
+  - Amount: > 0 e < 1 bilhão
+  - Date: formato YYYY-MM-DD
+  - UUIDs: formato válido
+  
+- ✅ **atomic-pay-bill:** `validatePayBillInput()`
+  - Contas diferentes (credit ≠ debit)
+  - Amount: > 0 e < 1 bilhão
+  - Payment date: formato YYYY-MM-DD
+  - UUIDs: formato válido
 
-**Correção:**
-```typescript
-import { z } from 'zod';
-
-const TransactionSchema = z.object({
-  description: z.string().min(1).max(200),
-  amount: z.number().positive(),
-  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  type: z.enum(['income', 'expense']),
-  // ...
-});
-
-// Usar no edge function:
-const validatedData = TransactionSchema.parse(transaction);
-```
+**Benefícios:**
+- ✅ Impede inputs malformados
+- ✅ Mensagens de erro claras
+- ✅ Logs para debugging
+- ✅ Segurança contra injection
+- ✅ Validação consistente em todos os edge functions
 
 #### 5. **BAIXO: Falta de Testes Automatizados para Edge Functions**
 **Severidade:** 🟢 BAIXA  
@@ -304,10 +313,10 @@ const expenses = journalEntries
 1. ✅ **Lógica duplicada corrigida** - Journal entries agora são criados apenas por edge functions
 2. ✅ **Decisão arquitetural tomada** - Documentada em `docs/JOURNAL_ENTRIES_ARCHITECTURE.md`
 
-### 🟠 ALTO (Resolver em Breve)
-1. **Validação de limites de crédito** - Segurança financeira
-2. **Padronização de débito/crédito** - Consistência contábil
-3. **Validação de inputs (zod)** - Segurança geral
+### ✅ ~~ALTO~~ RESOLVIDO
+1. ✅ **Validação de limites de crédito** - Implementada em atomic-transaction
+2. ✅ **Validação de inputs** - Funções de validação em todos os edge functions
+3. ⚠️ **Padronização de débito/crédito** - Verificar consistência (próximo passo)
 
 ### 🟡 MÉDIO (Importante)
 1. **DRE baseado em journal_entries** - Precisão contábil

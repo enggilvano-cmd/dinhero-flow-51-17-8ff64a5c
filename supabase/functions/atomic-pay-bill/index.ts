@@ -8,9 +8,46 @@ const corsHeaders = {
 interface PayBillInput {
   credit_account_id: string; // Cartão de crédito (liability)
   debit_account_id: string;  // Conta bancária (asset)
-  amount: number;            // Valor POSITIVO em centavos
+  amount: number;            // Valor POSITIVO
   payment_date: string;      // YYYY-MM-DD
   description?: string;
+}
+
+// Validação de inputs
+function validatePayBillInput(input: PayBillInput): { valid: boolean; error?: string } {
+  // Validar UUIDs
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!uuidRegex.test(input.credit_account_id)) {
+    return { valid: false, error: 'Invalid credit_account_id format' };
+  }
+  if (!uuidRegex.test(input.debit_account_id)) {
+    return { valid: false, error: 'Invalid debit_account_id format' };
+  }
+  
+  // Validar contas diferentes
+  if (input.credit_account_id === input.debit_account_id) {
+    return { valid: false, error: 'Credit and debit accounts must be different' };
+  }
+  
+  // Validar amount
+  if (typeof input.amount !== 'number' || input.amount <= 0) {
+    return { valid: false, error: 'Amount must be a positive number' };
+  }
+  if (input.amount > 1000000000) {
+    return { valid: false, error: 'Amount exceeds maximum allowed value' };
+  }
+  
+  // Validar date
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(input.payment_date)) {
+    return { valid: false, error: 'Payment date must be in YYYY-MM-DD format' };
+  }
+  
+  // Validar description (opcional)
+  if (input.description && input.description.length > 200) {
+    return { valid: false, error: 'Description must be less than 200 characters' };
+  }
+  
+  return { valid: true };
 }
 
 Deno.serve(async (req) => {
@@ -30,10 +67,22 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    const { credit_account_id, debit_account_id, amount, payment_date, description }: PayBillInput = await req.json();
+    const payBillInput: PayBillInput = await req.json();
+    const { credit_account_id, debit_account_id, amount, payment_date, description } = payBillInput;
 
+    // Validações básicas
     if (!credit_account_id || !debit_account_id || !amount || !payment_date) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
+    // Validação detalhada de inputs
+    const validation = validatePayBillInput(payBillInput);
+    if (!validation.valid) {
+      console.error('[atomic-pay-bill] ERROR: Invalid input:', validation.error);
+      return new Response(
+        JSON.stringify({ error: validation.error }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     // Buscar contas
