@@ -6,6 +6,7 @@
 import ptBR from '@/i18n/locales/pt-BR.json';
 import enUS from '@/i18n/locales/en-US.json';
 import esES from '@/i18n/locales/es-ES.json';
+import { logger } from '@/lib/logger';
 
 interface ValidationResult {
   isValid: boolean;
@@ -84,8 +85,8 @@ export function validateTranslations(): ValidationResult {
   const enKeys = extractKeys(enUS);
   const esKeys = extractKeys(esES);
   
-  console.log('🔍 Validando consistência i18n...');
-  console.log(`📊 Total de chaves: PT-BR: ${ptKeys.size}, EN-US: ${enKeys.size}, ES-ES: ${esKeys.size}`);
+  logger.info('🔍 Validando consistência i18n...');
+  logger.info(`📊 Total de chaves: PT-BR: ${ptKeys.size}, EN-US: ${enKeys.size}, ES-ES: ${esKeys.size}`);
   
   // Comparar inglês com português (base)
   const enComparison = compareKeys(ptKeys, enKeys);
@@ -135,15 +136,15 @@ export function validateTranslations(): ValidationResult {
   
   // Log resumo
   if (isValid) {
-    console.log('✅ Todas as traduções estão consistentes!');
+    logger.success('✅ Todas as traduções estão consistentes!');
   } else {
-    console.error('❌ Inconsistências encontradas nas traduções:');
-    errors.forEach(err => console.error(err));
+    logger.error('❌ Inconsistências encontradas nas traduções:');
+    errors.forEach(err => logger.error(err));
   }
   
   if (warnings.length > 0) {
-    console.warn('⚠️ Avisos encontrados:');
-    warnings.forEach(warn => console.warn(warn));
+    logger.warn('⚠️ Avisos encontrados:');
+    warnings.forEach(warn => logger.warn(warn));
   }
   
   return {
@@ -200,13 +201,13 @@ if (import.meta.env.DEV) {
     const result = validateTranslations();
     
     if (!result.isValid || result.warnings.length > 0) {
-      console.group('📋 Relatório de Validação i18n');
-      console.log(`Total de chaves (PT-BR): ${result.summary.totalKeys}`);
-      console.log(`Faltando em EN-US: ${result.summary.missingInEnglish}`);
-      console.log(`Faltando em ES-ES: ${result.summary.missingInSpanish}`);
-      console.log(`Extras em EN-US: ${result.summary.extraInEnglish}`);
-      console.log(`Extras em ES-ES: ${result.summary.extraInSpanish}`);
-      console.groupEnd();
+      logger.group('📋 Relatório de Validação i18n');
+      logger.info(`Total de chaves (PT-BR): ${result.summary.totalKeys}`);
+      logger.info(`Faltando em EN-US: ${result.summary.missingInEnglish}`);
+      logger.info(`Faltando em ES-ES: ${result.summary.missingInSpanish}`);
+      logger.info(`Extras em EN-US: ${result.summary.extraInEnglish}`);
+      logger.info(`Extras em ES-ES: ${result.summary.extraInSpanish}`);
+      logger.groupEnd();
     }
   }, 2000);
 }

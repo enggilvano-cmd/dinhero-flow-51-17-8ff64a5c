@@ -1,4 +1,5 @@
 // Notification utilities for reminders and alerts
+import { logger } from '@/lib/logger';
 
 export interface NotificationSettings {
   billReminders: boolean;
@@ -138,7 +139,7 @@ export function scheduleNotifications(accounts: any[], settings: NotificationSet
   reminders.forEach(reminder => {
     // In a real app, you'd schedule these with a service worker
     // For demo purposes, we'll just log them
-    console.log("Notification scheduled:", reminder.title, reminder.message);
+    logger.debug("Notification scheduled:", reminder.title, reminder.message);
   });
 }
 
