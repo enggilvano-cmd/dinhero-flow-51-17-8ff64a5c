@@ -746,9 +746,10 @@ const PlaniFlowApp = () => {
         .eq("parent_transaction_id", groupParentId);
 
       if (editScope === "current-and-remaining") {
+        const startInstallment = oldTransaction.current_installment ?? 1;
         queryBuilder = queryBuilder.gte(
           "current_installment",
-          oldTransaction.current_installment
+          startInstallment
         );
       }
 
@@ -763,6 +764,13 @@ const PlaniFlowApp = () => {
 
       if (selectError) throw selectError;
       if (!targetTransactions || targetTransactions.length === 0) return;
+
+      console.info("[InstallmentScopeEdit] targets", {
+        count: targetTransactions.length,
+        ids: targetTransactions.map(t => t.id),
+        scope: editScope,
+        parentId: groupParentId
+      });
 
       const updates = targetTransactions.map((transaction) => {
         const updatedData = {
@@ -1010,6 +1018,12 @@ const PlaniFlowApp = () => {
       }
 
       const idsToDelete = transactionsToDelete.map(t => t.id);
+      console.info("[DeleteInstallments] selected", {
+        scope: editScope ?? "all",
+        count: idsToDelete.length,
+        ids: idsToDelete,
+        parent: transactionToDelete.parent_transaction_id || transactionToDelete.id
+      });
 
       // Calcula transações restantes ANTES de remover do store
       const remainingTransactions = transactions.filter(t => !idsToDelete.includes(t.id));
