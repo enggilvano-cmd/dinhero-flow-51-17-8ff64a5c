@@ -897,7 +897,7 @@ const PlaniFlowApp = () => {
     }
   };
 
-  const handleDeleteTransaction = async (transactionId: string) => {
+  const handleDeleteTransaction = async (transactionId: string, editScope?: EditScope) => {
     if (!user) return;
 
     try {
@@ -929,37 +929,74 @@ const PlaniFlowApp = () => {
           }
         }
       }
-      // Lógica para encontrar e incluir transações de parcelamento
+      // Lógica para encontrar e incluir transações de parcelamento baseado no escopo
       else if (transactionToDelete.parent_transaction_id) {
-        const { data: installmentTransactions, error: findError } = await supabase
-          .from("transactions")
-          .select("*")
-          .eq("parent_transaction_id", transactionToDelete.parent_transaction_id)
-          .neq("id", transactionToDelete.id);
+        // Se editScope não foi fornecido (deleção antiga), deleta todas as parcelas
+        if (!editScope || editScope === "all") {
+          const { data: installmentTransactions, error: findError } = await supabase
+            .from("transactions")
+            .select("*")
+            .eq("parent_transaction_id", transactionToDelete.parent_transaction_id)
+            .neq("id", transactionToDelete.id);
 
-        if (findError) console.error("Erro ao buscar transações de parcela:", findError);
+          if (findError) console.error("Erro ao buscar transações de parcela:", findError);
 
-        if (installmentTransactions && installmentTransactions.length > 0) {
-          for (const installment of installmentTransactions) {
-            transactionsToDelete.push({
-              ...installment,
-              category_id: installment.category_id || "",
-              to_account_id: installment.to_account_id || undefined,
-              installments: installment.installments || undefined,
-              current_installment: installment.current_installment || undefined,
-              parent_transaction_id: installment.parent_transaction_id || undefined,
-              linked_transaction_id: installment.linked_transaction_id || undefined,
-              invoice_month: installment.invoice_month || undefined,
-              is_recurring: installment.is_recurring || undefined,
-              recurrence_type: installment.recurrence_type || undefined,
-              recurrence_end_date: installment.recurrence_end_date || undefined,
-              date: typeof installment.date === 'string' 
-                ? createDateFromString(installment.date) 
-                : installment.date
-            });
-            accountsToRecalculate.add(installment.account_id);
+          if (installmentTransactions && installmentTransactions.length > 0) {
+            for (const installment of installmentTransactions) {
+              transactionsToDelete.push({
+                ...installment,
+                category_id: installment.category_id || "",
+                to_account_id: installment.to_account_id || undefined,
+                installments: installment.installments || undefined,
+                current_installment: installment.current_installment || undefined,
+                parent_transaction_id: installment.parent_transaction_id || undefined,
+                linked_transaction_id: installment.linked_transaction_id || undefined,
+                invoice_month: installment.invoice_month || undefined,
+                is_recurring: installment.is_recurring || undefined,
+                recurrence_type: installment.recurrence_type || undefined,
+                recurrence_end_date: installment.recurrence_end_date || undefined,
+                date: typeof installment.date === 'string' 
+                  ? createDateFromString(installment.date) 
+                  : installment.date
+              });
+              accountsToRecalculate.add(installment.account_id);
+            }
+          }
+        } else if (editScope === "current-and-remaining") {
+          // Deletar apenas esta parcela e as próximas
+          const currentInstallment = transactionToDelete.current_installment || 1;
+          const { data: installmentTransactions, error: findError } = await supabase
+            .from("transactions")
+            .select("*")
+            .eq("parent_transaction_id", transactionToDelete.parent_transaction_id)
+            .gte("current_installment", currentInstallment)
+            .neq("id", transactionToDelete.id);
+
+          if (findError) console.error("Erro ao buscar transações de parcela:", findError);
+
+          if (installmentTransactions && installmentTransactions.length > 0) {
+            for (const installment of installmentTransactions) {
+              transactionsToDelete.push({
+                ...installment,
+                category_id: installment.category_id || "",
+                to_account_id: installment.to_account_id || undefined,
+                installments: installment.installments || undefined,
+                current_installment: installment.current_installment || undefined,
+                parent_transaction_id: installment.parent_transaction_id || undefined,
+                linked_transaction_id: installment.linked_transaction_id || undefined,
+                invoice_month: installment.invoice_month || undefined,
+                is_recurring: installment.is_recurring || undefined,
+                recurrence_type: installment.recurrence_type || undefined,
+                recurrence_end_date: installment.recurrence_end_date || undefined,
+                date: typeof installment.date === 'string' 
+                  ? createDateFromString(installment.date) 
+                  : installment.date
+              });
+              accountsToRecalculate.add(installment.account_id);
+            }
           }
         }
+        // Se editScope === "current", não adiciona nenhuma outra parcela
       }
 
       const idsToDelete = transactionsToDelete.map(t => t.id);
