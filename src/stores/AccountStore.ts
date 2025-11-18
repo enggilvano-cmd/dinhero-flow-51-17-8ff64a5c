@@ -86,7 +86,6 @@ export const useAccountStore = create<AccountStoreState>((set, get) => ({
       accounts: state.accounts.filter((account) => account.id !== accountId),
     })),
 
-  // --- LÓGICA DE PAGAMENTO (Existente) ---
   payCreditCardBill: async ({
     creditCardAccountId,
     debitAccountId,
@@ -99,78 +98,40 @@ export const useAccountStore = create<AccountStoreState>((set, get) => ({
     } = await supabase.auth.getUser();
     if (authError || !user) throw new Error("Usuário não autenticado");
 
-    const { accounts } = get();
-    const debitAccount = accounts.find((a) => a.id === debitAccountId);
-    const creditCardAccount = accounts.find(
-      (a) => a.id === creditCardAccountId,
-    );
+    const { data, error } = await supabase.functions.invoke('atomic-pay-bill', {
+      body: {
+        credit_account_id: creditCardAccountId,
+        debit_account_id: debitAccountId,
+        amount,
+        payment_date: paymentDate,
+      },
+    });
 
-    if (!debitAccount || !creditCardAccount) {
-      throw new Error("Conta de débito ou crédito não encontrada");
+    if (error) {
+      logger.error('Erro ao pagar fatura (edge function):', error);
+      throw error;
     }
 
-    const debitTransaction = {
-      type: "expense" as const,
-      amount,
-      account_id: debitAccountId,
-      description: `Pagamento Fatura ${creditCardAccount.name}`,
-      date: paymentDate,
-      user_id: user.id,
-      category_id: null,
-    };
-
-    const creditTransaction = {
-      type: "income" as const, // Pagamento é uma 'receita' para o cartão
-      amount: -amount, // Inverter o sinal: amount negativo vira positivo (reduz dívida)
-      account_id: creditCardAccountId,
-      description: `Pagamento Recebido de ${debitAccount.name}`,
-      date: paymentDate,
-      user_id: user.id,
-      category_id: null,
-    };
-
-    const { data: insertedTransactions, error: transactionError } =
-      await supabase
-        .from("transactions")
-        .insert([debitTransaction, creditTransaction])
-        .select()
-        .returns<Transaction[]>();
-
-    if (
-      transactionError ||
-      !insertedTransactions ||
-      insertedTransactions.length !== 2
-    ) {
-      logger.error(
-        "Erro ao salvar transações de pagamento:",
-        transactionError,
-      );
-      throw new Error("Falha ao registrar transações de pagamento.");
+    // Atualiza stores
+    if (data?.debit_tx && data?.credit_tx) {
+      useTransactionStore.getState().addTransactions([data.debit_tx, data.credit_tx] as Transaction[]);
     }
-
-    useTransactionStore.getState().addTransactions(insertedTransactions as Transaction[]);
-
-    let updatedDebitAccount: Account | undefined;
-    let updatedCreditAccount: Account | undefined;
 
     set((state) => {
-      const newAccounts = state.accounts.map((acc) => {
-        if (acc.id === debitAccountId) {
-          updatedDebitAccount = { ...acc, balance: acc.balance - amount };
-          return updatedDebitAccount;
+      const updated = state.accounts.map(acc => {
+        if (acc.id === debitAccountId && data?.debit_balance?.new_balance !== undefined) {
+          return { ...acc, balance: data.debit_balance.new_balance } as Account;
         }
-        if (acc.id === creditCardAccountId) {
-          updatedCreditAccount = { ...acc, balance: acc.balance + amount };
-          return updatedCreditAccount;
+        if (acc.id === creditCardAccountId && data?.credit_balance?.new_balance !== undefined) {
+          return { ...acc, balance: data.credit_balance.new_balance } as Account;
         }
         return acc;
       });
-      return { accounts: newAccounts };
+      return { accounts: updated };
     });
 
-    if (!updatedCreditAccount || !updatedDebitAccount) {
-      throw new Error("Falha ao atualizar contas no estado local.");
-    }
+    const updatedDebitAccount = get().accounts.find(a => a.id === debitAccountId)!;
+    const updatedCreditAccount = get().accounts.find(a => a.id === creditCardAccountId)!;
 
     return { updatedCreditAccount, updatedDebitAccount };
   },
@@ -182,99 +143,56 @@ export const useAccountStore = create<AccountStoreState>((set, get) => ({
     amountInCents,
     date,
   ) => {
-    // A. Obter dados essenciais
     const {
       data: { user },
       error: authError,
     } = await supabase.auth.getUser();
     if (authError || !user) throw new Error("Usuário não autenticado");
 
-    const { accounts } = get();
-    const fromAccount = accounts.find((a) => a.id === fromAccountId);
-    const toAccount = accounts.find((a) => a.id === toAccountId);
+    const dateString = format(date, 'yyyy-MM-dd');
 
-    if (!fromAccount || !toAccount) {
-      throw new Error("Conta de origem ou destino não encontrada");
-    }
-
-    // Formata o Date para string "YYYY-MM-DD"
-    const dateString = format(date, "yyyy-MM-dd");
-
-    // B. Criar as DUAS transações (com 'to_account_id' para rastreio)
-    const debitTransaction = {
-      type: "expense" as const,
-      amount: amountInCents,
-      account_id: fromAccountId,
-      description: `Transferência para ${toAccount.name}`,
-      date: dateString,
-      user_id: user.id,
-      category_id: null, // Transferências não usam categoria
-      to_account_id: toAccountId, // Campo para identificar a transferência
-    };
-
-    const creditTransaction = {
-      type: "income" as const,
-      amount: amountInCents,
-      account_id: toAccountId,
-      description: `Transferência de ${fromAccount.name}`,
-      date: dateString,
-      user_id: user.id,
-      category_id: null,
-      to_account_id: fromAccountId, // Campo para identificar a transferência
-    };
-
-    // C. Salvar AMBAS as transações no DB
-    const { data: insertedTransactions, error: transactionError } =
-      await supabase
-        .from("transactions")
-        .insert([debitTransaction, creditTransaction])
-        .select()
-        .returns<Transaction[]>();
-
-    if (
-      transactionError ||
-      !insertedTransactions ||
-      insertedTransactions.length !== 2
-    ) {
-      logger.error(
-        "Erro ao salvar transações de transferência:",
-        transactionError,
-      );
-      throw new Error("Falha ao registrar transações de transferência.");
-    }
-
-    // D. Atualizar o estado local (Stores)
-    // O Supabase retorna a data como string. Para o store, precisamos do objeto Date original.
-    const transactionsForStore = insertedTransactions.map(t => ({
-      ...t,
-      date: date, // Usar o objeto Date original
-    }));
-    useTransactionStore.getState().addTransactions(transactionsForStore);
-
-    const updatedFromAccount: Account = {
-      ...fromAccount,
-      balance: fromAccount.balance - amountInCents,
-    };
-    const updatedToAccount: Account = {
-      ...toAccount,
-      balance: toAccount.balance + amountInCents,
-    };
-
-    // Atualiza o saldo localmente
-    set((state) => {
-      const updatedMap = new Map([
-        [fromAccountId, updatedFromAccount],
-        [toAccountId, updatedToAccount],
-      ]);
-      const newAccounts = state.accounts.map(acc => updatedMap.get(acc.id) || acc);
-      return { accounts: newAccounts };
+    const { data, error } = await supabase.functions.invoke('atomic-transfer', {
+      body: {
+        transfer: {
+          from_account_id: fromAccountId,
+          to_account_id: toAccountId,
+          amount: amountInCents,
+          date: dateString,
+          description: `Transferência ${dateString}`,
+        },
+      },
     });
 
-    if (!updatedFromAccount || !updatedToAccount) {
-      throw new Error("Falha ao atualizar contas no estado local.");
+    if (error) {
+      logger.error('Erro na transferência (edge function):', error);
+      throw error;
     }
 
-    // E. Retornar as contas atualizadas para o modal
-    return { fromAccount: updatedFromAccount, toAccount: updatedToAccount };
+    // Atualizar transações no store
+    if (data?.outgoing && data?.incoming) {
+      useTransactionStore.getState().addTransactions([
+        { ...data.outgoing, date },
+        { ...data.incoming, date },
+      ] as Transaction[]);
+    }
+
+    // Atualizar saldos a partir do retorno do recálculo
+    set((state) => {
+      const updated = state.accounts.map(acc => {
+        if (acc.id === fromAccountId && data?.from_balance?.new_balance !== undefined) {
+          return { ...acc, balance: data.from_balance.new_balance } as Account;
+        }
+        if (acc.id === toAccountId && data?.to_balance?.new_balance !== undefined) {
+          return { ...acc, balance: data.to_balance.new_balance } as Account;
+        }
+        return acc;
+      });
+      return { accounts: updated };
+    });
+
+    const fromAccount = get().accounts.find(a => a.id === fromAccountId)!;
+    const toAccount = get().accounts.find(a => a.id === toAccountId)!;
+
+    return { fromAccount, toAccount };
   },
 }));

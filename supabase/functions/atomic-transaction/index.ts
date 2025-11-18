@@ -105,6 +105,63 @@ Deno.serve(async (req) => {
 
     // 2. Recalcular saldo APENAS se status = 'completed' usando função atômica
     if (transaction.status === 'completed') {
+      // Criar journal_entries (partidas dobradas básicas)
+      const { data: coa } = await supabaseClient
+        .from('chart_of_accounts')
+        .select('id, code, category')
+        .eq('user_id', user.id);
+
+      const anyAsset = coa?.find(a => a.code?.startsWith('1.01.'))?.id;
+      const anyExpense = coa?.find(a => a.category === 'expense')?.id;
+      const anyRevenue = coa?.find(a => a.category === 'revenue')?.id;
+      const liabilityCard = coa?.find(a => a.code === '2.01.01')?.id;
+
+      if (anyAsset && (anyExpense || anyRevenue)) {
+        if (transaction.type === 'income' && anyRevenue) {
+          // Débito: Ativo | Crédito: Receita
+          await supabaseClient.from('journal_entries').insert({
+            user_id: user.id,
+            transaction_id: newTransaction.id,
+            account_id: anyAsset,
+            entry_type: 'debit',
+            amount: Math.abs(newTransaction.amount),
+            description: newTransaction.description,
+            entry_date: newTransaction.date,
+          });
+          await supabaseClient.from('journal_entries').insert({
+            user_id: user.id,
+            transaction_id: newTransaction.id,
+            account_id: anyRevenue,
+            entry_type: 'credit',
+            amount: Math.abs(newTransaction.amount),
+            description: newTransaction.description,
+            entry_date: newTransaction.date,
+          });
+        }
+        if (transaction.type === 'expense' && anyExpense) {
+          // Débito: Despesa | Crédito: Ativo (ou Passivo cartão)
+          await supabaseClient.from('journal_entries').insert({
+            user_id: user.id,
+            transaction_id: newTransaction.id,
+            account_id: anyExpense,
+            entry_type: 'debit',
+            amount: Math.abs(newTransaction.amount),
+            description: newTransaction.description,
+            entry_date: newTransaction.date,
+          });
+          const creditAccountId = accountData?.type === 'credit' && liabilityCard ? liabilityCard : anyAsset;
+          await supabaseClient.from('journal_entries').insert({
+            user_id: user.id,
+            transaction_id: newTransaction.id,
+            account_id: creditAccountId!,
+            entry_type: 'credit',
+            amount: Math.abs(newTransaction.amount),
+            description: newTransaction.description,
+            entry_date: newTransaction.date,
+          });
+        }
+      }
+
       const { data: recalcResult, error: recalcError } = await supabaseClient
         .rpc('recalculate_account_balance', {
           p_account_id: transaction.account_id,
