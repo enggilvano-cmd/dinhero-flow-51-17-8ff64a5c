@@ -324,7 +324,8 @@ export function TransactionsPage({
   ]);
 
   const handleDeleteTransaction = (transaction: any) => {
-    const isInstallment = transaction.installments && transaction.installments > 1;
+    // Verifica se é uma transação parcelada verificando parent_transaction_id
+    const isInstallment = transaction.parent_transaction_id != null;
     
     if (isInstallment) {
       // Se é parcela, abre o diálogo de escopo
@@ -1120,6 +1121,7 @@ export function TransactionsPage({
         onScopeSelected={handleDeleteScopeSelected}
         currentInstallment={transactionToDelete?.current_installment || 1}
         totalInstallments={transactionToDelete?.installments || 1}
+        mode="delete"
       />
     </div>
   );

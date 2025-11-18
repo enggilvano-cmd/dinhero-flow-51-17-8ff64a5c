@@ -10,6 +10,7 @@ interface InstallmentEditScopeDialogProps {
   onScopeSelected: (scope: EditScope) => void;
   currentInstallment: number;
   totalInstallments: number;
+  mode?: "edit" | "delete";
 }
 
 export function InstallmentEditScopeDialog({
@@ -17,7 +18,8 @@ export function InstallmentEditScopeDialog({
   onOpenChange,
   onScopeSelected,
   currentInstallment,
-  totalInstallments
+  totalInstallments,
+  mode = "edit"
 }: InstallmentEditScopeDialogProps) {
   const { t } = useTranslation();
   
@@ -26,13 +28,15 @@ export function InstallmentEditScopeDialog({
     onOpenChange(false);
   };
 
+  const translationPrefix = mode === "delete" ? "modals.deleteInstallmentScope" : "modals.installmentScope";
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>{t("modals.installmentScope.title")}</DialogTitle>
+          <DialogTitle>{t(`${translationPrefix}.title`)}</DialogTitle>
           <DialogDescription>
-            {t("modals.installmentScope.subtitle", { 
+            {t(`${translationPrefix}.subtitle`, { 
               current: currentInstallment, 
               total: totalInstallments 
             })}
@@ -46,9 +50,9 @@ export function InstallmentEditScopeDialog({
             onClick={() => handleScopeSelection("current")}
           >
             <div className="text-left">
-              <div className="font-medium">{t("modals.installmentScope.options.current.label")}</div>
+              <div className="font-medium">{t(`${translationPrefix}.options.current.label`)}</div>
               <div className="text-sm text-muted-foreground">
-                {t("modals.installmentScope.options.current.description", { 
+                {t(`${translationPrefix}.options.current.description`, { 
                   current: currentInstallment, 
                   total: totalInstallments 
                 })}
@@ -63,9 +67,9 @@ export function InstallmentEditScopeDialog({
               onClick={() => handleScopeSelection("current-and-remaining")}
             >
               <div className="text-left">
-                <div className="font-medium">{t("modals.installmentScope.options.remaining.label")}</div>
+                <div className="font-medium">{t(`${translationPrefix}.options.remaining.label`)}</div>
                 <div className="text-sm text-muted-foreground">
-                  {t("modals.installmentScope.options.remaining.description", { 
+                  {t(`${translationPrefix}.options.remaining.description`, { 
                     current: currentInstallment, 
                     total: totalInstallments 
                   })}
@@ -80,9 +84,9 @@ export function InstallmentEditScopeDialog({
             onClick={() => handleScopeSelection("all")}
           >
             <div className="text-left">
-              <div className="font-medium">{t("modals.installmentScope.options.all.label")}</div>
+              <div className="font-medium">{t(`${translationPrefix}.options.all.label`)}</div>
               <div className="text-sm text-muted-foreground">
-                {t("modals.installmentScope.options.all.description", { 
+                {t(`${translationPrefix}.options.all.description`, { 
                   total: totalInstallments 
                 })}
               </div>

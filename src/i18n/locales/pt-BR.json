@@ -936,6 +936,24 @@
         }
       }
     },
+    "deleteInstallmentScope": {
+      "title": "Excluir Parcelas",
+      "subtitle": "Você está excluindo a parcela {{current}} de {{total}}. Escolha o escopo da exclusão:",
+      "options": {
+        "current": {
+          "label": "Apenas esta parcela",
+          "description": "Excluir somente a parcela {{current}} de {{total}}"
+        },
+        "remaining": {
+          "label": "Esta e próximas parcelas",
+          "description": "Excluir da parcela {{current}} até {{total}}"
+        },
+        "all": {
+          "label": "Todas as parcelas",
+          "description": "Excluir todas as {{total}} parcelas"
+        }
+      }
+    },
     "transfer": {
       "title": "Nova Transferência",
       "subtitle": "Mova dinheiro entre suas contas",
