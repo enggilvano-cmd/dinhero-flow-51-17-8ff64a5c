@@ -605,10 +605,11 @@ const PlaniFlowApp = () => {
         hasInvoiceMonth: updatedTransaction.invoice_month !== undefined,
       });
 
+      const isInstallment = Boolean(oldTransaction.installments && oldTransaction.installments > 1);
       if (
         !editScope ||
         editScope === "current" ||
-        !oldTransaction.parent_transaction_id // Não editar em lote se não for parcela
+        !isInstallment // Não editar em lote se não for parcela
       ) {
         const cleanTransaction = {
           description: updatedTransaction.description,
@@ -710,9 +711,11 @@ const PlaniFlowApp = () => {
     editScope: EditScope,
     oldTransaction: any
   ) => {
-    if (!user || !oldTransaction.parent_transaction_id) return;
+    if (!user) return;
+    const groupParentId = oldTransaction.parent_transaction_id || oldTransaction.id;
+    const isParent = !oldTransaction.parent_transaction_id;
     try {
-      console.info("[InstallmentScopeEdit] start", { editScope, parentId: oldTransaction.parent_transaction_id });
+      console.info("[InstallmentScopeEdit] start", { editScope, parentId: groupParentId });
       const cleanTransactionData = {
         description: updatedTransaction.description,
         amount: updatedTransaction.amount,
@@ -740,7 +743,7 @@ const PlaniFlowApp = () => {
         .from("transactions")
         .select("*")
         .eq("user_id", user.id)
-        .eq("parent_transaction_id", oldTransaction.parent_transaction_id);
+        .eq("parent_transaction_id", groupParentId);
 
       if (editScope === "current-and-remaining") {
         queryBuilder = queryBuilder.gte(
@@ -749,8 +752,14 @@ const PlaniFlowApp = () => {
         );
       }
 
-      const { data: targetTransactions, error: selectError } =
+      const { data: fetchedChildren, error: selectError } =
         await queryBuilder;
+
+      const targetTransactions = [...(fetchedChildren || [])];
+      if (isParent && (editScope === "all" || editScope === "current-and-remaining")) {
+        // Incluir a própria transação "mãe" quando o usuário iniciou a edição por ela
+        targetTransactions.unshift(oldTransaction);
+      }
 
       if (selectError) throw selectError;
       if (!targetTransactions || targetTransactions.length === 0) return;
@@ -930,13 +939,14 @@ const PlaniFlowApp = () => {
         }
       }
       // Lógica para encontrar e incluir transações de parcelamento baseado no escopo
-      else if (transactionToDelete.parent_transaction_id) {
+      else if (transactionToDelete.installments && transactionToDelete.installments > 1) {
+        const groupParentId = transactionToDelete.parent_transaction_id || transactionToDelete.id;
         // Se editScope não foi fornecido (deleção antiga), deleta todas as parcelas
         if (!editScope || editScope === "all") {
           const { data: installmentTransactions, error: findError } = await supabase
             .from("transactions")
             .select("*")
-            .eq("parent_transaction_id", transactionToDelete.parent_transaction_id)
+            .eq("parent_transaction_id", groupParentId)
             .neq("id", transactionToDelete.id);
 
           if (findError) console.error("Erro ao buscar transações de parcela:", findError);
@@ -968,7 +978,7 @@ const PlaniFlowApp = () => {
           const { data: installmentTransactions, error: findError } = await supabase
             .from("transactions")
             .select("*")
-            .eq("parent_transaction_id", transactionToDelete.parent_transaction_id)
+            .eq("parent_transaction_id", groupParentId)
             .gte("current_installment", currentInstallment)
             .neq("id", transactionToDelete.id);
 
