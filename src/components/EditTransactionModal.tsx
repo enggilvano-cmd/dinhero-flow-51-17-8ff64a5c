@@ -92,7 +92,7 @@ export function EditTransactionModal({
       return;
     }
 
-    const isInstallment = transaction.installments && transaction.installments > 1;
+    const isInstallment = Boolean(transaction.parent_transaction_id || (transaction.installments && transaction.installments > 1));
     
     if (isInstallment) {
       setScopeDialogOpen(true);
@@ -148,7 +148,7 @@ export function EditTransactionModal({
     cat.type === formData.type || cat.type === "both"
   );
 
-  const isInstallment = transaction?.installments && transaction.installments > 1;
+  const isInstallment = Boolean(transaction?.parent_transaction_id || (transaction?.installments && transaction.installments > 1));
 
   return (
     <>
@@ -160,8 +160,8 @@ export function EditTransactionModal({
               {isInstallment && (
                 <span className="text-sm font-normal text-muted-foreground block">
                   {t("modals.editTransaction.installmentInfo", { 
-                    current: transaction.current_installment, 
-                    total: transaction.installments 
+                    current: transaction?.current_installment, 
+                    total: transaction?.installments 
                   })}
                 </span>
               )}
