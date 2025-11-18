@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
 
     const { transaction_id, scope }: DeleteInput = await req.json();
 
-    console.log('[atomic-delete] Deleting transaction:', transaction_id, 'scope:', scope);
+    console.log('[atomic-delete] INFO: Deleting transaction:', transaction_id, 'scope:', scope);
 
     // Buscar transação original
     const { data: targetTx, error: fetchError } = await supabaseClient
@@ -100,7 +100,7 @@ Deno.serve(async (req) => {
         const { data: installments, error: instError } = await query;
 
         if (instError) {
-          console.error('[atomic-delete] Error fetching installments:', instError);
+          console.error('[atomic-delete] ERROR:', instError);
           throw instError;
         }
 
@@ -115,7 +115,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    console.log('[atomic-delete] Deleting', transactionsToDelete.length, 'transactions');
+    console.log('[atomic-delete] INFO: Deleting', transactionsToDelete.length, 'transactions');
 
     // DELETAR TODAS AS TRANSAÇÕES ATOMICAMENTE
     const { error: deleteError } = await supabaseClient
@@ -125,7 +125,7 @@ Deno.serve(async (req) => {
       .eq('user_id', user.id);
 
     if (deleteError) {
-      console.error('[atomic-delete] Delete error:', deleteError);
+      console.error('[atomic-delete] ERROR:', deleteError);
       throw deleteError;
     }
 
@@ -135,8 +135,8 @@ Deno.serve(async (req) => {
       const { data: balData, error: balError } = await supabaseClient
         .rpc('recalculate_account_balance', { p_account_id: accountId });
 
-      if (balError) {
-        console.error('[atomic-delete] Balance error:', balError);
+        if (balError) {
+          console.error('[atomic-delete] ERROR: Balance recalc failed:', balError);
         throw balError;
       }
       balanceResults.push({ accountId, ...balData[0] });
@@ -152,7 +152,7 @@ Deno.serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('[atomic-delete] Error:', error);
+    console.error('[atomic-delete] ERROR:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

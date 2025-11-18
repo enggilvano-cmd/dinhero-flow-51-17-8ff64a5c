@@ -23,7 +23,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    console.log('Starting yearly fixed transactions generation...')
+    console.log('[generate-fixed] INFO: Starting yearly fixed transactions generation...');
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -44,19 +44,19 @@ Deno.serve(async (req) => {
       .neq('type', 'transfer')
 
     if (fetchError) {
-      console.error('Error fetching fixed transactions:', fetchError)
-      throw fetchError
+      console.error('[generate-fixed] ERROR: Failed to fetch fixed transactions:', fetchError);
+      throw fetchError;
     }
 
     if (!fixedTransactions || fixedTransactions.length === 0) {
-      console.log('No fixed transactions found')
+      console.log('[generate-fixed] INFO: No fixed transactions found');
       return new Response(
         JSON.stringify({ message: 'No fixed transactions found', generated: 0 }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    console.log(`Found ${fixedTransactions.length} fixed transactions`)
+    console.log(`[generate-fixed] INFO: Found ${fixedTransactions.length} fixed transactions`);
 
     let totalGenerated = 0
 
@@ -108,15 +108,15 @@ Deno.serve(async (req) => {
         .insert(futureTransactions)
 
       if (insertError) {
-        console.error(`Error generating transactions for ${fixedTx.id}:`, insertError)
-        continue
+        console.error(`[generate-fixed] ERROR: Failed for ${fixedTx.id}:`, insertError);
+        continue;
       }
 
-      totalGenerated += futureTransactions.length
-      console.log(`Generated ${futureTransactions.length} transactions for ${fixedTx.description}`)
+      totalGenerated += futureTransactions.length;
+      console.log(`[generate-fixed] INFO: Generated ${futureTransactions.length} transactions for ${fixedTx.description}`);
     }
 
-    console.log(`Total transactions generated: ${totalGenerated}`)
+    console.log(`[generate-fixed] INFO: Total transactions generated: ${totalGenerated}`);
 
     return new Response(
       JSON.stringify({
@@ -128,7 +128,7 @@ Deno.serve(async (req) => {
     )
 
   } catch (error) {
-    console.error('Error in generate-fixed-transactions-yearly:', error)
+    console.error('[generate-fixed] ERROR:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }

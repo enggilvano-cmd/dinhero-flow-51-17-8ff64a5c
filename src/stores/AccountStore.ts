@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { Account, Transaction } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
 // 1. Importar o store de transações e o formatador de data
 import { useTransactionStore } from './TransactionStore';
 import { format } from 'date-fns';
@@ -46,7 +47,7 @@ export const useAccountStore = create<AccountStoreState>((set, get) => ({
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      console.error("Erro ao obter usuário:", authError);
+      logger.error("Erro ao obter usuário:", authError);
       throw new Error("Usuário não autenticado");
     }
 
@@ -60,7 +61,7 @@ export const useAccountStore = create<AccountStoreState>((set, get) => ({
       .single();
 
     if (insertError) {
-      console.error("Erro ao adicionar conta no Supabase:", insertError);
+      logger.error("Erro ao adicionar conta no Supabase:", insertError);
       throw insertError;
     }
 
@@ -140,7 +141,7 @@ export const useAccountStore = create<AccountStoreState>((set, get) => ({
       !insertedTransactions ||
       insertedTransactions.length !== 2
     ) {
-      console.error(
+      logger.error(
         "Erro ao salvar transações de pagamento:",
         transactionError,
       );
@@ -235,7 +236,7 @@ export const useAccountStore = create<AccountStoreState>((set, get) => ({
       !insertedTransactions ||
       insertedTransactions.length !== 2
     ) {
-      console.error(
+      logger.error(
         "Erro ao salvar transações de transferência:",
         transactionError,
       );
