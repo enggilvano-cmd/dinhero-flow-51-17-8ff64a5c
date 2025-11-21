@@ -47,7 +47,24 @@ const PlaniFlowApp = () => {
   const [transactionsPage, setTransactionsPage] = useState(0);
   const [transactionsPageSize, setTransactionsPageSize] = useState(50);
 
+  // Transaction filters state
+  const [transactionsSearch, setTransactionsSearch] = useState("");
+  const [transactionsFilterType, setTransactionsFilterType] = useState<"all" | "income" | "expense" | "transfer">("all");
+  const [transactionsFilterAccount, setTransactionsFilterAccount] = useState<string>("all");
+  const [transactionsFilterCategory, setTransactionsFilterCategory] = useState<string>("all");
+  const [transactionsFilterStatus, setTransactionsFilterStatus] = useState<"all" | "pending" | "completed">("all");
+  const [transactionsFilterAccountType, setTransactionsFilterAccountType] = useState<"all" | "checking" | "savings" | "credit" | "investment">("all");
+  const [transactionsDateFrom, setTransactionsDateFrom] = useState<string | undefined>(undefined);
+  const [transactionsDateTo, setTransactionsDateTo] = useState<string | undefined>(undefined);
+  const [transactionsSortBy, setTransactionsSortBy] = useState<"date" | "amount">("date");
+  const [transactionsSortOrder, setTransactionsSortOrder] = useState<"asc" | "desc">("desc");
+
+  const [accountFilterType, setAccountFilterType] = useState<
+    "all" | "checking" | "savings" | "credit" | "investment"
+  >("all");
+
   // React Query hooks - fonte única de verdade
+  const { accounts, isLoading: loadingAccounts } = useAccounts();
   const { accounts, isLoading: loadingAccounts } = useAccounts();
   const { 
     transactions, 
@@ -58,7 +75,17 @@ const PlaniFlowApp = () => {
     pageSize: transactionsCurrentPageSize,
   } = useTransactions({ 
     page: transactionsPage, 
-    pageSize: transactionsPageSize 
+    pageSize: transactionsPageSize,
+    search: transactionsSearch,
+    type: transactionsFilterType,
+    accountId: transactionsFilterAccount,
+    categoryId: transactionsFilterCategory,
+    status: transactionsFilterStatus,
+    accountType: transactionsFilterAccountType,
+    dateFrom: transactionsDateFrom,
+    dateTo: transactionsDateTo,
+    sortBy: transactionsSortBy,
+    sortOrder: transactionsSortOrder,
   });
   const { categories, loading: loadingCategories } = useCategories();
 
@@ -85,31 +112,9 @@ const PlaniFlowApp = () => {
   const [currentInvoiceValue, setCurrentInvoiceValue] = useState(0);
   const [nextInvoiceValue, setNextInvoiceValue] = useState(0);
   const [payingTotalDebt, setPayingTotalDebt] = useState(0);
-  
-  const [transactionFilterType, setTransactionFilterType] = useState<
-    "income" | "expense" | "transfer" | "all"
-  >("all");
-  const [transactionFilterStatus, setTransactionFilterStatus] = useState<
-    "all" | "pending" | "completed"
-  >("all");
-  const [transactionDateFilter, setTransactionDateFilter] = useState<
-    "all" | "current_month" | "custom" | "month_picker"
-  >("all");
-  const [transactionFilterAccountType, setTransactionFilterAccountType] =
-    useState<"all" | "checking" | "savings" | "credit">("all");
   const [accountFilterType, setAccountFilterType] = useState<
     "all" | "checking" | "savings" | "credit" | "investment"
   >("all");
-
-  const [transactionSelectedMonth, setTransactionSelectedMonth] = useState<
-    Date | undefined
-  >(undefined);
-  const [transactionCustomStartDate, setTransactionCustomStartDate] = useState<
-    Date | undefined
-  >(undefined);
-  const [transactionCustomEndDate, setTransactionCustomEndDate] = useState<
-    Date | undefined
-  >(undefined);
 
   // Use hooks customizados para handlers
   const { handleEditAccount, handleDeleteAccount, handleImportAccounts } = useAccountHandlers();
@@ -207,19 +212,32 @@ const PlaniFlowApp = () => {
             onDeleteTransaction={handleDeleteTransaction}
             onImportTransactions={handleImportTransactions}
             onMarkAsPaid={handleEditTransaction}
-            initialFilterType={transactionFilterType}
-            initialFilterStatus={transactionFilterStatus}
-            initialDateFilter={transactionDateFilter}
-            initialFilterAccountType={transactionFilterAccountType}
-            initialSelectedMonth={transactionSelectedMonth}
-            initialCustomStartDate={transactionCustomStartDate}
-            initialCustomEndDate={transactionCustomEndDate}
             currentPage={transactionsCurrentPage}
             pageSize={transactionsCurrentPageSize}
             totalCount={totalCount}
             pageCount={pageCount}
             onPageChange={setTransactionsPage}
             onPageSizeChange={setTransactionsPageSize}
+            search={transactionsSearch}
+            onSearchChange={setTransactionsSearch}
+            filterType={transactionsFilterType}
+            onFilterTypeChange={setTransactionsFilterType}
+            filterAccount={transactionsFilterAccount}
+            onFilterAccountChange={setTransactionsFilterAccount}
+            filterCategory={transactionsFilterCategory}
+            onFilterCategoryChange={setTransactionsFilterCategory}
+            filterStatus={transactionsFilterStatus}
+            onFilterStatusChange={setTransactionsFilterStatus}
+            filterAccountType={transactionsFilterAccountType}
+            onFilterAccountTypeChange={(value: string) => setTransactionsFilterAccountType(value as any)}
+            dateFrom={transactionsDateFrom}
+            dateTo={transactionsDateTo}
+            onDateFromChange={setTransactionsDateFrom}
+            onDateToChange={setTransactionsDateTo}
+            sortBy={transactionsSortBy}
+            onSortByChange={setTransactionsSortBy}
+            sortOrder={transactionsSortOrder}
+            onSortOrderChange={setTransactionsSortOrder}
           />
         );
       case "recurring":
@@ -276,30 +294,7 @@ const PlaniFlowApp = () => {
               }
               setCurrentPage("accounts");
             }}
-            onNavigateToTransactions={(
-              filterType,
-              filterStatus,
-              dateFilter,
-              filterAccountType,
-              selectedMonth,
-              customStartDate,
-              customEndDate
-            ) => {
-              if (filterType) {
-                setTransactionFilterType(filterType);
-              }
-              if (filterStatus) {
-                setTransactionFilterStatus(filterStatus);
-              }
-              if (dateFilter) {
-                setTransactionDateFilter(dateFilter);
-              }
-              if (filterAccountType) {
-                setTransactionFilterAccountType(filterAccountType);
-              }
-              setTransactionSelectedMonth(selectedMonth);
-              setTransactionCustomStartDate(customStartDate);
-              setTransactionCustomEndDate(customEndDate);
+            onNavigateToTransactions={() => {
               setCurrentPage("transactions");
             }}
           />
@@ -346,30 +341,7 @@ const PlaniFlowApp = () => {
               }
               setCurrentPage("accounts");
             }}
-            onNavigateToTransactions={(
-              filterType,
-              filterStatus,
-              dateFilter,
-              filterAccountType,
-              selectedMonth,
-              customStartDate,
-              customEndDate
-            ) => {
-              if (filterType) {
-                setTransactionFilterType(filterType);
-              }
-              if (filterStatus) {
-                setTransactionFilterStatus(filterStatus);
-              }
-              if (dateFilter) {
-                setTransactionDateFilter(dateFilter);
-              }
-              if (filterAccountType) {
-                setTransactionFilterAccountType(filterAccountType);
-              }
-              setTransactionSelectedMonth(selectedMonth);
-              setTransactionCustomStartDate(customStartDate);
-              setTransactionCustomEndDate(customEndDate);
+            onNavigateToTransactions={() => {
               setCurrentPage("transactions");
             }}
           />
@@ -434,30 +406,7 @@ const PlaniFlowApp = () => {
               }
               setCurrentPage("accounts");
             }}
-            onNavigateToTransactions={(
-              filterType,
-              filterStatus,
-              dateFilter,
-              filterAccountType,
-              selectedMonth,
-              customStartDate,
-              customEndDate
-            ) => {
-              if (filterType) {
-                setTransactionFilterType(filterType);
-              }
-              if (filterStatus) {
-                setTransactionFilterStatus(filterStatus);
-              }
-              if (dateFilter) {
-                setTransactionDateFilter(dateFilter);
-              }
-              if (filterAccountType) {
-                setTransactionFilterAccountType(filterAccountType);
-              }
-              setTransactionSelectedMonth(selectedMonth);
-              setTransactionCustomStartDate(customStartDate);
-              setTransactionCustomEndDate(customEndDate);
+            onNavigateToTransactions={() => {
               setCurrentPage("transactions");
             }}
           />
