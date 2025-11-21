@@ -621,6 +621,68 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      atomic_create_transaction: {
+        Args: {
+          p_account_id: string
+          p_amount: number
+          p_category_id: string
+          p_date: string
+          p_description: string
+          p_invoice_month?: string
+          p_invoice_month_overridden?: boolean
+          p_status: Database["public"]["Enums"]["transaction_status"]
+          p_type: Database["public"]["Enums"]["transaction_type"]
+          p_user_id: string
+        }
+        Returns: {
+          error_message: string
+          new_balance: number
+          success: boolean
+          transaction_id: string
+        }[]
+      }
+      atomic_create_transfer: {
+        Args: {
+          p_amount: number
+          p_date: string
+          p_description: string
+          p_from_account_id: string
+          p_status: Database["public"]["Enums"]["transaction_status"]
+          p_to_account_id: string
+          p_user_id: string
+        }
+        Returns: {
+          error_message: string
+          from_balance: number
+          incoming_transaction_id: string
+          outgoing_transaction_id: string
+          success: boolean
+          to_balance: number
+        }[]
+      }
+      atomic_delete_transaction: {
+        Args: { p_scope?: string; p_transaction_id: string; p_user_id: string }
+        Returns: {
+          affected_accounts: string[]
+          deleted_count: number
+          error_message: string
+          success: boolean
+        }[]
+      }
+      atomic_update_transaction: {
+        Args: {
+          p_scope?: string
+          p_transaction_id: string
+          p_updates: Json
+          p_user_id: string
+        }
+        Returns: {
+          affected_accounts: string[]
+          error_message: string
+          success: boolean
+          updated_count: number
+        }[]
+      }
       cleanup_orphan_journal_entries: { Args: never; Returns: number }
       deactivate_expired_subscriptions: { Args: never; Returns: undefined }
       deactivate_expired_trials: { Args: never; Returns: undefined }

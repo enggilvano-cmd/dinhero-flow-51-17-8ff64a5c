@@ -116,222 +116,48 @@ Deno.serve(async (req) => {
 
     const transaction = validation.data;
 
-    // INICIAR TRANSAÇÃO ATÔMICA
-    // Verificar se o período está fechado
-    const { data: isLocked } = await supabaseClient
-      .rpc('is_period_locked', { 
-        p_user_id: user.id, 
-        p_date: transaction.date 
+    // Usar função PL/pgSQL atômica
+    const { data: result, error: functionError } = await supabaseClient
+      .rpc('atomic_create_transaction', {
+        p_user_id: user.id,
+        p_description: transaction.description,
+        p_amount: transaction.amount,
+        p_date: transaction.date,
+        p_type: transaction.type,
+        p_category_id: transaction.category_id,
+        p_account_id: transaction.account_id,
+        p_status: transaction.status,
+        p_invoice_month: transaction.invoice_month || null,
+        p_invoice_month_overridden: transaction.invoice_month_overridden || false,
       });
 
-    if (isLocked) {
-      console.error('[atomic-transaction] ERROR: Period is locked:', transaction.date);
+    if (functionError) {
+      console.error('[atomic-transaction] ERROR: Function failed:', functionError);
+      throw functionError;
+    }
+
+    const record = result[0];
+    
+    if (!record.success) {
+      console.error('[atomic-transaction] ERROR:', record.error_message);
       return new Response(
         JSON.stringify({ 
-          error: 'Period is locked',
-          message: 'Cannot create transactions in a locked period. Please unlock the period first.' 
+          error: record.error_message,
+          success: false 
         }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Buscar dados da conta
-    const { data: accountData, error: accountError } = await supabaseClient
-      .from('accounts')
-      .select('type, balance, limit_amount')
-      .eq('id', transaction.account_id)
-      .single();
+    console.log('[atomic-transaction] INFO: Transaction created successfully:', record.transaction_id);
 
-    if (accountError) {
-      console.error('[atomic-transaction] ERROR: Account fetch failed:', accountError);
-      throw accountError;
-    }
-
-    // Calcular amount com sinal correto
-    const amount = transaction.type === 'expense' 
-      ? -Math.abs(transaction.amount) 
-      : Math.abs(transaction.amount);
-
-    // VALIDAÇÃO DE LIMITE DE CRÉDITO
-    if (accountData.type === 'credit' && transaction.type === 'expense' && transaction.status === 'completed') {
-      const currentDebt = Math.abs(Math.min(accountData.balance, 0));
-      const availableCredit = (accountData.limit_amount || 0) - currentDebt;
-      const transactionAmount = Math.abs(amount);
-
-      if (transactionAmount > availableCredit) {
-        console.error('[atomic-transaction] ERROR: Credit limit exceeded', {
-          currentDebt,
-          availableCredit,
-          transactionAmount,
-          limit: accountData.limit_amount
-        });
-        return new Response(
-          JSON.stringify({
-            error: 'Credit limit exceeded',
-            details: {
-              available: availableCredit,
-              requested: transactionAmount,
-              limit: accountData.limit_amount,
-              currentDebt
-            }
-          }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-    }
-
-    // 1. Inserir transação
-    const { data: newTransaction, error: insertError } = await supabaseClient
-      .from('transactions')
-      .insert({
-        user_id: user.id,
-        description: transaction.description,
-        amount: amount,
-        date: transaction.date,
-        type: transaction.type,
-        category_id: transaction.category_id,
-        account_id: transaction.account_id,
-        status: transaction.status,
-        invoice_month: transaction.invoice_month || null,
-        invoice_month_overridden: transaction.invoice_month_overridden || false,
-      })
-      .select()
-      .single();
-
-    if (insertError) {
-      console.error('[atomic-transaction] ERROR: Insert failed:', insertError);
-      throw insertError;
-    }
-
-    // 2. Recalcular saldo APENAS se status = 'completed' usando função atômica
-    if (transaction.status === 'completed') {
-      // Criar journal_entries (partidas dobradas)
-      const { data: coa } = await supabaseClient
-        .from('chart_of_accounts')
-        .select('id, code, category')
-        .eq('user_id', user.id);
-
-      if (coa && coa.length > 0) {
-        // Mapear conta bancária para conta contábil
-        let assetAccountId: string | undefined;
-        if (accountData.type === 'checking') {
-          assetAccountId = coa.find(a => a.code === '1.01.02')?.id; // Bancos Conta Corrente
-        } else if (accountData.type === 'savings') {
-          assetAccountId = coa.find(a => a.code === '1.01.03')?.id; // Bancos Conta Poupança
-        } else if (accountData.type === 'investment') {
-          assetAccountId = coa.find(a => a.code === '1.01.04')?.id; // Investimentos
-        } else if (accountData.type === 'credit') {
-          assetAccountId = coa.find(a => a.code === '2.01.01')?.id; // Cartões de Crédito (Passivo)
-        }
-
-        // Fallback para qualquer ativo se não encontrar específico
-        if (!assetAccountId) {
-          assetAccountId = coa.find(a => a.code?.startsWith('1.01.'))?.id;
-        }
-
-        // Buscar conta de receita/despesa da categoria
-        const { data: category } = await supabaseClient
-          .from('categories')
-          .select('name, type')
-          .eq('id', transaction.category_id)
-          .single();
-
-        if (assetAccountId) {
-          if (transaction.type === 'income') {
-            // Buscar conta de receita correspondente
-            const revenueAccountId = coa.find(a => 
-              a.category === 'revenue' && 
-              (a.name.toLowerCase().includes(category?.name.toLowerCase() || '') || a.code === '4.01.99')
-            )?.id || coa.find(a => a.category === 'revenue')?.id;
-
-            if (revenueAccountId) {
-              // Débito: Ativo (entra dinheiro) | Crédito: Receita
-              await supabaseClient.from('journal_entries').insert([
-                {
-                  user_id: user.id,
-                  transaction_id: newTransaction.id,
-                  account_id: assetAccountId,
-                  entry_type: 'debit',
-                  amount: Math.abs(newTransaction.amount),
-                  description: newTransaction.description,
-                  entry_date: newTransaction.date,
-                },
-                {
-                  user_id: user.id,
-                  transaction_id: newTransaction.id,
-                  account_id: revenueAccountId,
-                  entry_type: 'credit',
-                  amount: Math.abs(newTransaction.amount),
-                  description: newTransaction.description,
-                  entry_date: newTransaction.date,
-                }
-              ]);
-            }
-          } else {
-            // Buscar conta de despesa correspondente
-            const expenseAccountId = coa.find(a => 
-              a.category === 'expense' && 
-              (a.name.toLowerCase().includes(category?.name.toLowerCase() || '') || a.code === '5.01.99')
-            )?.id || coa.find(a => a.category === 'expense')?.id;
-
-            if (expenseAccountId) {
-              // Débito: Despesa | Crédito: Ativo ou Passivo (sai dinheiro/aumenta dívida)
-              await supabaseClient.from('journal_entries').insert([
-                {
-                  user_id: user.id,
-                  transaction_id: newTransaction.id,
-                  account_id: expenseAccountId,
-                  entry_type: 'debit',
-                  amount: Math.abs(newTransaction.amount),
-                  description: newTransaction.description,
-                  entry_date: newTransaction.date,
-                },
-                {
-                  user_id: user.id,
-                  transaction_id: newTransaction.id,
-                  account_id: assetAccountId,
-                  entry_type: 'credit',
-                  amount: Math.abs(newTransaction.amount),
-                  description: newTransaction.description,
-                  entry_date: newTransaction.date,
-                }
-              ]);
-            }
-          }
-        }
-      }
-
-      const { data: recalcResult, error: recalcError } = await supabaseClient
-        .rpc('recalculate_account_balance', {
-          p_account_id: transaction.account_id,
-        });
-
-      if (recalcError) {
-        console.error('[atomic-transaction] ERROR: Balance recalc failed:', recalcError);
-        // Tentar reverter a transação
-        await supabaseClient
-          .from('transactions')
-          .delete()
-          .eq('id', newTransaction.id);
-        throw recalcError;
-      }
-
-      console.log('[atomic-transaction] INFO: Balance recalculated:', recalcResult[0]);
-
-      return new Response(
-        JSON.stringify({
-          transaction: newTransaction,
-          balance: recalcResult[0],
-          success: true,
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Status pending - não recalcula saldo
     return new Response(
       JSON.stringify({
-        transaction: newTransaction,
+        transaction: {
+          id: record.transaction_id,
+          ...transaction
+        },
+        balance: record.new_balance,
         success: true,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
