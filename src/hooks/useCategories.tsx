@@ -1,23 +1,18 @@
-import { useState, useEffect } from "react";
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Category } from "@/types";
 import { logger } from "@/lib/logger";
+import { queryKeys } from '@/lib/queryClient';
 
 export function useCategories() {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
-  const loadCategories = async () => {
-    if (!user) {
-      setCategories([]);
-      setLoading(false);
-      return;
-    }
-    
-    try {
-      setLoading(true);
+  const query = useQuery({
+    queryKey: queryKeys.categories,
+    queryFn: async () => {
+      if (!user) return [];
+      
       const { data, error } = await supabase
         .from('categories')
         .select('*')
@@ -25,24 +20,18 @@ export function useCategories() {
         
       if (error) {
         logger.error('Error loading categories:', error);
-        return;
+        throw error;
       }
       
-      setCategories(data || []);
-    } catch (error) {
-      logger.error('Error loading categories:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadCategories();
-  }, [user]);
+      return (data || []) as Category[];
+    },
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000,
+  });
 
   return {
-    categories,
-    loading,
-    refetch: loadCategories
+    categories: query.data || [],
+    loading: query.isLoading,
+    refetch: query.refetch
   };
 }
