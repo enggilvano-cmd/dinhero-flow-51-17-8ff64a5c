@@ -11,7 +11,7 @@ import { Upload, FileSpreadsheet, AlertCircle, MoreVertical, Copy, AlertTriangle
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 import { logger } from "@/lib/logger";
-import * as XLSX from 'xlsx';
+import { loadXLSX } from "@/lib/lazyImports";
 import { parse, isValid } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { createDateFromString } from "@/lib/dateUtils";
@@ -339,6 +339,8 @@ export function ImportTransactionsModal({
     setIsProcessing(true);
 
     try{
+      const XLSX = await loadXLSX();
+      
       const fileBuffer = await selectedFile.arrayBuffer();
       const workbook = XLSX.read(fileBuffer, { type: 'array' });
       const sheetName = workbook.SheetNames[0];
@@ -356,13 +358,13 @@ export function ImportTransactionsModal({
       }
 
       // Validar cada transação
-      const validatedData = rawData.map((row) => {
+      const validatedData = rawData.map((row: any) => {
         return validateAndCheckDuplicate(row);
       });
 
       setImportedData(validatedData);
 
-      const summary = validatedData.reduce((acc, t) => {
+      const summary = validatedData.reduce((acc: any, t: any) => {
         if (!t.isValid) acc.invalid++;
         else if (t.isDuplicate) acc.duplicates++;
         else acc.new++;
@@ -475,7 +477,9 @@ export function ImportTransactionsModal({
     ));
   };
 
-  const downloadTemplate = () => {
+  const downloadTemplate = async () => {
+    const XLSX = await loadXLSX();
+    
     const templateData = [
       {
         'Data': '15/03/2024',

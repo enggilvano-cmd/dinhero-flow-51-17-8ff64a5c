@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Upload, FileSpreadsheet, AlertCircle, MoreVertical, Copy, AlertTriangle, PlusCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
-import * as XLSX from 'xlsx';
+import { loadXLSX } from "@/lib/lazyImports";
 
 interface Account {
   id: string;
@@ -239,6 +239,8 @@ export function ImportAccountsModal({
     setIsProcessing(true);
 
     try {
+      const XLSX = await loadXLSX();
+      
       const fileBuffer = await selectedFile.arrayBuffer();
       const workbook = XLSX.read(fileBuffer, { type: 'array' });
       const sheetName = workbook.SheetNames[0];
@@ -255,10 +257,10 @@ export function ImportAccountsModal({
         return;
       }
 
-      const validatedData = rawData.map((row) => validateAndCheckDuplicate(row));
+      const validatedData = rawData.map((row: any) => validateAndCheckDuplicate(row));
       setImportedData(validatedData);
 
-      const summary = validatedData.reduce((acc, t) => {
+      const summary = validatedData.reduce((acc: any, t: any) => {
         if (!t.isValid) acc.invalid++;
         else if (t.isDuplicate) acc.duplicates++;
         else acc.new++;
@@ -367,7 +369,9 @@ export function ImportAccountsModal({
     ));
   };
 
-  const downloadTemplate = () => {
+  const downloadTemplate = async () => {
+    const XLSX = await loadXLSX();
+    
     const templateData = [
       {
         'Nome': 'Conta Corrente Principal',
