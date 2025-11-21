@@ -58,6 +58,7 @@ export function AccountingReportsPage() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [initializing, setInitializing] = useState(false);
+  const [migrating, setMigrating] = useState(false);
   const [needsInitialization, setNeedsInitialization] = useState(false);
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
   const [chartOfAccounts, setChartOfAccounts] = useState<ChartAccount[]>([]);
@@ -100,6 +101,33 @@ export function AccountingReportsPage() {
       });
     } finally {
       setInitializing(false);
+    }
+  };
+
+  const migrateExistingTransactions = async () => {
+    try {
+      setMigrating(true);
+      
+      const { data, error } = await supabase.rpc('migrate_existing_transactions_to_journal');
+
+      if (error) throw error;
+
+      const result = data?.[0];
+      toast({
+        title: "Migração Concluída",
+        description: `${result?.processed_count || 0} transações migradas. ${result?.error_count || 0} erros.`,
+      });
+
+      await loadData();
+    } catch (error) {
+      console.error("Erro ao migrar transações:", error);
+      toast({
+        title: "Erro na migração",
+        description: "Não foi possível migrar as transações existentes.",
+        variant: "destructive",
+      });
+    } finally {
+      setMigrating(false);
     }
   };
 
@@ -340,6 +368,29 @@ export function AccountingReportsPage() {
 
   return (
     <div className="space-y-6">
+      {/* Cabeçalho com botão de migração */}
+      {journalEntries.length === 0 && (
+        <Card className="border-warning">
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span>Dados Contábeis Vazios</span>
+              <Button 
+                onClick={migrateExistingTransactions} 
+                disabled={migrating}
+                variant="default"
+                size="sm"
+              >
+                {migrating ? "Migrando..." : "Migrar Transações Antigas"}
+              </Button>
+            </CardTitle>
+            <CardDescription>
+              Parece que você tem transações no sistema, mas ainda não há lançamentos contábeis. 
+              Clique no botão para criar os lançamentos automaticamente a partir das transações existentes.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      )}
+
       {/* Filtros de Período */}
       <Card>
         <CardHeader>

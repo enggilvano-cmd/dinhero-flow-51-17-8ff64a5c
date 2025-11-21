@@ -669,6 +669,13 @@ export type Database = {
         }
         Returns: string
       }
+      migrate_existing_transactions_to_journal: {
+        Args: never
+        Returns: {
+          error_count: number
+          processed_count: number
+        }[]
+      }
       recalculate_account_balance: {
         Args: { p_account_id: string; p_expected_version?: number }
         Returns: {
