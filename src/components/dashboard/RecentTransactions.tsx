@@ -1,7 +1,6 @@
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { TrendingUp } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { useSettings } from '@/context/SettingsContext';
 import { Transaction } from '@/types';
 import { createDateFromString } from '@/lib/dateUtils';
@@ -19,7 +18,6 @@ export function RecentTransactions({
   onNavigateToTransactions,
   onAddTransaction,
 }: RecentTransactionsProps) {
-  const { t } = useTranslation();
   const { formatCurrency } = useSettings();
 
   return (
@@ -32,7 +30,7 @@ export function RecentTransactions({
       <CardHeader className="pb-2">
         <CardTitle className="text-sm flex items-center gap-2">
           <TrendingUp className="h-4 w-4" />
-          {t('dashboard.recentTransactions')}
+          Transações Recentes
         </CardTitle>
       </CardHeader>
       <CardContent className="p-3 pt-0">
@@ -96,9 +94,7 @@ export function RecentTransactions({
             </div>
             {transactions.length > maxItems && (
               <p className="text-xs text-muted-foreground mt-2 text-center opacity-70">
-                {t('dashboard.moreTransactions', {
-                  count: transactions.length - maxItems,
-                })}
+                +{transactions.length - maxItems} transações
               </p>
             )}
           </>

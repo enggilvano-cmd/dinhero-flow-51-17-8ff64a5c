@@ -1,6 +1,5 @@
 import { Button } from '@/components/ui/button';
 import { ArrowRightLeft, TrendingDown, TrendingUp, CreditCard } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 
 interface DashboardHeaderProps {
   onTransfer: () => void;
@@ -15,14 +14,12 @@ export function DashboardHeader({
   onAddIncome,
   onAddCreditExpense,
 }: DashboardHeaderProps) {
-  const { t } = useTranslation();
-
   return (
     <div className="flex flex-col gap-3">
       <div className="min-w-0 w-full">
-        <h1 className="text-system-h1 leading-tight">{t('dashboard.title')}</h1>
+        <h1 className="text-system-h1 leading-tight">Dashboard Financeiro</h1>
         <p className="text-sm text-muted-foreground leading-tight">
-          {t('dashboard.subtitle')}
+          Visão geral das suas finanças
         </p>
       </div>
       <div className="grid grid-cols-2 gap-2 w-full md:grid-cols-4 lg:flex lg:flex-nowrap lg:gap-2 lg:w-auto lg:ml-auto">
@@ -30,37 +27,37 @@ export function DashboardHeader({
           onClick={onTransfer}
           variant="outline"
           className="gap-2 apple-interaction h-9 text-xs sm:text-sm"
-          aria-label={t('dashboard.transfer')}
+          aria-label="Transferência"
         >
           <ArrowRightLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden="true" />
-          <span>{t('dashboard.transfer')}</span>
+          <span>Transferência</span>
         </Button>
         <Button
           onClick={onAddExpense}
           variant="destructive"
           className="gap-2 apple-interaction h-9 text-xs sm:text-sm"
-          aria-label={t('dashboard.expense')}
+          aria-label="Despesa"
         >
           <TrendingDown className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden="true" />
-          <span>{t('dashboard.expense')}</span>
+          <span>Despesa</span>
         </Button>
         <Button
           onClick={onAddIncome}
           variant="default"
           className="gap-2 apple-interaction h-9 text-xs sm:text-sm bg-success hover:bg-success/90"
-          aria-label={t('dashboard.income')}
+          aria-label="Receita"
         >
           <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden="true" />
-          <span>{t('dashboard.income')}</span>
+          <span>Receita</span>
         </Button>
         <Button
           onClick={onAddCreditExpense}
           variant="outline"
           className="gap-2 apple-interaction h-9 text-xs sm:text-sm border-warning text-warning hover:bg-warning hover:text-warning-foreground"
-          aria-label={t('dashboard.creditCard')}
+          aria-label="Cartão de Crédito"
         >
           <CreditCard className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden="true" />
-          <span>{t('dashboard.creditCard')}</span>
+          <span>Cartão de Crédito</span>
         </Button>
       </div>
     </div>
