@@ -13,10 +13,7 @@ import { UserProfile } from "@/components/UserProfile";
 import { RecurringTransactionsPage } from "@/components/RecurringTransactionsPage";
 import { FixedTransactionsPage } from "@/components/FixedTransactionsPage";
 import { BankReconciliationPage } from "@/components/BankReconciliationPage";
-import { ReportsPage } from "@/components/ReportsPage";
-import { AccountingReportsPage } from "@/components/AccountingReportsPage";
-import { LedgerPage } from "@/components/LedgerPage";
-import { PeriodClosurePage } from "@/components/PeriodClosurePage";
+import { AccountingPage } from "@/components/AccountingPage";
 import { AddAccountModal } from "@/components/AddAccountModal";
 import { AddTransactionModal } from "@/components/AddTransactionModal";
 import { EditAccountModal } from "@/components/EditAccountModal";
@@ -1111,20 +1108,14 @@ const PlaniFlowApp = () => {
             categories={categories}
           />
         );
-      case "reports":
+      case "accounting":
         return (
-          <ReportsPage
+          <AccountingPage
             transactions={transactions}
             accounts={accounts}
             categories={categories}
           />
         );
-      case "accounting-reports":
-        return <AccountingReportsPage />;
-      case "ledger":
-        return <LedgerPage />;
-      case "period-closure":
-        return <PeriodClosurePage />;
       case "profile":
         return <UserProfile />;
       case "settings":

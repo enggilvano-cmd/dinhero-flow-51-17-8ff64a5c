@@ -1,4 +1,4 @@
-import { Home, CreditCard, ArrowLeftRight, BarChart3, Settings, Tag, Users, LogOut, User, Receipt, Repeat, Calendar, CheckCircle2, FileText, BookOpen, BookText } from "lucide-react";
+import { Home, CreditCard, ArrowLeftRight, BarChart3, Settings, Tag, Users, LogOut, User, Receipt, Repeat, Calendar, CheckCircle2, BookOpen } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -41,10 +41,7 @@ const getMenuItems = (t: any) => [
   { id: "recurring", label: t('menu.recurring'), icon: Repeat },
   { id: "fixed", label: "Transações Fixas", icon: Calendar },
   { id: "reconciliation", label: t('menu.reconciliation'), icon: CheckCircle2 },
-  { id: "reports", label: t('menu.reports'), icon: FileText },
-  { id: "accounting-reports", label: "Relatórios Contábeis", icon: BookOpen },
-  { id: "ledger", label: "Livro Razão", icon: BookText },
-  { id: "period-closure", label: "Fechamento de Período", icon: Calendar },
+  { id: "accounting", label: "Contabilidade", icon: BookOpen },
   { id: "analytics", label: t('menu.analytics'), icon: BarChart3 },
 ];
 
