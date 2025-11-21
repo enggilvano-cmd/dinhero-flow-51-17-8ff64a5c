@@ -290,8 +290,30 @@ export function FixedTransactionsPage() {
     if (!transactionToDelete) return;
 
     try {
+      // Verificar o status da transação principal
+      const { data: mainTransaction, error: fetchError } = await supabase
+        .from("transactions")
+        .select("status")
+        .eq("id", transactionToDelete)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      // Se a transação principal já foi concluída, não pode ser excluída
+      if (mainTransaction.status === "completed") {
+        toast({
+          title: "Não é possível excluir",
+          description: "Esta transação fixa já foi concluída e não pode ser excluída. Apenas transações pendentes podem ser removidas.",
+          variant: "destructive",
+        });
+        setDeleteDialogOpen(false);
+        setTransactionToDelete(null);
+        return;
+      }
+
       // Invalidar cache do React Query
-      queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.transactions(), refetchType: 'active' });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.accounts, refetchType: 'active' });
 
       // Excluir todas as transações filhas pendentes
       const { error: childrenError } = await supabase
@@ -302,7 +324,7 @@ export function FixedTransactionsPage() {
 
       if (childrenError) throw childrenError;
 
-      // Depois, excluir a transação principal
+      // Depois, excluir a transação principal (que já verificamos que é "pending")
       const { error } = await supabase
         .from("transactions")
         .delete()

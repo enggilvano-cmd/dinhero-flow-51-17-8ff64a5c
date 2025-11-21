@@ -87,7 +87,7 @@ export const GenerateTestDataInputSchema = z.object({
 // ============= Legacy Support (mantido para compatibilidade) =============
 
 // Tipos básicos
-export const uuidSchema = {
+export const legacyUuidSchema = {
   parse: (value: string) => {
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (!uuidRegex.test(value)) {
@@ -97,7 +97,7 @@ export const uuidSchema = {
   }
 };
 
-export const dateSchema = {
+export const legacyDateSchema = {
   parse: (value: string) => {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
       throw new Error('Date must be in YYYY-MM-DD format');
@@ -157,12 +157,12 @@ export const enumSchema = <T extends string>(values: readonly T[]) => ({
 export const transactionSchema = {
   description: stringSchema({ min: 1, max: 200 }),
   amount: numberSchema({ positive: true, max: 1_000_000_000 }),
-  date: dateSchema,
+  date: legacyDateSchema,
   type: enumSchema(['income', 'expense'] as const),
   status: enumSchema(['pending', 'completed'] as const),
-  account_id: uuidSchema,
-  category_id: uuidSchema,
-  to_account_id: uuidSchema, // opcional
+  account_id: legacyUuidSchema,
+  category_id: legacyUuidSchema,
+  to_account_id: legacyUuidSchema, // opcional
   invoice_month: {
     parse: (value?: string) => {
       if (!value) return undefined;
