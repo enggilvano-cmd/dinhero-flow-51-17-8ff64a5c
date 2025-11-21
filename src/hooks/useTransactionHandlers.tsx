@@ -7,11 +7,17 @@ import { Account, Transaction } from '@/types';
 import { logger } from '@/lib/logger';
 import { queryKeys } from '@/lib/queryClient';
 import { EditScope } from '@/components/InstallmentEditScopeDialog';
+import { useAccounts } from './queries/useAccounts';
+import { useTransactions } from './queries/useTransactions';
 
-export function useTransactionHandlers(accounts: Account[], transactions: Transaction[]) {
+export function useTransactionHandlers() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  // ✅ Buscar dados diretamente do React Query (fonte única de verdade)
+  const { accounts } = useAccounts();
+  const { transactions } = useTransactions();
 
   const handleAddTransaction = useCallback(async (transactionData: any) => {
     if (!user) return;

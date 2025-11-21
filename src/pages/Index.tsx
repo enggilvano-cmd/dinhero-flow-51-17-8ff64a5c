@@ -122,7 +122,7 @@ const PlaniFlowApp = () => {
     handleImportTransactions,
     handleCreditPayment,
     handleReversePayment,
-  } = useTransactionHandlers(accounts, transactions);
+  } = useTransactionHandlers(); // ✅ Sem passar dados como props
 
   const handleUpdateSettings = (newSettings: typeof settings) => {
     logger.debug("Updating settings:", newSettings);
