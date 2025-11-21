@@ -18,7 +18,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/hooks/useAuth";
-import { useTranslation } from 'react-i18next';
 import { NotificationBell } from "@/components/NotificationBell";
 
 interface LayoutProps {
@@ -35,17 +34,17 @@ const getFirstName = (fullName?: string | null) => {
   return fullName.split(' ')[0];
 };
 
-const getMenuItems = (t: (key: string) => string) => [
-  { id: "dashboard", label: t('menu.dashboard'), icon: Home },
-  { id: "accounts", label: t('menu.accounts'), icon: CreditCard },
-  { id: "categories", label: t('menu.categories'), icon: Tag },
-  { id: "credit-bills", label: t('menu.creditBills'), icon: Receipt },
-  { id: "transactions", label: t('menu.transactions'), icon: ArrowLeftRight },
-  { id: "recurring", label: t('menu.recurring'), icon: Repeat },
+const menuItems = [
+  { id: "dashboard", label: "Dashboard", icon: Home },
+  { id: "accounts", label: "Contas", icon: CreditCard },
+  { id: "categories", label: "Categorias", icon: Tag },
+  { id: "credit-bills", label: "Faturas de Cartão", icon: Receipt },
+  { id: "transactions", label: "Transações", icon: ArrowLeftRight },
+  { id: "recurring", label: "Recorrentes", icon: Repeat },
   { id: "fixed", label: "Transações Fixas", icon: Calendar },
-  { id: "reconciliation", label: t('menu.reconciliation'), icon: CheckCircle2 },
+  { id: "reconciliation", label: "Reconciliação", icon: CheckCircle2 },
   { id: "accounting", label: "Contabilidade", icon: BookOpen },
-  { id: "analytics", label: t('menu.analytics'), icon: BarChart3 },
+  { id: "analytics", label: "Análises", icon: BarChart3 },
 ];
 
 function AppSidebar({ currentPage, onPageChange }: { currentPage: string; onPageChange: (page: string) => void }) {
@@ -53,8 +52,6 @@ function AppSidebar({ currentPage, onPageChange }: { currentPage: string; onPage
   const { state: sidebarState, setOpenMobile } = useSidebar();
   const isMobile = useIsMobile();
   const isCollapsed = sidebarState === "collapsed";
-  const { t } = useTranslation();
-  const menuItems = getMenuItems(t);
   const timeRemaining = getSubscriptionTimeRemaining();
 
   const handlePageChange = (page: string) => {
@@ -108,7 +105,7 @@ function AppSidebar({ currentPage, onPageChange }: { currentPage: string; onPage
                 ? "px-0 py-1 text-center" 
                 : "px-4 py-1"
           )}>
-            {!isCollapsed || isMobile ? t('menu.mainMenu') : (
+            {!isCollapsed || isMobile ? "MENU PRINCIPAL" : (
               <div className="w-full flex justify-center">
                 <div className="w-8 h-px bg-border rounded-full"></div>
               </div>
@@ -267,15 +264,15 @@ function AppSidebar({ currentPage, onPageChange }: { currentPage: string; onPage
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>{t('auth.email')}</DropdownMenuLabel>
+                <DropdownMenuLabel>Email</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => handlePageChange('profile')}>
                   <User className="mr-2 h-4 w-4" />
-                  {t('menu.profile')}
+                  Perfil
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => handlePageChange('settings')}>
                   <Settings className="mr-2 h-4 w-4" />
-                  {t('menu.settings')}
+                  Configurações
                 </DropdownMenuItem>
                 {isAdmin() && (
                   <>
@@ -285,14 +282,14 @@ function AppSidebar({ currentPage, onPageChange }: { currentPage: string; onPage
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => handlePageChange('system-settings')}>
                       <Settings className="mr-2 h-4 w-4" />
-                      {t('menu.systemSettings')}
+                      Configurações do Sistema
                     </DropdownMenuItem>
                   </>
                 )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={signOut} className="text-destructive">
                   <LogOut className="mr-2 h-4 w-4" />
-                  {t('auth.logout')}
+                  Sair
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
