@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
 import { useSettings } from '@/context/SettingsContext';
 import { Account, Transaction, Category } from '@/types';
 import { useDashboardFilters } from '@/hooks/useDashboardFilters';
@@ -46,7 +45,6 @@ export function Dashboard({
   onNavigateToTransactions,
 }: DashboardProps) {
   const { formatCurrency } = useSettings();
-  const { t } = useTranslation();
 
   const {
     dateFilter,
@@ -88,8 +86,7 @@ export function Dashboard({
     dateFilter,
     selectedMonth,
     customStartDate,
-    customEndDate,
-    t
+    customEndDate
   );
 
   return (
