@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { rateLimiters } from '../_shared/rate-limiter.ts';
+import { EditTransactionInputSchema, validateWithZod, validationErrorResponse } from '../_shared/validation.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -62,9 +63,18 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { transaction_id, updates, scope }: EditInput = await req.json();
+    const body = await req.json();
 
-    console.log('[atomic-edit] INFO: Editing transaction:', transaction_id, 'scope:', scope);
+    console.log('[atomic-edit] INFO: Editing transaction for user:', user.id);
+
+    // Validação Zod
+    const validation = validateWithZod(EditTransactionInputSchema, body);
+    if (!validation.success) {
+      console.error('[atomic-edit] ERROR: Validation failed:', validation.errors);
+      return validationErrorResponse(validation.errors, corsHeaders);
+    }
+
+    const { transaction_id, updates, scope } = validation.data;
 
     // Buscar transação original
     const { data: oldTransaction, error: fetchError } = await supabaseClient

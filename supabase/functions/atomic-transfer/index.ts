@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { rateLimiters } from '../_shared/rate-limiter.ts';
+import { TransferInputSchema, validateWithZod, validationErrorResponse } from '../_shared/validation.ts';
 import { uuidSchema, numberSchema, dateSchema, stringSchema } from '../_shared/validation.ts';
 
 const corsHeaders = {
@@ -88,24 +89,18 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { transfer }: { transfer: TransferInput } = await req.json();
+    const body = await req.json();
 
     console.log('[atomic-transfer] INFO: Processing transfer for user:', user.id);
 
-    // Validações básicas
-    if (!transfer.from_account_id || !transfer.to_account_id || !transfer.amount) {
-      return new Response(
-        JSON.stringify({ error: 'Missing required fields' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    // Validação Zod
+    const validation = validateWithZod(TransferInputSchema, body.transfer || body);
+    if (!validation.success) {
+      console.error('[atomic-transfer] ERROR: Validation failed:', validation.errors);
+      return validationErrorResponse(validation.errors, corsHeaders);
     }
 
-    if (transfer.from_account_id === transfer.to_account_id) {
-      return new Response(
-        JSON.stringify({ error: 'Cannot transfer to the same account' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    const transfer = validation.data;
 
     // Validação detalhada de inputs
     const validation = validateTransferInput(transfer);

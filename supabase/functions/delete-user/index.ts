@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.56.0'
 import { rateLimiters } from '../_shared/rate-limiter.ts';
+import { DeleteUserInputSchema, validateWithZod, validationErrorResponse } from '../_shared/validation.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -71,18 +72,16 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Get the user ID to delete from the request body
-    const { userId } = await req.json()
+    // Parse e validar input com Zod
+    const body = await req.json();
 
-    if (!userId) {
-      return new Response(
-        JSON.stringify({ error: 'User ID is required' }),
-        { 
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      )
+    const validation = validateWithZod(DeleteUserInputSchema, body);
+    if (!validation.success) {
+      console.error('[delete-user] ERROR: Validation failed:', validation.errors);
+      return validationErrorResponse(validation.errors, corsHeaders);
     }
+
+    const { userId } = validation.data;
 
     // Prevent admin from deleting themselves
     if (userId === user.id) {
