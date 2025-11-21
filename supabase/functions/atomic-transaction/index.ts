@@ -5,6 +5,11 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Constants
+const MAX_TRANSACTION_AMOUNT = 1_000_000_000; // 1 billion cents
+const MAX_DESCRIPTION_LENGTH = 200;
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 interface TransactionInput {
   description: string;
   amount: number;
@@ -22,13 +27,13 @@ function validateTransactionInput(input: TransactionInput): { valid: boolean; er
   if (!input.description || input.description.trim().length === 0) {
     return { valid: false, error: 'Description is required and cannot be empty' };
   }
-  if (input.description.length > 200) {
-    return { valid: false, error: 'Description must be less than 200 characters' };
+  if (input.description.length > MAX_DESCRIPTION_LENGTH) {
+    return { valid: false, error: `Description must be less than ${MAX_DESCRIPTION_LENGTH} characters` };
   }
   if (typeof input.amount !== 'number' || input.amount <= 0) {
     return { valid: false, error: 'Amount must be a positive number' };
   }
-  if (input.amount > 1000000000) { // 1 bilhão - limite razoável
+  if (input.amount > MAX_TRANSACTION_AMOUNT) {
     return { valid: false, error: 'Amount exceeds maximum allowed value' };
   }
   if (!/^\d{4}-\d{2}-\d{2}$/.test(input.date)) {
@@ -40,12 +45,10 @@ function validateTransactionInput(input: TransactionInput): { valid: boolean; er
   if (!['pending', 'completed'].includes(input.status)) {
     return { valid: false, error: 'Status must be either pending or completed' };
   }
-  // Validar UUID format (básico)
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  if (!uuidRegex.test(input.account_id)) {
+  if (!UUID_REGEX.test(input.account_id)) {
     return { valid: false, error: 'Invalid account_id format' };
   }
-  if (!uuidRegex.test(input.category_id)) {
+  if (!UUID_REGEX.test(input.category_id)) {
     return { valid: false, error: 'Invalid category_id format' };
   }
   if (input.invoice_month && !/^\d{4}-\d{2}$/.test(input.invoice_month)) {

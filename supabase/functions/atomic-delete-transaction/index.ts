@@ -43,33 +43,55 @@ Deno.serve(async (req) => {
     console.log('[atomic-delete] INFO: Deleting transaction:', transaction_id, 'scope:', scope);
     console.log('[atomic-delete] INFO: User ID:', user.id);
 
-    // Buscar transação original
+    // Buscar transação original usando maybeSingle para evitar erro quando não encontrada
     const { data: targetTx, error: fetchError } = await supabaseClient
       .from('transactions')
       .select('*')
       .eq('id', transaction_id)
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
 
     if (fetchError) {
-      console.error('[atomic-delete] ERROR: Failed to fetch transaction:', fetchError);
+      console.error('[atomic-delete] ERROR: Database error fetching transaction:', {
+        error: fetchError,
+        transaction_id,
+        user_id: user.id,
+        code: fetchError.code,
+        message: fetchError.message,
+        details: fetchError.details,
+        hint: fetchError.hint
+      });
+      return new Response(
+        JSON.stringify({ 
+          error: 'Database error',
+          details: fetchError.message,
+          code: fetchError.code
+        }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!targetTx) {
+      console.error('[atomic-delete] ERROR: Transaction not found:', {
+        transaction_id,
+        user_id: user.id,
+        message: 'Transaction does not exist or user does not have access'
+      });
       return new Response(
         JSON.stringify({ 
           error: 'Transaction not found',
-          details: fetchError.message,
-          code: fetchError.code
+          message: 'Transaction does not exist or you do not have permission to delete it'
         }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    if (!targetTx) {
-      console.error('[atomic-delete] ERROR: Transaction not found for id:', transaction_id);
-      return new Response(
-        JSON.stringify({ error: 'Transaction not found' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    console.log('[atomic-delete] INFO: Transaction found:', {
+      id: targetTx.id,
+      description: targetTx.description,
+      amount: targetTx.amount,
+      date: targetTx.date
+    });
 
     // Verificar se o período está fechado
     const { data: isLocked } = await supabaseClient
