@@ -14,14 +14,13 @@ import {
   Bell,
   Database,
   FileText,
-  Shield,
-  RefreshCw
+  Shield
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { logger } from "@/lib/logger";
-import { AppSettings, exportData, importData } from "@/lib/supabase-storage";
-import { recalculateInvoiceMonthsForUser } from "@/lib/fixes/recalculateInvoiceMonths";
 import { useTranslation } from 'react-i18next';
+import { supabase } from "@/integrations/supabase/client";
+import type { AppSettings } from "@/context/SettingsContext";
 
 interface SettingsPageProps {
   settings: AppSettings;
@@ -33,7 +32,6 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
   const [localSettings, setLocalSettings] = useState(settings);
   const [isImporting, setIsImporting] = useState(false);
   const [clearDataConfirmation, setClearDataConfirmation] = useState("");
-  const [isFixing, setIsFixing] = useState(false);
   const { toast } = useToast();
   const { t } = useTranslation();
 
@@ -72,10 +70,27 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
 
   const handleExportData = async () => {
     try {
-      const data = await exportData();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      // Export all user data
+      const [accounts, transactions, categories, settings] = await Promise.all([
+        supabase.from('accounts').select('*').eq('user_id', user.id),
+        supabase.from('transactions').select('*').eq('user_id', user.id),
+        supabase.from('categories').select('*').eq('user_id', user.id),
+        supabase.from('user_settings').select('*').eq('user_id', user.id).single()
+      ]);
+
+      const data = {
+        accounts: accounts.data || [],
+        transactions: transactions.data || [],
+        categories: categories.data || [],
+        settings: settings.data || {},
+        exportDate: new Date().toISOString()
+      };
       
       // Validate data before export
-      if (!data || Object.keys(data).length === 0) {
+      if (Object.keys(data).length === 0) {
         toast({
           title: t('settings.noDataToExport'),
           description: t('settings.noDataToExportDescription'),
@@ -97,12 +112,10 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
       link.href = url;
       link.download = `planiflow-backup-${dateStr}-${timeStr}.json`;
       
-      // Ensure the link is added to the DOM for Firefox compatibility
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       
-      // Clean up the URL object
       setTimeout(() => URL.revokeObjectURL(url), 100);
       
       toast({
@@ -160,7 +173,6 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
           throw new Error(t('settings.invalidDataStructure'));
         }
 
-        // Optional: Validate required fields
         if (data.accounts && !Array.isArray(data.accounts)) {
           throw new Error(t('settings.invalidAccountsFormat'));
         }
@@ -168,19 +180,34 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
           throw new Error(t('settings.invalidTransactionsFormat'));
         }
 
-        const result = await importData(data);
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('User not authenticated');
+
+        // Import data to Supabase
+        const results = await Promise.allSettled([
+          data.accounts?.length > 0 ? supabase.from('accounts').upsert(
+            data.accounts.map((acc: any) => ({ ...acc, user_id: user.id }))
+          ) : Promise.resolve(),
+          data.categories?.length > 0 ? supabase.from('categories').upsert(
+            data.categories.map((cat: any) => ({ ...cat, user_id: user.id }))
+          ) : Promise.resolve(),
+          data.transactions?.length > 0 ? supabase.from('transactions').upsert(
+            data.transactions.map((tx: any) => ({ ...tx, user_id: user.id }))
+          ) : Promise.resolve()
+        ]);
+
+        const failed = results.filter(r => r.status === 'rejected');
         
-        if (result.success) {
+        if (failed.length === 0) {
           toast({
             title: t('settings.dataImported'),
-            description: result.message,
+            description: t('settings.dataImportedSuccessfully'),
           });
-          // Reload the page to reflect changes
           setTimeout(() => window.location.reload(), 1500);
         } else {
           toast({
             title: t('settings.importError'),
-            description: result.message,
+            description: t('settings.partialImportError'),
             variant: "destructive"
           });
         }
@@ -193,7 +220,6 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
         });
       } finally {
         setIsImporting(false);
-        // Clear the input to allow re-import of the same file
         if (event.target) {
           event.target.value = '';
         }
@@ -212,34 +238,6 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
     reader.readAsText(file);
   };
 
-  const handleRecalculateInvoiceMonths = async () => {
-    if (!window.confirm(
-      t('settings.recalculateConfirm')
-    )) {
-      return;
-    }
-    setIsFixing(true);
-    try {
-      const res = await recalculateInvoiceMonthsForUser();
-      toast({
-        title: t('settings.fixComplete'),
-        description: t('settings.fixCompleteDescription', { 
-          scanned: res.scanned, 
-          eligible: res.eligible, 
-          updated: res.updated 
-        }),
-      });
-    } catch (error) {
-      logger.error('Fix error:', error);
-      toast({
-        title: t('settings.fixError'),
-        description: t('settings.fixErrorDescription'),
-        variant: "destructive"
-      });
-    } finally {
-      setIsFixing(false);
-    }
-  };
 
   const handleClearData = () => {
     if (window.confirm(
@@ -425,17 +423,6 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
                   Selecione um arquivo JSON de backup válido (máx. 10MB)
                 </p>
               </div>
-            </div>
-
-            <div className="space-y-3">
-              <h4 className="font-medium">Correções de Faturas</h4>
-              <p className="text-sm text-muted-foreground">
-                Recalcula o mês de fatura (invoice_month) das parcelas de cartões com base em fechamento e vencimento.
-              </p>
-              <Button onClick={handleRecalculateInvoiceMonths} className="gap-2 w-full" disabled={isFixing} variant="outline">
-                <RefreshCw className={`h-4 w-4 ${isFixing ? 'animate-spin' : ''}`} />
-                {isFixing ? 'Recalculando...' : 'Recalcular invoice_month'}
-              </Button>
             </div>
 
             <Separator />
