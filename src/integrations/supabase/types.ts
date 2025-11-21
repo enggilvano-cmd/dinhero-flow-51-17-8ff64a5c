@@ -365,7 +365,6 @@ export type Database = {
           full_name: string | null
           id: string
           is_active: boolean
-          role: Database["public"]["Enums"]["user_role"]
           subscription_expires_at: string | null
           trial_expires_at: string | null
           updated_at: string
@@ -379,7 +378,6 @@ export type Database = {
           full_name?: string | null
           id?: string
           is_active?: boolean
-          role?: Database["public"]["Enums"]["user_role"]
           subscription_expires_at?: string | null
           trial_expires_at?: string | null
           updated_at?: string
@@ -393,7 +391,6 @@ export type Database = {
           full_name?: string | null
           id?: string
           is_active?: boolean
-          role?: Database["public"]["Enums"]["user_role"]
           subscription_expires_at?: string | null
           trial_expires_at?: string | null
           updated_at?: string
@@ -690,6 +687,12 @@ export type Database = {
       get_user_role: {
         Args: { user_id: string }
         Returns: Database["public"]["Enums"]["user_role"]
+      }
+      get_user_roles: {
+        Args: { check_user_id: string }
+        Returns: {
+          role: Database["public"]["Enums"]["user_role"]
+        }[]
       }
       has_role: {
         Args: {
