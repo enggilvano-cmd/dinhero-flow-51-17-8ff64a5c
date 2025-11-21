@@ -165,7 +165,7 @@ export default function Auth() {
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
             <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-emerald-600 to-emerald-700 flex items-center justify-center shadow-lg">
-              <BarChart3 className="h-10 w-10 text-yellow-400" />
+              <BarChart3 className="h-10 w-10 text-yellow-400" /> {/* Ícone pode ser mantido ou alterado conforme preferência */}
             </div>
           </div>
           <h1 className="text-3xl font-bold text-foreground">PlaniFlow</h1>
@@ -179,7 +179,7 @@ export default function Auth() {
               Autenticação Segura
             </CardTitle>
             <CardDescription>
-              Acesse sua conta com segurança avançada
+              Acesse sua conta com segurança
             </CardDescription>
           </CardHeader>
           <CardContent>

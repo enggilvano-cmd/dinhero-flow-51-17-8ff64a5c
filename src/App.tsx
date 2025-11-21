@@ -39,7 +39,9 @@ const App = () => (
                     path="/bybit"
                     element={
                       <ProtectedRoute>
-                        <BybitPage />
+                        {/* O Index.tsx agora controla a renderização da página Bybit através do Layout */}
+                        {/* Para manter a navegação, podemos renderizar o Index com a página correta */}
+                        <Index />
                       </ProtectedRoute>
                     }
                   />

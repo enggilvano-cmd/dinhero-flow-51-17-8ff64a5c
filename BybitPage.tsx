@@ -1,12 +1,4 @@
-import { Layout } from "@/components/Layout";
-
-const BybitPage = () => {
-  return (
-    <div>
-      <h1>Bybit Page</h1>
-      {/* Your page content goes here */}
-    </div>
-  );
-};
-
-export default BybitPage;
+// Este arquivo parece ser uma versão antiga ou duplicada.
+// O arquivo correto está em 'src/pages/BybitPage.tsx'.
+// Recomenda-se remover este arquivo para evitar confusão.
+export {};
