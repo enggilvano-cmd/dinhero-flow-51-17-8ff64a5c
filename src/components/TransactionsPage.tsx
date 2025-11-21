@@ -1,8 +1,9 @@
 import { createDateFromString } from "@/lib/dateUtils";
 import { useTranslation } from "react-i18next";
 import { useSettings } from "@/context/SettingsContext";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useDebounce } from "@/hooks/useDebounce";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -146,6 +147,22 @@ export function TransactionsPage({
   const [startDatePickerOpen, setStartDatePickerOpen] = useState(false);
   const [endDatePickerOpen, setEndDatePickerOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
+  
+  // Local search state with debounce
+  const [localSearch, setLocalSearch] = useState(search);
+  const debouncedSearch = useDebounce(localSearch, 500);
+
+  // Update parent search when debounced value changes
+  useEffect(() => {
+    if (debouncedSearch !== search) {
+      onSearchChange(debouncedSearch);
+    }
+  }, [debouncedSearch, search, onSearchChange]);
+
+  // Sync local search with prop changes (for external resets)
+  useEffect(() => {
+    setLocalSearch(search);
+  }, [search]);
 
   const { toast } = useToast();
   const { t } = useTranslation();
@@ -903,8 +920,8 @@ export function TransactionsPage({
                 <Input
                   id="search"
                   placeholder={t("transactions.searchPlaceholder")}
-                  value={search}
-                  onChange={(e) => onSearchChange(e.target.value)}
+                  value={localSearch}
+                  onChange={(e) => setLocalSearch(e.target.value)}
                   className="pl-10 touch-target"
                 />
               </div>
