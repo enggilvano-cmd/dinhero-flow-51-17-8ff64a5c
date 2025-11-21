@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import { ResponsiveTable } from "@/components/ui/responsive-table";
+import { VirtualizedTable } from "@/components/ui/virtualized-table";
 import { TrendingUp, TrendingDown, ArrowLeftRight } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -139,7 +139,7 @@ export function TransactionList({
   ];
 
   return (
-    <ResponsiveTable
+    <VirtualizedTable
       data={transactions}
       columns={columns}
       keyField="id"
@@ -148,6 +148,8 @@ export function TransactionList({
           <p>{t("transactions.noTransactions")}</p>
         </div>
       }
+      estimateSize={80}
+      overscan={5}
     />
   );
 }
