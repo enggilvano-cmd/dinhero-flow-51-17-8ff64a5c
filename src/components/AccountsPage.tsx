@@ -30,7 +30,6 @@ import { useToast } from "@/hooks/use-toast";
 import { useAccounts } from "@/hooks/queries/useAccounts";
 import { ImportAccountsModal } from "@/components/ImportAccountsModal";
 import { loadXLSX } from "@/lib/lazyImports";
-import { useTranslation } from 'react-i18next';
 import { useSettings } from "@/context/SettingsContext";
 
 import { Account } from '@/types';
@@ -55,7 +54,6 @@ export function AccountsPage({
   initialFilterType = "all",
 }: AccountsPageProps) {
   const { accounts } = useAccounts();
-  const { t } = useTranslation();
   const { formatCurrency: formatCurrencyFromSettings } = useSettings();
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -90,13 +88,13 @@ export function AccountsPage({
   const getAccountTypeLabel = (type: string) => {
     switch (type) {
       case "checking":
-        return t('accounts.checking');
+        return "Corrente";
       case "savings":
-        return t('accounts.savings');
+        return "Poupança";
       case "credit":
-        return t('accounts.credit');
+        return "Cartão de Crédito";
       case "investment":
-        return t('accounts.investment');
+        return "Investimento";
       default:
         return type;
     }
@@ -126,12 +124,12 @@ export function AccountsPage({
 
   const handleDeleteAccount = (account: Account) => {
     if (
-      window.confirm(t('accounts.confirmDelete') + ` "${account.name}"?`)
+      window.confirm(`Tem certeza que deseja excluir a conta "${account.name}"?`)
     ) {
       onDeleteAccount(account.id);
       toast({
-        title: t('accounts.accountDeleted'),
-        description: t('accounts.accountDeletedDesc').replace('{name}', account.name),
+        title: "Conta excluída",
+        description: `A conta ${account.name} foi excluída com sucesso`,
       });
     }
   };
@@ -151,18 +149,18 @@ export function AccountsPage({
     const XLSX = await loadXLSX();
     
     const dataToExport = filteredAccounts.map((account) => ({
-      [t('accounts.accountName')]: account.name,
-      [t('accounts.accountType')]: getAccountTypeLabel(account.type),
-      [t('accounts.balance')]: account.balance / 100, // Converter para Reais
-      [t('accounts.limit')]: account.limit_amount ? account.limit_amount / 100 : 0,
-      [t('accounts.closingDate')]: account.closing_date || '',
-      [t('accounts.dueDate')]: account.due_date || '',
-      [t('accounts.color')]: account.color,
+      "Nome da Conta": account.name,
+      "Tipo de Conta": getAccountTypeLabel(account.type),
+      "Saldo": account.balance / 100,
+      "Limite": account.limit_amount ? account.limit_amount / 100 : 0,
+      "Data de Fechamento": account.closing_date || '',
+      "Data de Vencimento": account.due_date || '',
+      "Cor": account.color,
     }));
 
     const ws = XLSX.utils.json_to_sheet(dataToExport);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, t('accounts.title'));
+    XLSX.utils.book_append_sheet(wb, ws, "Contas");
 
     const colWidths = [
       { wch: 30 }, // Nome
@@ -189,15 +187,15 @@ export function AccountsPage({
       }
     }
 
-    let fileName = t('accounts.title').toLowerCase();
+    let fileName = "contas";
     if (filterType !== "all") fileName += `_${filterType}`;
     fileName += ".xlsx";
 
     XLSX.writeFile(wb, fileName);
 
     toast({
-      title: t('common.success'),
-      description: t('accounts.exportSuccess', { count: filteredAccounts.length }),
+      title: "Sucesso",
+      description: `${filteredAccounts.length} contas exportadas com sucesso`,
     });
   };
 
@@ -212,9 +210,9 @@ export function AccountsPage({
       {/* Header */}
       <div className="flex flex-col gap-3">
         <div className="min-w-0 w-full">
-          <h1 className="text-system-h1 leading-tight">{t('accounts.title')}</h1>
+          <h1 className="text-system-h1 leading-tight">Contas</h1>
           <p className="text-sm text-muted-foreground leading-tight">
-            {t('accounts.subtitle')}
+            Gerencie suas contas bancárias e cartões
           </p>
         </div>
         <div className="grid grid-cols-2 gap-2 w-full md:grid-cols-4 lg:flex lg:flex-nowrap lg:gap-2 lg:w-auto lg:ml-auto">
@@ -225,7 +223,7 @@ export function AccountsPage({
             disabled={accounts.length === 0}
           >
             <FileDown className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span>{t('common.export')}</span>
+            <span>Exportar</span>
           </Button>
           <Button
             onClick={() => setImportModalOpen(true)}
@@ -233,7 +231,7 @@ export function AccountsPage({
             className="gap-2 apple-interaction h-9 text-xs sm:text-sm"
           >
             <Upload className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span>{t('common.import')}</span>
+            <span>Importar</span>
           </Button>
           {onTransfer && (
             <Button
@@ -242,12 +240,12 @@ export function AccountsPage({
               className="gap-2 apple-interaction h-9 text-xs sm:text-sm"
             >
               <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              <span>{t('dashboard.transfer')}</span>
+              <span>Transferência</span>
             </Button>
           )}
           <Button onClick={onAddAccount} className="gap-2 apple-interaction h-9 text-xs sm:text-sm">
             <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span>{t('accounts.addAccount')}</span>
+            <span>Adicionar Conta</span>
           </Button>
         </div>
       </div>
@@ -262,7 +260,7 @@ export function AccountsPage({
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs sm:text-sm font-medium text-muted-foreground">
-                  {t('accounts.totalBalance')}
+                  Saldo Total
                 </p>
                 <div
                   className={`text-base sm:text-lg lg:text-xl font-bold ${
@@ -284,7 +282,7 @@ export function AccountsPage({
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs sm:text-sm font-medium text-muted-foreground">
-                  {t('accounts.totalDebt')}
+                  Dívida Total
                 </p>
                 <div className="text-base sm:text-lg lg:text-xl font-bold text-destructive leading-tight">
                   {formatCents(creditUsed)}
@@ -302,7 +300,7 @@ export function AccountsPage({
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs sm:text-sm font-medium text-muted-foreground">
-                  {t('accounts.totalAccounts')}
+                  Total de Contas
                 </p>
                 <div className="text-base sm:text-lg lg:text-xl font-bold leading-tight">
                   {filteredAccounts.length}
@@ -318,12 +316,12 @@ export function AccountsPage({
         <CardContent className="p-2 sm:p-3">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="lg:col-span-2">
-              <Label htmlFor="search" className="text-caption">{t('common.search')} {t('accounts.title').toLowerCase()}</Label>
+              <Label htmlFor="search" className="text-caption">Buscar contas</Label>
               <div className="relative mt-2">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="search"
-                  placeholder={t('accounts.searchPlaceholder')}
+                  placeholder="Buscar contas..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 touch-target"
@@ -331,7 +329,7 @@ export function AccountsPage({
               </div>
             </div>
             <div>
-              <Label htmlFor="filter" className="text-caption">{t('accounts.filterByType')}</Label>
+              <Label htmlFor="filter" className="text-caption">Filtrar por tipo</Label>
               <Select 
                 value={filterType} 
                 onValueChange={(value) => setFilterType(value as typeof filterType)}
@@ -340,11 +338,11 @@ export function AccountsPage({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">{t('common.all')}</SelectItem>
-                  <SelectItem value="checking">{t('accounts.checking')}</SelectItem>
-                  <SelectItem value="savings">{t('accounts.savings')}</SelectItem>
-                  <SelectItem value="credit">{t('accounts.credit')}</SelectItem>
-                  <SelectItem value="investment">{t('accounts.investment')}</SelectItem>
+                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="checking">Corrente</SelectItem>
+                  <SelectItem value="savings">Poupança</SelectItem>
+                  <SelectItem value="credit">Cartão de Crédito</SelectItem>
+                  <SelectItem value="investment">Investimento</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -359,16 +357,16 @@ export function AccountsPage({
             <CreditCard className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
             <h3 className="text-lg font-semibold mb-2">
               {searchTerm || filterType !== "all"
-                ? t('messages.noDataFound')
-                : t('accounts.noAccounts')}
+                ? "Nenhum resultado encontrado"
+                : "Nenhuma conta cadastrada"}
             </h3>
             <p className="text-muted-foreground mb-4">
               {searchTerm || filterType !== "all"
-                ? t('common.filter')
-                : t('accounts.addFirstAccount')}
+                ? "Tente ajustar os filtros"
+                : "Adicione sua primeira conta para começar"}
             </p>
             {!searchTerm && filterType === "all" && (
-              <Button onClick={onAddAccount}>{t('accounts.addAccount')}</Button>
+              <Button onClick={onAddAccount}>Adicionar Conta</Button>
             )}
           </CardContent>
         </Card>
@@ -422,7 +420,7 @@ export function AccountsPage({
                             onClick={() => onEditAccount(account)}
                           >
                             <Edit className="h-4 w-4 mr-2" />
-                            {t('common.edit')}
+                            Editar
                           </DropdownMenuItem>
                           {account.type === "credit" &&
                             account.balance < 0 &&
@@ -431,7 +429,7 @@ export function AccountsPage({
                                 onClick={() => onPayCreditCard(account)}
                               >
                                 <DollarSign className="h-4 w-4 mr-2" />
-                                {t('accounts.payBill')}
+                                Pagar Fatura
                               </DropdownMenuItem>
                             )}
                           <DropdownMenuItem
@@ -439,7 +437,7 @@ export function AccountsPage({
                             className="text-destructive"
                           >
                             <Trash2 className="h-4 w-4 mr-2" />
-                            {t('common.delete')}
+                            Excluir
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -454,7 +452,7 @@ export function AccountsPage({
                         {/* Dívida ou Crédito a favor */}
                         <div className="flex items-center justify-between">
                           <span className="text-xs sm:text-sm text-muted-foreground font-medium">
-                            {account.balance < 0 ? t('accounts.debt') : t('accounts.creditInFavor')}:
+                            {account.balance < 0 ? "Dívida" : "Crédito a favor"}:
                           </span>
                           <span
                             className={`text-sm sm:text-base font-bold ${
@@ -469,7 +467,7 @@ export function AccountsPage({
                         {account.limit_amount && account.limit_amount > 0 && (
                           <div className="flex items-center justify-between">
                             <span className="text-xs sm:text-sm text-muted-foreground">
-                              {t('accounts.available')}:
+                              Disponível:
                             </span>
                             <span className="text-xs sm:text-sm font-medium text-blue-600">
                               {formatCents((account.limit_amount || 0) - Math.abs(Math.min(account.balance, 0)))}
@@ -483,7 +481,7 @@ export function AccountsPage({
                         {/* Saldo */}
                         <div className="flex items-center justify-between">
                           <span className="text-xs sm:text-sm text-muted-foreground font-medium">
-                            {t('accounts.balance')}:
+                            Saldo:
                           </span>
                           <span
                             className={`text-sm sm:text-base font-bold ${
@@ -500,7 +498,7 @@ export function AccountsPage({
                         {account.limit_amount && account.limit_amount > 0 && (
                           <div className="flex items-center justify-between">
                             <span className="text-xs sm:text-sm text-muted-foreground">
-                              {t('accounts.available')}:
+                              Disponível:
                             </span>
                             <span className="text-xs sm:text-sm font-medium text-blue-600">
                               {formatCents(account.balance + (account.limit_amount || 0))}
@@ -515,7 +513,7 @@ export function AccountsPage({
                       <div className="space-y-1">
                         <div className="flex items-center justify-between">
                           <span className="text-xs text-muted-foreground">
-                            {account.type === "credit" ? t('accounts.used') : t('accounts.limit')}:
+                            {account.type === "credit" ? "Usado" : "Limite"}:
                           </span>
                           <span className="text-xs font-medium">
                             {formatCents(account.limit_amount || 0)}
