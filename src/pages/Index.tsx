@@ -17,7 +17,6 @@ import { EditTransactionModal } from "@/components/EditTransactionModal";
 
 import { TransferModal } from "@/components/TransferModal";
 import { CreditPaymentModal } from "@/components/CreditPaymentModal";
-import { useSettings } from "@/context/SettingsContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -33,7 +32,6 @@ import { useAccountHandlers } from "@/hooks/useAccountHandlers";
 import { useTransactionHandlers } from "@/hooks/useTransactionHandlers";
 
 const PlaniFlowApp = () => {
-  const { settings } = useSettings();
   const { user, loading: authLoading, isAdmin } = useAuth();
   const { toast } = useToast();
   const [currentPage, setCurrentPage] = useState("dashboard");
@@ -312,22 +310,14 @@ const PlaniFlowApp = () => {
       <AddAccountModal
         open={addAccountModalOpen}
         onOpenChange={setAddAccountModalOpen}
-        onAccountAdded={(account) => {
-          queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
-          toast({
-            title: "Conta adicionada",
-            description: `A conta "${account.name}" foi adicionada com sucesso.`,
-          });
-        }}
       />
 
       <AddTransactionModal
         open={addTransactionModalOpen}
         onOpenChange={setAddTransactionModalOpen}
-        onTransactionAdded={handleAddTransaction}
-        onInstallmentTransactionAdded={handleAddInstallmentTransactions}
         accounts={accounts}
-        categories={categories}
+        onAddTransaction={handleAddTransaction}
+        onAddInstallmentTransactions={handleAddInstallmentTransactions}
         initialType={transactionInitialType}
         initialAccountType={transactionInitialAccountType}
         lockType={transactionLockType}
@@ -337,22 +327,20 @@ const PlaniFlowApp = () => {
         open={editAccountModalOpen}
         onOpenChange={setEditAccountModalOpen}
         account={editingAccount}
-        onAccountEdited={handleEditAccount}
+        onEditAccount={handleEditAccount}
       />
 
       <EditTransactionModal
         open={editTransactionModalOpen}
         onOpenChange={setEditTransactionModalOpen}
         transaction={editingTransaction}
-        onTransactionEdited={handleEditTransaction}
+        onEditTransaction={handleEditTransaction}
         accounts={accounts}
-        categories={categories}
       />
 
       <TransferModal
         open={transferModalOpen}
         onOpenChange={setTransferModalOpen}
-        accounts={accounts}
         onTransfer={async (fromAccountId, toAccountId, amountInCents, date) => {
           await handleTransfer(fromAccountId, toAccountId, amountInCents, date);
           const fromAccount = accounts.find(acc => acc.id === fromAccountId)!;
