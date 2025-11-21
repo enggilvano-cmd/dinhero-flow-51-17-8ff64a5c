@@ -45,10 +45,10 @@ export function useNotifications() {
     if (!user || !settings.billReminders) return;
 
     try {
-      // Fetch accounts
+      // Fetch accounts with specific columns only
       const { data: accounts } = await supabase
         .from('accounts')
-        .select('*')
+        .select('id, name, type, balance, due_date, closing_date, limit_amount')
         .eq('user_id', user.id);
 
       if (!accounts) return;

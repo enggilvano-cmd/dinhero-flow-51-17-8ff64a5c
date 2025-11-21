@@ -49,12 +49,35 @@ export interface Transaction {
   installments?: number; // Number of installments for installment transactions
   current_installment?: number; // Current installment number (1-based)
   parent_transaction_id?: string; // ID linking installment transactions together
-  linked_transaction_id?: string; // <-- ADICIONADO: Para vincular pagamentos/transferências
+  linked_transaction_id?: string; // Para vincular pagamentos/transferências
   invoice_month?: string; // Month of credit card invoice (YYYY-MM)
   invoice_month_overridden?: boolean; // True when user manually sets invoice month
   is_recurring?: boolean; // Is this a recurring transaction
   recurrence_type?: "daily" | "weekly" | "monthly" | "yearly"; // Type of recurrence
   recurrence_end_date?: Date | string; // When the recurrence ends
+  is_fixed?: boolean;
+  reconciled?: boolean;
+  created_at?: string;
+  updated_at?: string;
+  // Relations from JOINs
+  category?: {
+    id: string;
+    name: string;
+    type: "income" | "expense" | "both";
+    color: string;
+  };
+  account?: {
+    id: string;
+    name: string;
+    type: "checking" | "savings" | "credit" | "investment";
+    color: string;
+  };
+  to_account?: {
+    id: string;
+    name: string;
+    type: "checking" | "savings" | "credit" | "investment";
+    color: string;
+  };
 }
 
 // Para o store, garantindo que a data seja um objeto Date
