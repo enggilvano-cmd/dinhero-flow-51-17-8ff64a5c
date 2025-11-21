@@ -1,8 +1,6 @@
 import type { Preview } from "@storybook/react";
 import { withThemeByClassName } from "@storybook/addon-themes";
 import "../src/index.css";
-import { I18nextProvider } from "react-i18next";
-import i18n from "../src/i18n";
 import { SettingsProvider } from "../src/context/SettingsContext";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "../src/lib/queryClient";
@@ -28,15 +26,13 @@ const preview: Preview = {
     }),
     (Story) => (
       <QueryClientProvider client={queryClient}>
-        <I18nextProvider i18n={i18n}>
-          <SettingsProvider>
-            <BrowserRouter>
-              <div className="min-h-screen bg-background p-4">
-                <Story />
-              </div>
-            </BrowserRouter>
-          </SettingsProvider>
-        </I18nextProvider>
+        <SettingsProvider>
+          <BrowserRouter>
+            <div className="min-h-screen bg-background p-4">
+              <Story />
+            </div>
+          </BrowserRouter>
+        </SettingsProvider>
       </QueryClientProvider>
     ),
   ],

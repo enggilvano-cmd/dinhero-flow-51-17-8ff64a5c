@@ -1,7 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { useTranslation } from 'react-i18next';
-import { detectBrowserLanguage } from '@/i18n';
 import { logger } from '@/lib/logger';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -96,21 +94,17 @@ interface SettingsProviderProps {
 
 export function SettingsProvider({ children }: SettingsProviderProps) {
   const auth = useAuth();
-  const { i18n } = useTranslation();
   
   // Se o auth ainda não está pronto, use valores seguros
   const user = auth?.user;
   const loading = auth?.loading ?? true;
-  
-  // Detectar idioma do navegador para usar como padrão inicial
-  const detectedLanguage = detectBrowserLanguage();
   
   const [settings, setSettings] = useState<AppSettings>({
     currency: 'BRL',
     theme: 'system',
     notifications: true,
     autoBackup: false,
-    language: detectedLanguage, // Usar idioma detectado
+    language: 'pt-BR',
     userId: ''
   });
 
@@ -149,27 +143,12 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
         // Always load settings from Supabase (source of truth)
         const loadedSettings = await getSettings();
         
-        // Se o usuário não tiver preferência de idioma salva, usar o detectado
-        if (!loadedSettings.language) {
-          loadedSettings.language = detectedLanguage;
-          logger.info(`📝 Preferência de idioma não encontrada, usando idioma detectado: ${detectedLanguage}`);
-        }
-        
         setSettings(loadedSettings);
         applyTheme(loadedSettings.theme);
-        
-        // Aplicar idioma ao i18n
-        if (loadedSettings.language && i18n.language !== loadedSettings.language) {
-          logger.info(`🔄 Alterando idioma de ${i18n.language} para ${loadedSettings.language}`);
-          i18n.changeLanguage(loadedSettings.language);
-        }
       } catch (error) {
         logger.error('Error loading settings:', error);
-        // Use default settings on error (com idioma detectado)
+        // Use default settings on error
         applyTheme('system');
-        if (i18n.language !== detectedLanguage) {
-          i18n.changeLanguage(detectedLanguage);
-        }
       }
     };
     loadSettings();
@@ -195,11 +174,6 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
   const updateSettings = async (newSettings: AppSettings) => {
     setSettings(newSettings);
     applyTheme(newSettings.theme);
-    
-    // Atualizar idioma do i18n apenas se mudou
-    if (newSettings.language && i18n.language !== newSettings.language) {
-      await i18n.changeLanguage(newSettings.language);
-    }
     
     // Save to Supabase if user is authenticated
     if (user) {
