@@ -574,6 +574,56 @@ export default function AnalyticsPage({
   };
 
   // Chart config específico para o gráfico de categorias
+  // Memoize tooltip formatters to prevent re-renders
+  const categoryTooltipFormatter = useMemo(
+    () => (value: number, name: string) => [formatCurrency(value), name],
+    [formatCurrency]
+  );
+
+  const accountTooltipFormatter = useMemo(
+    () => (value: number) => [formatCurrency(value), "Saldo"],
+    [formatCurrency]
+  );
+
+  const monthlyTooltipFormatter = useMemo(
+    () => (value: number, name: string) => [
+      formatCurrency(value),
+      name === "receitas"
+        ? "Receitas"
+        : name === "despesas"
+        ? "Despesas"
+        : name === "saldo"
+        ? "Saldo Acumulado"
+        : name,
+    ],
+    [formatCurrency]
+  );
+
+  // Memoize custom dot renderer with unique keys for Line chart
+  const renderMonthlyDot = useMemo(
+    () => (props: any) => {
+      const { cx, cy, payload, index } = props;
+      const saldo = payload?.saldo || 0;
+      const uniqueKey = `monthly-dot-${index}-${payload?.month || index}`;
+      return (
+        <circle
+          key={uniqueKey}
+          cx={cx}
+          cy={cy}
+          r={isMobile ? 3 : 4}
+          fill={
+            saldo >= 0
+              ? "hsl(var(--primary))"
+              : "hsl(var(--destructive))"
+          }
+          stroke="hsl(var(--background))"
+          strokeWidth={2}
+        />
+      );
+    },
+    [isMobile]
+  );
+
   const categoryChartConfig = useMemo(() => {
     const config: Record<string, { label: string; color: string }> = {};
     categoryData.forEach((item, index) => {
@@ -923,10 +973,7 @@ export default function AnalyticsPage({
               <RechartsPieChart width={undefined} height={undefined}>
                 <ChartTooltip
                   content={<ChartTooltipContent />}
-                    formatter={(value: number, name: string) => [
-                      formatCurrency(value),
-                      name,
-                    ]}
+                  formatter={categoryTooltipFormatter}
                 />
                 <Pie
                   data={categoryData.map((item) => ({
@@ -1002,10 +1049,7 @@ export default function AnalyticsPage({
                   />
                   <ChartTooltip
                     content={<ChartTooltipContent />}
-                    formatter={(value: number) => [
-                      formatCurrency(value),
-                      "Saldo",
-                    ]}
+                    formatter={accountTooltipFormatter}
                   />
                   <Bar dataKey="balance">
                     {accountBalanceData.map((entry, index) => (
@@ -1088,16 +1132,7 @@ export default function AnalyticsPage({
                   />
                   <ChartTooltip
                     content={<ChartTooltipContent />}
-                    formatter={(value: number, name: string) => [
-                      formatCurrency(value),
-                      name === "receitas"
-                        ? "Receitas"
-                        : name === "despesas"
-                        ? "Despesas"
-                        : name === "saldo"
-                        ? "Saldo Acumulado"
-                        : name,
-                    ]}
+                    formatter={monthlyTooltipFormatter}
                     labelFormatter={(label) => `Mês de ${label}`}
                   />
 
@@ -1133,24 +1168,7 @@ export default function AnalyticsPage({
                     dataKey="saldo"
                     stroke="hsl(var(--primary))"
                     strokeWidth={isMobile ? 2 : 3}
-                    dot={(props: any) => {
-                      const { cx, cy, payload } = props;
-                      const saldo = payload?.saldo || 0;
-                      return (
-                        <circle
-                          cx={cx}
-                          cy={cy}
-                          r={isMobile ? 3 : 4}
-                          fill={
-                            saldo >= 0
-                              ? "hsl(var(--primary))"
-                              : "hsl(var(--destructive))"
-                          }
-                          stroke="hsl(var(--background))"
-                          strokeWidth={2}
-                        />
-                      );
-                    }}
+                    dot={renderMonthlyDot}
                     activeDot={{
                       r: isMobile ? 5 : 6,
                       strokeWidth: 2,

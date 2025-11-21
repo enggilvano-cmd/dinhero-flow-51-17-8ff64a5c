@@ -66,6 +66,43 @@ export function FinancialEvolutionChart({
     customEndDate
   );
 
+  // Memoize tooltip formatter to prevent re-renders
+  const tooltipFormatter = useMemo(
+    () => (value: number, name: string) => [
+      formatCurrency(value / 100),
+      name === 'receitas'
+        ? t('dashboard.revenues')
+        : name === 'despesas'
+        ? t('dashboard.expenses')
+        : name === 'saldo'
+        ? t('dashboard.accumulatedBalance')
+        : name,
+    ],
+    [formatCurrency, t]
+  );
+
+  // Memoize custom dot renderer with unique keys
+  const renderDot = useMemo(
+    () => (props: any) => {
+      const { cx, cy, payload, index } = props;
+      const saldo = payload?.saldo || 0;
+      // Create unique key using index and month
+      const uniqueKey = `dot-${index}-${payload?.month || index}`;
+      return (
+        <circle
+          key={uniqueKey}
+          cx={cx}
+          cy={cy}
+          r={isMobile ? 3 : 4}
+          fill={saldo >= 0 ? 'hsl(var(--primary))' : 'hsl(var(--destructive))'}
+          stroke="hsl(var(--background))"
+          strokeWidth={2}
+        />
+      );
+    },
+    [isMobile]
+  );
+
   if (chartData.length === 0) return null;
 
   return (
@@ -207,16 +244,7 @@ export function FinancialEvolutionChart({
                         indicator="dot"
                       />
                     }
-                    formatter={(value: number, name: string) => [
-                      formatCurrency(value / 100),
-                      name === 'receitas'
-                        ? t('dashboard.revenues')
-                        : name === 'despesas'
-                        ? t('dashboard.expenses')
-                        : name === 'saldo'
-                        ? t('dashboard.accumulatedBalance')
-                        : name,
-                    ]}
+                    formatter={tooltipFormatter}
                   />
 
                   {!isMobile && (
@@ -245,21 +273,7 @@ export function FinancialEvolutionChart({
                     dataKey="saldo"
                     stroke="hsl(var(--primary))"
                     strokeWidth={isMobile ? 2 : 3}
-                    dot={(props: any) => {
-                      const { cx, cy, payload, key } = props;
-                      const saldo = payload?.saldo || 0;
-                      return (
-                        <circle
-                          key={key}
-                          cx={cx}
-                          cy={cy}
-                          r={isMobile ? 3 : 4}
-                          fill={saldo >= 0 ? 'hsl(var(--primary))' : 'hsl(var(--destructive))'}
-                          stroke="hsl(var(--background))"
-                          strokeWidth={2}
-                        />
-                      );
-                    }}
+                    dot={renderDot}
                     activeDot={{
                       r: isMobile ? 5 : 6,
                       strokeWidth: 2,
