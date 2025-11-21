@@ -114,6 +114,11 @@ export function createDateFromString(dateInput: any): Date {
     return createFallbackDate(dateInput);
   }
 
+  // Trata Date object diretamente
+  if (dateInput instanceof Date && !isNaN(dateInput.getTime())) {
+    return dateInput;
+  }
+
   // Tenta ISO 8601
   if (dateString.includes("T") || dateString.includes("Z")) {
     const d = new Date(dateString);
@@ -139,6 +144,29 @@ export function createDateFromString(dateInput: any): Date {
   }
 
   return createFallbackDate(dateInput);
+}
+
+/**
+ * Normalize transaction date to Date object
+ * Use this helper to ensure consistent date handling across the app
+ */
+export function normalizeTransactionDate<T extends { date: string | Date }>(
+  transaction: T
+): T & { date: Date } {
+  return {
+    ...transaction,
+    date: createDateFromString(transaction.date)
+  };
+}
+
+/**
+ * Normalize array of transactions dates
+ * Convenience function for bulk normalization
+ */
+export function normalizeTransactionDates<T extends { date: string | Date }>(
+  transactions: T[]
+): Array<T & { date: Date }> {
+  return transactions.map(normalizeTransactionDate);
 }
 
 /**

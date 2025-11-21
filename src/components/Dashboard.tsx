@@ -246,7 +246,8 @@ export function Dashboard({
         if (transaction.type === "income") {
           acc[dateKey].income += transaction.amount;
         } else if (transaction.type === "expense") {
-          acc[dateKey].expenses += transaction.amount;
+          // Expenses são armazenadas como negativas no DB, usar Math.abs para acumular positivo
+          acc[dateKey].expenses += Math.abs(transaction.amount);
         }
 
         return acc;
@@ -267,8 +268,10 @@ export function Dashboard({
       // RE-CÁLCULO CORRETO:
       // Vamos usar o saldo inicial e somar as movimentações diárias.
       let saldoAcumulado = saldoInicial;
-      const finalChartData = sortedEntries.map(([dateKey, data]) => { // data.expenses já é negativo
-        saldoAcumulado = saldoAcumulado + data.income + data.expenses; // Saldo líquido correto
+      const finalChartData = sortedEntries.map(([dateKey, data]) => {
+        // data.expenses é positivo (acumulado com Math.abs), income é positivo
+        // Para saldo: income aumenta, expenses diminui
+        saldoAcumulado = saldoAcumulado + data.income - data.expenses;
         const [year, month, day] = dateKey
           .split("-")
           .map((num) => parseInt(num, 10));
@@ -276,8 +279,8 @@ export function Dashboard({
           month: format(new Date(year, month - 1, day), "dd/MM", {
             locale: ptBR,
           }),
-          receitas: data.income, // Receitas são positivas
-          despesas: Math.abs(data.expenses), // Despesas como valor positivo para comparação
+          receitas: data.income,
+          despesas: data.expenses, // Já é positivo do acumulador
           saldo: saldoAcumulado,
         };
       });
@@ -303,7 +306,8 @@ export function Dashboard({
           if (transaction.type === "income") {
             acc[monthKey].income += transaction.amount;
           } else if (transaction.type === "expense") {
-            acc[monthKey].expenses -= transaction.amount;
+            // Expenses são armazenadas como negativas, usar Math.abs para acumular positivo
+            acc[monthKey].expenses += Math.abs(transaction.amount);
           }
         }
 
@@ -332,7 +336,8 @@ export function Dashboard({
           if (transaction.type === "income") {
             return acc + transaction.amount;
           } else if (transaction.type === "expense") {
-            return acc - transaction.amount;
+            // Expenses já são negativas no DB, somar diretamente
+            return acc + transaction.amount;
           }
         }
 
@@ -341,8 +346,9 @@ export function Dashboard({
 
       let saldoAcumulado = previousYearBalance;
       const chartMonths = monthsToShow.map((monthKey) => {
-        const data = monthlyTotals[monthKey] || { income: 0, expenses: 0 }; // data.expenses já é negativo
-        const saldoMensal = data.income + data.expenses; // Saldo líquido correto
+        const data = monthlyTotals[monthKey] || { income: 0, expenses: 0 };
+        // data.expenses é positivo (acumulado com Math.abs), income é positivo
+        const saldoMensal = data.income - data.expenses;
         saldoAcumulado += saldoMensal;
 
         // Parse year and month from monthKey
@@ -353,7 +359,7 @@ export function Dashboard({
         return {
           month: format(new Date(year, month - 1, 1), "MMM", { locale: ptBR }),
           receitas: data.income,
-          despesas: Math.abs(data.expenses), // Despesas como valor positivo para comparação
+          despesas: data.expenses, // Já é positivo do acumulador
           saldo: saldoAcumulado,
           income: data.income,
           expenses: data.expenses,

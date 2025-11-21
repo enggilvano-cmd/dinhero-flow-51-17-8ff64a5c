@@ -84,7 +84,3 @@ export async function withErrorHandling<T>(
     return { data: null, error: errorMessage };
   }
 }
-
-// Note: Generic query/insert/update/delete functions removed due to TypeScript limitations
-// with Supabase's strictly typed client. Use direct Supabase calls with getUserId() and
-// handleSupabaseError() for proper type safety.

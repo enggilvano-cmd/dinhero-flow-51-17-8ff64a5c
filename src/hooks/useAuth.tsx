@@ -168,21 +168,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          setTimeout(() => {
-            fetchProfile(session.user.id);
-          }, 0);
-
-          // Ensure profiles.email matches Auth email after any auth change
-          setTimeout(() => {
-            syncProfileEmail(session.user!.id, session.user!.email);
-          }, 0);
-          
-          if (event === 'SIGNED_IN') {
-            setTimeout(async () => {
-              await logActivity('signed_in', 'auth');
-              await initializeUserData();
-            }, 0);
-          }
+          // Execute profile operations sequentially to avoid race conditions
+          (async () => {
+            try {
+              await fetchProfile(session.user.id);
+              await syncProfileEmail(session.user.id, session.user.email);
+              
+              if (event === 'SIGNED_IN') {
+                await logActivity('signed_in', 'auth');
+                await initializeUserData();
+              }
+            } catch (error) {
+              logger.error('Error in auth state change handler:', error);
+            }
+          })();
         } else {
           setProfile(null);
         }
@@ -192,17 +191,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
 
     // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       logger.debug('Initial session check:', session?.user?.id);
       
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchProfile(session.user.id);
-        // Also sync profile.email to the current auth email
-        setTimeout(() => {
-          syncProfileEmail(session.user!.id, session.user!.email);
-        }, 0);
+        try {
+          await fetchProfile(session.user.id);
+          await syncProfileEmail(session.user.id, session.user.email);
+        } catch (error) {
+          logger.error('Error in initial session setup:', error);
+        }
       }
       setLoading(false);
     });
