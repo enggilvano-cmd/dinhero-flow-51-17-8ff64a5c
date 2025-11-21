@@ -176,6 +176,56 @@ const PlaniFlowApp = () => {
     setCreditPaymentModalOpen(true);
   };
 
+  const analyticsTransactions = useMemo(() => 
+    transactions.map(t => ({ ...t, category: t.category_id || "" })),
+    [transactions]
+  );
+
+  const renderDashboard = () => (
+    <Dashboard
+      accounts={accounts}
+      transactions={transactions}
+      categories={categories}
+      onTransfer={() => setTransferModalOpen(true)}
+      onAddAccount={() => setAddAccountModalOpen(true)}
+      onAddTransaction={() => {
+        setTransactionInitialType("");
+        setTransactionInitialAccountType("");
+        setTransactionLockType(false);
+        setAddTransactionModalOpen(true);
+      }}
+      onAddExpense={() => {
+        setTransactionInitialType("expense");
+        setTransactionInitialAccountType("checking");
+        setTransactionLockType(true);
+        setAddTransactionModalOpen(true);
+      }}
+      onAddIncome={() => {
+        setTransactionInitialType("income");
+        setTransactionInitialAccountType("checking");
+        setTransactionLockType(true);
+        setAddTransactionModalOpen(true);
+      }}
+      onAddCreditExpense={() => {
+        setTransactionInitialType("expense");
+        setTransactionInitialAccountType("credit");
+        setTransactionLockType(false);
+        setAddTransactionModalOpen(true);
+      }}
+      onNavigateToAccounts={(filterType) => {
+        if (filterType) {
+          setAccountFilterType(filterType as any);
+        } else {
+          setAccountFilterType("all");
+        }
+        setCurrentPage("accounts");
+      }}
+      onNavigateToTransactions={() => {
+        setCurrentPage("transactions");
+      }}
+    />
+  );
+
   const renderCurrentPage = () => {
     switch (currentPage) {
       case "accounts":
@@ -242,215 +292,50 @@ const PlaniFlowApp = () => {
       case "analytics":
         return (
           <AnalyticsPage 
-            transactions={transactions.map(t => ({ ...t, category: t.category_id || "" }))} 
+            transactions={analyticsTransactions} 
             accounts={accounts} 
           />
         );
       case "users":
-        return isAdmin() ? (
-          <UserManagement />
-        ) : (
-          <Dashboard
-            transactions={transactions}
-            accounts={accounts}
-            categories={categories}
-            onTransfer={() => setTransferModalOpen(true)}
-            onAddTransaction={() => {
-              setTransactionInitialType("");
-              setTransactionInitialAccountType("");
-              setTransactionLockType(false);
-              setAddTransactionModalOpen(true);
-            }}
-            onAddExpense={() => {
-              setTransactionInitialType("expense");
-              setTransactionInitialAccountType("checking");
-              setTransactionLockType(true);
-              setAddTransactionModalOpen(true);
-            }}
-            onAddIncome={() => {
-              setTransactionInitialType("income");
-              setTransactionInitialAccountType("checking");
-              setTransactionLockType(true);
-              setAddTransactionModalOpen(true);
-            }}
-            onAddCreditExpense={() => {
-              setTransactionInitialType("expense");
-              setTransactionInitialAccountType("credit");
-              setTransactionLockType(false);
-              setAddTransactionModalOpen(true);
-            }}
-            onNavigateToAccounts={(filterType) => {
-              if (filterType) {
-                setAccountFilterType(filterType as any);
-              } else {
-                setAccountFilterType("all");
-              }
-              setCurrentPage("accounts");
-            }}
-            onNavigateToTransactions={() => {
-              setCurrentPage("transactions");
-            }}
-          />
-        );
+        return isAdmin() ? <UserManagement /> : renderDashboard();
       case "system-settings":
-        return isAdmin() ? (
-          <SystemSettings />
-        ) : (
-          <Dashboard
-            transactions={transactions}
-            accounts={accounts}
-            categories={categories}
-            onTransfer={() => setTransferModalOpen(true)}
-            onAddAccount={() => setAddAccountModalOpen(true)}
-            onAddTransaction={() => {
-              setTransactionInitialType("");
-              setTransactionInitialAccountType("");
-              setTransactionLockType(false);
-              setAddTransactionModalOpen(true);
-            }}
-            onAddExpense={() => {
-              setTransactionInitialType("expense");
-              setTransactionInitialAccountType("checking");
-              setTransactionLockType(true);
-              setAddTransactionModalOpen(true);
-            }}
-            onAddIncome={() => {
-              setTransactionInitialType("income");
-              setTransactionInitialAccountType("checking");
-              setTransactionLockType(true);
-              setAddTransactionModalOpen(true);
-            }}
-            onAddCreditExpense={() => {
-              setTransactionInitialType("expense");
-              setTransactionInitialAccountType("credit");
-              setTransactionLockType(false);
-              setAddTransactionModalOpen(true);
-            }}
-            onNavigateToAccounts={(filterType) => {
-              if (filterType) {
-                setAccountFilterType(filterType as any);
-              } else {
-                setAccountFilterType("all");
-              }
-              setCurrentPage("accounts");
-            }}
-            onNavigateToTransactions={() => {
-              setCurrentPage("transactions");
-            }}
-          />
-        );
-      case "reconciliation":
-        return (
-          <BankReconciliationPage
-            transactions={transactions}
-            accounts={accounts}
-            categories={categories}
-          />
-        );
-      case "accounting":
-        return <AccountingPage />;
-      case "profile":
-        return <UserProfile />;
-      case "settings":
-        return (
-          <SettingsPage
-            settings={settings}
-            onUpdateSettings={handleUpdateSettings}
-            onClearAllData={handleClearAllData}
-          />
-        );
+        return isAdmin() ? <SystemSettings /> : renderDashboard();
       default:
-        return (
-          <Dashboard
-            accounts={accounts}
-            transactions={transactions}
-            categories={categories}
-            onTransfer={() => setTransferModalOpen(true)}
-            onAddAccount={() => setAddAccountModalOpen(true)}
-            onAddTransaction={() => {
-              setTransactionInitialType("");
-              setTransactionInitialAccountType("");
-              setTransactionLockType(false);
-              setAddTransactionModalOpen(true);
-            }}
-            onAddExpense={() => {
-              setTransactionInitialType("expense");
-              setTransactionInitialAccountType("checking");
-              setTransactionLockType(true);
-              setAddTransactionModalOpen(true);
-            }}
-            onAddIncome={() => {
-              setTransactionInitialType("income");
-              setTransactionInitialAccountType("checking");
-              setTransactionLockType(true);
-              setAddTransactionModalOpen(true);
-            }}
-            onAddCreditExpense={() => {
-              setTransactionInitialType("expense");
-              setTransactionInitialAccountType("credit");
-              setTransactionLockType(false);
-              setAddTransactionModalOpen(true);
-            }}
-            onNavigateToAccounts={(filterType) => {
-              if (filterType) {
-                setAccountFilterType(filterType as any);
-              } else {
-                setAccountFilterType("all");
-              }
-              setCurrentPage("accounts");
-            }}
-            onNavigateToTransactions={() => {
-              setCurrentPage("transactions");
-            }}
-          />
-        );
+        return renderDashboard();
     }
   };
 
-  if (authLoading || loadingData) {
-    return (
-      <div className="min-h-screen bg-gradient-surface flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return null; // ProtectedRoute will handle redirect
-  }
-
   return (
-    <>
-      <Layout currentPage={currentPage} onPageChange={setCurrentPage}>
-        <MigrationWarning
-          onMigrationComplete={() => {
-            // Reload data after migration
-            window.location.reload();
-          }}
-        />
-        {renderCurrentPage()}
-      </Layout>
+    <Layout
+      currentPage={currentPage}
+      onNavigate={setCurrentPage}
+      onClearAllData={handleClearAllData}
+      loading={loadingData}
+    >
+      <MigrationWarning />
+
+      {renderCurrentPage()}
 
       {/* Modals */}
       <AddAccountModal
         open={addAccountModalOpen}
         onOpenChange={setAddAccountModalOpen}
+        onAccountAdded={(account) => {
+          queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+          toast({
+            title: "Conta adicionada",
+            description: `A conta "${account.name}" foi adicionada com sucesso.`,
+          });
+        }}
       />
 
       <AddTransactionModal
         open={addTransactionModalOpen}
-        onOpenChange={(open) => {
-          setAddTransactionModalOpen(open);
-          if (!open) {
-            // Limpa os tipos iniciais quando o modal fechar
-            setTransactionInitialType("");
-            setTransactionInitialAccountType("");
-            setTransactionLockType(false);
-          }
-        }}
-        onAddTransaction={handleAddTransaction}
-        onAddInstallmentTransactions={handleAddInstallmentTransactions}
+        onOpenChange={setAddTransactionModalOpen}
+        onTransactionAdded={handleAddTransaction}
+        onInstallmentTransactionAdded={handleAddInstallmentTransactions}
         accounts={accounts}
+        categories={categories}
         initialType={transactionInitialType}
         initialAccountType={transactionInitialAccountType}
         lockType={transactionLockType}
@@ -459,21 +344,23 @@ const PlaniFlowApp = () => {
       <EditAccountModal
         open={editAccountModalOpen}
         onOpenChange={setEditAccountModalOpen}
-        onEditAccount={handleEditAccount}
         account={editingAccount}
+        onAccountEdited={handleEditAccount}
       />
 
       <EditTransactionModal
         open={editTransactionModalOpen}
         onOpenChange={setEditTransactionModalOpen}
-        onEditTransaction={handleEditTransaction}
         transaction={editingTransaction}
+        onTransactionEdited={handleEditTransaction}
         accounts={accounts}
+        categories={categories}
       />
 
       <TransferModal
         open={transferModalOpen}
         onOpenChange={setTransferModalOpen}
+        accounts={accounts}
         onTransfer={async (fromAccountId, toAccountId, amountInCents, date) => {
           await handleTransfer(fromAccountId, toAccountId, amountInCents, date);
           const fromAccount = accounts.find(acc => acc.id === fromAccountId)!;
@@ -482,7 +369,6 @@ const PlaniFlowApp = () => {
         }}
       />
 
-      {/* Passando os valores da fatura para o modal */}
       <CreditPaymentModal
         open={creditPaymentModalOpen}
         onOpenChange={setCreditPaymentModalOpen}
@@ -493,9 +379,9 @@ const PlaniFlowApp = () => {
         creditAccount={payingCreditAccount}
         invoiceValueInCents={currentInvoiceValue}
         nextInvoiceValueInCents={nextInvoiceValue}
-        totalDebtInCents={payingTotalDebt} 
+        totalDebtInCents={payingTotalDebt}
       />
-    </>
+    </Layout>
   );
 };
 

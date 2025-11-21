@@ -10,12 +10,10 @@ import { useAuth } from '@/hooks/useAuth';
 import { Lock, User, Mail, Eye, EyeOff, BarChart3, Phone } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { TwoFactorVerify } from '@/components/TwoFactorVerify';
-import { useTranslation } from 'react-i18next';
 
 export default function Auth() {
   const { signIn, signUp, resetPassword, user, loading } = useAuth();
   const navigate = useNavigate();
-  const { t } = useTranslation();
   
   const [activeTab, setActiveTab] = useState('signin');
   const [showPassword, setShowPassword] = useState(false);
@@ -40,30 +38,30 @@ export default function Auth() {
     const newErrors: Record<string, string> = {};
 
     if (!formData.email) {
-      newErrors.email = t('auth.validation.emailRequired');
+      newErrors.email = 'Email é obrigatório';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = t('auth.validation.emailInvalid');
+      newErrors.email = 'Email inválido';
     }
 
     if (!formData.password) {
-      newErrors.password = t('auth.validation.passwordRequired');
+      newErrors.password = 'Senha é obrigatória';
     } else if (formData.password.length < 6) {
-      newErrors.password = t('auth.validation.passwordTooShort');
+      newErrors.password = 'Senha deve ter pelo menos 6 caracteres';
     }
 
     if (activeTab === 'signup') {
       if (!formData.fullName) {
-        newErrors.fullName = t('auth.validation.fullNameRequired');
+        newErrors.fullName = 'Nome completo é obrigatório';
       }
       if (!formData.whatsapp) {
-        newErrors.whatsapp = t('auth.validation.whatsappRequired');
-      } else if (!/^\(\d{2}\)\s\d{4,5}-\d{4}$/.test(formData.whatsapp)) {
-        newErrors.whatsapp = t('auth.validation.whatsappFormat');
+        newErrors.whatsapp = 'WhatsApp é obrigatório';
+      } else if (!/^\(\d{2}\)\s\d{5}-\d{4}$/.test(formData.whatsapp)) {
+        newErrors.whatsapp = 'WhatsApp deve estar no formato (99) 99999-9999';
       }
       if (!formData.confirmPassword) {
-        newErrors.confirmPassword = t('auth.validation.confirmPasswordRequired');
+        newErrors.confirmPassword = 'Confirmação de senha é obrigatória';
       } else if (formData.password !== formData.confirmPassword) {
-        newErrors.confirmPassword = t('auth.validation.passwordsDontMatch');
+        newErrors.confirmPassword = 'Senhas não coincidem';
       }
     }
 
@@ -98,7 +96,7 @@ export default function Auth() {
 
   const handleResetPassword = async () => {
     if (!formData.email) {
-      setErrors({ email: t('auth.validation.emailForReset') });
+      setErrors({ email: 'Digite seu email para recuperar a senha' });
       return;
     }
 
@@ -171,24 +169,24 @@ export default function Auth() {
             </div>
           </div>
           <h1 className="text-3xl font-bold text-foreground">PlaniFlow</h1>
-          <p className="text-muted-foreground">{t('auth.systemTitle')}</p>
+          <p className="text-muted-foreground">Sistema Seguro de Gestão Financeira</p>
         </div>
 
         <Card className="financial-card transition-all duration-300">
           <CardHeader className="text-center">
             <CardTitle className="flex items-center justify-center gap-2">
               <Lock className="h-5 w-5" />
-              {t('auth.secureAuthentication')}
+              Autenticação Segura
             </CardTitle>
             <CardDescription>
-              {t('auth.accessDescription')}
+              Acesse sua conta com segurança avançada
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="signin">{t('auth.signIn')}</TabsTrigger>
-                <TabsTrigger value="signup">{t('auth.signUp')}</TabsTrigger>
+                <TabsTrigger value="signin">Entrar</TabsTrigger>
+                <TabsTrigger value="signup">Cadastrar</TabsTrigger>
               </TabsList>
 
               <TabsContent value="signin" className="mt-6">
@@ -196,12 +194,12 @@ export default function Auth() {
                   <div className="space-y-2">
                     <Label htmlFor="signin-email" className="flex items-center gap-2">
                       <Mail className="h-4 w-4" />
-                      {t('auth.email')}
+                      Email
                     </Label>
                     <Input
                       id="signin-email"
                       type="email"
-                      placeholder={t('auth.emailPlaceholder')}
+                      placeholder="seu@email.com"
                       value={formData.email}
                       onChange={(e) => handleInputChange('email', e.target.value)}
                       className={errors.email ? 'border-destructive' : ''}
@@ -216,13 +214,13 @@ export default function Auth() {
                   <div className="space-y-2">
                     <Label htmlFor="signin-password" className="flex items-center gap-2">
                       <Lock className="h-4 w-4" />
-                      {t('auth.password')}
+                      Senha
                     </Label>
                     <div className="relative">
                       <Input
                         id="signin-password"
                         type={showPassword ? 'text' : 'password'}
-                        placeholder={t('auth.passwordPlaceholder')}
+                        placeholder="Sua senha"
                         value={formData.password}
                         onChange={(e) => handleInputChange('password', e.target.value)}
                         className={errors.password ? 'border-destructive' : ''}
@@ -256,7 +254,7 @@ export default function Auth() {
                     {isLoading ? (
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                     ) : (
-                      t('auth.signIn')
+                      'Entrar'
                     )}
                   </Button>
 
@@ -267,7 +265,7 @@ export default function Auth() {
                     onClick={handleResetPassword}
                     disabled={isLoading}
                   >
-                    {t('auth.forgotPassword')}
+                    Esqueci minha senha
                   </Button>
                 </form>
               </TabsContent>
@@ -277,12 +275,12 @@ export default function Auth() {
                   <div className="space-y-2">
                     <Label htmlFor="signup-name" className="flex items-center gap-2">
                       <User className="h-4 w-4" />
-                      {t('auth.fullName')}
+                      Nome Completo
                     </Label>
                     <Input
                       id="signup-name"
                       type="text"
-                      placeholder={t('auth.fullNamePlaceholder')}
+                      placeholder="Seu nome completo"
                       value={formData.fullName}
                       onChange={(e) => handleInputChange('fullName', e.target.value)}
                       className={errors.fullName ? 'border-destructive' : ''}
@@ -297,12 +295,12 @@ export default function Auth() {
                   <div className="space-y-2">
                     <Label htmlFor="signup-email" className="flex items-center gap-2">
                       <Mail className="h-4 w-4" />
-                      {t('auth.email')}
+                      Email
                     </Label>
                     <Input
                       id="signup-email"
                       type="email"
-                      placeholder={t('auth.emailPlaceholder')}
+                      placeholder="seu@email.com"
                       value={formData.email}
                       onChange={(e) => handleInputChange('email', e.target.value)}
                       className={errors.email ? 'border-destructive' : ''}
@@ -317,12 +315,12 @@ export default function Auth() {
                   <div className="space-y-2">
                     <Label htmlFor="signup-whatsapp" className="flex items-center gap-2">
                       <Phone className="h-4 w-4" />
-                      {t('auth.whatsapp')}
+                      WhatsApp
                     </Label>
                     <Input
                       id="signup-whatsapp"
                       type="tel"
-                      placeholder={t('auth.whatsappPlaceholder')}
+                      placeholder="(99) 99999-9999"
                       value={formData.whatsapp}
                       onChange={(e) => handleInputChange('whatsapp', e.target.value)}
                       className={errors.whatsapp ? 'border-destructive' : ''}
@@ -337,13 +335,13 @@ export default function Auth() {
                   <div className="space-y-2">
                     <Label htmlFor="signup-password" className="flex items-center gap-2">
                       <Lock className="h-4 w-4" />
-                      {t('auth.password')}
+                      Senha
                     </Label>
                     <div className="relative">
                       <Input
                         id="signup-password"
                         type={showPassword ? 'text' : 'password'}
-                        placeholder={t('auth.passwordMinLength')}
+                        placeholder="Mínimo 6 caracteres"
                         value={formData.password}
                         onChange={(e) => handleInputChange('password', e.target.value)}
                         className={errors.password ? 'border-destructive' : ''}
@@ -371,12 +369,12 @@ export default function Auth() {
 
                   <div className="space-y-2">
                     <Label htmlFor="signup-confirm-password">
-                      {t('auth.confirmPassword')}
+                      Confirmar Senha
                     </Label>
                     <Input
                       id="signup-confirm-password"
                       type="password"
-                      placeholder={t('auth.confirmPasswordPlaceholder')}
+                      placeholder="Confirme sua senha"
                       value={formData.confirmPassword}
                       onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
                       className={errors.confirmPassword ? 'border-destructive' : ''}
@@ -396,7 +394,7 @@ export default function Auth() {
                     {isLoading ? (
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                     ) : (
-                      t('auth.createAccount')
+                      'Criar Conta'
                     )}
                   </Button>
                 </form>
@@ -404,12 +402,12 @@ export default function Auth() {
             </Tabs>
 
             <div className="mt-6 p-4 bg-muted/50 rounded-lg">
-              <h4 className="font-medium text-sm mb-2">{t('auth.securityFeatures.title')}</h4>
+              <h4 className="font-medium text-sm mb-2">🔐 Recursos de Segurança:</h4>
               <ul className="text-xs text-muted-foreground space-y-1">
-                <li>• {t('auth.securityFeatures.encryption')}</li>
-                <li>• {t('auth.securityFeatures.bruteForce')}</li>
-                <li>• {t('auth.securityFeatures.audit')}</li>
-                <li>• {t('auth.securityFeatures.roleAccess')}</li>
+                <li>• Criptografia de ponta a ponta</li>
+                <li>• Proteção contra ataques de força bruta</li>
+                <li>• Auditoria completa de atividades</li>
+                <li>• Controle de acesso baseado em funções</li>
               </ul>
             </div>
           </CardContent>

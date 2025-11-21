@@ -1,5 +1,6 @@
 {
   "scripts": {
+    "i18n:check": "node ./scripts/check-i18n.js",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   }

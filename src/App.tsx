@@ -5,13 +5,13 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { SettingsProvider } from "@/context/SettingsContext";
+import { BybitProvider } from "@/context/BybitContext"; // 1. Import the new provider
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import BybitPage from "./pages/BybitPage"; // 2. Import the new page component
 import NotFound from "./pages/NotFound";
-import { I18nextProvider } from 'react-i18next';
-import i18n from './i18n';
 import { queryClient } from './lib/queryClient';
 
 const App = () => (
@@ -19,7 +19,7 @@ const App = () => (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <SettingsProvider>
-          <I18nextProvider i18n={i18n}>
+          <BybitProvider> {/* 3. Wrap the router with the new provider */}
             <TooltipProvider>
               <Toaster />
               <Sonner />
@@ -34,12 +34,21 @@ const App = () => (
                       </ProtectedRoute>
                     } 
                   />
+                  {/* 4. Add the new route */}
+                  <Route 
+                    path="/bybit"
+                    element={
+                      <ProtectedRoute>
+                        <BybitPage />
+                      </ProtectedRoute>
+                    }
+                  />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>
             </TooltipProvider>
-          </I18nextProvider>
+          </BybitProvider>
         </SettingsProvider>
       </AuthProvider>
     </QueryClientProvider>
