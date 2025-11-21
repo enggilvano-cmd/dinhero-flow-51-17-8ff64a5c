@@ -26,32 +26,25 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { MigrationWarning } from "@/components/MigrationWarning";
-import { useAccountStore } from "@/stores/AccountStore";
-import { useTransactionStore, AppTransaction } from "@/stores/TransactionStore"; // Importa AppTransaction
 import { Account, Transaction } from "@/types";
 import { logger } from "@/lib/logger";
 import { useAccounts } from "@/hooks/queries/useAccounts";
 import { useTransactions } from "@/hooks/queries/useTransactions";
 import { useCategories } from "@/hooks/useCategories";
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/queryClient";
 
 const PlaniFlowApp = () => {
   const { settings, updateSettings } = useSettings();
   const { user, loading: authLoading, isAdmin } = useAuth();
   const { toast } = useToast();
   const [currentPage, setCurrentPage] = useState("dashboard");
+  const queryClient = useQueryClient();
 
-  // React Query hooks para data fetching otimizado
+  // React Query hooks - fonte única de verdade
   const { accounts, isLoading: loadingAccounts, refetch: refetchAccounts } = useAccounts();
   const { transactions, isLoading: loadingTransactions, refetch: refetchTransactions } = useTransactions();
   const { categories, loading: loadingCategories } = useCategories();
-
-  // Zustand stores para estado global (sincronizado pelos hooks)
-  const setGlobalAccounts = useAccountStore((state) => state.setAccounts);
-  const updateGlobalAccounts = useAccountStore((state) => state.updateAccounts);
-  const setGlobalTransactions = useTransactionStore((state) => state.setTransactions);
-  const addGlobalTransactions = useTransactionStore((state) => state.addTransactions);
-  const updateGlobalTransaction = useTransactionStore((state) => state.updateTransaction);
-  const removeGlobalTransactions = useTransactionStore((state) => state.removeTransactions);
 
   // Computed loading state otimizado com useMemo
   const loadingData = useMemo(() => 
@@ -120,12 +113,14 @@ const PlaniFlowApp = () => {
         .eq("id", updatedAccount.id)
         .eq("user_id", user.id);
       if (error) throw error;
-      updateGlobalAccounts(updatedAccount);
+      
+      // Invalidar cache do React Query
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
       setEditingAccount(null);
     } catch (error) {
       logger.error("Error updating account:", error);
     }
-  }, [user, updateGlobalAccounts]);
+  }, [user, queryClient]);
 
   const handleDeleteAccount = useCallback(async (accountId: string) => {
     if (!user) return;
@@ -200,7 +195,7 @@ const PlaniFlowApp = () => {
     if (!user) return;
     try {
       // Usar edge function atômica para garantir consistência
-      const { data, error } = await supabase.functions.invoke('atomic-transaction', {
+      const { error } = await supabase.functions.invoke('atomic-transaction', {
         body: {
           transaction: {
             description: transactionData.description,
@@ -218,15 +213,9 @@ const PlaniFlowApp = () => {
 
       if (error) throw error;
 
-      // Atualizar store com transação e saldo retornados
-      addGlobalTransactions([data.transaction as Transaction]);
-      
-      if (data.balance) {
-        const account = accounts.find(acc => acc.id === transactionData.account_id);
-        if (account) {
-          updateGlobalAccounts({ ...account, balance: data.balance.new_balance });
-        }
-      }
+      // Invalidar caches do React Query
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
     } catch (error) {
       logger.error("Error adding transaction:", error);
       if (error instanceof Error) {
@@ -267,19 +256,9 @@ const PlaniFlowApp = () => {
       const errors = results.filter(r => r.error);
       if (errors.length > 0) throw errors[0].error;
 
-      // Coletar transações criadas
-      const newTransactions = results.map(r => r.data?.transaction).filter(Boolean);
-      addGlobalTransactions(newTransactions as Transaction[]);
-
-      // Atualizar saldo da conta (usar o último resultado)
-      const lastResult = results[results.length - 1];
-      if (lastResult.data?.balance) {
-        const accountId = transactionsData[0].account_id;
-        const account = accounts.find(acc => acc.id === accountId);
-        if (account) {
-          updateGlobalAccounts({ ...account, balance: lastResult.data.balance.new_balance });
-        }
-      }
+      // Invalidar caches do React Query
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
     } catch (error) {
       logger.error("Error adding installment transactions:", error);
       throw error;
@@ -338,8 +317,7 @@ const PlaniFlowApp = () => {
 
       if (error) throw error;
 
-      addGlobalTransactions(newTransactions as Transaction[]);
-
+      // Recalcular saldos das contas afetadas
       const accountBalanceChanges = transactionsData.reduce(
         (acc, trans) => {
           const balanceChange =
@@ -350,10 +328,7 @@ const PlaniFlowApp = () => {
         {} as Record<string, number>
       );
 
-      const updatedAccountsList = [];
-      for (const [accountId, balanceChange] of Object.entries(
-        accountBalanceChanges
-      )) {
+      for (const [accountId, balanceChange] of Object.entries(accountBalanceChanges)) {
         const account = accounts.find((acc) => acc.id === accountId);
         if (account && typeof balanceChange === 'number') {
           const newBalance = account.balance + balanceChange;
@@ -362,11 +337,13 @@ const PlaniFlowApp = () => {
             .update({ balance: newBalance })
             .eq("id", accountId)
             .eq("user_id", user.id);
-          updatedAccountsList.push({ ...account, balance: newBalance });
         }
       }
 
-      updateGlobalAccounts(updatedAccountsList);
+      // Invalidar caches do React Query
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+      
       toast({
         title: "Importação concluída",
         description: `${newTransactions.length} transações importadas com sucesso`,
@@ -395,7 +372,7 @@ const PlaniFlowApp = () => {
       if (!fromAccount || !toAccount) throw new Error("Contas não encontradas");
 
       // Usar edge function atômica para transferência
-      const { data, error } = await supabase.functions.invoke('atomic-transfer', {
+      const { error } = await supabase.functions.invoke('atomic-transfer', {
         body: {
           transfer: {
             from_account_id: fromAccountId,
@@ -409,13 +386,9 @@ const PlaniFlowApp = () => {
 
       if (error) throw error;
 
-      // Atualizar stores com transações e saldos
-      addGlobalTransactions([data.outgoing as Transaction, data.incoming as Transaction]);
-      
-      updateGlobalAccounts([
-        { ...fromAccount, balance: data.from_balance.new_balance },
-        { ...toAccount, balance: data.to_balance.new_balance },
-      ]);
+      // Invalidar caches do React Query
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
     } catch (error) {
       logger.error("Error processing transfer:", error);
       if (error instanceof Error) {
@@ -441,7 +414,7 @@ const PlaniFlowApp = () => {
       if (!oldTransaction) return;
 
       // Usar edge function atômica para edição
-      const { data, error } = await supabase.functions.invoke('atomic-edit-transaction', {
+      const { error } = await supabase.functions.invoke('atomic-edit-transaction', {
         body: {
           transaction_id: updatedTransaction.id,
           updates: {
@@ -462,25 +435,9 @@ const PlaniFlowApp = () => {
 
       if (error) throw error;
 
-      // Atualizar stores
-      if (data.updated === 1) {
-        updateGlobalTransaction(updatedTransaction);
-      } else {
-        // Múltiplas transações atualizadas (parcelas)
-        await reloadTransactions();
-      }
-
-      // Atualizar saldos das contas afetadas
-      if (data.balances) {
-        const updatedAccounts = data.balances.map((bal: any) => {
-          const account = accounts.find(acc => acc.id === bal.accountId);
-          return account ? { ...account, balance: bal.new_balance } : null;
-        }).filter(Boolean);
-        
-        if (updatedAccounts.length > 0) {
-          updateGlobalAccounts(updatedAccounts);
-        }
-      }
+      // Invalidar caches do React Query
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
 
       setEditingTransaction(null);
     } catch (error) {
@@ -515,20 +472,9 @@ const PlaniFlowApp = () => {
 
       if (error) throw error;
 
-      // Remover transações do store
-      await reloadTransactions();
-
-      // Atualizar saldos das contas afetadas
-      if (data.balances) {
-        const updatedAccounts = data.balances.map((bal: any) => {
-          const account = accounts.find(acc => acc.id === bal.accountId);
-          return account ? { ...account, balance: bal.new_balance } : null;
-        }).filter(Boolean);
-        
-        if (updatedAccounts.length > 0) {
-          updateGlobalAccounts(updatedAccounts);
-        }
-      }
+      // Invalidar caches do React Query
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
 
       toast({
         title: "Sucesso",
@@ -558,9 +504,10 @@ const PlaniFlowApp = () => {
       await supabase.from("accounts").delete().eq("user_id", user.id);
       await supabase.from("categories").delete().eq("user_id", user.id);
 
-      setGlobalAccounts([]);
-      setGlobalTransactions([]);
-      // Categories will be refetched automatically by React Query
+      // Invalidar todos os caches do React Query
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+      queryClient.invalidateQueries({ queryKey: queryKeys.categories });
 
       toast({
         title: "Dados limpos",
@@ -663,34 +610,22 @@ const PlaniFlowApp = () => {
           .eq("id", creditData.transaction.id);
       }
 
-      // Adicionar transações ao store
-      addGlobalTransactions([
-        creditData.transaction as Transaction,
-        bankData.transaction as Transaction,
-      ]);
-
-      // Atualizar saldos no store
-      const updatedCreditAccount = {
-        ...creditAccount,
-        balance: creditData.balance.new_balance,
-      };
-      const updatedBankAccount = {
-        ...bankAccount,
-        balance: bankData.balance.new_balance,
-      };
-
-      updateGlobalAccounts([updatedCreditAccount, updatedBankAccount]);
-      
-      // Força refetch para garantir sincronização
+      // Invalidar caches e refetch para garantir sincronização
       logger.info('🔄 Refazendo fetch após pagamento...');
-      await Promise.all([
-        reloadAccounts(),
-        reloadTransactions()
-      ]);
+      await queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+
+      // Obter contas atualizadas
+      const updatedCreditAccount = accounts.find(a => a.id === creditCardAccountId);
+      const updatedBankAccount = accounts.find(a => a.id === debitAccountId);
+
+      if (!updatedCreditAccount || !updatedBankAccount) {
+        throw new Error("Contas não encontradas após atualização");
+      }
 
       return {
-        creditAccount: updatedCreditAccount,
-        bankAccount: updatedBankAccount,
+        creditAccount: { ...updatedCreditAccount, balance: creditData.balance.new_balance },
+        bankAccount: { ...updatedBankAccount, balance: bankData.balance.new_balance },
       };
     } catch (error) {
       logger.error("Error processing credit payment:", error);
@@ -700,7 +635,7 @@ const PlaniFlowApp = () => {
   // --- FIM DA FUNÇÃO DE PAGAMENTO ---
 
   // --- NOVA FUNÇÃO DE ESTORNO ---
-  const handleReversePayment = async (paymentsToReverse: AppTransaction[]) => {
+  const handleReversePayment = async (paymentsToReverse: Transaction[]) => {
     if (!user || !paymentsToReverse || paymentsToReverse.length === 0) {
       toast({ title: "Nenhum pagamento para estornar", variant: "destructive" });
       return;
@@ -709,10 +644,6 @@ const PlaniFlowApp = () => {
     toast({ title: "Estornando pagamento..." });
 
     try {
-      // Pega o estado mais atual dos stores
-      const allTransactions = useTransactionStore.getState().transactions;
-      const allAccounts = useAccountStore.getState().accounts;
-
       const transactionsToDelete_ids: string[] = [];
       const accountsToUpdate = new Map<string, number>(); // Map<accountId, balanceChange>
 
@@ -721,7 +652,6 @@ const PlaniFlowApp = () => {
 
         // 1. Reverte o saldo do Cartão de Crédito (aumenta a dívida / remove o 'income')
         const creditAccountId = payment.account_id;
-        // Subtrai o valor do pagamento (ex: balance += -500)
         const creditAccBalanceChange = -payment.amount; 
         
         accountsToUpdate.set(
@@ -730,17 +660,15 @@ const PlaniFlowApp = () => {
         );
 
         // 2. Encontra e reverte o saldo da Conta Bancária (devolve o dinheiro)
-        // Procura pela transação de 'expense' vinculada
-        const linkedExpense = allTransactions.find(
-          (t) => t.id === payment.linked_transaction_id || // Novo método de vínculo
-          (t.parent_transaction_id === payment.id && t.type === 'expense') // Método antigo (fallback)
+        const linkedExpense = transactions.find(
+          (t: Transaction) => t.id === payment.linked_transaction_id || 
+          (t.parent_transaction_id === payment.id && t.type === 'expense')
         );
           
         if (linkedExpense) {
           transactionsToDelete_ids.push(linkedExpense.id);
           
           const debitAccountId = linkedExpense.account_id;
-          // Adiciona o valor de volta à conta (linkedExpense.amount é positivo)
           const debitAccBalanceChange = linkedExpense.amount;
           
           accountsToUpdate.set(
@@ -748,7 +676,7 @@ const PlaniFlowApp = () => {
             (accountsToUpdate.get(debitAccountId) || 0) + debitAccBalanceChange
           );
         } else {
-            logger.warn(`Transação de débito vinculada ao pagamento ${payment.id} não encontrada no store.`);
+            logger.warn(`Transação de débito vinculada ao pagamento ${payment.id} não encontrada.`);
         }
       }
 
@@ -762,10 +690,8 @@ const PlaniFlowApp = () => {
       if (deleteError) throw deleteError;
 
       // 4. Atualiza os saldos das contas no DB
-      const updatedAccountsList: Account[] = [];
-
       for (const [accountId, balanceChange] of accountsToUpdate.entries()) {
-        const account = allAccounts.find((acc) => acc.id === accountId);
+        const account = accounts.find((acc) => acc.id === accountId);
         if (account) {
           const newBalance = account.balance + balanceChange;
           const { error: updateError } = await supabase
@@ -775,20 +701,13 @@ const PlaniFlowApp = () => {
             .eq("user_id", user.id);
 
           if (updateError) throw updateError;
-          updatedAccountsList.push({ ...account, balance: newBalance });
         }
       }
 
-      // 5. Atualiza o estado global (stores)
-      removeGlobalTransactions(transactionsToDelete_ids);
-      updateGlobalAccounts(updatedAccountsList);
-      
-      // 6. Força refetch dos dados para garantir sincronização
+      // 5. Invalidar caches e refetch
       logger.info('🔄 Refazendo fetch após estorno...');
-      await Promise.all([
-        reloadAccounts(),
-        reloadTransactions()
-      ]);
+      await queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
 
       toast({ title: "Pagamento estornado com sucesso!" });
     } catch (error) {
