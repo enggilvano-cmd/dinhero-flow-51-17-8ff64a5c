@@ -21,7 +21,10 @@ import { PREDEFINED_COLORS, ACCOUNT_TYPE_LABELS } from "@/types";
 import { logger } from "@/lib/logger";
 import { ColorPicker } from "./forms/ColorPicker";
 import { CurrencyInput } from "@/components/forms/CurrencyInput";
-import { useAccountStore } from "@/stores/AccountStore";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/queryClient";
 import { useTranslation } from "react-i18next";
 
 interface AddAccountModalProps {
@@ -30,6 +33,8 @@ interface AddAccountModalProps {
 }
 
 export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     name: "",
     type: "" as "checking" | "savings" | "credit" | "investment" | "",
@@ -40,7 +45,6 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-  const { addAccount } = useAccountStore();
   const { t } = useTranslation();
 
   const handleColorChange = (color: string) => {
@@ -122,15 +126,27 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
 
     setIsSubmitting(true);
     try {
-      await addAccount({
-        name: formData.name,
-        type: formData.type,
-        balance: balanceInCents,
-        limit_amount: limitInCents,
-        due_date: dueDate,
-        closing_date: closingDate,
-        color: formData.color,
-      });
+      if (!user) throw new Error("User not authenticated");
+
+      const { error } = await supabase
+        .from("accounts")
+        .insert({
+          name: formData.name,
+          type: formData.type,
+          balance: balanceInCents,
+          limit_amount: limitInCents,
+          due_date: dueDate,
+          closing_date: closingDate,
+          color: formData.color,
+          user_id: user.id,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Invalidar cache do React Query
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
 
       toast({
         title: t("common.success"),

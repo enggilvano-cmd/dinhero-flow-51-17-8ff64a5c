@@ -21,7 +21,6 @@ import { useToast } from "@/hooks/use-toast";
 import { logger } from "@/lib/logger";
 import { Account, PREDEFINED_COLORS, ACCOUNT_TYPE_LABELS } from "@/types";
 import { ColorPicker } from "@/components/forms/ColorPicker";
-import { useAccountStore } from "@/stores/AccountStore";
 import { useTranslation } from "react-i18next";
 
 interface EditAccountModalProps {
@@ -46,10 +45,8 @@ export function EditAccountModal({
     color: PREDEFINED_COLORS[0],
   });
   
-  // Estado removido - saldo negativo será gerenciado pelas transações
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-  const updateAccounts = useAccountStore((state) => state.updateAccounts);
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -127,9 +124,6 @@ export function EditAccountModal({
     setIsSubmitting(true);
     try {
       await onEditAccount(updatedAccount);
-
-      // Atualiza a conta no store global
-      updateAccounts(updatedAccount);
 
       toast({
         title: t("common.success"),

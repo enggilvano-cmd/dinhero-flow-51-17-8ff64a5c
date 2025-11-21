@@ -22,6 +22,8 @@ import { AddFixedTransactionModal } from "./AddFixedTransactionModal";
 import { EditFixedTransactionModal } from "./EditFixedTransactionModal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTransactionStore } from "@/stores/TransactionStore";
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/queryClient";
 
 interface FixedTransaction {
   id: string;
@@ -45,12 +47,13 @@ interface Account {
 }
 
 export function FixedTransactionsPage() {
+  const { removeTransactions: removeGlobalTransactions } = useTransactionStore();
+  const queryClient = useQueryClient();
   const [transactions, setTransactions] = useState<FixedTransaction[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<"all" | "income" | "expense">("all");
-  const { removeTransactions: removeGlobalTransactions } = useTransactionStore();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
   const [addModalOpen, setAddModalOpen] = useState(false);
@@ -298,8 +301,9 @@ export function FixedTransactionsPage() {
       // Criar array com todos os IDs que serão deletados (principal + filhas)
       const idsToDelete = [transactionToDelete, ...(childTransactions?.map(t => t.id) || [])];
 
-      // Remover do store global PRIMEIRO
+      // Remover do store global e invalidar cache
       removeGlobalTransactions(idsToDelete);
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
 
       // Excluir todas as transações filhas pendentes
       const { error: childrenError } = await supabase

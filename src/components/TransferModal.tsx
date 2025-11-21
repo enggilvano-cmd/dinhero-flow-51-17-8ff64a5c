@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { formatCurrency, getAvailableBalance } from "@/lib/formatters";
 import { ArrowRight } from "lucide-react";
 import { AccountBalanceDetails } from "./AccountBalanceDetails";
-import { useAccountStore } from "@/stores/AccountStore";
+import { useAccounts } from "@/hooks/queries/useAccounts";
 import { Account } from "@/types";
 import { useTranslation } from "react-i18next";
 import { logger } from "@/lib/logger";
@@ -22,6 +22,7 @@ interface TransferModalProps {
 }
 
 export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalProps) {
+  const { accounts } = useAccounts();
   const [formData, setFormData] = useState({
     fromAccountId: "",
     toAccountId: "",
@@ -30,7 +31,6 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-  const accounts = useAccountStore((state) => state.accounts);
   const { t } = useTranslation();
 
   // Contas de origem podem ser qualquer tipo, exceto crédito.

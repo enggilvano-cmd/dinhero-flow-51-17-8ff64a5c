@@ -27,7 +27,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
-import { useAccountStore } from "@/stores/AccountStore";
+import { useAccounts } from "@/hooks/queries/useAccounts";
 import { ImportAccountsModal } from "@/components/ImportAccountsModal";
 import { loadXLSX } from "@/lib/lazyImports";
 import { useTranslation } from 'react-i18next';
@@ -52,7 +52,7 @@ export function AccountsPage({
   onImportAccounts,
   initialFilterType = "all",
 }: AccountsPageProps) {
-  const accounts = useAccountStore((state) => state.accounts);
+  const { accounts } = useAccounts();
   const { t } = useTranslation();
   const { formatCurrency: formatCurrencyFromSettings } = useSettings();
 
