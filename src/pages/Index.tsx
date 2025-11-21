@@ -1109,13 +1109,7 @@ const PlaniFlowApp = () => {
           />
         );
       case "accounting":
-        return (
-          <AccountingPage
-            transactions={transactions}
-            accounts={accounts}
-            categories={categories}
-          />
-        );
+        return <AccountingPage />;
       case "profile":
         return <UserProfile />;
       case "settings":
