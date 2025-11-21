@@ -57,6 +57,8 @@ interface TrialBalanceEntry {
 export function AccountingReportsPage() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
+  const [initializing, setInitializing] = useState(false);
+  const [needsInitialization, setNeedsInitialization] = useState(false);
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
   const [chartOfAccounts, setChartOfAccounts] = useState<ChartAccount[]>([]);
   
@@ -69,9 +71,62 @@ export function AccountingReportsPage() {
     loadData();
   }, [startDate, endDate]);
 
+  const initializeChartOfAccounts = async () => {
+    try {
+      setInitializing(true);
+      
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Usuário não autenticado');
+
+      const { error } = await supabase.rpc('initialize_chart_of_accounts', {
+        p_user_id: user.id
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Plano de Contas Inicializado",
+        description: "O plano de contas contábil foi criado com sucesso!",
+      });
+
+      setNeedsInitialization(false);
+      await loadData();
+    } catch (error) {
+      console.error("Erro ao inicializar plano de contas:", error);
+      toast({
+        title: "Erro na inicialização",
+        description: "Não foi possível inicializar o plano de contas.",
+        variant: "destructive",
+      });
+    } finally {
+      setInitializing(false);
+    }
+  };
+
   const loadData = async () => {
     try {
       setLoading(true);
+
+      // Buscar plano de contas primeiro
+      const { data: accounts, error: accountsError } = await supabase
+        .from("chart_of_accounts")
+        .select("*")
+        .eq("is_active", true)
+        .order("code");
+
+      if (accountsError) throw accountsError;
+
+      // Se não houver contas, precisa inicializar
+      if (!accounts || accounts.length === 0) {
+        setNeedsInitialization(true);
+        setChartOfAccounts([]);
+        setJournalEntries([]);
+        setLoading(false);
+        return;
+      }
+
+      setChartOfAccounts(accounts || []);
+      setNeedsInitialization(false);
 
       // Buscar journal_entries com relacionamentos
       const { data: entries, error: entriesError } = await supabase
@@ -88,17 +143,7 @@ export function AccountingReportsPage() {
 
       if (entriesError) throw entriesError;
 
-      // Buscar plano de contas
-      const { data: accounts, error: accountsError } = await supabase
-        .from("chart_of_accounts")
-        .select("*")
-        .eq("is_active", true)
-        .order("code");
-
-      if (accountsError) throw accountsError;
-
       setJournalEntries((entries || []) as JournalEntry[]);
-      setChartOfAccounts(accounts || []);
     } catch (error) {
       console.error("Erro ao carregar dados contábeis:", error);
       toast({
@@ -251,6 +296,42 @@ export function AccountingReportsPage() {
         <Card>
           <CardContent className="p-12 text-center">
             <p className="text-muted-foreground">Carregando relatórios contábeis...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Mostrar opção de inicialização se necessário
+  if (needsInitialization) {
+    return (
+      <div className="space-y-6">
+        <Card className="border-primary">
+          <CardHeader>
+            <CardTitle>Plano de Contas Não Inicializado</CardTitle>
+            <CardDescription>
+              Para utilizar os relatórios contábeis, é necessário inicializar o Plano de Contas.
+              Isso criará a estrutura contábil padrão (Ativo, Passivo, Receitas, Despesas, etc.).
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="p-4 bg-muted rounded-lg">
+              <h4 className="font-semibold mb-2">O que será criado:</h4>
+              <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+                <li>Contas de Ativo (Caixa, Bancos, Investimentos)</li>
+                <li>Contas de Passivo (Fornecedores, Empréstimos)</li>
+                <li>Contas de Receita (Vendas, Serviços)</li>
+                <li>Contas de Despesa (Operacionais, Administrativas)</li>
+                <li>Contas de Patrimônio Líquido</li>
+              </ul>
+            </div>
+            <Button 
+              onClick={initializeChartOfAccounts} 
+              disabled={initializing}
+              className="w-full"
+            >
+              {initializing ? "Inicializando..." : "Inicializar Plano de Contas"}
+            </Button>
           </CardContent>
         </Card>
       </div>
