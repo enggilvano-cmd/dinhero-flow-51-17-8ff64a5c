@@ -30,8 +30,8 @@ interface FinancialEvolutionChartProps {
 }
 
 interface DotProps {
-  cx: number;
-  cy: number;
+  cx?: number;
+  cy?: number;
   payload?: {
     saldo?: number;
     month?: string;

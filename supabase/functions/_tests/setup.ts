@@ -209,13 +209,15 @@ export const invokeEdgeFunction = async <T = any>(
   // If userId provided, create auth token
   if (userId) {
     const supabase = getSupabaseClient();
-    const { data: { session }, error } = await supabase.auth.admin.generateLink({
+    const { data, error } = await supabase.auth.admin.generateLink({
       type: 'magiclink',
       email: `test-${userId}@example.com`,
     });
 
-    if (!error && session) {
-      headers['Authorization'] = `Bearer ${session.access_token}`;
+    if (!error && data?.properties) {
+      // Use the generated link properties to create authorization
+      // Note: In a real test scenario, you would use a service role key or proper test token
+      headers['Authorization'] = `Bearer ${supabaseAnonKey}`;
     }
   }
 

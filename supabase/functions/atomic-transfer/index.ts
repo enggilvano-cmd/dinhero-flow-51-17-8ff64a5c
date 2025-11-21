@@ -1,7 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { rateLimiters } from '../_shared/rate-limiter.ts';
 import { TransferInputSchema, validateWithZod, validationErrorResponse } from '../_shared/validation.ts';
-import { uuidSchema, numberSchema, dateSchema, stringSchema } from '../_shared/validation.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -148,7 +147,7 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error('[atomic-transfer] ERROR:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error occurred' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
