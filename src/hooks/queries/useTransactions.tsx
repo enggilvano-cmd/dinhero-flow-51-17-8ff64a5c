@@ -9,6 +9,16 @@ import { createDateFromString } from '@/lib/dateUtils';
 interface UseTransactionsParams {
   page?: number;
   pageSize?: number;
+  search?: string;
+  type?: 'income' | 'expense' | 'transfer' | 'all';
+  accountId?: string;
+  categoryId?: string;
+  status?: 'pending' | 'completed' | 'all';
+  accountType?: 'checking' | 'savings' | 'credit' | 'investment' | 'all';
+  dateFrom?: string;
+  dateTo?: string;
+  sortBy?: 'date' | 'amount';
+  sortOrder?: 'asc' | 'desc';
   enabled?: boolean;
 }
 
@@ -56,38 +66,87 @@ interface TransactionWithRelations extends Transaction {
 }
 
 export function useTransactions(params: UseTransactionsParams = {}) {
-  const { page = 0, pageSize = 50, enabled = true } = params;
+  const {
+    page = 0,
+    pageSize = 50,
+    search = '',
+    type = 'all',
+    accountId = 'all',
+    categoryId = 'all',
+    status = 'all',
+    accountType = 'all',
+    dateFrom,
+    dateTo,
+    sortBy = 'date',
+    sortOrder = 'desc',
+    enabled = true
+  } = params;
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  // Query for total count
+  // Query for total count with filters
   const countQuery = useQuery({
-    queryKey: [...queryKeys.transactions(), 'count'],
+    queryKey: [...queryKeys.transactions(), 'count', search, type, accountId, categoryId, status, accountType, dateFrom, dateTo],
     queryFn: async () => {
       if (!user) return 0;
 
-      const { count, error } = await supabase
+      let query = supabase
         .from('transactions')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user.id);
+
+      // Apply filters
+      if (search) {
+        query = query.ilike('description', `%${search}%`);
+      }
+
+      if (type !== 'all') {
+        if (type === 'transfer') {
+          query = query.not('to_account_id', 'is', null);
+        } else {
+          query = query.eq('type', type).is('to_account_id', null);
+        }
+      }
+
+      if (accountId !== 'all') {
+        query = query.eq('account_id', accountId);
+      }
+
+      if (categoryId !== 'all') {
+        query = query.eq('category_id', categoryId);
+      }
+
+      if (status !== 'all') {
+        query = query.eq('status', status);
+      }
+
+      if (dateFrom) {
+        query = query.gte('date', dateFrom);
+      }
+
+      if (dateTo) {
+        query = query.lte('date', dateTo);
+      }
+
+      const { count, error } = await query;
 
       if (error) throw error;
       return count || 0;
     },
     enabled: !!user && enabled,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 30 * 1000, // 30 seconds for count queries
   });
 
-  // Query for paginated data
+  // Query for paginated data with filters
   const query = useQuery({
-    queryKey: [...queryKeys.transactions(), page, pageSize],
+    queryKey: [...queryKeys.transactions(), page, pageSize, search, type, accountId, categoryId, status, accountType, dateFrom, dateTo, sortBy, sortOrder],
     queryFn: async () => {
       if (!user) return [];
 
       const from = page * pageSize;
       const to = from + pageSize - 1;
 
-      const { data, error } = await supabase
+      let query = supabase
         .from('transactions')
         .select(`
           id,
@@ -131,23 +190,73 @@ export function useTransactions(params: UseTransactionsParams = {}) {
             color
           )
         `)
-        .eq('user_id', user.id)
-        .order('date', { ascending: false })
-        .order('created_at', { ascending: false })
-        .range(from, to);
+        .eq('user_id', user.id);
+
+      // Apply filters
+      if (search) {
+        query = query.ilike('description', `%${search}%`);
+      }
+
+      if (type !== 'all') {
+        if (type === 'transfer') {
+          query = query.not('to_account_id', 'is', null);
+        } else {
+          query = query.eq('type', type).is('to_account_id', null);
+        }
+      }
+
+      if (accountId !== 'all') {
+        query = query.eq('account_id', accountId);
+      }
+
+      if (categoryId !== 'all') {
+        query = query.eq('category_id', categoryId);
+      }
+
+      if (status !== 'all') {
+        query = query.eq('status', status);
+      }
+
+      if (dateFrom) {
+        query = query.gte('date', dateFrom);
+      }
+
+      if (dateTo) {
+        query = query.lte('date', dateTo);
+      }
+
+      // Apply sorting
+      const ascending = sortOrder === 'asc';
+      if (sortBy === 'date') {
+        query = query.order('date', { ascending }).order('created_at', { ascending });
+      } else if (sortBy === 'amount') {
+        query = query.order('amount', { ascending });
+      }
+
+      // Apply pagination
+      query = query.range(from, to);
+
+      const { data, error } = await query;
 
       if (error) throw error;
 
-      return (data || []).map((trans) => ({
+      let results = (data || []).map((trans) => ({
         ...trans,
         date: createDateFromString(trans.date),
         category: Array.isArray(trans.categories) ? trans.categories[0] : trans.categories,
         account: Array.isArray(trans.accounts) ? trans.accounts[0] : trans.accounts,
         to_account: Array.isArray(trans.to_accounts) ? trans.to_accounts[0] : trans.to_accounts,
       })) as TransactionWithRelations[];
+
+      // Filter by account type client-side (since we need the joined account data)
+      if (accountType !== 'all') {
+        results = results.filter(t => t.account?.type === accountType);
+      }
+
+      return results;
     },
     enabled: !!user && enabled,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 30 * 1000, // 30 seconds
   });
 
   const addMutation = useMutation({

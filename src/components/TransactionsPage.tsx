@@ -19,7 +19,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Label } from "@/components/ui/label"; // Importação adicionada
+import { Label } from "@/components/ui/label";
 import {
   Plus,
   Search,
@@ -37,6 +37,7 @@ import {
   DollarSign,
   ChevronLeft,
   ChevronRight,
+  CheckCircle,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -47,12 +48,10 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { ResponsiveTable } from "@/components/ui/responsive-table";
 import { PaginationControls } from "@/components/ui/pagination-controls";
-// Interfaces moved to be inline as we're using Supabase types
 import {
   format,
   startOfMonth,
   endOfMonth,
-  isWithinInterval,
   addMonths,
   subMonths,
 } from "date-fns";
@@ -61,7 +60,6 @@ import { cn } from "@/lib/utils";
 import { loadXLSX } from "@/lib/lazyImports";
 import { ImportTransactionsModal } from "./ImportTransactionsModal";
 import { MarkAsPaidModal } from "./MarkAsPaidModal";
-import { CheckCircle } from "lucide-react";
 import { InstallmentEditScopeDialog, EditScope } from "./InstallmentEditScopeDialog";
 
 interface TransactionsPageProps {
@@ -73,19 +71,32 @@ interface TransactionsPageProps {
   onDeleteTransaction: (transactionId: string, scope?: EditScope) => void;
   onImportTransactions: (transactions: any[], transactionsToReplace: string[]) => void;
   onMarkAsPaid?: (transaction: any) => Promise<void>;
-  initialFilterType?: "income" | "expense" | "transfer" | "all";
-  initialFilterStatus?: "all" | "pending" | "completed";
-  initialDateFilter?: "all" | "current_month" | "month_picker" | "custom";
-  initialFilterAccountType?: "all" | "checking" | "savings" | "credit";
-  initialSelectedMonth?: Date;
-  initialCustomStartDate?: Date;
-  initialCustomEndDate?: Date;
   currentPage: number;
   pageSize: number;
   totalCount: number;
   pageCount: number;
   onPageChange: (page: number) => void;
   onPageSizeChange: (pageSize: number) => void;
+  search: string;
+  onSearchChange: (search: string) => void;
+  filterType: "all" | "income" | "expense" | "transfer";
+  onFilterTypeChange: (type: "all" | "income" | "expense" | "transfer") => void;
+  filterAccount: string;
+  onFilterAccountChange: (accountId: string) => void;
+  filterCategory: string;
+  onFilterCategoryChange: (categoryId: string) => void;
+  filterStatus: "all" | "pending" | "completed";
+  onFilterStatusChange: (status: "all" | "pending" | "completed") => void;
+  filterAccountType: string;
+  onFilterAccountTypeChange: (type: string) => void;
+  dateFrom?: string;
+  dateTo?: string;
+  onDateFromChange: (date: string | undefined) => void;
+  onDateToChange: (date: string | undefined) => void;
+  sortBy: "date" | "amount";
+  onSortByChange: (sortBy: "date" | "amount") => void;
+  sortOrder: "asc" | "desc";
+  onSortOrderChange: (order: "asc" | "desc") => void;
 }
 
 export function TransactionsPage({
@@ -97,51 +108,42 @@ export function TransactionsPage({
   onDeleteTransaction,
   onImportTransactions,
   onMarkAsPaid,
-  initialFilterType = "all",
-  initialFilterStatus = "all",
-  initialDateFilter = "all",
-  initialFilterAccountType = "all",
-  initialSelectedMonth,
-  initialCustomStartDate,
-  initialCustomEndDate,
   currentPage,
   pageSize,
   totalCount,
   pageCount,
   onPageChange,
   onPageSizeChange,
+  search,
+  onSearchChange,
+  filterType,
+  onFilterTypeChange,
+  filterAccount,
+  onFilterAccountChange,
+  filterCategory,
+  onFilterCategoryChange,
+  filterStatus,
+  onFilterStatusChange,
+  onFilterAccountTypeChange,
+  onDateFromChange,
+  onDateToChange,
+  sortBy,
+  onSortByChange,
+  sortOrder,
+  onSortOrderChange,
 }: TransactionsPageProps) {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterType, setFilterType] =
-    useState<"all" | "income" | "expense" | "transfer">(initialFilterType);
-  const [filterAccount, setFilterAccount] = useState<string>("all");
-  const [filterCategory, setFilterCategory] = useState<string>("all");
   const [markAsPaidModalOpen, setMarkAsPaidModalOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<any | null>(null);
   const [deleteScopeDialogOpen, setDeleteScopeDialogOpen] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState<any | null>(null);
-  const [filterStatus, setFilterStatus] = useState<
-    "all" | "pending" | "completed"
-  >(initialFilterStatus);
-  const [filterAccountType, setFilterAccountType] = useState<string>(
-    initialFilterAccountType,
-  );
   const [dateFilter, setDateFilter] = useState<
     "all" | "current_month" | "month_picker" | "custom"
-  >(initialDateFilter);
-  const [selectedMonth, setSelectedMonth] = useState<Date>(
-    initialSelectedMonth || new Date(),
-  );
-  const [customStartDate, setCustomStartDate] = useState<Date | undefined>(
-    initialCustomStartDate,
-  );
-  const [customEndDate, setCustomEndDate] = useState<Date | undefined>(
-    initialCustomEndDate,
-  );
+  >("all");
+  const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
+  const [customStartDate, setCustomStartDate] = useState<Date | undefined>(undefined);
+  const [customEndDate, setCustomEndDate] = useState<Date | undefined>(undefined);
   const [startDatePickerOpen, setStartDatePickerOpen] = useState(false);
   const [endDatePickerOpen, setEndDatePickerOpen] = useState(false);
-  const [sortBy, setSortBy] = useState<"date" | "amount">("date");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [importModalOpen, setImportModalOpen] = useState(false);
 
   const { toast } = useToast();
@@ -234,107 +236,42 @@ export function TransactionsPage({
     return accounts.filter((account: any) => account.type === filterAccountType);
   }, [accounts, filterAccountType]);
 
-  const filteredAndSortedTransactions = useMemo(() => {
-    let filtered = transactions.filter((transaction) => {
-      const transactionDate =
-        typeof transaction.date === "string"
-          ? createDateFromString(transaction.date)
-          : transaction.date;
+  // Handle date filter changes
+  const handleDateFilterChange = (value: string) => {
+    setDateFilter(value as any);
+    
+    if (value === "current_month") {
+      const now = new Date();
+      const start = startOfMonth(now);
+      const end = endOfMonth(now);
+      onDateFromChange(format(start, 'yyyy-MM-dd'));
+      onDateToChange(format(end, 'yyyy-MM-dd'));
+    } else if (value === "all") {
+      onDateFromChange(undefined);
+      onDateToChange(undefined);
+    }
+  };
 
-      const matchesSearch =
-        transaction.description
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
-        getCategoryName(transaction.category_id, transaction.to_account_id != null)
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase());
+  const handleMonthChange = (direction: 'prev' | 'next') => {
+    const newMonth = direction === 'prev' ? subMonths(selectedMonth, 1) : addMonths(selectedMonth, 1);
+    setSelectedMonth(newMonth);
+    const start = startOfMonth(newMonth);
+    const end = endOfMonth(newMonth);
+    onDateFromChange(format(start, 'yyyy-MM-dd'));
+    onDateToChange(format(end, 'yyyy-MM-dd'));
+  };
 
-      // Check transaction type - transfers are now stored as income/expense with to_account_id
-      const isTransfer = transaction.to_account_id != null;
-
-      const matchesType =
-        filterType === "all" ||
-        (filterType === "transfer" && isTransfer) ||
-        (filterType !== "transfer" &&
-          !isTransfer &&
-          transaction.type === filterType);
-      const matchesAccount =
-        filterAccount === "all" || transaction.account_id === filterAccount;
-      const matchesCategory =
-        filterCategory === "all" ||
-        transaction.category_id === filterCategory;
-      const matchesStatus =
-        filterStatus === "all" || transaction.status === filterStatus;
-
-      // Filter by account type
-      const account = accounts.find((acc) => acc.id === transaction.account_id);
-      const matchesAccountType =
-        filterAccountType === "all" ||
-        (account && account.type === filterAccountType);
-
-      let matchesPeriod = true;
-      // Filtro por data
-      if (dateFilter === "current_month") {
-        const now = new Date();
-        const start = startOfMonth(now);
-        const end = endOfMonth(now);
-        matchesPeriod = isWithinInterval(transactionDate, { start, end });
-      } else if (dateFilter === "month_picker") {
-        const start = startOfMonth(selectedMonth);
-        const end = endOfMonth(selectedMonth);
-        matchesPeriod = isWithinInterval(transactionDate, { start, end });
-      } else if (dateFilter === "custom" && customStartDate && customEndDate) {
-        matchesPeriod = isWithinInterval(transactionDate, {
-          start: customStartDate,
-          end: customEndDate,
-        });
-      }
-
-      return (
-        matchesSearch &&
-        matchesType &&
-        matchesAccount &&
-        matchesCategory &&
-        matchesStatus &&
-        matchesAccountType &&
-        matchesPeriod
-      );
-    });
-
-    // Sort transactions
-    filtered.sort((a, b) => {
-      let comparison = 0;
-      const aDate =
-        typeof a.date === "string" ? createDateFromString(a.date) : a.date;
-      const bDate =
-        typeof b.date === "string" ? createDateFromString(b.date) : b.date;
-
-      if (sortBy === "date") {
-        comparison = aDate.getTime() - bDate.getTime();
-      } else if (sortBy === "amount") {
-        comparison = a.amount - b.amount;
-      }
-
-      return sortOrder === "asc" ? comparison : -comparison;
-    });
-
-    return filtered;
-  }, [
-    transactions,
-    accounts,
-    searchTerm,
-    filterType,
-    filterAccount,
-    filterCategory,
-    filterStatus,
-    filterAccountType,
-    dateFilter,
-    selectedMonth,
-    customStartDate,
-    customEndDate,
-    sortBy,
-    sortOrder,
-  ]);
+  const handleCustomDateChange = (startDate: Date | undefined, endDate: Date | undefined) => {
+    setCustomStartDate(startDate);
+    setCustomEndDate(endDate);
+    if (startDate && endDate) {
+      onDateFromChange(format(startDate, 'yyyy-MM-dd'));
+      onDateToChange(format(endDate, 'yyyy-MM-dd'));
+    } else {
+      onDateFromChange(undefined);
+      onDateToChange(undefined);
+    }
+  };
 
   const handleDeleteTransaction = (transaction: any) => {
     // Verifica se é uma transação parcelada pelo total de parcelas
@@ -405,7 +342,7 @@ export function TransactionsPage({
   };
 
   const totals = useMemo(() => {
-    return filteredAndSortedTransactions.reduce(
+    return transactions.reduce(
       (acc, transaction) => {
         // Skip transfers as they don't affect total income/expenses
         const isTransfer = transaction.to_account_id != null;
@@ -421,12 +358,12 @@ export function TransactionsPage({
       },
       { income: 0, expenses: 0 },
     );
-  }, [filteredAndSortedTransactions]);
+  }, [transactions]);
 
   const exportToExcel = async () => {
     const XLSX = await loadXLSX();
     
-    const dataToExport = filteredAndSortedTransactions.map((transaction) => {
+    const dataToExport = transactions.map((transaction) => {
       const transactionDate =
         typeof transaction.date === "string"
           ? createDateFromString(transaction.date)
@@ -493,7 +430,7 @@ export function TransactionsPage({
 
     toast({
       title: t("common.success"),
-      description: t('transactions.exportSuccess', { count: filteredAndSortedTransactions.length }),
+      description: t('transactions.exportSuccess', { count: transactions.length }),
     });
   };
 
@@ -793,7 +730,7 @@ export function TransactionsPage({
               <Label htmlFor="filterType" className="text-caption">{t("transactions.type")}</Label>
               <Select
                 value={filterType}
-                onValueChange={(value: any) => setFilterType(value)}
+                onValueChange={(value: any) => onFilterTypeChange(value)}
               >
                 <SelectTrigger className="touch-target mt-2" id="filterType">
                   <SelectValue placeholder={t('transactions.type')} />
@@ -812,7 +749,7 @@ export function TransactionsPage({
               <Label htmlFor="filterStatus" className="text-caption">{t("transactions.status")}</Label>
               <Select
                 value={filterStatus}
-                onValueChange={(value: any) => setFilterStatus(value)}
+                onValueChange={(value: any) => onFilterStatusChange(value)}
               >
                 <SelectTrigger className="touch-target mt-2" id="filterStatus">
                   <SelectValue placeholder={t('transactions.status')} />
@@ -830,7 +767,7 @@ export function TransactionsPage({
               <Label htmlFor="filterAccountType" className="text-caption">{t("accounts.accountType")}</Label>
               <Select
                 value={filterAccountType}
-                onValueChange={setFilterAccountType}
+                onValueChange={(value: string) => onFilterAccountTypeChange(value)}
               >
                 <SelectTrigger
                   className="touch-target mt-2"
@@ -851,7 +788,7 @@ export function TransactionsPage({
             {/* Conta Específica */}
             <div>
               <Label htmlFor="filterAccount" className="text-caption">{t("transactions.account")}</Label>
-              <Select value={filterAccount} onValueChange={setFilterAccount}>
+              <Select value={filterAccount} onValueChange={onFilterAccountChange}>
                 <SelectTrigger
                   className="touch-target mt-2"
                   id="filterAccount"
@@ -882,7 +819,7 @@ export function TransactionsPage({
               <Label htmlFor="filterCategory" className="text-caption">{t("transactions.category")}</Label>
               <Select
                 value={filterCategory}
-                onValueChange={setFilterCategory}
+                onValueChange={onFilterCategoryChange}
               >
                 <SelectTrigger
                   className="touch-target mt-2"
@@ -914,10 +851,7 @@ export function TransactionsPage({
               <Label htmlFor="dateFilter" className="text-caption">{t("dateFilter.custom")}</Label>
               <Select
                 value={dateFilter}
-                onValueChange={
-                  (value: "all" | "current_month" | "month_picker" | "custom") =>
-                    setDateFilter(value)
-                }
+                onValueChange={handleDateFilterChange}
               >
                 <SelectTrigger className="touch-target mt-2" id="dateFilter">
                   <SelectValue placeholder={t('dashboard.period')} />
@@ -937,7 +871,7 @@ export function TransactionsPage({
               <div className="flex gap-1 mt-2">
                 <Select
                   value={sortBy}
-                  onValueChange={(value: any) => setSortBy(value)}
+                  onValueChange={(value: any) => onSortByChange(value)}
                 >
                   <SelectTrigger className="flex-1 touch-target">
                     <SelectValue />
@@ -952,7 +886,7 @@ export function TransactionsPage({
                   size="icon"
                   className="touch-target"
                   onClick={() =>
-                    setSortOrder(sortOrder === "asc" ? "desc" : "asc")
+                    onSortOrderChange(sortOrder === "asc" ? "desc" : "asc")
                   }
                 >
                   {sortOrder === "asc" ? "↑" : "↓"}
@@ -968,8 +902,8 @@ export function TransactionsPage({
                 <Input
                   id="search"
                   placeholder={t("transactions.searchPlaceholder")}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  value={search}
+                  onChange={(e) => onSearchChange(e.target.value)}
                   className="pl-10 touch-target"
                 />
               </div>
@@ -983,7 +917,7 @@ export function TransactionsPage({
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setSelectedMonth((prev) => subMonths(prev, 1))}
+                  onClick={() => handleMonthChange('prev')}
                   className="h-6 w-6 p-0 flex-shrink-0"
                 >
                   <ChevronLeft className="h-3 w-3" />
@@ -996,7 +930,7 @@ export function TransactionsPage({
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setSelectedMonth((prev) => addMonths(prev, 1))}
+                  onClick={() => handleMonthChange('next')}
                   className="h-6 w-6 p-0 flex-shrink-0"
                 >
                   <ChevronRight className="h-3 w-3" />
