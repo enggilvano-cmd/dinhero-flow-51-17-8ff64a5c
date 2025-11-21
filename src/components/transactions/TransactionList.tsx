@@ -54,25 +54,26 @@ export function TransactionList({
 
   const columns = [
     {
+      key: "date",
       header: t("transactions.table.date"),
       accessorKey: "date",
-      cell: ({ row }: any) => {
-        const date = row.original.date;
+      render: (row: any) => {
+        const date = row.date;
         return format(date, "dd/MM/yyyy", { locale: ptBR });
       },
     },
     {
+      key: "description",
       header: t("transactions.table.description"),
       accessorKey: "description",
-      cell: ({ row }: any) => {
-        const transaction = row.original;
+      render: (row: any) => {
         return (
           <div className="flex items-center gap-2">
-            {getTypeIcon(transaction.type)}
-            <span>{transaction.description}</span>
-            {transaction.installments && transaction.installments > 1 && (
+            {getTypeIcon(row.type)}
+            <span>{row.description}</span>
+            {row.installments && row.installments > 1 && (
               <Badge variant="secondary" className="ml-2">
-                {transaction.current_installment}/{transaction.installments}
+                {row.current_installment}/{row.installments}
               </Badge>
             )}
           </div>
@@ -80,51 +81,54 @@ export function TransactionList({
       },
     },
     {
+      key: "category",
       header: t("transactions.table.category"),
       accessorKey: "category_id",
-      cell: ({ row }: any) => getCategoryName(row.original.category_id),
+      render: (row: any) => getCategoryName(row.category_id),
     },
     {
+      key: "account",
       header: t("transactions.table.account"),
       accessorKey: "account_id",
-      cell: ({ row }: any) => getAccountName(row.original.account_id),
+      render: (row: any) => getAccountName(row.account_id),
     },
     {
+      key: "amount",
       header: t("transactions.table.amount"),
       accessorKey: "amount",
-      cell: ({ row }: any) => {
-        const transaction = row.original;
+      render: (row: any) => {
         const colorClass =
-          transaction.type === "income"
+          row.type === "income"
             ? "text-success"
-            : transaction.type === "expense"
+            : row.type === "expense"
             ? "text-destructive"
             : "text-primary";
         return (
           <span className={`font-medium ${colorClass}`}>
-            {formatCurrency(transaction.amount, currency)}
+            {formatCurrency(row.amount, currency)}
           </span>
         );
       },
     },
     {
+      key: "status",
       header: t("transactions.table.status"),
       accessorKey: "status",
-      cell: ({ row }: any) => {
-        const status = row.original.status;
+      render: (row: any) => {
         return (
-          <Badge variant={status === "completed" ? "default" : "secondary"}>
-            {t(`transactions.status.${status}`)}
+          <Badge variant={row.status === "completed" ? "default" : "secondary"}>
+            {t(`transactions.status.${row.status}`)}
           </Badge>
         );
       },
     },
     {
+      key: "actions",
       header: t("common.actions"),
-      id: "actions",
-      cell: ({ row }: any) => (
+      accessorKey: "id",
+      render: (row: any) => (
         <TransactionActions
-          transaction={row.original}
+          transaction={row}
           onEdit={onEdit}
           onDelete={onDelete}
           onMarkAsPaid={onMarkAsPaid}
@@ -138,7 +142,12 @@ export function TransactionList({
     <ResponsiveTable
       data={transactions}
       columns={columns}
-      emptyMessage={t("transactions.noTransactions")}
+      keyField="id"
+      emptyState={
+        <div className="text-center py-8 text-muted-foreground">
+          <p>{t("transactions.noTransactions")}</p>
+        </div>
+      }
     />
   );
 }

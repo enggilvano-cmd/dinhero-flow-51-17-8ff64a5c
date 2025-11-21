@@ -15,8 +15,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Label } from "@/components/ui/label";
-import { Search, Calendar, CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
-import { format, startOfMonth, endOfMonth, addMonths, subMonths } from "date-fns";
+import { Search, CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import { format, addMonths, subMonths } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 
