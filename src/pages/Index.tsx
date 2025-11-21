@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { Layout } from "@/components/Layout";
 import { Dashboard } from "@/components/Dashboard";
 import { AccountsPage } from "@/components/AccountsPage";
@@ -26,40 +26,38 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { MigrationWarning } from "@/components/MigrationWarning";
-import { createDateFromString } from "@/lib/dateUtils";
 import { useAccountStore } from "@/stores/AccountStore";
 import { useTransactionStore, AppTransaction } from "@/stores/TransactionStore"; // Importa AppTransaction
 import { Account, Transaction } from "@/types";
 import { logger } from "@/lib/logger";
+import { useAccounts } from "@/hooks/queries/useAccounts";
+import { useTransactions } from "@/hooks/queries/useTransactions";
+import { useCategories } from "@/hooks/useCategories";
 
 const PlaniFlowApp = () => {
   const { settings, updateSettings } = useSettings();
-  const { user, loading, isAdmin } = useAuth();
+  const { user, loading: authLoading, isAdmin } = useAuth();
   const { toast } = useToast();
   const [currentPage, setCurrentPage] = useState("dashboard");
 
-  // Lendo o estado global dos stores
-  const accounts = useAccountStore((state) => state.accounts);
+  // React Query hooks para data fetching otimizado
+  const { accounts, isLoading: loadingAccounts, refetch: refetchAccounts } = useAccounts();
+  const { transactions, isLoading: loadingTransactions, refetch: refetchTransactions } = useTransactions();
+  const { categories, loading: loadingCategories } = useCategories();
+
+  // Zustand stores para estado global (sincronizado pelos hooks)
   const setGlobalAccounts = useAccountStore((state) => state.setAccounts);
-  const updateGlobalAccounts = useAccountStore(
-    (state) => state.updateAccounts
-  );
+  const updateGlobalAccounts = useAccountStore((state) => state.updateAccounts);
+  const setGlobalTransactions = useTransactionStore((state) => state.setTransactions);
+  const addGlobalTransactions = useTransactionStore((state) => state.addTransactions);
+  const updateGlobalTransaction = useTransactionStore((state) => state.updateTransaction);
+  const removeGlobalTransactions = useTransactionStore((state) => state.removeTransactions);
 
-  const transactions = useTransactionStore((state) => state.transactions);
-  const setGlobalTransactions = useTransactionStore(
-    (state) => state.setTransactions
+  // Computed loading state otimizado com useMemo
+  const loadingData = useMemo(() => 
+    authLoading || loadingAccounts || loadingTransactions || loadingCategories,
+    [authLoading, loadingAccounts, loadingTransactions, loadingCategories]
   );
-  const addGlobalTransactions = useTransactionStore(
-    (state) => state.addTransactions
-  );
-  const updateGlobalTransaction = useTransactionStore(
-    (state) => state.updateTransaction
-  );
-  const removeGlobalTransactions = useTransactionStore(
-    (state) => state.removeTransactions
-  );
-
-  const [categories, setCategories] = useState<any[]>([]);
 
   // Modal states
   const [addAccountModalOpen, setAddAccountModalOpen] = useState(false);
@@ -71,12 +69,9 @@ const PlaniFlowApp = () => {
   const [editTransactionModalOpen, setEditTransactionModalOpen] = useState(false);
   const [transferModalOpen, setTransferModalOpen] = useState(false);
   const [creditPaymentModalOpen, setCreditPaymentModalOpen] = useState(false);
-  const [editingAccount, setEditingAccount] = useState<any | null>(null);
-  const [editingTransaction, setEditingTransaction] = useState<any | null>(null);
-  const [payingCreditAccount, setPayingCreditAccount] = useState<any | null>(
-    null
-  );
-  const [loadingData, setLoadingData] = useState(true);
+  const [editingAccount, setEditingAccount] = useState<Account | null>(null);
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+  const [payingCreditAccount, setPayingCreditAccount] = useState<Account | null>(null);
   
   const [currentInvoiceValue, setCurrentInvoiceValue] = useState(0);
   const [nextInvoiceValue, setNextInvoiceValue] = useState(0);
@@ -107,114 +102,16 @@ const PlaniFlowApp = () => {
     Date | undefined
   >(undefined);
 
-  // Load data from Supabase
-  useEffect(() => {
-    if (!user) return;
+  // Otimizado com useCallback para evitar re-renders desnecessários
+  const reloadTransactions = useCallback(() => {
+    refetchTransactions();
+  }, [refetchTransactions]);
 
-    const loadData = async () => {
-      try {
-        setLoadingData(true);
-        // Load accounts
-        const { data: accountsData, error: accountsError } = await supabase
-          .from("accounts")
-          .select("*")
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false });
+  const reloadAccounts = useCallback(() => {
+    refetchAccounts();
+  }, [refetchAccounts]);
 
-        if (accountsError) throw accountsError;
-        const formattedAccounts = (accountsData || []).map((acc) => ({
-          ...acc,
-          limit: acc.limit_amount,
-        }));
-        setGlobalAccounts(formattedAccounts as Account[]);
-
-        // Load categories
-        const { data: categoriesData, error: categoriesError } = await supabase
-          .from("categories")
-          .select("*")
-          .eq("user_id", user.id);
-
-        if (categoriesError) throw categoriesError;
-        setCategories(categoriesData || []);
-
-        // Load transactions
-        const { data: transactionsData, error: transactionsError } =
-          await supabase
-            .from("transactions")
-            .select("*")
-            .eq("user_id", user.id)
-            .order("created_at", { ascending: false });
-
-        if (transactionsError) throw transactionsError;
-        const formattedTransactions = (transactionsData || []).map(
-          (trans) => ({
-            ...trans,
-            // Mantém os nomes de colunas do DB
-            // A conversão para camelCase é feita na store ou no componente
-            date: createDateFromString(trans.date),
-          })
-        );
-        setGlobalTransactions(formattedTransactions as Transaction[]);
-      } catch (error) {
-        logger.error("Error loading data:", error);
-      } finally {
-        setLoadingData(false);
-      }
-    };
-
-    loadData();
-  }, [user, setGlobalAccounts, setGlobalTransactions]);
-
-  // Função para recarregar transações
-  const reloadTransactions = async () => {
-    if (!user) return;
-    try {
-      logger.info('🔄 Recarregando transações...');
-      const { data: transactionsData, error: transactionsError } =
-        await supabase
-          .from("transactions")
-          .select("*")
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false });
-
-      if (transactionsError) throw transactionsError;
-      const formattedTransactions = (transactionsData || []).map(
-        (trans) => ({
-          ...trans,
-          date: createDateFromString(trans.date),
-        })
-      );
-      setGlobalTransactions(formattedTransactions as Transaction[]);
-      logger.info('✅ Transações recarregadas:', formattedTransactions.length);
-    } catch (error) {
-      logger.error("Error reloading transactions:", error);
-    }
-  };
-
-  // Função para recarregar contas
-  const reloadAccounts = async () => {
-    if (!user) return;
-    try {
-      logger.info('🔄 Recarregando contas...');
-      const { data: accountsData, error: accountsError } = await supabase
-        .from("accounts")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
-
-      if (accountsError) throw accountsError;
-      const formattedAccounts = (accountsData || []).map((acc) => ({
-        ...acc,
-        limit: acc.limit_amount,
-      }));
-      setGlobalAccounts(formattedAccounts as Account[]);
-      logger.info('✅ Contas recarregadas:', formattedAccounts.length);
-    } catch (error) {
-      logger.error("Error reloading accounts:", error);
-    }
-  };
-
-  const handleEditAccount = async (updatedAccount: any) => {
+  const handleEditAccount = useCallback(async (updatedAccount: Account) => {
     if (!user) return;
     try {
       const { error } = await supabase
@@ -228,9 +125,9 @@ const PlaniFlowApp = () => {
     } catch (error) {
       logger.error("Error updating account:", error);
     }
-  };
+  }, [user, updateGlobalAccounts]);
 
-  const handleDeleteAccount = async (accountId: string) => {
+  const handleDeleteAccount = useCallback(async (accountId: string) => {
     if (!user) return;
     try {
       const { error } = await supabase
@@ -254,13 +151,27 @@ const PlaniFlowApp = () => {
         variant: "destructive",
       });
     }
-  };
+  }, [user, toast, reloadAccounts]);
 
-  const handleImportAccounts = async (accountsData: any[]) => {
+  const handleImportAccounts = useCallback(async (accountsData: Array<{
+    name: string;
+    type: 'checking' | 'savings' | 'credit' | 'investment';
+    balance?: number;
+    color: string;
+    limit_amount?: number;
+    due_date?: number;
+    closing_date?: number;
+  }>) => {
     if (!user) return;
     try {
       const accountsToAdd = accountsData.map(acc => ({
-        ...acc,
+        name: acc.name,
+        type: acc.type,
+        balance: acc.balance || 0,
+        color: acc.color,
+        limit_amount: acc.limit_amount,
+        due_date: acc.due_date,
+        closing_date: acc.closing_date,
         user_id: user.id,
       }));
 
@@ -283,7 +194,7 @@ const PlaniFlowApp = () => {
         variant: "destructive"
       });
     }
-  };
+  }, [user, toast, reloadAccounts]);
 
   const handleAddTransaction = async (transactionData: any) => {
     if (!user) return;
@@ -649,7 +560,7 @@ const PlaniFlowApp = () => {
 
       setGlobalAccounts([]);
       setGlobalTransactions([]);
-      setCategories([]);
+      // Categories will be refetched automatically by React Query
 
       toast({
         title: "Dados limpos",
@@ -1191,7 +1102,7 @@ const PlaniFlowApp = () => {
     }
   };
 
-  if (loading || loadingData) {
+  if (authLoading || loadingData) {
     return (
       <div className="min-h-screen bg-gradient-surface flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
