@@ -27,7 +27,6 @@ import {
   Search,
   TrendingUp,
   TrendingDown,
-  ArrowLeftRight,
   CalendarIcon,
   Download,
   Upload,
@@ -49,8 +48,7 @@ import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { loadXLSX } from "@/lib/lazyImports";
 import { ImportTransactionsModal } from "./ImportTransactionsModal";
-import { MarkAsPaidModal } from "./MarkAsPaidModal";
-import { InstallmentEditScopeDialog, EditScope } from "./InstallmentEditScopeDialog";
+import { EditScope } from "./InstallmentEditScopeDialog";
 
 interface TransactionsPageProps {
   transactions: any[];
@@ -121,10 +119,6 @@ export function TransactionsPage({
   fetchNextPage,
   isFetchingNextPage,
 }: TransactionsPageProps) {
-  const [markAsPaidModalOpen, setMarkAsPaidModalOpen] = useState(false);
-  const [selectedTransaction, setSelectedTransaction] = useState<any | null>(null);
-  const [deleteScopeDialogOpen, setDeleteScopeDialogOpen] = useState(false);
-  const [transactionToDelete, setTransactionToDelete] = useState<any | null>(null);
   const [dateFilter, setDateFilter] = useState<
     "all" | "current_month" | "month_picker" | "custom"
   >("all");
@@ -163,6 +157,32 @@ export function TransactionsPage({
       style: "currency",
       currency: settings.currency,
     }).format(valueInCents / 100); // Dividido por 100
+  };
+
+  // Helper functions for export
+  const getCategoryName = (categoryId: string | null, isTransfer: boolean) => {
+    if (isTransfer) return t("transactions.transfer");
+    if (!categoryId) return "-";
+    const category = categories.find((c) => c.id === categoryId);
+    return category?.name || "-";
+  };
+
+  const getTransactionTypeLabel = (type: string) => {
+    if (type === "income") return t("transactions.income");
+    if (type === "expense") return t("transactions.expense");
+    if (type === "transfer") return t("transactions.transfer");
+    return type;
+  };
+
+  const getAccountName = (accountId: string) => {
+    const account = accounts.find((a) => a.id === accountId);
+    return account?.name || t("transactions.unknownAccount");
+  };
+
+  const getStatusLabel = (status: string) => {
+    if (status === "completed") return t("transactions.completed");
+    if (status === "pending") return t("transactions.pending");
+    return status;
   };
 
   // Filter accounts by type for the account selector
@@ -758,23 +778,6 @@ export function TransactionsPage({
         accounts={accounts}
         transactions={transactions}
         onImportTransactions={onImportTransactions}
-      />
-
-      <MarkAsPaidModal
-        open={markAsPaidModalOpen}
-        onOpenChange={setMarkAsPaidModalOpen}
-        transaction={selectedTransaction}
-        accounts={accounts}
-        onConfirm={handleMarkAsPaid}
-      />
-      
-      <InstallmentEditScopeDialog
-        open={deleteScopeDialogOpen}
-        onOpenChange={setDeleteScopeDialogOpen}
-        onScopeSelected={handleDeleteScopeSelected}
-        currentInstallment={transactionToDelete?.current_installment || 1}
-        totalInstallments={transactionToDelete?.installments || 1}
-        mode="delete"
       />
     </div>
   );
