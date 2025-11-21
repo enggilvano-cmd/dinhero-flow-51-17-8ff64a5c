@@ -4,7 +4,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { Transaction } from '@/types';
 import { logger } from '@/lib/logger';
 import { queryKeys } from '@/lib/queryClient';
-import { useTransactionStore } from '@/stores/TransactionStore';
 import { createDateFromString } from '@/lib/dateUtils';
 
 interface AddTransactionParams {
@@ -32,7 +31,6 @@ interface DeleteTransactionParams {
 export function useTransactions() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const setGlobalTransactions = useTransactionStore((state) => state.setTransactions);
 
   const query = useQuery({
     queryKey: queryKeys.transactions(),
@@ -47,13 +45,10 @@ export function useTransactions() {
 
       if (error) throw error;
 
-      const formattedTransactions = (data || []).map((trans) => ({
+      return (data || []).map((trans) => ({
         ...trans,
         date: createDateFromString(trans.date),
       })) as Transaction[];
-
-      setGlobalTransactions(formattedTransactions);
-      return formattedTransactions;
     },
     enabled: !!user,
     staleTime: 5 * 60 * 1000,

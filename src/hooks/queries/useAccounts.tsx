@@ -4,12 +4,10 @@ import { useAuth } from '@/hooks/useAuth';
 import { Account } from '@/types';
 import { logger } from '@/lib/logger';
 import { queryKeys } from '@/lib/queryClient';
-import { useAccountStore } from '@/stores/AccountStore';
 
 export function useAccounts() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const setGlobalAccounts = useAccountStore((state) => state.setAccounts);
 
   const query = useQuery({
     queryKey: queryKeys.accounts,
@@ -24,13 +22,10 @@ export function useAccounts() {
 
       if (error) throw error;
 
-      const formattedAccounts = (data || []).map((acc) => ({
+      return (data || []).map((acc) => ({
         ...acc,
         limit: acc.limit_amount,
       })) as Account[];
-
-      setGlobalAccounts(formattedAccounts);
-      return formattedAccounts;
     },
     enabled: !!user,
     staleTime: 5 * 60 * 1000,

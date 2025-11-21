@@ -2,18 +2,16 @@ import { create } from 'zustand';
 import { Account, Transaction } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
-// 1. Importar o store de transações e o formatador de data
 import { useTransactionStore } from './TransactionStore';
 import { format } from 'date-fns';
 
 type AddAccountPayload = Omit<Account, 'id' | 'user_id' | 'created_at'>;
 
-// 2. Define os parâmetros para a função de pagamento
 interface PayBillParams {
   creditCardAccountId: string;
   debitAccountId: string;
   amount: number;
-  paymentDate: string; // Formato "YYYY-MM-DD"
+  paymentDate: string;
 }
 
 interface AccountStoreState {
@@ -22,7 +20,6 @@ interface AccountStoreState {
   addAccount: (payload: AddAccountPayload) => Promise<void>;
   updateAccounts: (updatedAccounts: Account | Account[]) => void;
   removeAccount: (accountId: string) => void;
-  // 3. Adiciona a nova ação de pagamento ao state
   payCreditCardBill: (params: PayBillParams) => Promise<{
     updatedCreditAccount: Account;
     updatedDebitAccount: Account;
@@ -72,14 +69,13 @@ export const useAccountStore = create<AccountStoreState>((set, get) => ({
     }
   },
 
-  updateAccounts: (updatedAccounts) =>
-    {
-      const accountsToUpdate = Array.isArray(updatedAccounts) ? updatedAccounts : [updatedAccounts];
-      const updatedMap = new Map(accountsToUpdate.map(acc => [acc.id, acc]));
-      const currentAccounts = get().accounts;
-      const newAccounts = currentAccounts.map(account => updatedMap.get(account.id) || account);
-      set({ accounts: newAccounts });
-    },
+  updateAccounts: (updatedAccounts) => {
+    const accountsToUpdate = Array.isArray(updatedAccounts) ? updatedAccounts : [updatedAccounts];
+    const updatedMap = new Map(accountsToUpdate.map(acc => [acc.id, acc]));
+    const currentAccounts = get().accounts;
+    const newAccounts = currentAccounts.map(account => updatedMap.get(account.id) || account);
+    set({ accounts: newAccounts });
+  },
 
   removeAccount: (accountId) =>
     set((state) => ({
@@ -112,7 +108,6 @@ export const useAccountStore = create<AccountStoreState>((set, get) => ({
       throw error;
     }
 
-    // Atualiza stores
     if (data?.debit_tx && data?.credit_tx) {
       useTransactionStore.getState().addTransactions([data.debit_tx, data.credit_tx] as Transaction[]);
     }
@@ -136,7 +131,6 @@ export const useAccountStore = create<AccountStoreState>((set, get) => ({
     return { updatedCreditAccount, updatedDebitAccount };
   },
 
-  // --- NOVA LÓGICA DE TRANSFERÊNCIA ---
   transferBetweenAccounts: async (
     fromAccountId,
     toAccountId,
@@ -168,7 +162,6 @@ export const useAccountStore = create<AccountStoreState>((set, get) => ({
       throw error;
     }
 
-    // Atualizar transações no store
     if (data?.outgoing && data?.incoming) {
       useTransactionStore.getState().addTransactions([
         { ...data.outgoing, date },
@@ -176,7 +169,6 @@ export const useAccountStore = create<AccountStoreState>((set, get) => ({
       ] as Transaction[]);
     }
 
-    // Atualizar saldos a partir do retorno do recálculo
     set((state) => {
       const updated = state.accounts.map(acc => {
         if (acc.id === fromAccountId && data?.from_balance?.new_balance !== undefined) {
