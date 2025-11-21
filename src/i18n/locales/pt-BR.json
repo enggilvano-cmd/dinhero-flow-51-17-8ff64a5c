@@ -269,7 +269,9 @@
     "selectInvoice": "Selecionar fatura",
     "accountType": "Tipo de Conta",
     "specificAccount": "Conta Específica",
-    "exportSuccess": "{{count}} transações exportadas."
+    "exportSuccess": "{{count}} transações exportadas.",
+    "noMoreTransactions": "Não há mais transações para carregar",
+    "loadMore": "Carregar mais transações"
   },
   "categories": {
     "title": "Categorias",

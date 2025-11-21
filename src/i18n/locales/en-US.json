@@ -269,7 +269,9 @@
     "selectInvoice": "Select invoice",
     "accountType": "Account Type",
     "specificAccount": "Specific Account",
-    "exportSuccess": "{{count}} transactions exported."
+    "exportSuccess": "{{count}} transactions exported.",
+    "noMoreTransactions": "No more transactions to load",
+    "loadMore": "Load more transactions"
   },
   "categories": {
     "title": "Categories",

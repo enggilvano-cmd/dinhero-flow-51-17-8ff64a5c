@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { StatCardsSkeletonGrid } from "@/components/transactions/StatCardSkeleton";
 import { TransactionTableSkeleton } from "@/components/transactions/TransactionTableSkeleton";
 import {
@@ -29,10 +28,6 @@ import {
   TrendingUp,
   TrendingDown,
   ArrowLeftRight,
-  Edit,
-  Trash2,
-  MoreVertical,
-  Calendar,
   CalendarIcon,
   Download,
   Upload,
@@ -40,17 +35,9 @@ import {
   DollarSign,
   ChevronLeft,
   ChevronRight,
-  CheckCircle,
 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
-import { ResponsiveTable } from "@/components/ui/responsive-table";
-import { PaginationControls } from "@/components/ui/pagination-controls";
+import { InfiniteTransactionList } from "@/components/transactions/InfiniteTransactionList";
 import {
   format,
   startOfMonth,
@@ -74,12 +61,7 @@ interface TransactionsPageProps {
   onDeleteTransaction: (transactionId: string, scope?: EditScope) => void;
   onImportTransactions: (transactions: any[], transactionsToReplace: string[]) => void;
   onMarkAsPaid?: (transaction: any) => Promise<void>;
-  currentPage: number;
-  pageSize: number;
   totalCount: number;
-  pageCount: number;
-  onPageChange: (page: number) => void;
-  onPageSizeChange: (pageSize: number) => void;
   search: string;
   onSearchChange: (search: string) => void;
   filterType: "all" | "income" | "expense" | "transfer";
@@ -101,6 +83,9 @@ interface TransactionsPageProps {
   sortOrder: "asc" | "desc";
   onSortOrderChange: (order: "asc" | "desc") => void;
   isLoading?: boolean;
+  hasNextPage?: boolean;
+  fetchNextPage?: () => void;
+  isFetchingNextPage?: boolean;
 }
 
 export function TransactionsPage({
@@ -112,12 +97,7 @@ export function TransactionsPage({
   onDeleteTransaction,
   onImportTransactions,
   onMarkAsPaid,
-  currentPage,
-  pageSize,
   totalCount,
-  pageCount,
-  onPageChange,
-  onPageSizeChange,
   search,
   onSearchChange,
   filterType,
@@ -137,6 +117,9 @@ export function TransactionsPage({
   sortOrder,
   onSortOrderChange,
   isLoading = false,
+  hasNextPage,
+  fetchNextPage,
+  isFetchingNextPage,
 }: TransactionsPageProps) {
   const [markAsPaidModalOpen, setMarkAsPaidModalOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<any | null>(null);
@@ -182,74 +165,6 @@ export function TransactionsPage({
     }).format(valueInCents / 100); // Dividido por 100
   };
 
-  const getTransactionIcon = (type: string) => {
-    switch (type) {
-      case "income":
-        return <TrendingUp className="h-4 w-4 text-success" />;
-      case "expense":
-        return <TrendingDown className="h-4 w-4 text-destructive" />;
-      case "transfer":
-        return <ArrowLeftRight className="h-4 w-4 text-primary" />;
-      default:
-        return <TrendingUp className="h-4 w-4" />;
-    }
-  };
-
-  const getTransactionTypeBadge = (type: string) => {
-    const variants = {
-      income: "default",
-      expense: "destructive",
-      transfer: "secondary",
-    } as const;
-    return variants[type as keyof typeof variants] || "default";
-  };
-
-  const getTransactionTypeLabel = (type: string) => {
-    switch (type) {
-      case "income":
-        return t("transactions.income");
-      case "expense":
-        return t("transactions.expense");
-      case "transfer":
-        return t("transactions.transfer");
-      default:
-        return type;
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "pending":
-        return "destructive";
-      case "completed":
-        return "default";
-      default:
-        return "default";
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case "pending":
-        return t("transactions.pending");
-      case "completed":
-        return t("transactions.completed");
-      default:
-        return status;
-    }
-  };
-
-  const getAccountName = (accountId: string) => {
-    const account = accounts.find((acc) => acc.id === accountId);
-    return account?.name || t("accounts.noAccounts");
-  };
-
-  const getCategoryName = (categoryId: string, isTransfer: boolean = false) => {
-    if (isTransfer) return t("transactions.transfer");
-    const category = categories.find((cat) => cat.id === categoryId);
-    return category?.name || "";
-  };
-
   // Filter accounts by type for the account selector
   const accountsByType = useMemo(() => {
     if (filterAccountType === "all") {
@@ -293,74 +208,6 @@ export function TransactionsPage({
       onDateFromChange(undefined);
       onDateToChange(undefined);
     }
-  };
-
-  const handleDeleteTransaction = (transaction: any) => {
-    // Verifica se é uma transação parcelada pelo total de parcelas
-    const isInstallment = Boolean(transaction.installments && transaction.installments > 1);
-    
-    if (isInstallment) {
-      // Se é parcela, abre o diálogo de escopo
-      setTransactionToDelete(transaction);
-      setDeleteScopeDialogOpen(true);
-    } else {
-      // Se não é parcela, confirma normalmente
-      if (
-        window.confirm(
-          t("transactions.confirmDelete"),
-        )
-      ) {
-        onDeleteTransaction(transaction.id);
-        toast({
-          title: t("transactions.transactionDeleted"),
-          description: `${transaction.description}`,
-        });
-      }
-    }
-  };
-
-  const handleDeleteScopeSelected = (scope: EditScope) => {
-    if (!transactionToDelete) return;
-    
-    onDeleteTransaction(transactionToDelete.id, scope);
-    
-    const scopeDescription = scope === "current" ? t("modals.installmentScope.options.current.label") : 
-                             scope === "all" ? t("modals.installmentScope.options.all.label") :
-                             t("modals.installmentScope.options.remaining.label");
-    
-    toast({
-      title: t("transactions.transactionDeleted"),
-      description: `${transactionToDelete.description} - ${scopeDescription}`,
-    });
-    
-    setTransactionToDelete(null);
-    setDeleteScopeDialogOpen(false);
-  };
-
-  const handleMarkAsPaid = async (transactionId: string, date: Date, amount: number, accountId: string) => {
-    const transaction = transactions.find(t => t.id === transactionId);
-    if (!transaction) return;
-
-    const updatedTransaction = {
-      ...transaction,
-      status: "completed",
-      date: date,
-      amount,
-      account_id: accountId,
-    };
-    
-    if (onMarkAsPaid) {
-      await onMarkAsPaid(updatedTransaction);
-      toast({
-        title: t("transactions.markedAsPaid"),
-        description: t("transactions.transactionUpdated"),
-      });
-    }
-  };
-
-  const handleOpenMarkAsPaidModal = (transaction: any) => {
-    setSelectedTransaction(transaction);
-    setMarkAsPaidModalOpen(true);
   };
 
   const totals = useMemo(() => {
@@ -455,173 +302,6 @@ export function TransactionsPage({
       description: t('transactions.exportSuccess', { count: transactions.length }),
     });
   };
-
-  // Configure table columns
-  const tableColumns = [
-    {
-      key: "info",
-      header: t("transactions.title"),
-      width: "30%",
-      render: (transaction: any) => (
-        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-          <div
-            className={`p-1.5 sm:p-2 bg-background rounded-lg flex-shrink-0`}
-          >
-            {getTransactionIcon(
-              transaction.to_account_id ? "transfer" : transaction.type,
-            )}
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="font-semibold text-sm sm:text-base truncate">
-              {transaction.description}
-            </div>
-            <div className="text-xs sm:text-sm text-muted-foreground">
-              {format(
-                typeof transaction.date === "string"
-                  ? createDateFromString(transaction.date)
-                  : transaction.date,
-                "dd/MM/yyyy",
-                { locale: ptBR },
-              )}
-            </div>
-            {/* Mostrar categoria e conta no mobile dentro da coluna principal */}
-            <div className="block sm:hidden text-xs text-muted-foreground mt-1 space-y-0.5">
-              <div className="truncate">
-                {getCategoryName(
-                  transaction.category_id,
-                  transaction.to_account_id != null,
-                )}
-              </div>
-              <div className="truncate">
-                {getAccountName(transaction.account_id)}
-              </div>
-            </div>
-          </div>
-        </div>
-      ),
-    },
-    {
-      key: "category",
-      header: t("transactions.category"),
-      hideOnMobile: true, // Oculta apenas em mobile (< 640px)
-      width: "15%",
-      render: (transaction: any) => (
-        <span className="text-sm truncate">
-          {getCategoryName(
-            transaction.category_id,
-            transaction.to_account_id != null,
-          )}
-        </span>
-      ),
-    },
-    {
-      key: "account",
-      header: t("transactions.account"),
-      hideOnMobile: true, // Oculta apenas em mobile
-      width: "15%",
-      render: (transaction: any) => (
-        <span className="text-sm truncate">
-          {getAccountName(transaction.account_id)}
-        </span>
-      ),
-    },
-    {
-      key: "type",
-      header: t("transactions.type"),
-      mobileLabel: t("transactions.type"),
-      width: "12%",
-      render: (transaction: any) => (
-        <Badge
-          variant={getTransactionTypeBadge(
-            transaction.to_account_id ? "transfer" : transaction.type,
-          )}
-          className="text-xs"
-        >
-          {getTransactionTypeLabel(
-            transaction.to_account_id ? "transfer" : transaction.type,
-          )}
-        </Badge>
-      ),
-    },
-    {
-      key: "status",
-      header: t("transactions.status"),
-      mobileLabel: t("transactions.status"),
-      width: "13%",
-      render: (transaction: any) => (
-        <div className="flex flex-col gap-1">
-          <Badge
-            variant={getStatusBadge(transaction.status)}
-            className="text-xs w-fit"
-          >
-            {getStatusLabel(transaction.status)}
-          </Badge>
-          {transaction.installments && transaction.current_installment && (
-            <Badge variant="outline" className="text-xs w-fit">
-              {transaction.current_installment}/{transaction.installments}
-            </Badge>
-          )}
-        </div>
-      ),
-    },
-    {
-      // =================================================================
-      // CORREÇÃO 3: Usar Math.abs() aqui para evitar sinal duplo
-      // =================================================================
-      key: "amount",
-      header: t("transactions.amount"),
-      mobileLabel: t("transactions.amount"),
-      width: "15%",
-      render: (transaction: any) => (
-        <div
-          className={`font-bold text-sm sm:text-base ${
-            transaction.type === "income"
-              ? "balance-positive"
-              : "balance-negative"
-          }`}
-        >
-          {/* Adiciona o sinal com base no tipo E usa Math.abs() */}
-          {transaction.type === "income" ? "+" : "-"}
-          {formatCurrency(Math.abs(transaction.amount))}
-        </div>
-      ),
-    },
-    {
-      key: "actions",
-      header: t("common.view"),
-      mobileLabel: t("common.view"),
-      width: "10%",
-      render: (transaction: any) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <span className="sr-only">Abrir menu</span>
-              <MoreVertical className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {transaction.status === "pending" && (
-              <DropdownMenuItem onClick={() => handleOpenMarkAsPaidModal(transaction)}>
-                <CheckCircle className="h-4 w-4 mr-2" />
-                {t("transactions.markAsPaid")}
-              </DropdownMenuItem>
-            )}
-            <DropdownMenuItem onClick={() => onEditTransaction(transaction)}>
-              <Edit className="h-4 w-4 mr-2" />
-              {t("common.edit")}
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => handleDeleteTransaction(transaction)}
-              className="text-destructive"
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              {t("common.delete")}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      ),
-    },
-  ];
 
   return (
     <div className="spacing-responsive-lg fade-in pb-6 sm:pb-8">
@@ -1046,42 +726,27 @@ export function TransactionsPage({
 
       {/* Transactions List */}
       {isLoading ? (
-        <TransactionTableSkeleton rows={pageSize} />
+        <TransactionTableSkeleton />
       ) : (
-        <Card className="financial-card">
-          <CardHeader className="px-4 sm:px-6">
+        <Card>
+          <CardHeader className="pb-3">
             <CardTitle className="text-lg sm:text-xl">
               {t("transactions.title")} ({totalCount})
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-0">
-            <ResponsiveTable
-              data={transactions}
-              columns={tableColumns}
-              keyField="id"
-              emptyState={
-                <div className="text-center py-8 sm:py-12 px-4 sm:px-6">
-                  <Calendar className="h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-3 sm:mb-4 text-muted-foreground opacity-50" />
-                  <h3 className="text-base sm:text-lg font-semibold mb-2">
-                    {t("transactions.noTransactions")}
-                  </h3>
-                  <p className="text-sm sm:text-base text-muted-foreground mb-4">
-                    {t("dashboard.addFirstTransaction")}
-                  </p>
-                  <Button onClick={onAddTransaction} className="text-sm">
-                    {t("transactions.addTransaction")}
-                  </Button>
-                </div>
-              }
-            />
-            
-            <PaginationControls
-              currentPage={currentPage}
-              pageCount={pageCount}
-              totalCount={totalCount}
-              pageSize={pageSize}
-              onPageChange={onPageChange}
-              onPageSizeChange={onPageSizeChange}
+          <CardContent className="p-4 sm:p-6">
+            <InfiniteTransactionList
+              transactions={transactions}
+              accounts={accounts}
+              categories={categories}
+              currency={settings.currency}
+              onEdit={onEditTransaction}
+              onDelete={onDeleteTransaction}
+              onMarkAsPaid={onMarkAsPaid}
+              t={t}
+              hasNextPage={hasNextPage}
+              isFetchingNextPage={isFetchingNextPage}
+              fetchNextPage={fetchNextPage}
             />
           </CardContent>
         </Card>
