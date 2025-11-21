@@ -56,10 +56,10 @@ export function useAccounts() {
         return old.map(acc => acc.id === updatedAccount.id ? { ...acc, ...updatedAccount } : acc);
       });
       // Then invalidate to ensure consistency
-      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts, refetchType: 'active' });
       // Also invalidate transactions if balance changed
       if (updatedAccount.balance !== undefined) {
-        queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
+        queryClient.invalidateQueries({ queryKey: queryKeys.transactions(), refetchType: 'active' });
       }
     },
     onError: (error) => {
@@ -87,9 +87,9 @@ export function useAccounts() {
         return old.filter(acc => acc.id !== deletedAccountId);
       });
       // Then invalidate to ensure consistency
-      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts, refetchType: 'active' });
       // Also invalidate transactions
-      queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactions(), refetchType: 'active' });
     },
     onError: (error) => {
       logger.error('Error deleting account:', error);
@@ -120,7 +120,7 @@ export function useAccounts() {
     },
     onSuccess: () => {
       // Invalidate accounts after bulk import
-      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts, refetchType: 'active' });
     },
   });
 

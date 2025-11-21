@@ -297,8 +297,8 @@ export function useInfiniteTransactions(params: UseInfiniteTransactionsParams = 
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactions(), refetchType: 'active' });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts, refetchType: 'active' });
     },
     onError: (error) => {
       logger.error('Error adding transaction:', error);
@@ -333,8 +333,8 @@ export function useInfiniteTransactions(params: UseInfiniteTransactionsParams = 
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactions(), refetchType: 'active' });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts, refetchType: 'active' });
     },
   });
 
@@ -356,8 +356,8 @@ export function useInfiniteTransactions(params: UseInfiniteTransactionsParams = 
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactions(), refetchType: 'active' });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts, refetchType: 'active' });
     },
   });
 
