@@ -29,6 +29,16 @@ interface FinancialEvolutionChartProps {
   customEndDate: Date | undefined;
 }
 
+interface DotProps {
+  cx: number;
+  cy: number;
+  payload?: {
+    saldo?: number;
+    month?: string;
+  };
+  index: number;
+}
+
 export function FinancialEvolutionChart({
   transactions,
   accounts,
@@ -83,7 +93,7 @@ export function FinancialEvolutionChart({
 
   // Memoize custom dot renderer with unique keys
   const renderDot = useMemo(
-    () => (props: any) => {
+    () => (props: DotProps) => {
       const { cx, cy, payload, index } = props;
       const saldo = payload?.saldo || 0;
       // Create unique key using index and month

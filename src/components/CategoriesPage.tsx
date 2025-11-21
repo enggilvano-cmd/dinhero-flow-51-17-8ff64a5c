@@ -16,6 +16,7 @@ import { EditCategoryModal } from "@/components/EditCategoryModal";
 import { ImportCategoriesModal } from "@/components/ImportCategoriesModal";
 import { getUserId, withErrorHandling } from "@/lib/supabase-utils";
 import { loadXLSX } from "@/lib/lazyImports";
+import { Category } from "@/types";
 
 interface CategoriesPageProps {}
 
@@ -88,7 +89,7 @@ export function CategoriesPage({}: CategoriesPageProps) {
     }
   };
 
-  const handleEditCategory = async (updatedCategory: any) => {
+  const handleEditCategory = async (updatedCategory: Category) => {
     const { data } = await withErrorHandling(
       async () => {
         const userId = await getUserId();
@@ -163,12 +164,12 @@ export function CategoriesPage({}: CategoriesPageProps) {
     }
   };
 
-  const openEditModal = (category: any) => {
+  const openEditModal = (category: Category) => {
     setEditingCategory(category);
     setEditModalOpen(true);
   };
 
-  const handleImportCategories = async (categoriesToAdd: any[], categoriesToReplaceIds: string[]) => {
+  const handleImportCategories = async (categoriesToAdd: Omit<Category, 'id'>[], categoriesToReplaceIds: string[]) => {
     const { data } = await withErrorHandling(
       async () => {
         const userId = await getUserId();
@@ -425,7 +426,10 @@ export function CategoriesPage({}: CategoriesPageProps) {
             </div>
             <div className="sm:w-48">
               <Label htmlFor="filter" className="text-caption">{t("accounts.filterByType")}</Label>
-              <Select value={filterType} onValueChange={(value: any) => setFilterType(value)}>
+              <Select 
+                value={filterType} 
+                onValueChange={(value) => setFilterType(value as typeof filterType)}
+              >
                 <SelectTrigger className="touch-target mt-2">
                   <SelectValue />
                 </SelectTrigger>

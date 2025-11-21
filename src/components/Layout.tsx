@@ -32,7 +32,7 @@ const getFirstName = (fullName?: string | null) => {
   return fullName.split(' ')[0];
 };
 
-const getMenuItems = (t: any) => [
+const getMenuItems = (t: (key: string) => string) => [
   { id: "dashboard", label: t('menu.dashboard'), icon: Home },
   { id: "accounts", label: t('menu.accounts'), icon: CreditCard },
   { id: "categories", label: t('menu.categories'), icon: Tag },
