@@ -1,0 +1,210 @@
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.56.0';
+import { corsHeaders } from '../_shared/cors.ts';
+
+interface GenerateTestDataRequest {
+  transactionCount?: number;
+  startDate?: string;
+  endDate?: string;
+  clearExisting?: boolean;
+}
+
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
+  }
+
+  try {
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      {
+        global: {
+          headers: { Authorization: req.headers.get('Authorization')! },
+        },
+      }
+    );
+
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const body: GenerateTestDataRequest = await req.json();
+    const transactionCount = body.transactionCount || 1000;
+    const startDate = body.startDate || new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const endDate = body.endDate || new Date().toISOString().split('T')[0];
+    const clearExisting = body.clearExisting || false;
+
+    console.log(`Generating ${transactionCount} test transactions for user ${user.id}`);
+
+    // 1. Limpar dados existentes se solicitado
+    if (clearExisting) {
+      console.log('Clearing existing test data...');
+      const { error: deleteError } = await supabase
+        .from('transactions')
+        .delete()
+        .eq('user_id', user.id)
+        .like('description', 'TEST:%');
+      
+      if (deleteError) {
+        console.error('Error clearing test data:', deleteError);
+      }
+    }
+
+    // 2. Buscar contas e categorias do usuário
+    const { data: accounts, error: accountsError } = await supabase
+      .from('accounts')
+      .select('id, type')
+      .eq('user_id', user.id);
+
+    if (accountsError || !accounts || accounts.length === 0) {
+      return new Response(
+        JSON.stringify({ error: 'No accounts found. Please create at least one account first.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const { data: categories, error: categoriesError } = await supabase
+      .from('categories')
+      .select('id, type')
+      .eq('user_id', user.id);
+
+    if (categoriesError || !categories || categories.length === 0) {
+      return new Response(
+        JSON.stringify({ error: 'No categories found. Please create at least one category first.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // 3. Gerar transações em lotes
+    const batchSize = 100;
+    const batches = Math.ceil(transactionCount / batchSize);
+    let totalCreated = 0;
+    const errors: any[] = [];
+
+    const startTime = Date.now();
+
+    for (let batch = 0; batch < batches; batch++) {
+      const currentBatchSize = Math.min(batchSize, transactionCount - totalCreated);
+      const transactions = [];
+
+      for (let i = 0; i < currentBatchSize; i++) {
+        const transactionIndex = batch * batchSize + i;
+        
+        // Distribuir datas uniformemente entre startDate e endDate
+        const dateRange = new Date(endDate).getTime() - new Date(startDate).getTime();
+        const randomDate = new Date(new Date(startDate).getTime() + Math.random() * dateRange);
+        const date = randomDate.toISOString().split('T')[0];
+
+        // Determinar tipo de transação (60% despesa, 30% receita, 10% transferência)
+        const random = Math.random();
+        let type: 'income' | 'expense' | 'transfer';
+        if (random < 0.6) {
+          type = 'expense';
+        } else if (random < 0.9) {
+          type = 'income';
+        } else {
+          type = 'transfer';
+        }
+
+        // Selecionar conta aleatória
+        const account = accounts[Math.floor(Math.random() * accounts.length)];
+
+        // Selecionar categoria apropriada para o tipo
+        const appropriateCategories = categories.filter(
+          c => c.type === type || c.type === 'both'
+        );
+        const category = appropriateCategories.length > 0
+          ? appropriateCategories[Math.floor(Math.random() * appropriateCategories.length)]
+          : categories[0];
+
+        // Gerar valor (maioria entre 10-500, alguns outliers até 5000)
+        const amount = Math.random() < 0.9
+          ? Math.floor(Math.random() * 490 + 10)
+          : Math.floor(Math.random() * 4500 + 500);
+
+        // Status: 80% completed, 20% pending
+        const status = Math.random() < 0.8 ? 'completed' : 'pending';
+
+        // Descrições variadas
+        const descriptions = [
+          'Supermercado', 'Restaurante', 'Uber', 'Netflix', 'Academia',
+          'Farmácia', 'Shopping', 'Gasolina', 'Internet', 'Luz',
+          'Água', 'Telefone', 'Aluguel', 'Salário', 'Freelance',
+          'Investimento', 'Pagamento', 'Compra Online', 'Manutenção', 'Serviços'
+        ];
+        const description = `TEST: ${descriptions[Math.floor(Math.random() * descriptions.length)]} #${transactionIndex}`;
+
+        transactions.push({
+          user_id: user.id,
+          description,
+          amount,
+          date,
+          type,
+          category_id: category.id,
+          account_id: account.id,
+          status,
+        });
+      }
+
+      // Inserir lote
+      const { data: inserted, error: insertError } = await supabase
+        .from('transactions')
+        .insert(transactions)
+        .select('id');
+
+      if (insertError) {
+        console.error(`Error inserting batch ${batch}:`, insertError);
+        errors.push({ batch, error: insertError.message });
+      } else {
+        totalCreated += inserted?.length || 0;
+      }
+
+      // Log progresso
+      console.log(`Progress: ${totalCreated}/${transactionCount} transactions created`);
+    }
+
+    const endTime = Date.now();
+    const duration = (endTime - startTime) / 1000;
+
+    // 4. Atualizar estatísticas do PostgreSQL
+    console.log('Running ANALYZE on transactions table...');
+    // Nota: ANALYZE precisa ser executado via RPC ou SQL direto
+    // Para Edge Functions, o usuário pode executar manualmente
+
+    // 5. Buscar estatísticas finais
+    const { count: finalCount } = await supabase
+      .from('transactions')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id);
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        created: totalCreated,
+        errors: errors.length,
+        duration: `${duration.toFixed(2)}s`,
+        rate: `${(totalCreated / duration).toFixed(0)} transactions/second`,
+        totalTransactions: finalCount || 0,
+        message: `Successfully created ${totalCreated} test transactions in ${duration.toFixed(2)}s. Please run ANALYZE transactions; in SQL Editor for optimal index performance.`,
+        errorDetails: errors.length > 0 ? errors : undefined,
+      }),
+      {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    );
+  } catch (error) {
+    console.error('Error generating test data:', error);
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    );
+  }
+});
