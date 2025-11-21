@@ -1,6 +1,5 @@
 import { addMonths, format } from "date-fns";
-import { Account } from "@/types";
-import { AppTransaction } from "@/stores/TransactionStore"; // Importar AppTransaction
+import { Account, AppTransaction } from "@/types";
 import { logger } from "@/lib/logger";
 
 /**

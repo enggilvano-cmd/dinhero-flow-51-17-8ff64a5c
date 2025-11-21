@@ -1,8 +1,7 @@
 import { create } from 'zustand';
-import { Account, Transaction } from '@/types';
+import { Account } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
-import { useTransactionStore } from './TransactionStore';
 import { format } from 'date-fns';
 
 type AddAccountPayload = Omit<Account, 'id' | 'user_id' | 'created_at'>;
@@ -109,7 +108,8 @@ export const useAccountStore = create<AccountStoreState>((set, get) => ({
     }
 
     if (data?.debit_tx && data?.credit_tx) {
-      useTransactionStore.getState().addTransactions([data.debit_tx, data.credit_tx] as Transaction[]);
+      // Não temos mais TransactionStore, React Query gerencia o cache
+      logger.debug('Transactions criadas:', data.debit_tx.id, data.credit_tx.id);
     }
 
     set((state) => {
@@ -163,10 +163,8 @@ export const useAccountStore = create<AccountStoreState>((set, get) => ({
     }
 
     if (data?.outgoing && data?.incoming) {
-      useTransactionStore.getState().addTransactions([
-        { ...data.outgoing, date },
-        { ...data.incoming, date },
-      ] as Transaction[]);
+      // Não temos mais TransactionStore, React Query gerencia o cache
+      logger.debug('Transfer transactions criadas:', data.outgoing.id, data.incoming.id);
     }
 
     set((state) => {
