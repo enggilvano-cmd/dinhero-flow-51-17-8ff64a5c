@@ -49,14 +49,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       logger.debug('Fetching profile for user:', userId);
       
-      const { data, error } = await supabase
+      // Fetch profile data
+      const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('id, user_id, email, full_name, avatar_url, whatsapp, role, is_active, trial_expires_at, subscription_expires_at, created_at, updated_at')
+        .select('id, user_id, email, full_name, avatar_url, whatsapp, is_active, trial_expires_at, subscription_expires_at, created_at, updated_at')
         .eq('user_id', userId)
         .maybeSingle();
 
-      if (error) {
-        logger.error('Error fetching profile:', error);
+      if (profileError) {
+        logger.error('Error fetching profile:', profileError);
         toast({
           title: "Erro",
           description: "Não foi possível carregar o perfil do usuário.",
@@ -64,28 +65,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
         return;
       }
+
+      if (!profileData) {
+        setProfile(null);
+        return;
+      }
       
-      logger.debug('Profile fetched:', data);
-      const profileData = data ? {
-        ...data,
-        full_name: data.full_name ?? undefined,
-        avatar_url: data.avatar_url ?? undefined,
-        whatsapp: data.whatsapp ?? undefined,
-        trial_expires_at: data.trial_expires_at ?? undefined,
-        subscription_expires_at: data.subscription_expires_at ?? undefined,
-      } : null;
+      // Fetch user role from user_roles table (security best practice)
+      const { data: roleData, error: roleError } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .order('role', { ascending: true }) // admin < subscriber < user < trial (alphabetical)
+        .limit(1)
+        .maybeSingle();
+
+      if (roleError) {
+        logger.error('Error fetching user role:', roleError);
+        // Continue without role rather than failing completely
+      }
+
+      logger.debug('Profile and role fetched:', { profileData, roleData });
       
-      setProfile(profileData);
+      const enrichedProfile = {
+        ...profileData,
+        role: roleData?.role || 'user', // Default to 'user' if no role found
+        full_name: profileData.full_name ?? undefined,
+        avatar_url: profileData.avatar_url ?? undefined,
+        whatsapp: profileData.whatsapp ?? undefined,
+        trial_expires_at: profileData.trial_expires_at ?? undefined,
+        subscription_expires_at: profileData.subscription_expires_at ?? undefined,
+      };
+      
+      setProfile(enrichedProfile);
       
       // Set Sentry user context for error tracking
-      if (profileData) {
-        setSentryUser({
-          id: profileData.user_id,
-          email: profileData.email,
-          username: profileData.full_name || profileData.email,
-          role: profileData.role,
-        });
-      }
+      setSentryUser({
+        id: enrichedProfile.user_id,
+        email: enrichedProfile.email,
+        username: enrichedProfile.full_name || enrichedProfile.email,
+        role: enrichedProfile.role,
+      });
     } catch (error) {
       logger.error('Error fetching profile:', error);
       toast({
@@ -377,17 +397,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const isAdmin = () => {
+    // Role is now fetched from user_roles table (security best practice)
     const result = profile?.role === 'admin' && profile?.is_active;
     logger.debug('isAdmin check:', { role: profile?.role, active: profile?.is_active, result });
     return result;
   };
 
   const hasRole = (role: 'admin' | 'user' | 'subscriber' | 'trial') => {
+    // Role is now fetched from user_roles table (security best practice)
     return profile?.role === role && profile?.is_active;
   };
 
   const isSubscriptionActive = () => {
     if (!profile) return false;
+    // Role is now fetched from user_roles table (security best practice)
     if (profile.role === 'admin' || profile.role === 'user') return profile.is_active;
     if (profile.role === 'trial') {
       if (!profile.trial_expires_at) return false;
@@ -409,6 +432,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     let expiresAt: Date | null = null;
     
+    // Role is now fetched from user_roles table (security best practice)
     if (profile.role === 'trial' && profile.trial_expires_at) {
       expiresAt = new Date(profile.trial_expires_at);
     } else if (profile.role === 'subscriber' && profile.subscription_expires_at) {

@@ -59,20 +59,38 @@ export function UserManagement() {
 
   const fetchUsers = async () => {
     try {
-      const { data, error } = await supabase
+      // Fetch profiles with roles from user_roles table (security best practice)
+      const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setUsers((data || []).map(user => ({
-        ...user,
-        full_name: user.full_name ?? undefined,
-        avatar_url: user.avatar_url ?? undefined,
-        whatsapp: user.whatsapp ?? undefined,
-        trial_expires_at: user.trial_expires_at ?? undefined,
-        subscription_expires_at: user.subscription_expires_at ?? undefined,
-      })));
+      if (profilesError) throw profilesError;
+
+      // For each profile, fetch the role from user_roles table
+      const usersWithRoles = await Promise.all(
+        (profilesData || []).map(async (profile) => {
+          const { data: roleData } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', profile.user_id)
+            .order('role', { ascending: true })
+            .limit(1)
+            .maybeSingle();
+
+          return {
+            ...profile,
+            role: roleData?.role || 'user',
+            full_name: profile.full_name ?? undefined,
+            avatar_url: profile.avatar_url ?? undefined,
+            whatsapp: profile.whatsapp ?? undefined,
+            trial_expires_at: profile.trial_expires_at ?? undefined,
+            subscription_expires_at: profile.subscription_expires_at ?? undefined,
+          };
+        })
+      );
+
+      setUsers(usersWithRoles);
     } catch (error) {
       logger.error('Error fetching users:', error);
       toast({
@@ -117,24 +135,36 @@ export function UserManagement() {
     try {
       logger.debug('Updating user role:', { userId, newRole });
       
-      const { error } = await supabase
-        .from('profiles')
-        .update({ role: newRole })
+      // Update role in user_roles table (security best practice)
+      // First, delete existing role(s)
+      const { error: deleteError } = await supabase
+        .from('user_roles')
+        .delete()
         .eq('user_id', userId);
 
-      if (error) {
-        logger.error('Supabase error updating role:', error);
-        throw error;
+      if (deleteError) {
+        logger.error('Error deleting old role:', deleteError);
+        throw deleteError;
       }
 
-      logger.success('User role updated successfully');
+      // Then, insert new role
+      const { error: insertError } = await supabase
+        .from('user_roles')
+        .insert({ user_id: userId, role: newRole });
+
+      if (insertError) {
+        logger.error('Error inserting new role:', insertError);
+        throw insertError;
+      }
+
+      logger.success('User role updated successfully in user_roles table');
 
       // Log the activity
       try {
         await supabase.rpc('log_user_activity', {
           p_user_id: profile?.user_id || '',
           p_action: 'user_role_updated',
-          p_resource_type: 'profile',
+          p_resource_type: 'user_roles',
           p_resource_id: userId,
           p_new_values: { role: newRole }
         });
