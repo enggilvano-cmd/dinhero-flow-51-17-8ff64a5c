@@ -171,31 +171,46 @@ Deno.serve(async (req) => {
       .select('id, code, category')
       .eq('user_id', user.id);
 
-    const liabilityCard = coa?.find(a => a.code === '2.01.01')?.id; // Cartões de Crédito
-    const anyAsset = coa?.find(a => a.code?.startsWith('1.01.'))?.id; // Caixa/Bancos
+    if (coa && coa.length > 0) {
+      const liabilityCard = coa.find(a => a.code === '2.01.01')?.id; // Cartões de Crédito
+      
+      // Mapear conta bancária que está pagando
+      let assetAccountId: string | undefined;
+      if (debitAcc.type === 'checking') {
+        assetAccountId = coa.find(a => a.code === '1.01.02')?.id;
+      } else if (debitAcc.type === 'savings') {
+        assetAccountId = coa.find(a => a.code === '1.01.03')?.id;
+      } else if (debitAcc.type === 'investment') {
+        assetAccountId = coa.find(a => a.code === '1.01.04')?.id;
+      }
 
-    if (liabilityCard && anyAsset) {
-      // Débito: liability (reduz dívida)
-      await supabaseClient.from('journal_entries').insert({
-        user_id: user.id,
-        transaction_id: creditTx.id,
-        account_id: liabilityCard,
-        entry_type: 'debit',
-        amount: Math.abs(amount),
-        description: creditTx.description,
-        entry_date: payment_date,
-      });
+      // Fallback para primeira conta de ativo
+      if (!assetAccountId) {
+        assetAccountId = coa.find(a => a.code?.startsWith('1.01.'))?.id;
+      }
 
-      // Crédito: asset (sai dinheiro da conta)
-      await supabaseClient.from('journal_entries').insert({
-        user_id: user.id,
-        transaction_id: debitTx.id,
-        account_id: anyAsset,
-        entry_type: 'credit',
-        amount: Math.abs(amount),
-        description: debitTx.description,
-        entry_date: payment_date,
-      });
+      if (liabilityCard && assetAccountId) {
+        await supabaseClient.from('journal_entries').insert([
+          {
+            user_id: user.id,
+            transaction_id: creditTx.id,
+            account_id: liabilityCard,
+            entry_type: 'debit',
+            amount: Math.abs(amount),
+            description: creditTx.description,
+            entry_date: payment_date,
+          },
+          {
+            user_id: user.id,
+            transaction_id: debitTx.id,
+            account_id: assetAccountId,
+            entry_type: 'credit',
+            amount: Math.abs(amount),
+            description: debitTx.description,
+            entry_date: payment_date,
+          }
+        ]);
+      }
     }
 
     // Recalcular saldos
