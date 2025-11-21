@@ -2,6 +2,90 @@
  * Validação centralizada usando Zod para Edge Functions
  */
 
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
+
+// ============= Schemas Zod Completos =============
+
+// Tipos básicos reutilizáveis
+const uuidSchema = z.string().uuid({ message: 'Invalid UUID format' });
+const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM format');
+const invoiceMonthSchema = z.string().regex(/^\d{4}-\d{2}$/, 'Invoice month must be in YYYY-MM format').optional();
+
+// ============= Transaction Schemas =============
+
+export const TransactionInputSchema = z.object({
+  description: z.string().trim().min(1, 'Description is required').max(200, 'Description must be less than 200 characters'),
+  amount: z.number().positive('Amount must be positive').max(1_000_000_000, 'Amount exceeds maximum allowed value'),
+  date: dateSchema,
+  type: z.enum(['income', 'expense'], { errorMap: () => ({ message: 'Type must be either income or expense' }) }),
+  category_id: uuidSchema,
+  account_id: uuidSchema,
+  status: z.enum(['pending', 'completed'], { errorMap: () => ({ message: 'Status must be either pending or completed' }) }),
+  invoice_month: invoiceMonthSchema,
+  invoice_month_overridden: z.boolean().optional(),
+});
+
+export const EditTransactionInputSchema = z.object({
+  transaction_id: uuidSchema,
+  updates: z.object({
+    description: z.string().trim().min(1).max(200).optional(),
+    amount: z.number().positive().max(1_000_000_000).optional(),
+    date: dateSchema.optional(),
+    type: z.enum(['income', 'expense']).optional(),
+    category_id: uuidSchema.optional(),
+    account_id: uuidSchema.optional(),
+    status: z.enum(['pending', 'completed']).optional(),
+    invoice_month: invoiceMonthSchema,
+    invoice_month_overridden: z.boolean().optional(),
+  }),
+  scope: z.enum(['current', 'current-and-remaining', 'all']).optional(),
+});
+
+export const DeleteTransactionInputSchema = z.object({
+  transaction_id: uuidSchema,
+  scope: z.enum(['current', 'current-and-remaining', 'all']).optional(),
+});
+
+export const TransferInputSchema = z.object({
+  from_account_id: uuidSchema,
+  to_account_id: uuidSchema,
+  amount: z.number().positive('Amount must be positive').max(1_000_000_000, 'Amount exceeds maximum allowed value'),
+  description: z.string().trim().min(1, 'Description is required').max(200, 'Description must be less than 200 characters'),
+  date: dateSchema,
+  status: z.enum(['pending', 'completed']),
+}).refine(data => data.from_account_id !== data.to_account_id, {
+  message: 'Source and destination accounts must be different',
+  path: ['to_account_id'],
+});
+
+export const PayBillInputSchema = z.object({
+  credit_account_id: uuidSchema,
+  debit_account_id: uuidSchema,
+  amount: z.number().positive('Amount must be positive').max(1_000_000_000, 'Amount exceeds maximum allowed value'),
+  payment_date: dateSchema,
+  description: z.string().trim().min(1, 'Description is required').max(200, 'Description must be less than 200 characters').optional(),
+}).refine(data => data.credit_account_id !== data.debit_account_id, {
+  message: 'Credit and debit accounts must be different',
+  path: ['debit_account_id'],
+});
+
+// ============= Admin Schemas =============
+
+export const DeleteUserInputSchema = z.object({
+  userId: uuidSchema,
+});
+
+// ============= Test Data Schemas =============
+
+export const GenerateTestDataInputSchema = z.object({
+  transactionCount: z.number().int().min(1).max(50000).optional(),
+  startDate: dateSchema.optional(),
+  endDate: dateSchema.optional(),
+  clearExisting: z.boolean().optional(),
+});
+
+// ============= Legacy Support (mantido para compatibilidade) =============
+
 // Tipos básicos
 export const uuidSchema = {
   parse: (value: string) => {
@@ -158,7 +242,30 @@ export function validateTransaction(data: any) {
   };
 }
 
-// Helper para resposta de erro de validação
+// ============= Validation Helpers =============
+
+/**
+ * Valida dados usando um schema Zod e retorna resultado estruturado
+ */
+export function validateWithZod<T>(schema: z.ZodSchema<T>, data: unknown): { success: true; data: T } | { success: false; errors: Record<string, string> } {
+  const result = schema.safeParse(data);
+  
+  if (result.success) {
+    return { success: true, data: result.data };
+  }
+  
+  const errors: Record<string, string> = {};
+  result.error.issues.forEach(issue => {
+    const path = issue.path.join('.');
+    errors[path] = issue.message;
+  });
+  
+  return { success: false, errors };
+}
+
+/**
+ * Helper para resposta de erro de validação
+ */
 export function validationErrorResponse(errors: Record<string, string>, corsHeaders: Record<string, string>) {
   return new Response(
     JSON.stringify({

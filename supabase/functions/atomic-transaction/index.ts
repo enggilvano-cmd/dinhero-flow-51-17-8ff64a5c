@@ -1,6 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { rateLimiters } from '../_shared/rate-limiter.ts';
-import { validateTransaction, validationErrorResponse } from '../_shared/validation.ts';
+import { TransactionInputSchema, validateWithZod, validationErrorResponse } from '../_shared/validation.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -103,16 +103,18 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { transaction }: { transaction: TransactionInput } = await req.json();
+    const body = await req.json();
 
     console.log('[atomic-transaction] INFO: Creating transaction for user:', user.id);
 
-    // Validação centralizada usando schemas
-    const validation = validateTransaction(transaction);
-    if (!validation.valid) {
+    // Validação Zod
+    const validation = validateWithZod(TransactionInputSchema, body.transaction);
+    if (!validation.success) {
       console.error('[atomic-transaction] ERROR: Validation failed:', validation.errors);
       return validationErrorResponse(validation.errors, corsHeaders);
     }
+
+    const transaction = validation.data;
 
     // INICIAR TRANSAÇÃO ATÔMICA
     // Verificar se o período está fechado

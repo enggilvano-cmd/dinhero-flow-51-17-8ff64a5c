@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { DeleteTransactionInputSchema, validateWithZod, validationErrorResponse } from '../_shared/validation.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -38,10 +39,18 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { transaction_id, scope }: DeleteInput = await req.json();
+    const body = await req.json();
 
-    console.log('[atomic-delete] INFO: Deleting transaction:', transaction_id, 'scope:', scope);
-    console.log('[atomic-delete] INFO: User ID:', user.id);
+    console.log('[atomic-delete] INFO: Deleting transaction for user:', user.id);
+
+    // Validação Zod
+    const validation = validateWithZod(DeleteTransactionInputSchema, body);
+    if (!validation.success) {
+      console.error('[atomic-delete] ERROR: Validation failed:', validation.errors);
+      return validationErrorResponse(validation.errors, corsHeaders);
+    }
+
+    const { transaction_id, scope } = validation.data;
 
     // Buscar transação original usando maybeSingle para evitar erro quando não encontrada
     const { data: targetTx, error: fetchError } = await supabaseClient

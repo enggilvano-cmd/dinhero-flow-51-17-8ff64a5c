@@ -1,6 +1,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.56.0';
 import { corsHeaders } from '../_shared/cors.ts';
 import { rateLimiters } from '../_shared/rate-limiter.ts';
+import { GenerateTestDataInputSchema, validateWithZod, validationErrorResponse } from '../_shared/validation.ts';
 
 interface GenerateTestDataRequest {
   transactionCount?: number;
@@ -46,11 +47,19 @@ Deno.serve(async (req) => {
       );
     }
 
-    const body: GenerateTestDataRequest = await req.json();
-    const transactionCount = body.transactionCount || 1000;
-    const startDate = body.startDate || new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-    const endDate = body.endDate || new Date().toISOString().split('T')[0];
-    const clearExisting = body.clearExisting || false;
+    // Parse e validar input com Zod
+    const body = await req.json();
+
+    const validation = validateWithZod(GenerateTestDataInputSchema, body);
+    if (!validation.success) {
+      console.error('[generate-test-data] ERROR: Validation failed:', validation.errors);
+      return validationErrorResponse(validation.errors, corsHeaders);
+    }
+
+    const transactionCount = validation.data.transactionCount || 1000;
+    const startDate = validation.data.startDate || new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const endDate = validation.data.endDate || new Date().toISOString().split('T')[0];
+    const clearExisting = validation.data.clearExisting || false;
 
     console.log(`Generating ${transactionCount} test transactions for user ${user.id}`);
 

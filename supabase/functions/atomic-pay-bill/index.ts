@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { PayBillInputSchema, validateWithZod, validationErrorResponse } from '../_shared/validation.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -67,23 +68,18 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    const payBillInput: PayBillInput = await req.json();
-    const { credit_account_id, debit_account_id, amount, payment_date, description } = payBillInput;
+    const body = await req.json();
 
-    // Validações básicas
-    if (!credit_account_id || !debit_account_id || !amount || !payment_date) {
-      return new Response(JSON.stringify({ error: 'Missing required fields' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    console.log('[atomic-pay-bill] INFO: Processing bill payment for user:', user.id);
+
+    // Validação Zod
+    const validation = validateWithZod(PayBillInputSchema, body);
+    if (!validation.success) {
+      console.error('[atomic-pay-bill] ERROR: Validation failed:', validation.errors);
+      return validationErrorResponse(validation.errors, corsHeaders);
     }
 
-    // Validação detalhada de inputs
-    const validation = validatePayBillInput(payBillInput);
-    if (!validation.valid) {
-      console.error('[atomic-pay-bill] ERROR: Invalid input:', validation.error);
-      return new Response(
-        JSON.stringify({ error: validation.error }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    const { credit_account_id, debit_account_id, amount, payment_date, description } = validation.data;
 
     // Verificar se o período está fechado
     const { data: isLocked } = await supabaseClient
