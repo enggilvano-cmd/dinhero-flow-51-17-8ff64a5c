@@ -15,7 +15,7 @@ import { AddCategoryModal } from "@/components/AddCategoryModal";
 import { EditCategoryModal } from "@/components/EditCategoryModal";
 import { ImportCategoriesModal } from "@/components/ImportCategoriesModal";
 import { getUserId, withErrorHandling } from "@/lib/supabase-utils";
-import * as XLSX from 'xlsx';
+import { loadXLSX } from "@/lib/lazyImports";
 
 interface CategoriesPageProps {}
 
@@ -216,7 +216,9 @@ export function CategoriesPage({}: CategoriesPageProps) {
     }
   };
 
-  const exportToExcel = () => {
+  const exportToExcel = async () => {
+    const XLSX = await loadXLSX();
+    
     const dataToExport = filteredCategories.map((category) => ({
       [t('categories.categoryName')]: category.name,
       [t('categories.categoryType')]: getTypeLabel(category.type),

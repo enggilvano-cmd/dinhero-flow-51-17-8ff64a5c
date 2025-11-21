@@ -11,7 +11,7 @@ import { Upload, FileSpreadsheet, AlertCircle, MoreVertical, Copy, AlertTriangle
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 import { logger } from "@/lib/logger";
-import * as XLSX from 'xlsx';
+import { loadXLSX } from "@/lib/lazyImports";
 
 interface Category {
   id: string;
@@ -208,6 +208,8 @@ export function ImportCategoriesModal({
     setIsProcessing(true);
 
     try {
+      const XLSX = await loadXLSX();
+      
       const fileBuffer = await selectedFile.arrayBuffer();
       const workbook = XLSX.read(fileBuffer, { type: 'array' });
       const sheetName = workbook.SheetNames[0];
@@ -224,10 +226,10 @@ export function ImportCategoriesModal({
         return;
       }
 
-      const validatedData = rawData.map((row) => validateAndCheckDuplicate(row));
+      const validatedData = rawData.map((row: any) => validateAndCheckDuplicate(row));
       setImportedData(validatedData);
 
-      const summary = validatedData.reduce((acc, t) => {
+      const summary = validatedData.reduce((acc: any, t: any) => {
         if (!t.isValid) acc.invalid++;
         else if (t.isDuplicate) acc.duplicates++;
         else acc.new++;
@@ -325,7 +327,9 @@ export function ImportCategoriesModal({
     ));
   };
 
-  const downloadTemplate = () => {
+  const downloadTemplate = async () => {
+    const XLSX = await loadXLSX();
+    
     const templateData = [
       {
         'Nome': 'Salário',

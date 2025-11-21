@@ -57,7 +57,7 @@ import {
 } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import * as XLSX from "xlsx";
+import { loadXLSX } from "@/lib/lazyImports";
 import { ImportTransactionsModal } from "./ImportTransactionsModal";
 import { MarkAsPaidModal } from "./MarkAsPaidModal";
 import { CheckCircle } from "lucide-react";
@@ -410,7 +410,9 @@ export function TransactionsPage({
     );
   }, [filteredAndSortedTransactions]);
 
-  const exportToExcel = () => {
+  const exportToExcel = async () => {
+    const XLSX = await loadXLSX();
+    
     const dataToExport = filteredAndSortedTransactions.map((transaction) => {
       const transactionDate =
         typeof transaction.date === "string"

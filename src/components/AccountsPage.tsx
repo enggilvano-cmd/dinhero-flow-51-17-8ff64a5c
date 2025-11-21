@@ -29,7 +29,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useAccountStore } from "@/stores/AccountStore";
 import { ImportAccountsModal } from "@/components/ImportAccountsModal";
-import * as XLSX from 'xlsx';
+import { loadXLSX } from "@/lib/lazyImports";
 import { useTranslation } from 'react-i18next';
 import { useSettings } from "@/context/SettingsContext";
 
@@ -145,7 +145,9 @@ export function AccountsPage({
     .filter((acc) => acc.type === "credit")
     .reduce((sum, acc) => sum + Math.abs(Math.min(acc.balance, 0)), 0);
 
-  const exportToExcel = () => {
+  const exportToExcel = async () => {
+    const XLSX = await loadXLSX();
+    
     const dataToExport = filteredAccounts.map((account) => ({
       [t('accounts.accountName')]: account.name,
       [t('accounts.accountType')]: getAccountTypeLabel(account.type),

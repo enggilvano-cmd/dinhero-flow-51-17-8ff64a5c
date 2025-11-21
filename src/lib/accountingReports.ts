@@ -1,4 +1,4 @@
-import { jsPDF } from "jspdf";
+import { loadJsPDF } from "./lazyImports";
 import { format } from "date-fns";
 import { formatCurrency } from "./formatters";
 
@@ -236,13 +236,14 @@ export function generateCashFlow(
 }
 
 // Exportar relatório para PDF
-export function exportReportToPDF(
+export async function exportReportToPDF(
   reportType: "dre" | "balance" | "cashflow",
   reportData: any,
   startDate: Date,
   endDate: Date,
   t: any
 ) {
+  const { jsPDF } = await loadJsPDF();
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   let yPos = 20;
@@ -282,7 +283,7 @@ export function exportReportToPDF(
   doc.save(filename);
 }
 
-function exportDREtoPDF(doc: jsPDF, data: DREReport, startY: number, t: any) {
+function exportDREtoPDF(doc: any, data: DREReport, startY: number, t: any) {
   let y = startY;
 
   // Receitas
@@ -326,7 +327,7 @@ function exportDREtoPDF(doc: jsPDF, data: DREReport, startY: number, t: any) {
   doc.text(formatCurrency(data.netResult), 170, y, { align: "right" });
 }
 
-function exportBalanceSheetToPDF(doc: jsPDF, data: BalanceSheetReport, startY: number, t: any) {
+function exportBalanceSheetToPDF(doc: any, data: BalanceSheetReport, startY: number, t: any) {
   let y = startY;
 
   // Ativo
@@ -392,7 +393,7 @@ function exportBalanceSheetToPDF(doc: jsPDF, data: BalanceSheetReport, startY: n
   doc.text(formatCurrency(data.equity), 180, maxY, { align: "right" });
 }
 
-function exportCashFlowToPDF(doc: jsPDF, data: CashFlowReport, startY: number, t: any) {
+function exportCashFlowToPDF(doc: any, data: CashFlowReport, startY: number, t: any) {
   let y = startY;
 
   // Saldo Inicial

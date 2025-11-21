@@ -54,8 +54,7 @@ import {
   Line,
   ComposedChart,
 } from "recharts";
-import * as htmlToImage from "html-to-image";
-import jsPDF from "jspdf";
+import { loadHtmlToImage, loadJsPDF } from "@/lib/lazyImports";
 import {
   startOfMonth,
   endOfMonth,
@@ -441,6 +440,10 @@ export default function AnalyticsPage({
       window.dispatchEvent(new Event("resize"));
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
+      // Lazy load dependencies
+      const { jsPDF } = await loadJsPDF();
+      const htmlToImage = await loadHtmlToImage();
+
       const pdf = new jsPDF("p", "mm", "a4");
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
@@ -468,7 +471,7 @@ export default function AnalyticsPage({
           pixelRatio: 2,
           cacheBust: true,
           backgroundColor: "#ffffff",
-          filter: (node) => {
+          filter: (node: any) => {
             if (node instanceof HTMLCanvasElement && (node.width === 0 || node.height === 0)) {
               return false;
             }
@@ -503,7 +506,7 @@ export default function AnalyticsPage({
           pixelRatio: 2,
           cacheBust: true,
           backgroundColor: "#ffffff",
-          filter: (node) => {
+          filter: (node: any) => {
             if (node instanceof HTMLCanvasElement && (node.width === 0 || node.height === 0)) {
               return false;
             }
