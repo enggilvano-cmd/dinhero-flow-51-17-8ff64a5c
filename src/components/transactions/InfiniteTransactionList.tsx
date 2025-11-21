@@ -172,7 +172,7 @@ export function InfiniteTransactionList({
                     }`}
                   >
                     {transaction.type === "income" ? "+" : transaction.type === "expense" ? "-" : ""}
-                    {formatCurrency(Math.abs(transaction.amount / 100), currency)}
+                    {formatCurrency(Math.abs(transaction.amount), currency)}
                   </span>
 
                   <TransactionActions
