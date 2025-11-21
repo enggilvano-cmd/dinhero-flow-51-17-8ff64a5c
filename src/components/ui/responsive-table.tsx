@@ -2,6 +2,7 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useResponsiveTable } from "@/hooks/useResponsiveTable";
 import { cn } from "@/lib/utils";
+import { VirtualizedTable } from "./virtualized-table";
 
 interface Column<T> {
   key: string;
@@ -28,6 +29,19 @@ export function ResponsiveTable<T extends Record<string, any>>({
   className
 }: ResponsiveTableProps<T>) {
   const tableConfig = useResponsiveTable();
+
+  // Use virtualization for large lists (>100 items) to improve performance
+  if (data.length > 100) {
+    return (
+      <VirtualizedTable
+        data={data}
+        columns={columns}
+        keyField={keyField}
+        emptyState={emptyState}
+        className={className}
+      />
+    );
+  }
 
   if (data.length === 0) {
     return emptyState || (
