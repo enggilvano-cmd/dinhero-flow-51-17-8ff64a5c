@@ -1,0 +1,297 @@
+import { useState, useMemo } from 'react';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { TrendingUp, BarChart3 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { useChartResponsive } from '@/hooks/useChartResponsive';
+import { useSettings } from '@/context/SettingsContext';
+import { useDashboardChartData, ChartScaleType } from '@/hooks/useDashboardChartData';
+import { Account, Transaction } from '@/types';
+import { cn } from '@/lib/utils';
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  ChartLegend,
+  ChartLegendContent,
+} from '@/components/ui/chart';
+import { formatCurrencyForAxis, getBarChartAxisProps } from '@/lib/chartUtils';
+import { Bar, Line, ComposedChart, XAxis, YAxis, ResponsiveContainer } from 'recharts';
+import { DateFilterType } from '@/hooks/useDashboardFilters';
+
+interface FinancialEvolutionChartProps {
+  transactions: Transaction[];
+  accounts: Account[];
+  dateFilter: DateFilterType;
+  selectedMonth: Date;
+  customStartDate: Date | undefined;
+  customEndDate: Date | undefined;
+}
+
+export function FinancialEvolutionChart({
+  transactions,
+  accounts,
+  dateFilter,
+  selectedMonth,
+  customStartDate,
+  customEndDate,
+}: FinancialEvolutionChartProps) {
+  const { t } = useTranslation();
+  const { formatCurrency } = useSettings();
+  const { chartConfig: responsiveConfig, isMobile } = useChartResponsive();
+  const [chartScale, setChartScale] = useState<ChartScaleType>('monthly');
+  const [chartYear, setChartYear] = useState<number>(new Date().getFullYear());
+
+  const availableYears = useMemo(() => {
+    const years = new Set<number>();
+    transactions.forEach((transaction) => {
+      const transactionDate =
+        typeof transaction.date === 'string'
+          ? new Date(transaction.date)
+          : transaction.date;
+      years.add(transactionDate.getFullYear());
+    });
+    return Array.from(years).sort((a, b) => b - a);
+  }, [transactions]);
+
+  const chartData = useDashboardChartData(
+    transactions,
+    accounts,
+    chartScale,
+    chartYear,
+    dateFilter,
+    selectedMonth,
+    customStartDate,
+    customEndDate
+  );
+
+  if (chartData.length === 0) return null;
+
+  return (
+    <Card className="financial-card">
+      <CardHeader className="pb-2">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <CardTitle className="flex items-center gap-2 text-sm">
+            <TrendingUp className="h-4 w-4" />
+            {t('dashboard.financialEvolution')} {chartScale === 'daily' ? t('dashboard.daily') : t('dashboard.monthly')} -
+            {t('dashboard.revenuesVsExpenses')}
+          </CardTitle>
+          <div
+            className={cn(
+              'w-full gap-2',
+              chartScale === 'monthly' ? 'grid grid-cols-3' : 'grid grid-cols-2',
+              'sm:flex sm:flex-row sm:items-center sm:w-auto'
+            )}
+          >
+            <Button
+              variant={chartScale === 'monthly' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setChartScale('monthly')}
+              className="h-7 px-2 text-xs w-full sm:w-auto"
+            >
+              <BarChart3 className="h-3 w-3 mr-1" />
+              {t('dashboard.monthly')}
+            </Button>
+            <Button
+              variant={chartScale === 'daily' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setChartScale('daily')}
+              className="h-7 px-2 text-xs w-full sm:w-auto"
+            >
+              <BarChart3 className="h-3 w-3 mr-1" />
+              {t('dashboard.daily')}
+            </Button>
+
+            {chartScale === 'monthly' && (
+              <Select value={chartYear.toString()} onValueChange={(value) => setChartYear(parseInt(value))}>
+                <SelectTrigger className="h-7 w-full text-xs sm:w-20">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableYears.length > 0 ? (
+                    availableYears.map((year) => (
+                      <SelectItem key={year} value={year.toString()}>
+                        {year}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value={new Date().getFullYear().toString()}>
+                      {new Date().getFullYear()}
+                    </SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="p-3 pt-0">
+        <div className="relative min-h-[200px] sm:min-h-[300px] lg:min-h-[350px]">
+          {chartData.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-[200px] sm:h-[250px] text-muted-foreground">
+              <BarChart3 className="h-12 w-12 mb-3 opacity-50" />
+              <p className="text-sm font-medium">Nenhum dado disponível</p>
+            </div>
+          ) : (
+            <ChartContainer
+              config={{
+                receitas: {
+                  label: t('dashboard.chart.revenues'),
+                  color: 'hsl(var(--success))',
+                },
+                despesas: {
+                  label: t('dashboard.chart.expenses'),
+                  color: 'hsl(var(--destructive))',
+                },
+                saldo: {
+                  label: t('dashboard.chart.cumulativeBalance'),
+                  color: 'hsl(var(--primary))',
+                },
+              }}
+              className="h-[200px] sm:h-[300px] lg:h-[350px] w-full"
+            >
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart
+                  data={chartData}
+                  margin={{
+                    top: 20,
+                    right: isMobile ? 10 : 30,
+                    left: isMobile ? 10 : 20,
+                    bottom: isMobile ? 60 : 50,
+                  }}
+                >
+                  <defs>
+                    <linearGradient id="colorReceitas" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--success))" stopOpacity={0.8} />
+                      <stop offset="95%" stopColor="hsl(var(--success))" stopOpacity={0.3} />
+                    </linearGradient>
+                    <linearGradient id="colorDespesas" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--destructive))" stopOpacity={0.8} />
+                      <stop offset="95%" stopColor="hsl(var(--destructive))" stopOpacity={0.3} />
+                    </linearGradient>
+                  </defs>
+
+                  <XAxis
+                    dataKey="month"
+                    {...getBarChartAxisProps(responsiveConfig).xAxis}
+                    interval={
+                      chartScale === 'daily'
+                        ? isMobile
+                          ? Math.max(0, Math.floor(chartData.length / 7))
+                          : Math.max(0, Math.floor(chartData.length / 15))
+                        : 0
+                    }
+                    minTickGap={chartScale === 'daily' ? (isMobile ? 15 : 8) : 5}
+                    tickMargin={10}
+                    angle={chartScale === 'daily' ? (isMobile ? -45 : -30) : 0}
+                    textAnchor={chartScale === 'daily' ? 'end' : 'middle'}
+                  />
+
+                  <YAxis
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{
+                      fontSize: isMobile ? 9 : 11,
+                      fill: 'hsl(var(--muted-foreground))',
+                    }}
+                    tickFormatter={(value) => formatCurrencyForAxis(value / 100, isMobile)}
+                    width={isMobile ? 50 : 80}
+                  />
+
+                  <ChartTooltip
+                    content={
+                      <ChartTooltipContent
+                        className="bg-background/95 backdrop-blur-sm border border-border/50 shadow-lg"
+                        labelClassName="font-medium text-foreground"
+                        indicator="dot"
+                      />
+                    }
+                    formatter={(value: number, name: string) => [
+                      formatCurrency(value / 100),
+                      name === 'receitas'
+                        ? t('dashboard.revenues')
+                        : name === 'despesas'
+                        ? t('dashboard.expenses')
+                        : name === 'saldo'
+                        ? t('dashboard.accumulatedBalance')
+                        : name,
+                    ]}
+                  />
+
+                  {!isMobile && (
+                    <ChartLegend
+                      content={<ChartLegendContent className="flex justify-center gap-6" />}
+                      verticalAlign="top"
+                    />
+                  )}
+
+                  <Bar
+                    dataKey="receitas"
+                    fill="url(#colorReceitas)"
+                    radius={[4, 4, 0, 0]}
+                    name={t('dashboard.chart.revenues')}
+                  />
+
+                  <Bar
+                    dataKey="despesas"
+                    fill="url(#colorDespesas)"
+                    radius={[4, 4, 0, 0]}
+                    name={t('dashboard.chart.expenses')}
+                  />
+
+                  <Line
+                    type="monotone"
+                    dataKey="saldo"
+                    stroke="hsl(var(--primary))"
+                    strokeWidth={isMobile ? 2 : 3}
+                    dot={(props: any) => {
+                      const { cx, cy, payload, key } = props;
+                      const saldo = payload?.saldo || 0;
+                      return (
+                        <circle
+                          key={key}
+                          cx={cx}
+                          cy={cy}
+                          r={isMobile ? 3 : 4}
+                          fill={saldo >= 0 ? 'hsl(var(--primary))' : 'hsl(var(--destructive))'}
+                          stroke="hsl(var(--background))"
+                          strokeWidth={2}
+                        />
+                      );
+                    }}
+                    activeDot={{
+                      r: isMobile ? 5 : 6,
+                      strokeWidth: 2,
+                      fill: 'hsl(var(--primary))',
+                      stroke: 'hsl(var(--background))',
+                    }}
+                    connectNulls={false}
+                    name={t('dashboard.chart.cumulativeBalance')}
+                  />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          )}
+
+          {isMobile && chartData.length > 0 && (
+            <div className="flex justify-center gap-4 mt-3 text-xs">
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 rounded bg-success"></div>
+                <span className="text-muted-foreground">{t('dashboard.chart.revenues')}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 rounded bg-destructive"></div>
+                <span className="text-muted-foreground">{t('dashboard.chart.expenses')}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-0.5 bg-primary"></div>
+                <span className="text-muted-foreground">{t('dashboard.balance')}</span>
+              </div>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
