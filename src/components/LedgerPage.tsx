@@ -44,6 +44,8 @@ interface LedgerEntry {
 export function LedgerPage() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
+  const [initializing, setInitializing] = useState(false);
+  const [needsInitialization, setNeedsInitialization] = useState(false);
   const [chartOfAccounts, setChartOfAccounts] = useState<ChartAccount[]>([]);
   const [selectedAccountId, setSelectedAccountId] = useState<string>("");
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
@@ -62,6 +64,38 @@ export function LedgerPage() {
     }
   }, [selectedAccountId, startDate, endDate]);
 
+  const initializeChartOfAccounts = async () => {
+    try {
+      setInitializing(true);
+      
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Usuário não autenticado');
+
+      const { error } = await supabase.rpc('initialize_chart_of_accounts', {
+        p_user_id: user.id
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Plano de Contas Inicializado",
+        description: "O plano de contas contábil foi criado com sucesso!",
+      });
+
+      setNeedsInitialization(false);
+      await loadChartOfAccounts();
+    } catch (error) {
+      console.error("Erro ao inicializar plano de contas:", error);
+      toast({
+        title: "Erro na inicialização",
+        description: "Não foi possível inicializar o plano de contas.",
+        variant: "destructive",
+      });
+    } finally {
+      setInitializing(false);
+    }
+  };
+
   const loadChartOfAccounts = async () => {
     try {
       const { data, error } = await supabase
@@ -71,7 +105,17 @@ export function LedgerPage() {
         .order("code");
 
       if (error) throw error;
+      
+      // Se não houver contas, precisa inicializar
+      if (!data || data.length === 0) {
+        setNeedsInitialization(true);
+        setChartOfAccounts([]);
+        setLoading(false);
+        return;
+      }
+      
       setChartOfAccounts(data || []);
+      setNeedsInitialization(false);
       
       // Selecionar primeira conta por padrão
       if (data && data.length > 0) {
@@ -200,9 +244,9 @@ export function LedgerPage() {
     return labels[category] || category;
   };
 
-  if (loading && chartOfAccounts.length === 0) {
+  if (loading) {
     return (
-      <div className="container mx-auto p-6">
+      <div className="space-y-6">
         <Card>
           <CardContent className="p-12 text-center">
             <p className="text-muted-foreground">Carregando livro razão...</p>
@@ -212,14 +256,40 @@ export function LedgerPage() {
     );
   }
 
+  // Mostrar opção de inicialização se necessário
+  if (needsInitialization) {
+    return (
+      <div className="space-y-6">
+        <Card className="border-primary">
+          <CardHeader>
+            <CardTitle>Plano de Contas Não Inicializado</CardTitle>
+            <CardDescription>
+              Para utilizar o Livro Razão, é necessário inicializar o Plano de Contas.
+              Isso criará a estrutura contábil padrão.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button 
+              onClick={initializeChartOfAccounts} 
+              disabled={initializing}
+              className="w-full"
+            >
+              {initializing ? "Inicializando..." : "Inicializar Plano de Contas"}
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight mb-2 flex items-center gap-2">
-          <BookOpen className="h-8 w-8" />
+        <h1 className="text-2xl font-bold tracking-tight mb-2 flex items-center gap-2">
+          <BookOpen className="h-6 w-6" />
           Livro Razão
         </h1>
-        <p className="text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           Histórico detalhado de movimentação por conta contábil
         </p>
       </div>
