@@ -1,9 +1,65 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { AppSettings, getSettings, updateSettings as saveSettings } from '@/lib/supabase-storage';
 import { useAuth } from '@/hooks/useAuth';
 import { useTranslation } from 'react-i18next';
 import { detectBrowserLanguage } from '@/i18n';
 import { logger } from '@/lib/logger';
+import { supabase } from '@/integrations/supabase/client';
+
+export interface AppSettings {
+  currency: string;
+  theme: 'light' | 'dark' | 'system';
+  notifications: boolean;
+  autoBackup: boolean;
+  language: string;
+  userId: string;
+}
+
+async function getSettings(): Promise<AppSettings> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('User not authenticated');
+
+  const { data, error } = await supabase
+    .from('user_settings')
+    .select('*')
+    .eq('user_id', user.id)
+    .single();
+
+  if (error) {
+    logger.error('Error loading settings:', error);
+    throw error;
+  }
+
+  return {
+    currency: data.currency,
+    theme: data.theme as 'light' | 'dark' | 'system',
+    notifications: data.notifications,
+    autoBackup: data.auto_backup,
+    language: data.language,
+    userId: user.id
+  };
+}
+
+async function saveSettingsToDb(settings: AppSettings): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('User not authenticated');
+
+  const { error } = await supabase
+    .from('user_settings')
+    .update({
+      currency: settings.currency,
+      theme: settings.theme,
+      notifications: settings.notifications,
+      auto_backup: settings.autoBackup,
+      language: settings.language,
+      updated_at: new Date().toISOString()
+    })
+    .eq('user_id', user.id);
+
+  if (error) {
+    logger.error('Error updating settings:', error);
+    throw error;
+  }
+}
 
 interface SettingsContextType {
   settings: AppSettings;
@@ -147,7 +203,7 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     
     // Save to Supabase if user is authenticated
     if (user) {
-      await saveSettings(newSettings);
+      await saveSettingsToDb(newSettings);
     }
   };
 
