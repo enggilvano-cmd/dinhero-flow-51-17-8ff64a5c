@@ -24,7 +24,10 @@ import { NotificationBell } from "@/components/NotificationBell";
 interface LayoutProps {
   children: React.ReactNode;
   currentPage: string;
-  onPageChange: (page: string) => void;
+  onNavigate?: (page: string) => void;
+  onPageChange?: (page: string) => void;
+  onClearAllData?: () => Promise<void>;
+  loading?: boolean;
 }
 
 const getFirstName = (fullName?: string | null) => {
@@ -300,10 +303,13 @@ function AppSidebar({ currentPage, onPageChange }: { currentPage: string; onPage
   );
 }
 
-function LayoutContent({ children, currentPage, onPageChange }: LayoutProps) {
+function LayoutContent({ children, currentPage, onPageChange, onNavigate }: LayoutProps) {
   const isMobile = useIsMobile();
   const { profile } = useAuth();
   const { open } = useSidebar();
+  
+  // Use onNavigate if provided, otherwise use onPageChange
+  const handlePageChange = onNavigate || onPageChange || (() => {});
 
   return (
     <>
@@ -321,7 +327,7 @@ function LayoutContent({ children, currentPage, onPageChange }: LayoutProps) {
               </SidebarTrigger>
               <div 
                 className="flex items-center gap-2 cursor-pointer touch-target"
-                onClick={() => onPageChange('dashboard')}
+                onClick={() => handlePageChange('dashboard')}
               >
                 <div className="h-7 w-7 rounded-xl bg-gradient-to-br from-emerald-600 to-emerald-700 flex items-center justify-center shadow-lg">
                   <BarChart3 className="h-4 w-4 text-yellow-400" />
@@ -352,7 +358,7 @@ function LayoutContent({ children, currentPage, onPageChange }: LayoutProps) {
         "flex flex-1 w-full",
         isMobile ? "pt-14" : "min-h-screen"
       )}>
-        <AppSidebar currentPage={currentPage} onPageChange={onPageChange} />
+        <AppSidebar currentPage={currentPage} onPageChange={handlePageChange} />
         
         {/* Main content with responsive padding and safe areas */}
           <main className={cn(
@@ -365,7 +371,7 @@ function LayoutContent({ children, currentPage, onPageChange }: LayoutProps) {
               <NotificationBell />
               <div 
                 className="flex items-center gap-3 cursor-pointer transition-all duration-200 hover:scale-105"
-                onClick={() => onPageChange('dashboard')}
+                onClick={() => handlePageChange('dashboard')}
               >
                 <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-emerald-600 to-emerald-700 flex items-center justify-center shadow-lg">
                   <BarChart3 className="h-6 w-6 text-yellow-400" />
@@ -405,13 +411,18 @@ function LayoutContent({ children, currentPage, onPageChange }: LayoutProps) {
   );
 }
 
-export function Layout({ children, currentPage, onPageChange }: LayoutProps) {
+export function Layout({ children, currentPage, onPageChange, onNavigate, ...rest }: LayoutProps) {
   const isMobile = useIsMobile();
   
   return (
     <SidebarProvider defaultOpen={!isMobile}>
       <div className="h-screen flex w-full bg-gradient-surface overflow-hidden">
-        <LayoutContent currentPage={currentPage} onPageChange={onPageChange}>
+        <LayoutContent 
+          currentPage={currentPage} 
+          onPageChange={onPageChange} 
+          onNavigate={onNavigate}
+          {...rest}
+        >
           {children}
         </LayoutContent>
       </div>

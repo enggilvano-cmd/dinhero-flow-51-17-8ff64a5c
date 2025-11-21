@@ -164,7 +164,7 @@ Deno.serve(async (req) => {
         }
       } catch (error) {
         console.error(`[generate-recurring] ERROR: Failed to process ${recurring.id}:`, error);
-        errors.push({ recurring_id: recurring.id, error: error.message });
+        errors.push({ recurring_id: recurring.id, error: error instanceof Error ? error.message : 'Unknown error' });
       }
     }
 
@@ -188,7 +188,7 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: error.message 
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

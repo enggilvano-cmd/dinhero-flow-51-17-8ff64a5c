@@ -6,10 +6,10 @@ import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
 
 // ============= Schemas Zod Completos =============
 
-// Tipos básicos reutilizáveis
-const uuidSchema = z.string().uuid({ message: 'Invalid UUID format' });
-const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM format');
-const invoiceMonthSchema = z.string().regex(/^\d{4}-\d{2}$/, 'Invoice month must be in YYYY-MM format').optional();
+// Tipos básicos reutilizáveis (exportados para uso em outros módulos)
+export const uuidSchema = z.string().uuid({ message: 'Invalid UUID format' });
+export const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM format');
+export const invoiceMonthSchema = z.string().regex(/^\d{4}-\d{2}$/, 'Invoice month must be in YYYY-MM format').optional();
 
 // ============= Transaction Schemas =============
 
@@ -181,50 +181,50 @@ export function validateTransaction(data: any) {
   try {
     transactionSchema.description.parse(data.description);
   } catch (e) {
-    errors.description = e.message;
+    errors.description = e instanceof Error ? e.message : 'Validation failed';
   }
 
   try {
     transactionSchema.amount.parse(data.amount);
   } catch (e) {
-    errors.amount = e.message;
+    errors.amount = e instanceof Error ? e.message : 'Validation failed';
   }
 
   try {
     transactionSchema.date.parse(data.date);
   } catch (e) {
-    errors.date = e.message;
+    errors.date = e instanceof Error ? e.message : 'Validation failed';
   }
 
   try {
     transactionSchema.type.parse(data.type);
   } catch (e) {
-    errors.type = e.message;
+    errors.type = e instanceof Error ? e.message : 'Validation failed';
   }
 
   try {
     transactionSchema.status.parse(data.status);
   } catch (e) {
-    errors.status = e.message;
+    errors.status = e instanceof Error ? e.message : 'Validation failed';
   }
 
   try {
     transactionSchema.account_id.parse(data.account_id);
   } catch (e) {
-    errors.account_id = e.message;
+    errors.account_id = e instanceof Error ? e.message : 'Validation failed';
   }
 
   try {
     transactionSchema.category_id.parse(data.category_id);
   } catch (e) {
-    errors.category_id = e.message;
+    errors.category_id = e instanceof Error ? e.message : 'Validation failed';
   }
 
   if (data.invoice_month) {
     try {
       transactionSchema.invoice_month.parse(data.invoice_month);
     } catch (e) {
-      errors.invoice_month = e.message;
+      errors.invoice_month = e instanceof Error ? e.message : 'Validation failed';
     }
   }
 
@@ -232,7 +232,7 @@ export function validateTransaction(data: any) {
     try {
       transactionSchema.to_account_id.parse(data.to_account_id);
     } catch (e) {
-      errors.to_account_id = e.message;
+      errors.to_account_id = e instanceof Error ? e.message : 'Validation failed';
     }
   }
 

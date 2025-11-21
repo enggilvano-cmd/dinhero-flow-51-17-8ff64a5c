@@ -7,13 +7,9 @@ import { TransactionsPage } from "@/components/TransactionsPage";
 import { CategoriesPage } from "@/components/CategoriesPage";
 import AnalyticsPage from "@/components/AnalyticsPage";
 import SystemSettings from "@/components/SystemSettings";
-import { SettingsPage } from "@/components/SettingsPage";
-import { UserManagement } from "@/components/UserManagement";
-import { UserProfile } from "@/components/UserProfile";
 import { RecurringTransactionsPage } from "@/components/RecurringTransactionsPage";
 import { FixedTransactionsPage } from "@/components/FixedTransactionsPage";
-import { BankReconciliationPage } from "@/components/BankReconciliationPage";
-import { AccountingPage } from "@/components/AccountingPage";
+import { UserManagement } from "@/components/UserManagement";
 import { AddAccountModal } from "@/components/AddAccountModal";
 import { AddTransactionModal } from "@/components/AddTransactionModal";
 import { EditAccountModal } from "@/components/EditAccountModal";
@@ -37,7 +33,7 @@ import { useAccountHandlers } from "@/hooks/useAccountHandlers";
 import { useTransactionHandlers } from "@/hooks/useTransactionHandlers";
 
 const PlaniFlowApp = () => {
-  const { settings, updateSettings } = useSettings();
+  const { settings } = useSettings();
   const { user, loading: authLoading, isAdmin } = useAuth();
   const { toast } = useToast();
   const [currentPage, setCurrentPage] = useState("dashboard");
@@ -123,10 +119,6 @@ const PlaniFlowApp = () => {
     handleReversePayment,
   } = useTransactionHandlers(); // ✅ Sem passar dados como props
 
-  const handleUpdateSettings = (newSettings: typeof settings) => {
-    logger.debug("Updating settings:", newSettings);
-    updateSettings(newSettings);
-  };
 
   const handleClearAllData = async () => {
     if (!user) return;
