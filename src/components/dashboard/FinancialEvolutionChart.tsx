@@ -3,7 +3,6 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { TrendingUp, BarChart3 } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { useChartResponsive } from '@/hooks/useChartResponsive';
 import { useSettings } from '@/context/SettingsContext';
 import { useDashboardChartData, ChartScaleType } from '@/hooks/useDashboardChartData';
@@ -47,7 +46,6 @@ export function FinancialEvolutionChart({
   customStartDate,
   customEndDate,
 }: FinancialEvolutionChartProps) {
-  const { t } = useTranslation();
   const { formatCurrency } = useSettings();
   const { chartConfig: responsiveConfig, isMobile } = useChartResponsive();
   const [chartScale, setChartScale] = useState<ChartScaleType>('monthly');
@@ -81,14 +79,14 @@ export function FinancialEvolutionChart({
     () => (value: number, name: string) => [
       formatCurrency(value / 100),
       name === 'receitas'
-        ? t('dashboard.revenues')
+        ? 'Receitas'
         : name === 'despesas'
-        ? t('dashboard.expenses')
+        ? 'Despesas'
         : name === 'saldo'
-        ? t('dashboard.accumulatedBalance')
+        ? 'Saldo Acumulado'
         : name,
     ],
-    [formatCurrency, t]
+    [formatCurrency]
   );
 
   // Memoize custom dot renderer with unique keys
@@ -121,8 +119,7 @@ export function FinancialEvolutionChart({
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <CardTitle className="flex items-center gap-2 text-sm">
             <TrendingUp className="h-4 w-4" />
-            {t('dashboard.financialEvolution')} {chartScale === 'daily' ? t('dashboard.daily') : t('dashboard.monthly')} -
-            {t('dashboard.revenuesVsExpenses')}
+            Evolução Financeira {chartScale === 'daily' ? 'Diária' : 'Mensal'} - Receitas vs Despesas
           </CardTitle>
           <div
             className={cn(
@@ -138,7 +135,7 @@ export function FinancialEvolutionChart({
               className="h-7 px-2 text-xs w-full sm:w-auto"
             >
               <BarChart3 className="h-3 w-3 mr-1" />
-              {t('dashboard.monthly')}
+              Mensal
             </Button>
             <Button
               variant={chartScale === 'daily' ? 'default' : 'outline'}
@@ -147,7 +144,7 @@ export function FinancialEvolutionChart({
               className="h-7 px-2 text-xs w-full sm:w-auto"
             >
               <BarChart3 className="h-3 w-3 mr-1" />
-              {t('dashboard.daily')}
+              Diário
             </Button>
 
             {chartScale === 'monthly' && (
@@ -184,15 +181,15 @@ export function FinancialEvolutionChart({
             <ChartContainer
               config={{
                 receitas: {
-                  label: t('dashboard.chart.revenues'),
+                  label: 'Receitas',
                   color: 'hsl(var(--success))',
                 },
                 despesas: {
-                  label: t('dashboard.chart.expenses'),
+                  label: 'Despesas',
                   color: 'hsl(var(--destructive))',
                 },
                 saldo: {
-                  label: t('dashboard.chart.cumulativeBalance'),
+                  label: 'Saldo Acumulado',
                   color: 'hsl(var(--primary))',
                 },
               }}
@@ -268,14 +265,14 @@ export function FinancialEvolutionChart({
                     dataKey="receitas"
                     fill="url(#colorReceitas)"
                     radius={[4, 4, 0, 0]}
-                    name={t('dashboard.chart.revenues')}
+                    name="Receitas"
                   />
 
                   <Bar
                     dataKey="despesas"
                     fill="url(#colorDespesas)"
                     radius={[4, 4, 0, 0]}
-                    name={t('dashboard.chart.expenses')}
+                    name="Despesas"
                   />
 
                   <Line
@@ -291,7 +288,7 @@ export function FinancialEvolutionChart({
                       stroke: 'hsl(var(--background))',
                     }}
                     connectNulls={false}
-                    name={t('dashboard.chart.cumulativeBalance')}
+                    name="Saldo Acumulado"
                   />
                 </ComposedChart>
               </ResponsiveContainer>
@@ -302,15 +299,15 @@ export function FinancialEvolutionChart({
             <div className="flex justify-center gap-4 mt-3 text-xs">
               <div className="flex items-center gap-1">
                 <div className="w-3 h-3 rounded bg-success"></div>
-                <span className="text-muted-foreground">{t('dashboard.chart.revenues')}</span>
+                <span className="text-muted-foreground">Receitas</span>
               </div>
               <div className="flex items-center gap-1">
                 <div className="w-3 h-3 rounded bg-destructive"></div>
-                <span className="text-muted-foreground">{t('dashboard.chart.expenses')}</span>
+                <span className="text-muted-foreground">Despesas</span>
               </div>
               <div className="flex items-center gap-1">
                 <div className="w-3 h-0.5 bg-primary"></div>
-                <span className="text-muted-foreground">{t('dashboard.balance')}</span>
+                <span className="text-muted-foreground">Saldo</span>
               </div>
             </div>
           )}

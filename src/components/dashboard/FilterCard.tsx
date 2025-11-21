@@ -17,7 +17,6 @@ import { CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
-import { useTranslation } from 'react-i18next';
 import { DateFilterType } from '@/hooks/useDashboardFilters';
 
 interface FilterCardProps {
@@ -51,25 +50,23 @@ export function FilterCard({
   goToPreviousMonth,
   goToNextMonth,
 }: FilterCardProps) {
-  const { t } = useTranslation();
-
   return (
     <Card className="financial-card">
       <CardContent className="p-3">
         <div className="space-y-3">
           <div>
             <label id="period-filter-label" className="text-xs font-medium mb-1 block">
-              {t('dashboard.period')}
+              Período
             </label>
             <Select value={dateFilter} onValueChange={(value: DateFilterType) => setDateFilter(value)}>
               <SelectTrigger className="h-8 text-xs" aria-labelledby="period-filter-label">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">{t('dashboard.allTransactions')}</SelectItem>
-                <SelectItem value="current_month">{t('dashboard.currentMonth')}</SelectItem>
-                <SelectItem value="month_picker">{t('dashboard.navigateByMonth')}</SelectItem>
-                <SelectItem value="custom">{t('dashboard.customPeriod')}</SelectItem>
+                <SelectItem value="all">Todas as Transações</SelectItem>
+                <SelectItem value="current_month">Mês Atual</SelectItem>
+                <SelectItem value="month_picker">Navegar por Mês</SelectItem>
+                <SelectItem value="custom">Período Personalizado</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -77,7 +74,7 @@ export function FilterCard({
           {dateFilter === 'month_picker' && (
             <div>
               <label id="month-navigation-label" className="text-xs font-medium mb-1 block">
-                {t('dashboard.month')}
+                Mês
               </label>
               <div className="flex items-center gap-1 h-8 px-2 border border-input rounded-md">
                 <Button
@@ -85,7 +82,7 @@ export function FilterCard({
                   size="sm"
                   onClick={goToPreviousMonth}
                   className="h-5 w-5 p-0"
-                  aria-label={t('dashboard.previousMonth') || 'Mês anterior'}
+                  aria-label="Mês anterior"
                 >
                   <ChevronLeft className="h-3 w-3" aria-hidden="true" />
                 </Button>
@@ -97,7 +94,7 @@ export function FilterCard({
                   size="sm"
                   onClick={goToNextMonth}
                   className="h-5 w-5 p-0"
-                  aria-label={t('dashboard.nextMonth') || 'Próximo mês'}
+                  aria-label="Próximo mês"
                 >
                   <ChevronRight className="h-3 w-3" aria-hidden="true" />
                 </Button>
@@ -109,7 +106,7 @@ export function FilterCard({
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <label id="start-date-label" className="text-xs font-medium mb-1 block">
-                  {t('dashboard.start')}
+                  Início
                 </label>
                 <Popover open={startDatePickerOpen} onOpenChange={setStartDatePickerOpen}>
                   <PopoverTrigger asChild>
@@ -126,7 +123,7 @@ export function FilterCard({
                       <span className="truncate">
                         {customStartDate
                           ? format(customStartDate, 'dd/MM', { locale: ptBR })
-                          : t('dashboard.initial')}
+                          : 'Inicial'}
                       </span>
                     </Button>
                   </PopoverTrigger>
@@ -147,7 +144,7 @@ export function FilterCard({
 
               <div>
                 <label id="end-date-label" className="text-xs font-medium mb-1 block">
-                  {t('dashboard.end')}
+                  Final
                 </label>
                 <Popover open={endDatePickerOpen} onOpenChange={setEndDatePickerOpen}>
                   <PopoverTrigger asChild>
@@ -164,7 +161,7 @@ export function FilterCard({
                       <span className="truncate">
                         {customEndDate
                           ? format(customEndDate, 'dd/MM', { locale: ptBR })
-                          : t('dashboard.final')}
+                          : 'Final'}
                       </span>
                     </Button>
                   </PopoverTrigger>

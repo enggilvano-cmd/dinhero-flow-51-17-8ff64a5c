@@ -1,6 +1,5 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { DollarSign, TrendingUp, TrendingDown, CreditCard, Clock } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 
 interface BalanceCardsProps {
   formatCurrency: (value: number) => string;
@@ -43,8 +42,6 @@ export function BalanceCards({
   onNavigateToAccounts,
   onNavigateToTransactions,
 }: BalanceCardsProps) {
-  const { t } = useTranslation();
-
   return (
     <>
       <Card
@@ -52,7 +49,7 @@ export function BalanceCards({
         onClick={() => onNavigateToAccounts?.()}
         role="button"
         tabIndex={0}
-        aria-label={`${t('dashboard.totalBalance')}: ${formatCurrency(totalBalance / 100)}`}
+        aria-label={`Saldo Total: ${formatCurrency(totalBalance / 100)}`}
       >
         <CardContent className="p-3 text-center">
           <div className="flex items-center justify-center gap-2 mb-1">
@@ -61,7 +58,7 @@ export function BalanceCards({
             </div>
           </div>
           <p className="text-xs font-medium text-muted-foreground mb-1">
-            {t('dashboard.totalBalance')}
+            Saldo Total
           </p>
           <div
             className={`text-base sm:text-lg font-bold leading-tight ${
@@ -71,7 +68,7 @@ export function BalanceCards({
             {formatCurrency(totalBalance / 100)}
           </div>
           <p className="text-xs text-muted-foreground mt-1 opacity-70">
-            {t('accounts.checking')} • {t('accounts.savings')}
+            Corrente • Poupança
           </p>
         </CardContent>
       </Card>
@@ -100,7 +97,7 @@ export function BalanceCards({
             </div>
           </div>
           <p className="text-xs font-medium text-muted-foreground mb-1">
-            {t('dashboard.monthIncome')}
+            Receitas do Mês
           </p>
           <div className="text-base sm:text-lg font-bold balance-positive leading-tight">
             {formatCurrency(periodIncome / 100)}
@@ -135,7 +132,7 @@ export function BalanceCards({
             </div>
           </div>
           <p className="text-xs font-medium text-muted-foreground mb-1">
-            {t('dashboard.monthExpenses')}
+            Despesas do Mês
           </p>
           <div className="text-base sm:text-lg font-bold balance-negative leading-tight">
             {formatCurrency(periodExpenses / 100)}
@@ -159,13 +156,13 @@ export function BalanceCards({
             </div>
           </div>
           <p className="text-xs font-medium text-muted-foreground mb-1">
-            {t('dashboard.creditAvailable')}
+            Crédito Disponível
           </p>
           <div className="text-base sm:text-lg font-bold text-primary leading-tight">
             {formatCurrency(creditAvailable / 100)}
           </div>
           <p className="text-xs text-muted-foreground mt-1 opacity-70">
-            {t('dashboard.cardLimit')}
+            Limite do Cartão
           </p>
         </CardContent>
       </Card>
@@ -194,7 +191,7 @@ export function BalanceCards({
             </div>
           </div>
           <p className="text-xs font-medium text-muted-foreground mb-1">
-            {t('dashboard.cardExpenses')}
+            Despesas no Cartão
           </p>
           <div className="text-base sm:text-lg font-bold text-warning leading-tight">
             {formatCurrency(creditCardExpenses / 100)}
@@ -234,7 +231,7 @@ export function BalanceCards({
             )}
           </div>
           <p className="text-xs font-medium text-muted-foreground mb-1">
-            {t('dashboard.pendingIncome')}
+            Receitas Pendentes
           </p>
           <div className="text-base sm:text-lg font-bold text-success leading-tight">
             {formatCurrency(pendingIncome / 100)}
@@ -274,7 +271,7 @@ export function BalanceCards({
             )}
           </div>
           <p className="text-xs font-medium text-muted-foreground mb-1">
-            {t('dashboard.pendingExpenses')}
+            Despesas Pendentes
           </p>
           <div className="text-base sm:text-lg font-bold text-destructive leading-tight">
             {formatCurrency(pendingExpenses / 100)}

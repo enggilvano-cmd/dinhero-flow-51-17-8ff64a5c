@@ -1,7 +1,6 @@
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CreditCard } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { useSettings } from '@/context/SettingsContext';
 import { Account } from '@/types';
 
@@ -16,7 +15,6 @@ export function AccountsSummary({
   onNavigateToAccounts,
   onAddAccount,
 }: AccountsSummaryProps) {
-  const { t } = useTranslation();
   const { formatCurrency } = useSettings();
 
   return (
@@ -29,13 +27,13 @@ export function AccountsSummary({
       <CardHeader className="pb-2">
         <CardTitle className="text-sm flex items-center gap-2">
           <CreditCard className="h-4 w-4" />
-          {t('dashboard.yourAccounts')} ({accounts.length})
+          Suas Contas ({accounts.length})
         </CardTitle>
       </CardHeader>
       <CardContent className="p-3 pt-0">
         {accounts.length === 0 ? (
           <div className="text-center py-3 text-muted-foreground">
-            <p className="text-xs">{t('dashboard.noAccounts')}</p>
+            <p className="text-xs">Nenhuma conta cadastrada</p>
             <Button
               variant="outline"
               size="sm"
@@ -45,7 +43,7 @@ export function AccountsSummary({
               }}
               className="mt-2 h-7 text-xs"
             >
-              {t('dashboard.addAccount')}
+              Adicionar conta
             </Button>
           </div>
         ) : (
