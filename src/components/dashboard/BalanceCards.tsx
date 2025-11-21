@@ -1,0 +1,289 @@
+import { Card, CardContent } from '@/components/ui/card';
+import { DollarSign, TrendingUp, TrendingDown, CreditCard, Clock } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+
+interface BalanceCardsProps {
+  formatCurrency: (value: number) => string;
+  totalBalance: number;
+  periodIncome: number;
+  periodExpenses: number;
+  creditAvailable: number;
+  creditCardExpenses: number;
+  pendingIncome: number;
+  pendingExpenses: number;
+  pendingIncomeCount: number;
+  pendingExpensesCount: number;
+  getPeriodLabel: () => string;
+  getNavigationParams: () => any;
+  onNavigateToAccounts?: (filterType?: 'credit') => void;
+  onNavigateToTransactions?: (
+    filterType?: 'income' | 'expense',
+    filterStatus?: 'all' | 'pending' | 'completed',
+    dateFilter?: any,
+    filterAccountType?: any,
+    selectedMonth?: Date,
+    customStartDate?: Date,
+    customEndDate?: Date
+  ) => void;
+}
+
+export function BalanceCards({
+  formatCurrency,
+  totalBalance,
+  periodIncome,
+  periodExpenses,
+  creditAvailable,
+  creditCardExpenses,
+  pendingIncome,
+  pendingExpenses,
+  pendingIncomeCount,
+  pendingExpensesCount,
+  getPeriodLabel,
+  getNavigationParams,
+  onNavigateToAccounts,
+  onNavigateToTransactions,
+}: BalanceCardsProps) {
+  const { t } = useTranslation();
+
+  return (
+    <>
+      <Card
+        className="financial-card cursor-pointer apple-interaction"
+        onClick={() => onNavigateToAccounts?.()}
+        role="button"
+        tabIndex={0}
+        aria-label={`${t('dashboard.totalBalance')}: ${formatCurrency(totalBalance / 100)}`}
+      >
+        <CardContent className="p-3 text-center">
+          <div className="flex items-center justify-center gap-2 mb-1">
+            <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center">
+              <DollarSign className="h-3.5 w-3.5 text-primary" />
+            </div>
+          </div>
+          <p className="text-xs font-medium text-muted-foreground mb-1">
+            {t('dashboard.totalBalance')}
+          </p>
+          <div
+            className={`text-base sm:text-lg font-bold leading-tight ${
+              totalBalance >= 0 ? 'balance-positive' : 'balance-negative'
+            }`}
+          >
+            {formatCurrency(totalBalance / 100)}
+          </div>
+          <p className="text-xs text-muted-foreground mt-1 opacity-70">
+            {t('accounts.checking')} • {t('accounts.savings')}
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card
+        className="financial-card cursor-pointer apple-interaction"
+        onClick={() => {
+          const params = getNavigationParams();
+          onNavigateToTransactions?.(
+            'income',
+            'all',
+            params.dateFilter,
+            'all',
+            params.selectedMonth,
+            params.customStartDate,
+            params.customEndDate
+          );
+        }}
+        role="button"
+        tabIndex={0}
+      >
+        <CardContent className="p-3 text-center">
+          <div className="flex items-center justify-center gap-2 mb-1">
+            <div className="w-7 h-7 rounded-full bg-success/10 flex items-center justify-center">
+              <TrendingUp className="h-3.5 w-3.5 text-success" />
+            </div>
+          </div>
+          <p className="text-xs font-medium text-muted-foreground mb-1">
+            {t('dashboard.monthIncome')}
+          </p>
+          <div className="text-base sm:text-lg font-bold balance-positive leading-tight">
+            {formatCurrency(periodIncome / 100)}
+          </div>
+          <p className="text-xs text-muted-foreground mt-1 opacity-70">
+            {getPeriodLabel()}
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card
+        className="financial-card cursor-pointer apple-interaction"
+        onClick={() => {
+          const params = getNavigationParams();
+          onNavigateToTransactions?.(
+            'expense',
+            'all',
+            params.dateFilter,
+            'all',
+            params.selectedMonth,
+            params.customStartDate,
+            params.customEndDate
+          );
+        }}
+        role="button"
+        tabIndex={0}
+      >
+        <CardContent className="p-3 text-center">
+          <div className="flex items-center justify-center gap-2 mb-1">
+            <div className="w-7 h-7 rounded-full bg-destructive/10 flex items-center justify-center">
+              <TrendingDown className="h-3.5 w-3.5 text-destructive" />
+            </div>
+          </div>
+          <p className="text-xs font-medium text-muted-foreground mb-1">
+            {t('dashboard.monthExpenses')}
+          </p>
+          <div className="text-base sm:text-lg font-bold balance-negative leading-tight">
+            {formatCurrency(periodExpenses / 100)}
+          </div>
+          <p className="text-xs text-muted-foreground mt-1 opacity-70">
+            {getPeriodLabel()}
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card
+        className="financial-card cursor-pointer apple-interaction"
+        onClick={() => onNavigateToAccounts?.('credit')}
+        role="button"
+        tabIndex={0}
+      >
+        <CardContent className="p-3 text-center">
+          <div className="flex items-center justify-center gap-2 mb-1">
+            <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center">
+              <CreditCard className="h-3.5 w-3.5 text-primary" />
+            </div>
+          </div>
+          <p className="text-xs font-medium text-muted-foreground mb-1">
+            {t('dashboard.creditAvailable')}
+          </p>
+          <div className="text-base sm:text-lg font-bold text-primary leading-tight">
+            {formatCurrency(creditAvailable / 100)}
+          </div>
+          <p className="text-xs text-muted-foreground mt-1 opacity-70">
+            {t('dashboard.cardLimit')}
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card
+        className="financial-card cursor-pointer apple-interaction"
+        onClick={() => {
+          const params = getNavigationParams();
+          onNavigateToTransactions?.(
+            'expense',
+            'all',
+            params.dateFilter,
+            'credit',
+            params.selectedMonth,
+            params.customStartDate,
+            params.customEndDate
+          );
+        }}
+        role="button"
+        tabIndex={0}
+      >
+        <CardContent className="p-3 text-center">
+          <div className="flex items-center justify-center gap-2 mb-1">
+            <div className="w-7 h-7 rounded-full bg-warning/10 flex items-center justify-center">
+              <CreditCard className="h-3.5 w-3.5 text-warning" />
+            </div>
+          </div>
+          <p className="text-xs font-medium text-muted-foreground mb-1">
+            {t('dashboard.cardExpenses')}
+          </p>
+          <div className="text-base sm:text-lg font-bold text-warning leading-tight">
+            {formatCurrency(creditCardExpenses / 100)}
+          </div>
+          <p className="text-xs text-muted-foreground mt-1 opacity-70">
+            {getPeriodLabel()}
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card
+        className="financial-card cursor-pointer apple-interaction"
+        onClick={() => {
+          const params = getNavigationParams();
+          onNavigateToTransactions?.(
+            'income',
+            'pending',
+            params.dateFilter,
+            'all',
+            params.selectedMonth,
+            params.customStartDate,
+            params.customEndDate
+          );
+        }}
+        role="button"
+        tabIndex={0}
+      >
+        <CardContent className="p-3 text-center">
+          <div className="flex items-center justify-center gap-2 mb-1">
+            <div className="w-7 h-7 rounded-full bg-success/10 flex items-center justify-center">
+              <Clock className="h-3.5 w-3.5 text-success" />
+            </div>
+            {pendingIncomeCount > 0 && (
+              <div className="flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-success text-success-foreground">
+                <span className="text-xs font-semibold">{pendingIncomeCount}</span>
+              </div>
+            )}
+          </div>
+          <p className="text-xs font-medium text-muted-foreground mb-1">
+            {t('dashboard.pendingIncome')}
+          </p>
+          <div className="text-base sm:text-lg font-bold text-success leading-tight">
+            {formatCurrency(pendingIncome / 100)}
+          </div>
+          <p className="text-xs text-muted-foreground mt-1 opacity-70">
+            {getPeriodLabel()}
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card
+        className="financial-card cursor-pointer apple-interaction"
+        onClick={() => {
+          const params = getNavigationParams();
+          onNavigateToTransactions?.(
+            'expense',
+            'pending',
+            params.dateFilter,
+            'all',
+            params.selectedMonth,
+            params.customStartDate,
+            params.customEndDate
+          );
+        }}
+        role="button"
+        tabIndex={0}
+      >
+        <CardContent className="p-3 text-center">
+          <div className="flex items-center justify-center gap-2 mb-1">
+            <div className="w-7 h-7 rounded-full bg-destructive/10 flex items-center justify-center">
+              <Clock className="h-3.5 w-3.5 text-destructive" />
+            </div>
+            {pendingExpensesCount > 0 && (
+              <div className="flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-destructive text-destructive-foreground">
+                <span className="text-xs font-semibold">{pendingExpensesCount}</span>
+              </div>
+            )}
+          </div>
+          <p className="text-xs font-medium text-muted-foreground mb-1">
+            {t('dashboard.pendingExpenses')}
+          </p>
+          <div className="text-base sm:text-lg font-bold text-destructive leading-tight">
+            {formatCurrency(pendingExpenses / 100)}
+          </div>
+          <p className="text-xs text-muted-foreground mt-1 opacity-70">
+            {getPeriodLabel()}
+          </p>
+        </CardContent>
+      </Card>
+    </>
+  );
+}
