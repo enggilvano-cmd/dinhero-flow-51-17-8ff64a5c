@@ -28,8 +28,8 @@ import {
 import { useCategories } from "@/hooks/useCategories";
 import { supabase } from "@/integrations/supabase/client";
 import { CurrencyInput } from "@/components/forms/CurrencyInput";
-import { useTranslation } from "react-i18next";
 import { addTransactionSchema } from "@/lib/validationSchemas";
+import { t } from "@/lib/t";
 import { z } from "zod";
 
 interface Transaction {
@@ -112,7 +112,6 @@ export function AddTransactionModal({
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const { toast } = useToast();
   const { categories } = useCategories();
-  const { t } = useTranslation();
 
   // Atualiza o tipo inicial quando o modal é aberto e reseta quando fechar
   useEffect(() => {

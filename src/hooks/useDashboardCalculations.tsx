@@ -10,8 +10,7 @@ export function useDashboardCalculations(
   dateFilter: DateFilterType,
   selectedMonth: Date,
   customStartDate: Date | undefined,
-  customEndDate: Date | undefined,
-  t: (key: string) => string
+  customEndDate: Date | undefined
 ) {
   const totalBalance = useMemo(() => 
     accounts
@@ -101,7 +100,7 @@ export function useDashboardCalculations(
         locale: ptBR,
       })} - ${format(customEndDate, 'dd/MM/yyyy', { locale: ptBR })}`;
     }
-    return t('dashboard.selectedPeriod');
+    return 'Período Selecionado';
   };
 
   return {

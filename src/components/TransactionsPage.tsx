@@ -1,6 +1,6 @@
 import { createDateFromString } from "@/lib/dateUtils";
-import { useTranslation } from "react-i18next";
 import { useSettings } from "@/context/SettingsContext";
+import { t } from "@/lib/t";
 import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -146,7 +146,6 @@ export function TransactionsPage({
   }, [search]);
 
   const { toast } = useToast();
-  const { t } = useTranslation();
   const { settings } = useSettings();
 
   // =================================================================

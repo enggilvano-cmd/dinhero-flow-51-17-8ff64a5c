@@ -18,8 +18,8 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { logger } from "@/lib/logger";
-import { useTranslation } from 'react-i18next';
 import { supabase } from "@/integrations/supabase/client";
+import { t } from "@/lib/t";
 import type { AppSettings } from "@/context/SettingsContext";
 
 interface SettingsPageProps {
@@ -33,7 +33,6 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
   const [isImporting, setIsImporting] = useState(false);
   const [clearDataConfirmation, setClearDataConfirmation] = useState("");
   const { toast } = useToast();
-  const { t } = useTranslation();
 
   // Sync local settings when props change
   useEffect(() => {
