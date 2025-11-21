@@ -6,6 +6,12 @@ import { logger } from '@/lib/logger';
 import { queryKeys } from '@/lib/queryClient';
 import { createDateFromString } from '@/lib/dateUtils';
 
+interface UseTransactionsParams {
+  page?: number;
+  pageSize?: number;
+  enabled?: boolean;
+}
+
 interface AddTransactionParams {
   description: string;
   amount: number;
@@ -49,14 +55,37 @@ interface TransactionWithRelations extends Transaction {
   };
 }
 
-export function useTransactions() {
+export function useTransactions(params: UseTransactionsParams = {}) {
+  const { page = 0, pageSize = 50, enabled = true } = params;
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
+  // Query for total count
+  const countQuery = useQuery({
+    queryKey: [...queryKeys.transactions(), 'count'],
+    queryFn: async () => {
+      if (!user) return 0;
+
+      const { count, error } = await supabase
+        .from('transactions')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+      return count || 0;
+    },
+    enabled: !!user && enabled,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Query for paginated data
   const query = useQuery({
-    queryKey: queryKeys.transactions(),
+    queryKey: [...queryKeys.transactions(), page, pageSize],
     queryFn: async () => {
       if (!user) return [];
+
+      const from = page * pageSize;
+      const to = from + pageSize - 1;
 
       const { data, error } = await supabase
         .from('transactions')
@@ -104,7 +133,8 @@ export function useTransactions() {
         `)
         .eq('user_id', user.id)
         .order('date', { ascending: false })
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .range(from, to);
 
       if (error) throw error;
 
@@ -116,7 +146,7 @@ export function useTransactions() {
         to_account: Array.isArray(trans.to_accounts) ? trans.to_accounts[0] : trans.to_accounts,
       })) as TransactionWithRelations[];
     },
-    enabled: !!user,
+    enabled: !!user && enabled,
     staleTime: 5 * 60 * 1000,
   });
 
@@ -240,9 +270,14 @@ export function useTransactions() {
 
   return {
     transactions: query.data || [],
-    isLoading: query.isLoading,
-    error: query.error,
+    isLoading: query.isLoading || countQuery.isLoading,
+    error: query.error || countQuery.error,
     refetch: query.refetch,
+    totalCount: countQuery.data || 0,
+    pageCount: Math.ceil((countQuery.data || 0) / pageSize),
+    hasMore: (page + 1) * pageSize < (countQuery.data || 0),
+    currentPage: page,
+    pageSize,
     addTransaction: addMutation.mutateAsync,
     editTransaction: editMutation.mutateAsync,
     deleteTransaction: deleteMutation.mutateAsync,
