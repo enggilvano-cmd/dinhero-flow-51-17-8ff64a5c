@@ -43,9 +43,23 @@ const PlaniFlowApp = () => {
   const [currentPage, setCurrentPage] = useState("dashboard");
   const queryClient = useQueryClient();
 
+  // Pagination state
+  const [transactionsPage, setTransactionsPage] = useState(0);
+  const [transactionsPageSize, setTransactionsPageSize] = useState(50);
+
   // React Query hooks - fonte única de verdade
   const { accounts, isLoading: loadingAccounts } = useAccounts();
-  const { transactions, isLoading: loadingTransactions } = useTransactions();
+  const { 
+    transactions, 
+    isLoading: loadingTransactions,
+    totalCount,
+    pageCount,
+    currentPage: transactionsCurrentPage,
+    pageSize: transactionsCurrentPageSize,
+  } = useTransactions({ 
+    page: transactionsPage, 
+    pageSize: transactionsPageSize 
+  });
   const { categories, loading: loadingCategories } = useCategories();
 
   // Computed loading state otimizado com useMemo
@@ -200,6 +214,12 @@ const PlaniFlowApp = () => {
             initialSelectedMonth={transactionSelectedMonth}
             initialCustomStartDate={transactionCustomStartDate}
             initialCustomEndDate={transactionCustomEndDate}
+            currentPage={transactionsCurrentPage}
+            pageSize={transactionsCurrentPageSize}
+            totalCount={totalCount}
+            pageCount={pageCount}
+            onPageChange={setTransactionsPage}
+            onPageSizeChange={setTransactionsPageSize}
           />
         );
       case "recurring":

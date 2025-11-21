@@ -46,6 +46,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { ResponsiveTable } from "@/components/ui/responsive-table";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 // Interfaces moved to be inline as we're using Supabase types
 import {
   format,
@@ -79,6 +80,12 @@ interface TransactionsPageProps {
   initialSelectedMonth?: Date;
   initialCustomStartDate?: Date;
   initialCustomEndDate?: Date;
+  currentPage: number;
+  pageSize: number;
+  totalCount: number;
+  pageCount: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (pageSize: number) => void;
 }
 
 export function TransactionsPage({
@@ -97,6 +104,12 @@ export function TransactionsPage({
   initialSelectedMonth,
   initialCustomStartDate,
   initialCustomEndDate,
+  currentPage,
+  pageSize,
+  totalCount,
+  pageCount,
+  onPageChange,
+  onPageSizeChange,
 }: TransactionsPageProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] =
@@ -1097,6 +1110,15 @@ export function TransactionsPage({
                 </Button>
               </div>
             }
+          />
+          
+          <PaginationControls
+            currentPage={currentPage}
+            pageCount={pageCount}
+            totalCount={totalCount}
+            pageSize={pageSize}
+            onPageChange={onPageChange}
+            onPageSizeChange={onPageSizeChange}
           />
         </CardContent>
       </Card>
