@@ -27,11 +27,10 @@ import {
 } from "@/lib/dateUtils";
 import { useCategories } from "@/hooks/useCategories";
 import { supabase } from "@/integrations/supabase/client";
-// 1. IMPORTAR O COMPONENTE DE MOEDA CORRETO
 import { CurrencyInput } from "@/components/forms/CurrencyInput";
-// 2. REMOVER A IMPORTAÇÃO DA FUNÇÃO DE CONVERSÃO ANTIGA
-// import { currencyStringToCents } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
+import { addTransactionSchema } from "@/lib/validationSchemas";
+import { z } from "zod";
 
 interface Transaction {
   id?: string;
@@ -110,6 +109,7 @@ export function AddTransactionModal({
     isFixed: false,
   });
   const [customInstallments, setCustomInstallments] = useState("");
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const { toast } = useToast();
   const { categories } = useCategories();
   const { t } = useTranslation();
@@ -135,6 +135,7 @@ export function AddTransactionModal({
         isFixed: false,
       });
       setCustomInstallments("");
+      setValidationErrors({});
       
       // Pré-seleciona a conta se um tipo de conta foi especificado
       if (initialAccountType && accounts.length > 0) {
@@ -202,6 +203,52 @@ export function AddTransactionModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Limpar erros anteriores
+    setValidationErrors({});
+
+    // Validação com Zod
+    try {
+      const validationData = {
+        description: formData.description,
+        amount: formData.amount,
+        date: formData.date,
+        type: formData.type || undefined,
+        category_id: formData.category_id,
+        account_id: formData.account_id,
+        status: formData.status,
+        isInstallment: formData.isInstallment,
+        installments: formData.installments,
+        customInstallments: customInstallments,
+        invoiceMonth: formData.invoiceMonth,
+        isRecurring: formData.isRecurring,
+        recurrenceType: formData.recurrenceType,
+        recurrenceEndDate: formData.recurrenceEndDate,
+        isFixed: formData.isFixed,
+      };
+
+      addTransactionSchema.parse(validationData);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const errors: Record<string, string> = {};
+        error.errors.forEach((err) => {
+          const path = err.path.join(".");
+          errors[path] = err.message;
+        });
+        setValidationErrors(errors);
+
+        // Exibir o primeiro erro em um toast
+        const firstError = error.errors[0];
+        toast({
+          title: "Erro de validação",
+          description: firstError.message,
+          variant: "destructive",
+        });
+        
+        logger.error("Validation errors:", errors);
+        return;
+      }
+    }
+
     const {
       description,
       type,
@@ -213,55 +260,8 @@ export function AddTransactionModal({
       installments: installmentsString,
     } = formData;
 
-    // 4. REMOVER A CONVERSÃO. O VALOR JÁ ESTÁ EM CENTAVOS.
     const numericAmount = formData.amount;
     logger.debug("Valor (em centavos) vindo do estado:", numericAmount);
-
-    // Garantir que o valor convertido seja usado corretamente
-    if (isNaN(numericAmount) || numericAmount <= 0) {
-      toast({
-        title: t("common.error"),
-        description: t("modals.addTransaction.validation.invalidAmount"),
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!description.trim()) {
-      toast({
-        title: t("common.error"),
-        description: t("modals.addTransaction.validation.descriptionRequired"),
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!type) {
-      toast({
-        title: t("common.error"),
-        description: t("modals.addTransaction.validation.typeRequired"),
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!category_id) {
-      toast({
-        title: t("common.error"),
-        description: t("modals.addTransaction.validation.categoryRequired"),
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!account_id) {
-      toast({
-        title: t("common.error"),
-        description: t("modals.addTransaction.validation.accountRequired"),
-        variant: "destructive",
-      });
-      return;
-    }
 
     const installments = parseInt(installmentsString === "custom" ? customInstallments : installmentsString);
     if (
@@ -595,6 +595,9 @@ export function AddTransactionModal({
                 setFormData((prev) => ({ ...prev, description: e.target.value }))
               }
             />
+            {validationErrors.description && (
+              <p className="text-sm text-destructive">{validationErrors.description}</p>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -619,6 +622,9 @@ export function AddTransactionModal({
                   <SelectItem value="expense">{t("transactions.expense")}</SelectItem>
                 </SelectContent>
               </Select>
+              {validationErrors.type && (
+                <p className="text-sm text-destructive">{validationErrors.type}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -632,6 +638,9 @@ export function AddTransactionModal({
                 }}
                 className="h-10 sm:h-11"
               />
+              {validationErrors.amount && (
+                <p className="text-sm text-destructive">{validationErrors.amount}</p>
+              )}
             </div>
           </div>
 
@@ -663,6 +672,9 @@ export function AddTransactionModal({
                   ))}
                 </SelectContent>
               </Select>
+              {validationErrors.category_id && (
+                <p className="text-sm text-destructive">{validationErrors.category_id}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -676,6 +688,9 @@ export function AddTransactionModal({
                 }
                 className="[color-scheme:light] dark:[color-scheme:dark]"
               />
+              {validationErrors.date && (
+                <p className="text-sm text-destructive">{validationErrors.date}</p>
+              )}
             </div>
           </div>
 
@@ -707,6 +722,9 @@ export function AddTransactionModal({
                   ))}
                 </SelectContent>
               </Select>
+              {validationErrors.account_id && (
+                <p className="text-sm text-destructive">{validationErrors.account_id}</p>
+              )}
             </div>
 
             <div className="space-y-2">
