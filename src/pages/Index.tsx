@@ -488,7 +488,6 @@ const PlaniFlowApp = () => {
         }}
         onAddTransaction={handleAddTransaction}
         onAddInstallmentTransactions={handleAddInstallmentTransactions}
-        onSuccess={reloadTransactions}
         accounts={accounts}
         initialType={transactionInitialType}
         initialAccountType={transactionInitialAccountType}
