@@ -13,7 +13,6 @@ interface TransactionActionsProps {
   onEdit: (transaction: any) => void;
   onDelete: (transactionId: string, scope?: EditScope) => void;
   onMarkAsPaid?: (transaction: any) => void;
-  t: (key: string) => string;
 }
 
 export function TransactionActions({
@@ -21,7 +20,6 @@ export function TransactionActions({
   onEdit,
   onDelete,
   onMarkAsPaid,
-  t,
 }: TransactionActionsProps) {
   const handleDelete = () => {
     if (transaction.installments && transaction.installments > 1) {
@@ -41,17 +39,17 @@ export function TransactionActions({
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => onEdit(transaction)}>
           <Edit className="mr-2 h-4 w-4" />
-          {t("common.edit")}
+          Editar
         </DropdownMenuItem>
         {transaction.status === "pending" && onMarkAsPaid && (
           <DropdownMenuItem onClick={() => onMarkAsPaid(transaction)}>
             <CheckCircle className="mr-2 h-4 w-4" />
-            {t("transactions.markAsPaid")}
+            Marcar como Pago
           </DropdownMenuItem>
         )}
         <DropdownMenuItem onClick={handleDelete} className="text-destructive">
           <Trash2 className="mr-2 h-4 w-4" />
-          {t("common.delete")}
+          Excluir
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useT } from '@/i18n/useT';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -42,7 +41,6 @@ interface AuditLog {
 }
 
 export function UserManagement() {
-  const { t, i18n } = useT();
   const { isAdmin, profile } = useAuth();
   const { toast } = useToast();
   const [users, setUsers] = useState<Profile[]>([]);
@@ -299,17 +297,11 @@ export function UserManagement() {
   };
 
   const getActionLabel = (action: string) => {
-    const actionKey = `userManagement.auditLog.actions.${action}`;
-    const translated = t(actionKey);
-    // Se a tradução retornar a chave, usar fallback com formatação
-    return translated !== actionKey ? translated : action.replace(/_/g, ' ');
+    return action.replace(/_/g, ' ');
   };
 
   const getResourceTypeLabel = (resourceType: string) => {
-    const resourceKey = `userManagement.auditLog.resourceTypes.${resourceType}`;
-    const translated = t(resourceKey);
-    // Se a tradução retornar a chave, usar o valor original
-    return translated !== resourceKey ? translated : resourceType;
+    return resourceType;
   };
 
   const setSubscriptionDays = async (userId: string, days: number) => {
@@ -339,7 +331,7 @@ export function UserManagement() {
       fetchUsers();
     } catch (error: any) {
       toast({
-        title: t('common.error'),
+        title: 'Erro',
         description: error.message,
         variant: 'destructive',
       });
@@ -613,7 +605,7 @@ export function UserManagement() {
                                       }
                                     }}
                                   >
-                                    {t('common.ok')}
+                                    OK
                                   </Button>
                                   {user.subscription_expires_at && (
                                     <span className="text-xs text-muted-foreground">
@@ -668,13 +660,13 @@ export function UserManagement() {
                                 </AlertDialogHeader>
                                 <AlertDialogFooter className="flex-col sm:flex-row gap-2">
                                   <AlertDialogCancel className="text-xs sm:text-sm m-0">
-                                    {t('common.cancel')}
+                                    Cancelar
                                   </AlertDialogCancel>
                                   <AlertDialogAction
                                     onClick={() => deleteUser(user.user_id)}
                                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90 text-xs sm:text-sm m-0"
                                   >
-                                    {t('common.delete')}
+                                    Excluir
                                   </AlertDialogAction>
                                 </AlertDialogFooter>
                               </AlertDialogContent>
@@ -740,10 +732,10 @@ export function UserManagement() {
                         <TableCell className="py-3 sm:py-4 pr-3 sm:pr-4">
                           <div className="text-xs sm:text-sm text-muted-foreground">
                             <span className="hidden sm:inline">
-                              {new Date(log.created_at).toLocaleString(i18n.language)}
+                              {new Date(log.created_at).toLocaleString('pt-BR')}
                             </span>
                             <span className="sm:hidden">
-                              {new Date(log.created_at).toLocaleDateString(i18n.language, { 
+                              {new Date(log.created_at).toLocaleDateString('pt-BR', { 
                                 day: '2-digit',
                                 month: '2-digit'
                               })}

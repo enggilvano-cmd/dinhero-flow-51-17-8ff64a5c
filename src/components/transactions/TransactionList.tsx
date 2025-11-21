@@ -132,7 +132,6 @@ export function TransactionList({
           onEdit={onEdit}
           onDelete={onDelete}
           onMarkAsPaid={onMarkAsPaid}
-          t={t}
         />
       ),
     },

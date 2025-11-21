@@ -180,7 +180,6 @@ export function InfiniteTransactionList({
                     onEdit={onEdit}
                     onDelete={onDelete}
                     onMarkAsPaid={onMarkAsPaid}
-                    t={t}
                   />
                 </div>
               </div>
