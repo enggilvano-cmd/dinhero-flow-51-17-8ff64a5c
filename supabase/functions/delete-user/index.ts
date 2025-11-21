@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.56.0'
+import { rateLimiters } from '../_shared/rate-limiter.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -55,6 +56,19 @@ Deno.serve(async (req) => {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       )
+    }
+
+    // Rate limiting - Strict para operações críticas de admin
+    const rateLimitResponse = rateLimiters.strict.middleware(req, user.id);
+    if (rateLimitResponse) {
+      console.warn('[delete-user] WARN: Rate limit exceeded for user:', user.id);
+      return new Response(
+        rateLimitResponse.body,
+        { 
+          status: rateLimitResponse.status, 
+          headers: { ...corsHeaders, ...Object.fromEntries(rateLimitResponse.headers.entries()) } 
+        }
+      );
     }
 
     // Get the user ID to delete from the request body
