@@ -7,6 +7,8 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { StatCardsSkeletonGrid } from "@/components/transactions/StatCardSkeleton";
+import { TransactionTableSkeleton } from "@/components/transactions/TransactionTableSkeleton";
 import {
   Select,
   SelectContent,
@@ -98,6 +100,7 @@ interface TransactionsPageProps {
   onSortByChange: (sortBy: "date" | "amount") => void;
   sortOrder: "asc" | "desc";
   onSortOrderChange: (order: "asc" | "desc") => void;
+  isLoading?: boolean;
 }
 
 export function TransactionsPage({
@@ -133,6 +136,7 @@ export function TransactionsPage({
   onSortByChange,
   sortOrder,
   onSortOrderChange,
+  isLoading = false,
 }: TransactionsPageProps) {
   const [markAsPaidModalOpen, setMarkAsPaidModalOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<any | null>(null);
@@ -658,85 +662,89 @@ export function TransactionsPage({
       </div>
 
       {/* Summary Cards (Usarão a 'formatCurrency' local corrigida) */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="financial-card">
-          <CardContent className="p-3">
-            <div className="flex flex-col items-center text-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <BarChart3 className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-caption font-medium text-muted-foreground">
-                  {t("common.total")} {t("transactions.title")}
-                </p>
-                <div className="text-responsive-xl font-bold leading-tight">
-                  {totalCount}
+      {isLoading ? (
+        <StatCardsSkeletonGrid />
+      ) : (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card className="financial-card">
+            <CardContent className="p-3">
+              <div className="flex flex-col items-center text-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <BarChart3 className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-caption font-medium text-muted-foreground">
+                    {t("common.total")} {t("transactions.title")}
+                  </p>
+                  <div className="text-responsive-xl font-bold leading-tight">
+                    {totalCount}
+                  </div>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card className="financial-card">
-          <CardContent className="p-3">
-            <div className="flex flex-col items-center text-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center">
-                <TrendingUp className="h-5 w-5 text-success" />
-              </div>
-              <div>
-                <p className="text-caption font-medium text-muted-foreground">
-                  {t("dashboard.revenues")}
-                </p>
-                <div className="text-responsive-xl font-bold balance-positive leading-tight">
-                  {formatCurrency(totals.income)}
+          <Card className="financial-card">
+            <CardContent className="p-3">
+              <div className="flex flex-col items-center text-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center">
+                  <TrendingUp className="h-5 w-5 text-success" />
+                </div>
+                <div>
+                  <p className="text-caption font-medium text-muted-foreground">
+                    {t("dashboard.revenues")}
+                  </p>
+                  <div className="text-responsive-xl font-bold balance-positive leading-tight">
+                    {formatCurrency(totals.income)}
+                  </div>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card className="financial-card">
-          <CardContent className="p-3">
-            <div className="flex flex-col items-center text-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center">
-                <TrendingDown className="h-5 w-5 text-destructive" />
-              </div>
-              <div>
-                <p className="text-caption font-medium text-muted-foreground">
-                  {t("dashboard.expenses")}
-                </p>
-                <div className="text-responsive-xl font-bold balance-negative leading-tight">
-                  {formatCurrency(totals.expenses)}
+          <Card className="financial-card">
+            <CardContent className="p-3">
+              <div className="flex flex-col items-center text-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center">
+                  <TrendingDown className="h-5 w-5 text-destructive" />
+                </div>
+                <div>
+                  <p className="text-caption font-medium text-muted-foreground">
+                    {t("dashboard.expenses")}
+                  </p>
+                  <div className="text-responsive-xl font-bold balance-negative leading-tight">
+                    {formatCurrency(totals.expenses)}
+                  </div>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card className="financial-card">
-          <CardContent className="p-3">
-            <div className="flex flex-col items-center text-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <DollarSign className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-caption font-medium text-muted-foreground">
-                  {t("dashboard.balance")}
-                </p>
-                <div
-                  className={`text-responsive-xl font-bold leading-tight ${
-                    totals.income - totals.expenses >= 0
-                      ? "balance-positive"
-                      : "balance-negative"
-                  }`}
-                >
-                  {formatCurrency(totals.income - totals.expenses)}
+          <Card className="financial-card">
+            <CardContent className="p-3">
+              <div className="flex flex-col items-center text-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <DollarSign className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-caption font-medium text-muted-foreground">
+                    {t("dashboard.balance")}
+                  </p>
+                  <div
+                    className={`text-responsive-xl font-bold leading-tight ${
+                      totals.income - totals.expenses >= 0
+                        ? "balance-positive"
+                        : "balance-negative"
+                    }`}
+                  >
+                    {formatCurrency(totals.income - totals.expenses)}
+                  </div>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* ================================================================= */}
       {/* BLOCO DE FILTROS */}
@@ -1037,43 +1045,47 @@ export function TransactionsPage({
       </Card>
 
       {/* Transactions List */}
-      <Card className="financial-card">
-        <CardHeader className="px-4 sm:px-6">
-          <CardTitle className="text-lg sm:text-xl">
-            {t("transactions.title")} ({totalCount})
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          <ResponsiveTable
-            data={transactions}
-            columns={tableColumns}
-            keyField="id"
-            emptyState={
-              <div className="text-center py-8 sm:py-12 px-4 sm:px-6">
-                <Calendar className="h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-3 sm:mb-4 text-muted-foreground opacity-50" />
-                <h3 className="text-base sm:text-lg font-semibold mb-2">
-                  {t("transactions.noTransactions")}
-                </h3>
-                <p className="text-sm sm:text-base text-muted-foreground mb-4">
-                  {t("dashboard.addFirstTransaction")}
-                </p>
-                <Button onClick={onAddTransaction} className="text-sm">
-                  {t("transactions.addTransaction")}
-                </Button>
-              </div>
-            }
-          />
-          
-          <PaginationControls
-            currentPage={currentPage}
-            pageCount={pageCount}
-            totalCount={totalCount}
-            pageSize={pageSize}
-            onPageChange={onPageChange}
-            onPageSizeChange={onPageSizeChange}
-          />
-        </CardContent>
-      </Card>
+      {isLoading ? (
+        <TransactionTableSkeleton rows={pageSize} />
+      ) : (
+        <Card className="financial-card">
+          <CardHeader className="px-4 sm:px-6">
+            <CardTitle className="text-lg sm:text-xl">
+              {t("transactions.title")} ({totalCount})
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <ResponsiveTable
+              data={transactions}
+              columns={tableColumns}
+              keyField="id"
+              emptyState={
+                <div className="text-center py-8 sm:py-12 px-4 sm:px-6">
+                  <Calendar className="h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-3 sm:mb-4 text-muted-foreground opacity-50" />
+                  <h3 className="text-base sm:text-lg font-semibold mb-2">
+                    {t("transactions.noTransactions")}
+                  </h3>
+                  <p className="text-sm sm:text-base text-muted-foreground mb-4">
+                    {t("dashboard.addFirstTransaction")}
+                  </p>
+                  <Button onClick={onAddTransaction} className="text-sm">
+                    {t("transactions.addTransaction")}
+                  </Button>
+                </div>
+              }
+            />
+            
+            <PaginationControls
+              currentPage={currentPage}
+              pageCount={pageCount}
+              totalCount={totalCount}
+              pageSize={pageSize}
+              onPageChange={onPageChange}
+              onPageSizeChange={onPageSizeChange}
+            />
+          </CardContent>
+        </Card>
+      )}
 
       <ImportTransactionsModal
         open={importModalOpen}

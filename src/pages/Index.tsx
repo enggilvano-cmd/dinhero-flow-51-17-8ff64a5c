@@ -234,6 +234,7 @@ const PlaniFlowApp = () => {
             onSortByChange={setTransactionsSortBy}
             sortOrder={transactionsSortOrder}
             onSortOrderChange={setTransactionsSortOrder}
+            isLoading={loadingTransactions}
           />
         );
       case "recurring":
