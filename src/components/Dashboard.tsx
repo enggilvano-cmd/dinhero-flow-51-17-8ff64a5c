@@ -508,32 +508,36 @@ export function Dashboard({
             onClick={onTransfer}
             variant="outline"
             className="gap-2 apple-interaction h-9 text-xs sm:text-sm"
+            aria-label={t('dashboard.transfer')}
           >
-            <ArrowRightLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <ArrowRightLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden="true" />
             <span>{t('dashboard.transfer')}</span>
           </Button>
           <Button
             onClick={onAddExpense || onAddTransaction}
             variant="destructive"
             className="gap-2 apple-interaction h-9 text-xs sm:text-sm"
+            aria-label={t('dashboard.expense')}
           >
-            <TrendingDown className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <TrendingDown className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden="true" />
             <span>{t('dashboard.expense')}</span>
           </Button>
           <Button
             onClick={onAddIncome || onAddTransaction}
             variant="default"
             className="gap-2 apple-interaction h-9 text-xs sm:text-sm bg-success hover:bg-success/90"
+            aria-label={t('dashboard.income')}
           >
-            <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden="true" />
             <span>{t('dashboard.income')}</span>
           </Button>
           <Button
             onClick={onAddCreditExpense || onAddTransaction}
             variant="outline"
             className="gap-2 apple-interaction h-9 text-xs sm:text-sm border-warning text-warning hover:bg-warning hover:text-warning-foreground"
+            aria-label={t('dashboard.creditCard')}
           >
-            <CreditCard className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <CreditCard className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden="true" />
             <span>{t('dashboard.creditCard')}</span>
           </Button>
         </div>
@@ -547,7 +551,10 @@ export function Dashboard({
             <CardContent className="p-3">
               <div className="space-y-3">
                 <div>
-                  <label className="text-xs font-medium mb-1 block">
+                  <label 
+                    id="period-filter-label" 
+                    className="text-xs font-medium mb-1 block"
+                  >
                     {t('dashboard.period')}
                   </label>
                   <Select
@@ -556,7 +563,11 @@ export function Dashboard({
                       value: "all" | "current_month" | "month_picker" | "custom"
                     ) => setDateFilter(value)}
                   >
-                    <SelectTrigger className="h-8 text-xs">
+                    <SelectTrigger 
+                      className="h-8 text-xs"
+                      aria-labelledby="period-filter-label"
+                      aria-label={t('dashboard.period')}
+                    >
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -574,7 +585,10 @@ export function Dashboard({
 
                 {dateFilter === "month_picker" && (
                   <div>
-                    <label className="text-xs font-medium mb-1 block">
+                    <label 
+                      id="month-navigation-label"
+                      className="text-xs font-medium mb-1 block"
+                    >
                       {t('dashboard.month')}
                     </label>
                     <div className="flex items-center gap-1 h-8 px-2 border border-input rounded-md">
@@ -583,10 +597,15 @@ export function Dashboard({
                         size="sm"
                         onClick={goToPreviousMonth}
                         className="h-5 w-5 p-0"
+                        aria-label={t('dashboard.previousMonth') || 'Mês anterior'}
                       >
-                        <ChevronLeft className="h-3 w-3" />
+                        <ChevronLeft className="h-3 w-3" aria-hidden="true" />
                       </Button>
-                      <span className="flex-1 text-center text-xs font-medium">
+                      <span 
+                        className="flex-1 text-center text-xs font-medium"
+                        aria-live="polite"
+                        aria-atomic="true"
+                      >
                         {format(selectedMonth, "MMM/yy", { locale: ptBR })}
                       </span>
                       <Button
@@ -594,8 +613,9 @@ export function Dashboard({
                         size="sm"
                         onClick={goToNextMonth}
                         className="h-5 w-5 p-0"
+                        aria-label={t('dashboard.nextMonth') || 'Próximo mês'}
                       >
-                        <ChevronRight className="h-3 w-3" />
+                        <ChevronRight className="h-3 w-3" aria-hidden="true" />
                       </Button>
                     </div>
                   </div>
@@ -604,7 +624,10 @@ export function Dashboard({
                 {dateFilter === "custom" && (
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="text-xs font-medium mb-1 block">
+                      <label 
+                        id="start-date-label"
+                        className="text-xs font-medium mb-1 block"
+                      >
                         {t('dashboard.start')}
                       </label>
                       <Popover
@@ -619,8 +642,11 @@ export function Dashboard({
                               "w-full h-8 justify-start text-left font-normal text-xs",
                               !customStartDate && "text-muted-foreground"
                             )}
+                            aria-labelledby="start-date-label"
+                            aria-label={t('dashboard.start')}
+                            aria-expanded={startDatePickerOpen}
                           >
-                            <CalendarIcon className="mr-1 h-3 w-3" />
+                            <CalendarIcon className="mr-1 h-3 w-3" aria-hidden="true" />
                             <span className="truncate">
                               {customStartDate
                                 ? format(customStartDate, "dd/MM", {
@@ -646,7 +672,10 @@ export function Dashboard({
                     </div>
 
                     <div>
-                      <label className="text-xs font-medium mb-1 block">
+                      <label 
+                        id="end-date-label"
+                        className="text-xs font-medium mb-1 block"
+                      >
                         {t('dashboard.end')}
                       </label>
                       <Popover
@@ -661,8 +690,11 @@ export function Dashboard({
                               "w-full h-8 justify-start text-left font-normal text-xs",
                               !customEndDate && "text-muted-foreground"
                             )}
+                            aria-labelledby="end-date-label"
+                            aria-label={t('dashboard.end')}
+                            aria-expanded={endDatePickerOpen}
                           >
-                            <CalendarIcon className="mr-1 h-3 w-3" />
+                            <CalendarIcon className="mr-1 h-3 w-3" aria-hidden="true" />
                             <span className="truncate">
                               {customEndDate
                                 ? format(customEndDate, "dd/MM", {
@@ -696,6 +728,15 @@ export function Dashboard({
           <Card
             className="financial-card cursor-pointer apple-interaction"
             onClick={() => onNavigateToAccounts?.()}
+            role="button"
+            tabIndex={0}
+            aria-label={`${t('dashboard.totalBalance')}: ${formatCurrency(totalBalance / 100)}`}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onNavigateToAccounts?.();
+              }
+            }}
           >
             <CardContent className="p-3 text-center">
               <div className="flex items-center justify-center gap-2 mb-1">
@@ -734,6 +775,24 @@ export function Dashboard({
                 params.customEndDate
               );
             }}
+            role="button"
+            tabIndex={0}
+            aria-label={`${t('dashboard.monthIncome')}: ${formatCurrency(periodIncome / 100)}`}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                const params = getNavigationParams();
+                onNavigateToTransactions?.(
+                  "income",
+                  "all",
+                  params.dateFilter,
+                  "all",
+                  params.selectedMonth,
+                  params.customStartDate,
+                  params.customEndDate
+                );
+              }
+            }}
           >
             <CardContent className="p-3 text-center">
               <div className="flex items-center justify-center gap-2 mb-1">
@@ -769,6 +828,24 @@ export function Dashboard({
                 params.customEndDate
               );
             }}
+            role="button"
+            tabIndex={0}
+            aria-label={`${t('dashboard.monthExpenses')}: ${formatCurrency(periodExpenses / 100)}`}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                const params = getNavigationParams();
+                onNavigateToTransactions?.(
+                  "expense",
+                  "all",
+                  params.dateFilter,
+                  "all",
+                  params.selectedMonth,
+                  params.customStartDate,
+                  params.customEndDate
+                );
+              }
+            }}
           >
             <CardContent className="p-3 text-center">
               <div className="flex items-center justify-center gap-2 mb-1">
@@ -793,6 +870,15 @@ export function Dashboard({
           <Card
             className="financial-card cursor-pointer apple-interaction"
             onClick={() => onNavigateToAccounts?.("credit")}
+            role="button"
+            tabIndex={0}
+            aria-label={`${t('dashboard.creditAvailable')}: ${formatCurrency(creditAvailable / 100)}`}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onNavigateToAccounts?.("credit");
+              }
+            }}
           >
             <CardContent className="p-3 text-center">
               <div className="flex items-center justify-center gap-2 mb-1">
@@ -828,6 +914,24 @@ export function Dashboard({
                 params.customEndDate
               );
             }}
+            role="button"
+            tabIndex={0}
+            aria-label={`${t('dashboard.cardExpenses')}: ${formatCurrency(creditCardExpenses / 100)}`}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                const params = getNavigationParams();
+                onNavigateToTransactions?.(
+                  "expense",
+                  "all",
+                  params.dateFilter,
+                  "credit",
+                  params.selectedMonth,
+                  params.customStartDate,
+                  params.customEndDate
+                );
+              }
+            }}
           >
             <CardContent className="p-3 text-center">
               <div className="flex items-center justify-center gap-2 mb-1">
@@ -862,6 +966,24 @@ export function Dashboard({
                 params.customStartDate,
                 params.customEndDate
               );
+            }}
+            role="button"
+            tabIndex={0}
+            aria-label={`${t('dashboard.pendingIncome')}: ${formatCurrency(pendingIncome / 100)} ${pendingIncomeCount > 0 ? `(${pendingIncomeCount} ${pendingIncomeCount === 1 ? 'transação' : 'transações'})` : ''}`}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                const params = getNavigationParams();
+                onNavigateToTransactions?.(
+                  "income",
+                  "pending",
+                  params.dateFilter,
+                  "all",
+                  params.selectedMonth,
+                  params.customStartDate,
+                  params.customEndDate
+                );
+              }
             }}
           >
             <CardContent className="p-3 text-center">
@@ -902,6 +1024,24 @@ export function Dashboard({
                 params.customStartDate,
                 params.customEndDate
               );
+            }}
+            role="button"
+            tabIndex={0}
+            aria-label={`${t('dashboard.pendingExpenses')}: ${formatCurrency(pendingExpenses / 100)} ${pendingExpensesCount > 0 ? `(${pendingExpensesCount} ${pendingExpensesCount === 1 ? 'transação' : 'transações'})` : ''}`}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                const params = getNavigationParams();
+                onNavigateToTransactions?.(
+                  "expense",
+                  "pending",
+                  params.dateFilter,
+                  "all",
+                  params.selectedMonth,
+                  params.customStartDate,
+                  params.customEndDate
+                );
+              }
             }}
           >
             <CardContent className="p-3 text-center">
@@ -949,8 +1089,10 @@ export function Dashboard({
                     size="sm"
                     onClick={() => setChartScale("monthly")}
                     className="h-7 px-2 text-xs w-full sm:w-auto"
+                    aria-label={t('dashboard.monthlyView') || 'Visualização mensal'}
+                    aria-pressed={chartScale === "monthly"}
                   >
-                    <BarChart3 className="h-3 w-3 mr-1" />
+                    <BarChart3 className="h-3 w-3 mr-1" aria-hidden="true" />
                     {t('dashboard.monthly')}
                   </Button>
                   <Button
@@ -958,8 +1100,10 @@ export function Dashboard({
                     size="sm"
                     onClick={() => setChartScale("daily")}
                     className="h-7 px-2 text-xs w-full sm:w-auto"
+                    aria-label={t('dashboard.dailyView') || 'Visualização diária'}
+                    aria-pressed={chartScale === "daily"}
                   >
-                    <BarChart3 className="h-3 w-3 mr-1" />
+                    <BarChart3 className="h-3 w-3 mr-1" aria-hidden="true" />
                     {t('dashboard.daily')}
                   </Button>
 
@@ -968,7 +1112,10 @@ export function Dashboard({
                       value={chartYear.toString()}
                       onValueChange={(value) => setChartYear(parseInt(value))}
                     >
-                      <SelectTrigger className="h-7 w-full text-xs sm:w-20">
+                      <SelectTrigger 
+                        className="h-7 w-full text-xs sm:w-20"
+                        aria-label={t('dashboard.selectYear') || 'Selecionar ano'}
+                      >
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -1226,6 +1373,15 @@ export function Dashboard({
           <Card
             className="financial-card cursor-pointer apple-interaction"
             onClick={() => onNavigateToAccounts?.()}
+            role="button"
+            tabIndex={0}
+            aria-label={`${t('dashboard.yourAccounts')}: ${accounts.length} ${accounts.length === 1 ? 'conta' : 'contas'}`}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onNavigateToAccounts?.();
+              }
+            }}
           >
             <CardHeader className="pb-2">
               <CardTitle className="text-sm flex items-center gap-2">
@@ -1245,6 +1401,7 @@ export function Dashboard({
                       onAddAccount?.();
                     }}
                     className="mt-2 h-7 text-xs"
+                    aria-label={t('dashboard.addAccount')}
                   >
                     {t('dashboard.addAccount')}
                   </Button>
@@ -1304,6 +1461,15 @@ export function Dashboard({
           <Card
             className="financial-card cursor-pointer apple-interaction"
             onClick={() => onNavigateToTransactions?.()}
+            role="button"
+            tabIndex={0}
+            aria-label={`${t('dashboard.recentTransactions')}: ${filteredTransactions.length} ${filteredTransactions.length === 1 ? 'transação' : 'transações'}`}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onNavigateToTransactions?.();
+              }
+            }}
           >
             <CardHeader className="pb-2">
               <CardTitle className="text-sm flex items-center gap-2">
@@ -1323,6 +1489,7 @@ export function Dashboard({
                       onAddTransaction();
                     }}
                     className="mt-2 h-7 text-xs"
+                    aria-label="Adicionar primeira transação"
                   >
                     Adicionar primeira
                   </Button>
