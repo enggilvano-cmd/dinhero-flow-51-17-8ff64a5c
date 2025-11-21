@@ -3,6 +3,7 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
+import { setSentryUser } from '@/lib/sentry';
 
 interface Profile {
   id: string;
@@ -65,14 +66,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       
       logger.debug('Profile fetched:', data);
-      setProfile(data ? {
+      const profileData = data ? {
         ...data,
         full_name: data.full_name ?? undefined,
         avatar_url: data.avatar_url ?? undefined,
         whatsapp: data.whatsapp ?? undefined,
         trial_expires_at: data.trial_expires_at ?? undefined,
         subscription_expires_at: data.subscription_expires_at ?? undefined,
-      } : null);
+      } : null;
+      
+      setProfile(profileData);
+      
+      // Set Sentry user context for error tracking
+      if (profileData) {
+        setSentryUser({
+          id: profileData.user_id,
+          email: profileData.email,
+          username: profileData.full_name || profileData.email,
+          role: profileData.role,
+        });
+      }
     } catch (error) {
       logger.error('Error fetching profile:', error);
       toast({
@@ -184,6 +197,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           })();
         } else {
           setProfile(null);
+          setSentryUser(null); // Clear Sentry user context on sign out
         }
         
         setLoading(false);
