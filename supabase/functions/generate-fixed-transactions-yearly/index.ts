@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.56.0'
+import { rateLimiters } from '../_shared/rate-limiter.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -24,6 +25,20 @@ Deno.serve(async (req) => {
 
   try {
     console.log('[generate-fixed] INFO: Starting yearly fixed transactions generation...');
+
+    // Rate limiting - Lenient para jobs automatizados
+    const identifier = req.headers.get('x-job-id') || 'fixed-job';
+    const rateLimitResponse = rateLimiters.lenient.middleware(req, identifier);
+    if (rateLimitResponse) {
+      console.warn('[generate-fixed] WARN: Rate limit exceeded');
+      return new Response(
+        rateLimitResponse.body,
+        { 
+          status: rateLimitResponse.status, 
+          headers: { ...corsHeaders, ...Object.fromEntries(rateLimitResponse.headers.entries()) } 
+        }
+      );
+    }
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
