@@ -28,6 +28,27 @@ interface DeleteTransactionParams {
   scope?: 'current' | 'all';
 }
 
+interface TransactionWithRelations extends Transaction {
+  category?: {
+    id: string;
+    name: string;
+    type: 'income' | 'expense' | 'both';
+    color: string;
+  };
+  account?: {
+    id: string;
+    name: string;
+    type: 'checking' | 'savings' | 'credit' | 'investment';
+    color: string;
+  };
+  to_account?: {
+    id: string;
+    name: string;
+    type: 'checking' | 'savings' | 'credit' | 'investment';
+    color: string;
+  };
+}
+
 export function useTransactions() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -39,8 +60,50 @@ export function useTransactions() {
 
       const { data, error } = await supabase
         .from('transactions')
-        .select('*')
+        .select(`
+          id,
+          description,
+          amount,
+          date,
+          type,
+          status,
+          category_id,
+          account_id,
+          to_account_id,
+          installments,
+          current_installment,
+          parent_transaction_id,
+          linked_transaction_id,
+          is_recurring,
+          is_fixed,
+          recurrence_type,
+          recurrence_end_date,
+          invoice_month,
+          invoice_month_overridden,
+          reconciled,
+          created_at,
+          updated_at,
+          categories:category_id (
+            id,
+            name,
+            type,
+            color
+          ),
+          accounts:account_id (
+            id,
+            name,
+            type,
+            color
+          ),
+          to_accounts:to_account_id (
+            id,
+            name,
+            type,
+            color
+          )
+        `)
         .eq('user_id', user.id)
+        .order('date', { ascending: false })
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -48,7 +111,10 @@ export function useTransactions() {
       return (data || []).map((trans) => ({
         ...trans,
         date: createDateFromString(trans.date),
-      })) as Transaction[];
+        category: Array.isArray(trans.categories) ? trans.categories[0] : trans.categories,
+        account: Array.isArray(trans.accounts) ? trans.accounts[0] : trans.accounts,
+        to_account: Array.isArray(trans.to_accounts) ? trans.to_accounts[0] : trans.to_accounts,
+      })) as TransactionWithRelations[];
     },
     enabled: !!user,
     staleTime: 5 * 60 * 1000,

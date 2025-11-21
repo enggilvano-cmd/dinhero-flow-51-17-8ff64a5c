@@ -15,8 +15,9 @@ export function useCategories() {
       
       const { data, error } = await supabase
         .from('categories')
-        .select('*')
-        .eq('user_id', user.id);
+        .select('id, name, type, color, created_at, updated_at')
+        .eq('user_id', user.id)
+        .order('name', { ascending: true });
         
       if (error) {
         logger.error('Error loading categories:', error);

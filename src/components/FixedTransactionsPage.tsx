@@ -111,8 +111,9 @@ export function FixedTransactionsPage() {
 
       const { data, error } = await supabase
         .from("accounts")
-        .select("*")
-        .eq("user_id", user.id);
+        .select("id, name, type, balance, color, limit_amount, due_date, closing_date")
+        .eq("user_id", user.id)
+        .order("name", { ascending: true });
 
       if (error) throw error;
       setAccounts(data || []);

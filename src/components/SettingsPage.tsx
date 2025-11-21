@@ -73,12 +73,30 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      // Export all user data
+      // Export all user data with specific columns
       const [accounts, transactions, categories, settings] = await Promise.all([
-        supabase.from('accounts').select('*').eq('user_id', user.id),
-        supabase.from('transactions').select('*').eq('user_id', user.id),
-        supabase.from('categories').select('*').eq('user_id', user.id),
-        supabase.from('user_settings').select('*').eq('user_id', user.id).single()
+        supabase
+          .from('accounts')
+          .select('id, name, type, balance, limit_amount, due_date, closing_date, color, created_at, updated_at')
+          .eq('user_id', user.id),
+        supabase
+          .from('transactions')
+          .select(`
+            id, description, amount, date, type, status, category_id, account_id, to_account_id,
+            installments, current_installment, parent_transaction_id, linked_transaction_id,
+            is_recurring, is_fixed, recurrence_type, recurrence_end_date, invoice_month,
+            invoice_month_overridden, reconciled, created_at, updated_at
+          `)
+          .eq('user_id', user.id),
+        supabase
+          .from('categories')
+          .select('id, name, type, color, created_at, updated_at')
+          .eq('user_id', user.id),
+        supabase
+          .from('user_settings')
+          .select('currency, theme, notifications, auto_backup, language')
+          .eq('user_id', user.id)
+          .single()
       ]);
 
       const data = {

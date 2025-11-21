@@ -20,7 +20,7 @@ async function getSettings(): Promise<AppSettings> {
 
   const { data, error } = await supabase
     .from('user_settings')
-    .select('*')
+    .select('currency, theme, notifications, auto_backup, language, created_at, updated_at')
     .eq('user_id', user.id)
     .single();
 
