@@ -23,7 +23,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useAccountStore } from "@/stores/AccountStore";
-import { useTransactionStore, AppTransaction } from "@/stores/TransactionStore"; 
+import { useTransactionStore, AppTransaction } from "@/stores/TransactionStore";
 import { calculateBillDetails, calculateInvoiceMonthByDue } from "@/lib/dateUtils";
 import { CreditCardBillCard } from "@/components/CreditCardBillCard";
 import { CreditBillDetailsModal } from "@/components/CreditBillDetailsModal";
@@ -42,7 +42,7 @@ interface CreditBillsPageProps {
     totalBalance: number 
   ) => void;
   // Prop para o estorno (será adicionada no Index.tsx)
-  onReversePayment: (paymentsToReverse: AppTransaction[]) => void; // <-- ADICIONADO
+  onReversePayment: (paymentsToReverse: AppTransaction[]) => void;
 }
 
 export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBillsPageProps) {
