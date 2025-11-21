@@ -41,6 +41,7 @@ Deno.serve(async (req) => {
     const { transaction_id, scope }: DeleteInput = await req.json();
 
     console.log('[atomic-delete] INFO: Deleting transaction:', transaction_id, 'scope:', scope);
+    console.log('[atomic-delete] INFO: User ID:', user.id);
 
     // Buscar transação original
     const { data: targetTx, error: fetchError } = await supabaseClient
@@ -50,7 +51,20 @@ Deno.serve(async (req) => {
       .eq('user_id', user.id)
       .single();
 
-    if (fetchError || !targetTx) {
+    if (fetchError) {
+      console.error('[atomic-delete] ERROR: Failed to fetch transaction:', fetchError);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Transaction not found',
+          details: fetchError.message,
+          code: fetchError.code
+        }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!targetTx) {
+      console.error('[atomic-delete] ERROR: Transaction not found for id:', transaction_id);
       return new Response(
         JSON.stringify({ error: 'Transaction not found' }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
