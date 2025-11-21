@@ -196,60 +196,99 @@ Deno.serve(async (req) => {
 
     // 2. Recalcular saldo APENAS se status = 'completed' usando função atômica
     if (transaction.status === 'completed') {
-      // Criar journal_entries (partidas dobradas básicas)
+      // Criar journal_entries (partidas dobradas)
       const { data: coa } = await supabaseClient
         .from('chart_of_accounts')
         .select('id, code, category')
         .eq('user_id', user.id);
 
-      const anyAsset = coa?.find(a => a.code?.startsWith('1.01.'))?.id;
-      const anyExpense = coa?.find(a => a.category === 'expense')?.id;
-      const anyRevenue = coa?.find(a => a.category === 'revenue')?.id;
-      const liabilityCard = coa?.find(a => a.code === '2.01.01')?.id;
-
-      if (anyAsset && (anyExpense || anyRevenue)) {
-        if (transaction.type === 'income' && anyRevenue) {
-          // Débito: Ativo | Crédito: Receita
-          await supabaseClient.from('journal_entries').insert({
-            user_id: user.id,
-            transaction_id: newTransaction.id,
-            account_id: anyAsset,
-            entry_type: 'debit',
-            amount: Math.abs(newTransaction.amount),
-            description: newTransaction.description,
-            entry_date: newTransaction.date,
-          });
-          await supabaseClient.from('journal_entries').insert({
-            user_id: user.id,
-            transaction_id: newTransaction.id,
-            account_id: anyRevenue,
-            entry_type: 'credit',
-            amount: Math.abs(newTransaction.amount),
-            description: newTransaction.description,
-            entry_date: newTransaction.date,
-          });
+      if (coa && coa.length > 0) {
+        // Mapear conta bancária para conta contábil
+        let assetAccountId: string | undefined;
+        if (accountData.type === 'checking') {
+          assetAccountId = coa.find(a => a.code === '1.01.02')?.id; // Bancos Conta Corrente
+        } else if (accountData.type === 'savings') {
+          assetAccountId = coa.find(a => a.code === '1.01.03')?.id; // Bancos Conta Poupança
+        } else if (accountData.type === 'investment') {
+          assetAccountId = coa.find(a => a.code === '1.01.04')?.id; // Investimentos
+        } else if (accountData.type === 'credit') {
+          assetAccountId = coa.find(a => a.code === '2.01.01')?.id; // Cartões de Crédito (Passivo)
         }
-        if (transaction.type === 'expense' && anyExpense) {
-          // Débito: Despesa | Crédito: Ativo (ou Passivo cartão)
-          await supabaseClient.from('journal_entries').insert({
-            user_id: user.id,
-            transaction_id: newTransaction.id,
-            account_id: anyExpense,
-            entry_type: 'debit',
-            amount: Math.abs(newTransaction.amount),
-            description: newTransaction.description,
-            entry_date: newTransaction.date,
-          });
-          const creditAccountId = accountData?.type === 'credit' && liabilityCard ? liabilityCard : anyAsset;
-          await supabaseClient.from('journal_entries').insert({
-            user_id: user.id,
-            transaction_id: newTransaction.id,
-            account_id: creditAccountId!,
-            entry_type: 'credit',
-            amount: Math.abs(newTransaction.amount),
-            description: newTransaction.description,
-            entry_date: newTransaction.date,
-          });
+
+        // Fallback para qualquer ativo se não encontrar específico
+        if (!assetAccountId) {
+          assetAccountId = coa.find(a => a.code?.startsWith('1.01.'))?.id;
+        }
+
+        // Buscar conta de receita/despesa da categoria
+        const { data: category } = await supabaseClient
+          .from('categories')
+          .select('name, type')
+          .eq('id', transaction.category_id)
+          .single();
+
+        if (assetAccountId) {
+          if (transaction.type === 'income') {
+            // Buscar conta de receita correspondente
+            const revenueAccountId = coa.find(a => 
+              a.category === 'revenue' && 
+              (a.name.toLowerCase().includes(category?.name.toLowerCase() || '') || a.code === '4.01.99')
+            )?.id || coa.find(a => a.category === 'revenue')?.id;
+
+            if (revenueAccountId) {
+              // Débito: Ativo (entra dinheiro) | Crédito: Receita
+              await supabaseClient.from('journal_entries').insert([
+                {
+                  user_id: user.id,
+                  transaction_id: newTransaction.id,
+                  account_id: assetAccountId,
+                  entry_type: 'debit',
+                  amount: Math.abs(newTransaction.amount),
+                  description: newTransaction.description,
+                  entry_date: newTransaction.date,
+                },
+                {
+                  user_id: user.id,
+                  transaction_id: newTransaction.id,
+                  account_id: revenueAccountId,
+                  entry_type: 'credit',
+                  amount: Math.abs(newTransaction.amount),
+                  description: newTransaction.description,
+                  entry_date: newTransaction.date,
+                }
+              ]);
+            }
+          } else {
+            // Buscar conta de despesa correspondente
+            const expenseAccountId = coa.find(a => 
+              a.category === 'expense' && 
+              (a.name.toLowerCase().includes(category?.name.toLowerCase() || '') || a.code === '5.01.99')
+            )?.id || coa.find(a => a.category === 'expense')?.id;
+
+            if (expenseAccountId) {
+              // Débito: Despesa | Crédito: Ativo ou Passivo (sai dinheiro/aumenta dívida)
+              await supabaseClient.from('journal_entries').insert([
+                {
+                  user_id: user.id,
+                  transaction_id: newTransaction.id,
+                  account_id: expenseAccountId,
+                  entry_type: 'debit',
+                  amount: Math.abs(newTransaction.amount),
+                  description: newTransaction.description,
+                  entry_date: newTransaction.date,
+                },
+                {
+                  user_id: user.id,
+                  transaction_id: newTransaction.id,
+                  account_id: assetAccountId,
+                  entry_type: 'credit',
+                  amount: Math.abs(newTransaction.amount),
+                  description: newTransaction.description,
+                  entry_date: newTransaction.date,
+                }
+              ]);
+            }
+          }
         }
       }
 

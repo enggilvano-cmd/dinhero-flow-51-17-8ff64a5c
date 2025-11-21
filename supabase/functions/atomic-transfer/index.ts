@@ -249,28 +249,57 @@ Deno.serve(async (req) => {
       .select('id, code')
       .eq('user_id', user.id);
 
-    const anyAsset = coa?.find(a => a.code?.startsWith('1.01.'))?.id; // Conta de Ativo genérica
-    if (anyAsset) {
-      await supabaseClient.from('journal_entries').insert([
-        {
-          user_id: user.id,
-          transaction_id: incomingTx.id,
-          account_id: anyAsset,
-          entry_type: 'debit',
-          amount: Math.abs(transfer.amount),
-          description: incomingTx.description,
-          entry_date: transfer.date,
-        },
-        {
-          user_id: user.id,
-          transaction_id: outgoingTx.id,
-          account_id: anyAsset,
-          entry_type: 'credit',
-          amount: Math.abs(transfer.amount),
-          description: outgoingTx.description,
-          entry_date: transfer.date,
-        }
-      ]);
+    if (coa && coa.length > 0) {
+      // Mapear conta origem
+      let fromAccountCoaId: string | undefined;
+      if (fromAccount.type === 'checking') {
+        fromAccountCoaId = coa.find(a => a.code === '1.01.02')?.id;
+      } else if (fromAccount.type === 'savings') {
+        fromAccountCoaId = coa.find(a => a.code === '1.01.03')?.id;
+      } else if (fromAccount.type === 'investment') {
+        fromAccountCoaId = coa.find(a => a.code === '1.01.04')?.id;
+      } else if (fromAccount.type === 'credit') {
+        fromAccountCoaId = coa.find(a => a.code === '2.01.01')?.id;
+      }
+
+      // Mapear conta destino
+      let toAccountCoaId: string | undefined;
+      if (toAccount.type === 'checking') {
+        toAccountCoaId = coa.find(a => a.code === '1.01.02')?.id;
+      } else if (toAccount.type === 'savings') {
+        toAccountCoaId = coa.find(a => a.code === '1.01.03')?.id;
+      } else if (toAccount.type === 'investment') {
+        toAccountCoaId = coa.find(a => a.code === '1.01.04')?.id;
+      } else if (toAccount.type === 'credit') {
+        toAccountCoaId = coa.find(a => a.code === '2.01.01')?.id;
+      }
+
+      // Fallback para primeira conta de ativo
+      if (!fromAccountCoaId) fromAccountCoaId = coa.find(a => a.code?.startsWith('1.01.'))?.id;
+      if (!toAccountCoaId) toAccountCoaId = coa.find(a => a.code?.startsWith('1.01.'))?.id;
+
+      if (fromAccountCoaId && toAccountCoaId) {
+        await supabaseClient.from('journal_entries').insert([
+          {
+            user_id: user.id,
+            transaction_id: incomingTx.id,
+            account_id: toAccountCoaId,
+            entry_type: 'debit',
+            amount: Math.abs(transfer.amount),
+            description: incomingTx.description,
+            entry_date: transfer.date,
+          },
+          {
+            user_id: user.id,
+            transaction_id: outgoingTx.id,
+            account_id: fromAccountCoaId,
+            entry_type: 'credit',
+            amount: Math.abs(transfer.amount),
+            description: outgoingTx.description,
+            entry_date: transfer.date,
+          }
+        ]);
+      }
     }
 
     console.log('[atomic-transfer] INFO: Transfer completed successfully');

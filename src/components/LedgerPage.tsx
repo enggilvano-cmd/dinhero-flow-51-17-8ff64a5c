@@ -368,12 +368,12 @@ export function LedgerPage() {
         <Card>
           <CardHeader>
             <CardTitle>Conta: {selectedAccount.code} - {selectedAccount.name}</CardTitle>
-            <CardDescription className="flex items-center gap-2">
+            <div className="flex items-center gap-2 mt-2">
               <Badge variant="outline">{getCategoryLabel(selectedAccount.category)}</Badge>
               <Badge variant="secondary">
                 Natureza: {selectedAccount.nature === "debit" ? "Devedora" : "Credora"}
               </Badge>
-            </CardDescription>
+            </div>
           </CardHeader>
         </Card>
       )}
