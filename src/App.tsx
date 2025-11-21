@@ -1,7 +1,7 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { SettingsProvider } from "@/context/SettingsContext";
@@ -12,8 +12,7 @@ import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import { I18nextProvider } from 'react-i18next';
 import i18n from './i18n';
-
-const queryClient = new QueryClient();
+import { queryClient } from './lib/queryClient';
 
 const App = () => (
   <ErrorBoundary>

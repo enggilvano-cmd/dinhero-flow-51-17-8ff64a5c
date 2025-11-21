@@ -2,6 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 import { PostgrestError } from '@supabase/supabase-js';
 import { toast } from '@/hooks/use-toast';
+import { idempotencyManager } from './idempotency';
 
 /**
  * Get authenticated user ID or throw error
@@ -83,4 +84,16 @@ export async function withErrorHandling<T>(
     const errorMessage = handleSupabaseError(error, context, showToast);
     return { data: null, error: errorMessage };
   }
+}
+
+/**
+ * Wrapper for async Supabase operations with idempotency protection
+ */
+export async function withIdempotency<T>(
+  operation: string,
+  params: Record<string, any>,
+  fn: () => Promise<T>
+): Promise<T> {
+  const key = idempotencyManager.generateKey(operation, params);
+  return idempotencyManager.execute(key, fn);
 }
