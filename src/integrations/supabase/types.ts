@@ -747,6 +747,8 @@ export type Database = {
           success: boolean
         }[]
       }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
       validate_double_entry: {
         Args: { p_transaction_id: string }
         Returns: {
