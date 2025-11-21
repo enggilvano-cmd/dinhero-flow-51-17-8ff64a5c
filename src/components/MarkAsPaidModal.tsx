@@ -28,11 +28,13 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 
+import { Account, Transaction } from '@/types';
+
 interface MarkAsPaidModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  transaction: any | null;
-  accounts: any[];
+  transaction: Transaction | null;
+  accounts: Account[];
   onConfirm: (transactionId: string, date: Date, amount: number, accountId: string) => void;
 }
 

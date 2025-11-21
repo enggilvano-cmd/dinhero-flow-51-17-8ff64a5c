@@ -102,6 +102,16 @@ interface AnalyticsPageProps {
   accounts: Account[];
 }
 
+interface DotProps {
+  cx: number;
+  cy: number;
+  payload?: {
+    saldo?: number;
+    month?: string;
+  };
+  index: number;
+}
+
 const COLORS = [
   "hsl(var(--primary))",
   "hsl(var(--success))",
@@ -471,7 +481,7 @@ export default function AnalyticsPage({
           pixelRatio: 2,
           cacheBust: true,
           backgroundColor: "#ffffff",
-          filter: (node: any) => {
+          filter: (node: HTMLElement | HTMLCanvasElement) => {
             if (node instanceof HTMLCanvasElement && (node.width === 0 || node.height === 0)) {
               return false;
             }
@@ -601,7 +611,7 @@ export default function AnalyticsPage({
 
   // Memoize custom dot renderer with unique keys for Line chart
   const renderMonthlyDot = useMemo(
-    () => (props: any) => {
+    () => (props: DotProps) => {
       const { cx, cy, payload, index } = props;
       const saldo = payload?.saldo || 0;
       const uniqueKey = `monthly-dot-${index}-${payload?.month || index}`;
@@ -984,12 +994,7 @@ export default function AnalyticsPage({
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={
-                    responsiveConfig.showLabels && categoryData.length <= 6
-                      ? ({ name, percentage }: any) =>
-                          `${name}: ${percentage.toFixed(1)}%`
-                      : false
-                  }
+                  label={responsiveConfig.showLabels && categoryData.length <= 6 ? undefined : false}
                   outerRadius={responsiveConfig.outerRadius}
                   fill="#8884d8"
                   dataKey="value"

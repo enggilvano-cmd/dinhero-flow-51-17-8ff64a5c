@@ -33,13 +33,15 @@ import { loadXLSX } from "@/lib/lazyImports";
 import { useTranslation } from 'react-i18next';
 import { useSettings } from "@/context/SettingsContext";
 
+import { Account } from '@/types';
+
 interface AccountsPageProps {
   onAddAccount: () => void;
-  onEditAccount: (account: any) => void;
+  onEditAccount: (account: Account) => void;
   onDeleteAccount: (accountId: string) => void;
-  onPayCreditCard?: (account: any) => void;
+  onPayCreditCard?: (account: Account) => void;
   onTransfer?: () => void;
-  onImportAccounts?: (accounts: any[], accountsToReplace: string[]) => void;
+  onImportAccounts?: (accounts: Omit<Account, 'id'>[], accountsToReplace: string[]) => void;
   initialFilterType?: "all" | "checking" | "savings" | "credit" | "investment";
 }
 
@@ -122,7 +124,7 @@ export function AccountsPage({
       a.name.localeCompare(b.name, "pt-BR", { sensitivity: "base" })
     );
 
-  const handleDeleteAccount = (account: any) => {
+  const handleDeleteAccount = (account: Account) => {
     if (
       window.confirm(t('accounts.confirmDelete') + ` "${account.name}"?`)
     ) {
@@ -199,7 +201,7 @@ export function AccountsPage({
     });
   };
 
-  const handleImportAccounts = (accountsToAdd: any[], accountsToReplaceIds: string[]) => {
+  const handleImportAccounts = (accountsToAdd: Omit<Account, 'id'>[], accountsToReplaceIds: string[]) => {
     if (onImportAccounts) {
       onImportAccounts(accountsToAdd, accountsToReplaceIds);
     }
@@ -330,7 +332,10 @@ export function AccountsPage({
             </div>
             <div>
               <Label htmlFor="filter" className="text-caption">{t('accounts.filterByType')}</Label>
-              <Select value={filterType} onValueChange={(value: any) => setFilterType(value)}>
+              <Select 
+                value={filterType} 
+                onValueChange={(value) => setFilterType(value as typeof filterType)}
+              >
                 <SelectTrigger id="filter" className="touch-target mt-2">
                   <SelectValue />
                 </SelectTrigger>

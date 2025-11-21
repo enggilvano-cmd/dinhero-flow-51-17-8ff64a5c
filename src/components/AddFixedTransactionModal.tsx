@@ -29,10 +29,21 @@ interface Account {
   color: string;
 }
 
+interface FixedTransactionInput {
+  description: string;
+  amount: number;
+  type: 'income' | 'expense';
+  category_id: string | null;
+  account_id: string;
+  date: string;
+  is_fixed: boolean;
+  status?: 'pending' | 'completed';
+}
+
 interface AddFixedTransactionModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAddTransaction: (transaction: any) => void;
+  onAddTransaction: (transaction: FixedTransactionInput) => void;
   accounts: Account[];
 }
 
@@ -122,6 +133,7 @@ export function AddFixedTransactionModal({
       category_id: formData.category_id || null,
       account_id: formData.account_id,
       status: formData.status,
+      is_fixed: true,
     });
   };
 
