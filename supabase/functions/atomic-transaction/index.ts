@@ -1,4 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { rateLimiters } from '../_shared/rate-limiter.ts';
+import { validateTransaction, validationErrorResponse } from '../_shared/validation.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -88,26 +90,28 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Rate limiting - Moderado para criação de transações
+    const rateLimitResponse = rateLimiters.moderate.middleware(req, user.id);
+    if (rateLimitResponse) {
+      console.warn('[atomic-transaction] WARN: Rate limit exceeded for user:', user.id);
+      return new Response(
+        rateLimitResponse.body,
+        { 
+          status: rateLimitResponse.status, 
+          headers: { ...corsHeaders, ...Object.fromEntries(rateLimitResponse.headers.entries()) } 
+        }
+      );
+    }
+
     const { transaction }: { transaction: TransactionInput } = await req.json();
 
     console.log('[atomic-transaction] INFO: Creating transaction for user:', user.id);
 
-    // Validações básicas
-    if (!transaction.description || !transaction.amount || !transaction.account_id || !transaction.category_id) {
-      return new Response(
-        JSON.stringify({ error: 'Missing required fields' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Validação detalhada de inputs
-    const validation = validateTransactionInput(transaction);
+    // Validação centralizada usando schemas
+    const validation = validateTransaction(transaction);
     if (!validation.valid) {
-      console.error('[atomic-transaction] ERROR: Invalid input:', validation.error);
-      return new Response(
-        JSON.stringify({ error: validation.error }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      console.error('[atomic-transaction] ERROR: Validation failed:', validation.errors);
+      return validationErrorResponse(validation.errors, corsHeaders);
     }
 
     // INICIAR TRANSAÇÃO ATÔMICA

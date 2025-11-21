@@ -1,4 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { rateLimiters } from '../_shared/rate-limiter.ts';
+import { uuidSchema, numberSchema, dateSchema, stringSchema } from '../_shared/validation.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -70,6 +72,19 @@ Deno.serve(async (req) => {
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Rate limiting - Strict para transferências (operação sensível)
+    const rateLimitResponse = rateLimiters.strict.middleware(req, user.id);
+    if (rateLimitResponse) {
+      console.warn('[atomic-transfer] WARN: Rate limit exceeded for user:', user.id);
+      return new Response(
+        rateLimitResponse.body,
+        { 
+          status: rateLimitResponse.status, 
+          headers: { ...corsHeaders, ...Object.fromEntries(rateLimitResponse.headers.entries()) } 
+        }
       );
     }
 
