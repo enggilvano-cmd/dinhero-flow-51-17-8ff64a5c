@@ -21,7 +21,6 @@ import { logger } from "@/lib/logger";
 import { AddFixedTransactionModal } from "./AddFixedTransactionModal";
 import { EditFixedTransactionModal } from "./EditFixedTransactionModal";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useTransactionStore } from "@/stores/TransactionStore";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryClient";
 
@@ -47,7 +46,6 @@ interface Account {
 }
 
 export function FixedTransactionsPage() {
-  const { removeTransactions: removeGlobalTransactions } = useTransactionStore();
   const queryClient = useQueryClient();
   const [transactions, setTransactions] = useState<FixedTransaction[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -292,18 +290,7 @@ export function FixedTransactionsPage() {
     if (!transactionToDelete) return;
 
     try {
-      // Buscar todas as transações filhas pendentes para obter seus IDs
-      const { data: childTransactions } = await supabase
-        .from("transactions")
-        .select("id")
-        .eq("parent_transaction_id", transactionToDelete)
-        .eq("status", "pending");
-
-      // Criar array com todos os IDs que serão deletados (principal + filhas)
-      const idsToDelete = [transactionToDelete, ...(childTransactions?.map(t => t.id) || [])];
-
-      // Remover do store global e invalidar cache
-      removeGlobalTransactions(idsToDelete);
+      // Invalidar cache do React Query
       queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
 
       // Excluir todas as transações filhas pendentes

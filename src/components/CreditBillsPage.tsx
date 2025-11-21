@@ -23,7 +23,8 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useAccountStore } from "@/stores/AccountStore";
-import { useTransactionStore, AppTransaction } from "@/stores/TransactionStore";
+import { useTransactions } from "@/hooks/queries/useTransactions";
+import { AppTransaction } from "@/types";
 import { calculateBillDetails, calculateInvoiceMonthByDue } from "@/lib/dateUtils";
 import { CreditCardBillCard } from "@/components/CreditCardBillCard";
 import { CreditBillDetailsModal } from "@/components/CreditBillDetailsModal";
@@ -47,7 +48,12 @@ interface CreditBillsPageProps {
 
 export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBillsPageProps) {
   const allAccounts = useAccountStore((state) => state.accounts);
-  const allTransactions = useTransactionStore((state) => state.transactions);
+  const { transactions: allTransactions = [] } = useTransactions({ 
+    page: 1, 
+    pageSize: 10000, // Carrega todas as transações
+    type: 'all',
+    accountType: 'credit'
+  });
   const { t } = useTranslation();
   const { settings } = useSettings();
   
@@ -108,7 +114,10 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
     return filteredCreditAccounts.map((account) => {
       const accountTransactions = allTransactions.filter(
         (t) => t.account_id === account.id
-      ) as AppTransaction[];
+      ).map(t => ({
+        ...t,
+        date: typeof t.date === 'string' ? new Date(t.date + 'T00:00:00') : t.date
+      })) as AppTransaction[];
 
       // Base (limite, pagamentos, etc.)
       const base = calculateBillDetails(
@@ -425,7 +434,10 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
           {billDetails.map((details) => {
             const accountTransactions = allTransactions.filter(
               (t) => t.account_id === details.account.id
-            ) as AppTransaction[];
+            ).map(t => ({
+              ...t,
+              date: typeof t.date === 'string' ? new Date(t.date + 'T00:00:00') : t.date
+            })) as AppTransaction[];
 
             return (
               <CreditCardBillCard
@@ -465,7 +477,10 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
 
                   setSelectedBillForDetails({
                     account: details.account,
-                    transactions: filtered as AppTransaction[],
+                    transactions: filtered.map(t => ({
+                      ...t,
+                      date: typeof t.date === 'string' ? new Date(t.date + 'T00:00:00') : t.date
+                    })) as AppTransaction[],
                     billDetails: details,
                   });
                 }}

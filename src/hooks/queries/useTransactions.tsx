@@ -5,6 +5,8 @@ import { Transaction } from '@/types';
 import { logger } from '@/lib/logger';
 import { queryKeys, cacheConfig } from '@/lib/queryClient';
 import { createDateFromString } from '@/lib/dateUtils';
+import { addTransactionSchema, editTransactionSchema } from '@/lib/validationSchemas';
+import { z } from 'zod';
 
 interface UseTransactionsParams {
   page?: number;
@@ -180,7 +182,7 @@ export function useTransactions(params: UseTransactionsParams = {}) {
             type,
             color
           ),
-          accounts:account_id (
+          accounts:account_id!inner (
             id,
             name,
             type,
@@ -228,6 +230,11 @@ export function useTransactions(params: UseTransactionsParams = {}) {
         query = query.lte('date', dateTo);
       }
 
+      // ✅ Server-side filter for accountType (optimized with INNER JOIN)
+      if (accountType !== 'all') {
+        query = query.eq('accounts.type', accountType);
+      }
+
       // Apply sorting
       const ascending = sortOrder === 'asc';
       if (sortBy === 'date') {
@@ -243,18 +250,13 @@ export function useTransactions(params: UseTransactionsParams = {}) {
 
       if (error) throw error;
 
-      let results = (data || []).map((trans) => ({
+      const results = (data || []).map((trans) => ({
         ...trans,
         date: createDateFromString(trans.date),
         category: Array.isArray(trans.categories) ? trans.categories[0] : trans.categories,
         account: Array.isArray(trans.accounts) ? trans.accounts[0] : trans.accounts,
         to_account: Array.isArray(trans.to_accounts) ? trans.to_accounts[0] : trans.to_accounts,
       })) as TransactionWithRelations[];
-
-      // Filter by account type client-side (since we need the joined account data)
-      if (accountType !== 'all') {
-        results = results.filter(t => t.account?.type === accountType);
-      }
 
       return results;
     },
@@ -272,16 +274,27 @@ export function useTransactions(params: UseTransactionsParams = {}) {
     mutationFn: async (transactionData: AddTransactionParams) => {
       if (!user) throw new Error('User not authenticated');
 
+      // ✅ Validate with Zod before sending to edge function
+      const validated = addTransactionSchema.parse({
+        description: transactionData.description,
+        amount: transactionData.amount,
+        date: transactionData.date.toISOString().split('T')[0],
+        type: transactionData.type,
+        category_id: transactionData.category_id,
+        account_id: transactionData.account_id,
+        status: transactionData.status,
+      });
+
       const { data, error } = await supabase.functions.invoke('atomic-transaction', {
         body: {
           transaction: {
-            description: transactionData.description,
-            amount: transactionData.amount,
-            date: transactionData.date.toISOString().split('T')[0],
-            type: transactionData.type,
-            category_id: transactionData.category_id,
-            account_id: transactionData.account_id,
-            status: transactionData.status,
+            description: validated.description,
+            amount: validated.amount,
+            date: validated.date,
+            type: validated.type,
+            category_id: validated.category_id,
+            account_id: validated.account_id,
+            status: validated.status,
             invoice_month: transactionData.invoiceMonth || null,
             invoice_month_overridden: !!transactionData.invoiceMonth,
           },
@@ -310,13 +323,18 @@ export function useTransactions(params: UseTransactionsParams = {}) {
     mutationFn: async ({ id, updates, scope = 'current' }: EditTransactionParams) => {
       if (!user) throw new Error('User not authenticated');
 
+      // ✅ Validate updates with Zod (partial schema)
+      const partialSchema = editTransactionSchema.partial().required({ id: true });
+      const validated = partialSchema.parse({ 
+        id, 
+        ...updates,
+        date: updates.date ? new Date(updates.date).toISOString().split('T')[0] : undefined,
+      });
+
       const { data, error } = await supabase.functions.invoke('atomic-edit-transaction', {
         body: {
-          transaction_id: id,
-          updates: {
-            ...updates,
-            date: updates.date ? new Date(updates.date).toISOString().split('T')[0] : undefined,
-          },
+          transaction_id: validated.id,
+          updates: validated,
           scope,
         },
       });
@@ -336,8 +354,14 @@ export function useTransactions(params: UseTransactionsParams = {}) {
     mutationFn: async ({ id, scope = 'current' }: DeleteTransactionParams) => {
       if (!user) throw new Error('User not authenticated');
 
+      // ✅ Validate transaction ID
+      const validated = z.object({
+        id: z.string().uuid({ message: 'ID da transação inválido' }),
+        scope: z.enum(['current', 'current-and-remaining', 'all']).optional(),
+      }).parse({ id, scope });
+
       const { data, error } = await supabase.functions.invoke('atomic-delete-transaction', {
-        body: { transaction_id: id, scope },
+        body: { transaction_id: validated.id, scope: validated.scope || 'current' },
       });
 
       if (error) throw error;

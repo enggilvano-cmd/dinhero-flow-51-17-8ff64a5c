@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Account, AppTransaction } from "@/types";
+import { Account, Transaction } from "@/types";
 import { CreditCard, RotateCcw, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { isPast } from 'date-fns';
@@ -25,7 +25,7 @@ interface CreditCardBillCardProps {
     nextBillAmount: number;
     totalBalance: number; 
     availableLimit: number;
-    paymentTransactions: AppTransaction[];
+    paymentTransactions: Transaction[];
   };
   selectedMonth: Date; // <-- Prop ADICIONADA para o mês selecionado
   onPayBill: () => void;
