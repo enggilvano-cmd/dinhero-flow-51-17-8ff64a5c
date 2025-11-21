@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Transaction } from '@/types';
 import { logger } from '@/lib/logger';
-import { queryKeys } from '@/lib/queryClient';
+import { queryKeys, cacheConfig } from '@/lib/queryClient';
 import { createDateFromString } from '@/lib/dateUtils';
 
 interface UseTransactionsParams {
@@ -134,7 +134,10 @@ export function useTransactions(params: UseTransactionsParams = {}) {
       return count || 0;
     },
     enabled: !!user && enabled,
-    staleTime: 30 * 1000, // 30 seconds for count queries
+    // Count queries: 30s stale, 2.5min cache
+    ...cacheConfig.shortLived,
+    // Keep previous data while fetching new data
+    placeholderData: (previousData) => previousData,
   });
 
   // Query for paginated data with filters
@@ -256,7 +259,13 @@ export function useTransactions(params: UseTransactionsParams = {}) {
       return results;
     },
     enabled: !!user && enabled,
-    staleTime: 30 * 1000, // 30 seconds
+    // Transaction data: 30s stale, 2.5min cache
+    ...cacheConfig.shortLived,
+    // Keep previous data while fetching new data (prevents loading states)
+    placeholderData: (previousData) => previousData,
+    // Refetch in background when stale
+    refetchOnMount: false,
+    refetchOnWindowFocus: true,
   });
 
   const addMutation = useMutation({
@@ -283,8 +292,14 @@ export function useTransactions(params: UseTransactionsParams = {}) {
       return data;
     },
     onSuccess: () => {
+      // Invalidate all transaction queries (count and data)
       queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
+      // Invalidate accounts to reflect balance changes
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+      // Prefetch first page to speed up navigation
+      queryClient.prefetchQuery({
+        queryKey: [...queryKeys.transactions(), 0, pageSize, '', 'all', 'all', 'all', 'all', 'all', undefined, undefined, 'date', 'desc'],
+      });
     },
     onError: (error) => {
       logger.error('Error adding transaction:', error);
@@ -310,7 +325,9 @@ export function useTransactions(params: UseTransactionsParams = {}) {
       return data;
     },
     onSuccess: () => {
+      // Invalidate all transaction queries
       queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
+      // Invalidate accounts to reflect balance changes
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
     },
   });
@@ -327,7 +344,9 @@ export function useTransactions(params: UseTransactionsParams = {}) {
       return data;
     },
     onSuccess: () => {
+      // Invalidate all transaction queries
       queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
+      // Invalidate accounts to reflect balance changes
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
     },
   });
@@ -372,8 +391,10 @@ export function useTransactions(params: UseTransactionsParams = {}) {
       return newTransactions;
     },
     onSuccess: () => {
+      // Invalidate all queries after bulk import
       queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+      queryClient.invalidateQueries({ queryKey: queryKeys.categories });
     },
   });
 

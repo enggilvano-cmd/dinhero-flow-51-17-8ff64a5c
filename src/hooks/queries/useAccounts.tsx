@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Account } from '@/types';
 import { logger } from '@/lib/logger';
-import { queryKeys } from '@/lib/queryClient';
+import { queryKeys, cacheConfig } from '@/lib/queryClient';
 
 export function useAccounts() {
   const { user } = useAuth();
@@ -28,7 +28,12 @@ export function useAccounts() {
       })) as Account[];
     },
     enabled: !!user,
-    staleTime: 5 * 60 * 1000,
+    // Accounts change less frequently: 2min stale, 10min cache
+    ...cacheConfig.mediumLived,
+    // Keep previous data while fetching
+    placeholderData: (previousData) => previousData,
+    // Refetch on window focus to get latest balances
+    refetchOnWindowFocus: true,
   });
 
   const updateMutation = useMutation({
@@ -44,8 +49,18 @@ export function useAccounts() {
       if (error) throw error;
       return updatedAccount;
     },
-    onSuccess: () => {
+    onSuccess: (updatedAccount) => {
+      // Optimistic update: update cache immediately
+      queryClient.setQueryData<Account[]>(queryKeys.accounts, (old) => {
+        if (!old) return old;
+        return old.map(acc => acc.id === updatedAccount.id ? { ...acc, ...updatedAccount } : acc);
+      });
+      // Then invalidate to ensure consistency
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+      // Also invalidate transactions if balance changed
+      if (updatedAccount.balance !== undefined) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
+      }
     },
     onError: (error) => {
       logger.error('Error updating account:', error);
@@ -65,8 +80,16 @@ export function useAccounts() {
       if (error) throw error;
       return accountId;
     },
-    onSuccess: () => {
+    onSuccess: (deletedAccountId) => {
+      // Optimistic update: remove from cache immediately
+      queryClient.setQueryData<Account[]>(queryKeys.accounts, (old) => {
+        if (!old) return old;
+        return old.filter(acc => acc.id !== deletedAccountId);
+      });
+      // Then invalidate to ensure consistency
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+      // Also invalidate transactions
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
     },
     onError: (error) => {
       logger.error('Error deleting account:', error);
@@ -96,6 +119,7 @@ export function useAccounts() {
       return accountsToAdd;
     },
     onSuccess: () => {
+      // Invalidate accounts after bulk import
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
     },
   });
