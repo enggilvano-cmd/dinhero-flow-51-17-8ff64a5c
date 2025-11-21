@@ -124,6 +124,7 @@ export function TransactionsPage({
   onFilterCategoryChange,
   filterStatus,
   onFilterStatusChange,
+  filterAccountType,
   onFilterAccountTypeChange,
   onDateFromChange,
   onDateToChange,
@@ -624,7 +625,7 @@ export function TransactionsPage({
             variant="outline"
             onClick={exportToExcel}
             className="gap-2 apple-interaction h-9 text-xs sm:text-sm"
-            disabled={filteredAndSortedTransactions.length === 0}
+            disabled={transactions.length === 0}
           >
             <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             <span>{t("common.export")}</span>
@@ -652,7 +653,7 @@ export function TransactionsPage({
                   {t("common.total")} {t("transactions.title")}
                 </p>
                 <div className="text-responsive-xl font-bold leading-tight">
-                  {filteredAndSortedTransactions.length}
+                  {totalCount}
                 </div>
               </div>
             </div>
@@ -968,7 +969,7 @@ export function TransactionsPage({
                       mode="single"
                       selected={customStartDate}
                       onSelect={(date) => {
-                        setCustomStartDate(date);
+                        handleCustomDateChange(date, customEndDate);
                         setStartDatePickerOpen(false);
                       }}
                       initialFocus
@@ -1004,7 +1005,7 @@ export function TransactionsPage({
                       mode="single"
                       selected={customEndDate}
                       onSelect={(date) => {
-                        setCustomEndDate(date);
+                        handleCustomDateChange(customStartDate, date);
                         setEndDatePickerOpen(false);
                       }}
                       initialFocus
@@ -1022,12 +1023,12 @@ export function TransactionsPage({
       <Card className="financial-card">
         <CardHeader className="px-4 sm:px-6">
           <CardTitle className="text-lg sm:text-xl">
-            {t("transactions.title")} ({filteredAndSortedTransactions.length})
+            {t("transactions.title")} ({totalCount})
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <ResponsiveTable
-            data={filteredAndSortedTransactions}
+            data={transactions}
             columns={tableColumns}
             keyField="id"
             emptyState={

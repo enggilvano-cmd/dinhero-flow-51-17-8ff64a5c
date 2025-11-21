@@ -65,8 +65,7 @@ const PlaniFlowApp = () => {
 
   // React Query hooks - fonte única de verdade
   const { accounts, isLoading: loadingAccounts } = useAccounts();
-  const { accounts, isLoading: loadingAccounts } = useAccounts();
-  const { 
+  const {
     transactions, 
     isLoading: loadingTransactions,
     totalCount,
@@ -112,9 +111,6 @@ const PlaniFlowApp = () => {
   const [currentInvoiceValue, setCurrentInvoiceValue] = useState(0);
   const [nextInvoiceValue, setNextInvoiceValue] = useState(0);
   const [payingTotalDebt, setPayingTotalDebt] = useState(0);
-  const [accountFilterType, setAccountFilterType] = useState<
-    "all" | "checking" | "savings" | "credit" | "investment"
-  >("all");
 
   // Use hooks customizados para handlers
   const { handleEditAccount, handleDeleteAccount, handleImportAccounts } = useAccountHandlers();
