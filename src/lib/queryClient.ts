@@ -22,10 +22,10 @@ export const queryClient = new QueryClient({
       // Retry failed requests 3 times with exponential backoff
       retry: 3,
       retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-      // Only refetch on window focus if data is stale
-      refetchOnWindowFocus: 'always',
-      // Don't refetch on mount if data is fresh
-      refetchOnMount: false,
+      // Refetch on window focus if data is stale
+      refetchOnWindowFocus: true,
+      // Refetch on mount to ensure fresh data after mutations
+      refetchOnMount: true,
       // Refetch stale data in background
       refetchOnReconnect: true,
       // Enable structural sharing for better performance

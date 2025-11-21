@@ -306,9 +306,9 @@ export function useTransactions(params: UseTransactionsParams = {}) {
     },
     onSuccess: () => {
       // Invalidate all transaction queries (count and data)
-      queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactions(), refetchType: 'active' });
       // Invalidate accounts to reflect balance changes
-      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts, refetchType: 'active' });
       // Prefetch first page to speed up navigation
       queryClient.prefetchQuery({
         queryKey: [...queryKeys.transactions(), 0, pageSize, '', 'all', 'all', 'all', 'all', 'all', undefined, undefined, 'date', 'desc'],
@@ -344,9 +344,9 @@ export function useTransactions(params: UseTransactionsParams = {}) {
     },
     onSuccess: () => {
       // Invalidate all transaction queries
-      queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactions(), refetchType: 'active' });
       // Invalidate accounts to reflect balance changes
-      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts, refetchType: 'active' });
     },
   });
 
@@ -369,9 +369,9 @@ export function useTransactions(params: UseTransactionsParams = {}) {
     },
     onSuccess: () => {
       // Invalidate all transaction queries
-      queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactions(), refetchType: 'active' });
       // Invalidate accounts to reflect balance changes
-      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts, refetchType: 'active' });
     },
   });
 
@@ -416,9 +416,9 @@ export function useTransactions(params: UseTransactionsParams = {}) {
     },
     onSuccess: () => {
       // Invalidate all queries after bulk import
-      queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
-      queryClient.invalidateQueries({ queryKey: queryKeys.categories });
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactions(), refetchType: 'active' });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts, refetchType: 'active' });
+      queryClient.invalidateQueries({ queryKey: queryKeys.categories, refetchType: 'active' });
     },
   });
 
