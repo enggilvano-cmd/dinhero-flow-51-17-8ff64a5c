@@ -29,7 +29,7 @@ import { MigrationWarning } from "@/components/MigrationWarning";
 import { Account, Transaction } from "@/types";
 import { logger } from "@/lib/logger";
 import { useAccounts } from "@/hooks/queries/useAccounts";
-import { useTransactions } from "@/hooks/queries/useTransactions";
+import { useInfiniteTransactions } from "@/hooks/queries/useInfiniteTransactions";
 import { useCategories } from "@/hooks/useCategories";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryClient";
@@ -43,9 +43,8 @@ const PlaniFlowApp = () => {
   const [currentPage, setCurrentPage] = useState("dashboard");
   const queryClient = useQueryClient();
 
-  // Pagination state
-  const [transactionsPage, setTransactionsPage] = useState(0);
-  const [transactionsPageSize, setTransactionsPageSize] = useState(50);
+  // Pagination state (não mais necessário com infinite scroll, mas mantido para compatibilidade)
+  const [transactionsPageSize] = useState(50);
 
   // Transaction filters state
   const [transactionsSearch, setTransactionsSearch] = useState("");
@@ -68,12 +67,11 @@ const PlaniFlowApp = () => {
   const {
     transactions, 
     isLoading: loadingTransactions,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
     totalCount,
-    pageCount,
-    currentPage: transactionsCurrentPage,
-    pageSize: transactionsCurrentPageSize,
-  } = useTransactions({ 
-    page: transactionsPage, 
+  } = useInfiniteTransactions({ 
     pageSize: transactionsPageSize,
     search: transactionsSearch,
     type: transactionsFilterType,
@@ -208,12 +206,7 @@ const PlaniFlowApp = () => {
             onDeleteTransaction={handleDeleteTransaction}
             onImportTransactions={handleImportTransactions}
             onMarkAsPaid={handleEditTransaction}
-            currentPage={transactionsCurrentPage}
-            pageSize={transactionsCurrentPageSize}
             totalCount={totalCount}
-            pageCount={pageCount}
-            onPageChange={setTransactionsPage}
-            onPageSizeChange={setTransactionsPageSize}
             search={transactionsSearch}
             onSearchChange={setTransactionsSearch}
             filterType={transactionsFilterType}
@@ -235,6 +228,9 @@ const PlaniFlowApp = () => {
             sortOrder={transactionsSortOrder}
             onSortOrderChange={setTransactionsSortOrder}
             isLoading={loadingTransactions}
+            hasNextPage={hasNextPage}
+            fetchNextPage={fetchNextPage}
+            isFetchingNextPage={isFetchingNextPage}
           />
         );
       case "recurring":
