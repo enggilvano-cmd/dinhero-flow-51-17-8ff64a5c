@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Transaction } from '@/types';
 import { logger } from '@/lib/logger';
-import { queryKeys, cacheConfig } from '@/lib/queryClient';
+import { queryKeys } from '@/lib/queryClient';
 import { createDateFromString } from '@/lib/dateUtils';
 import { addTransactionSchema, editTransactionSchema } from '@/lib/validationSchemas';
 import { z } from 'zod';
@@ -191,12 +191,13 @@ export function useInfiniteTransactions(params: UseInfiniteTransactionsParams = 
     getNextPageParam: (lastPage) => lastPage.nextCursor,
     initialPageParam: 0,
     enabled: !!user && enabled,
-    // Transaction data: 30s stale, 2.5min cache
-    ...cacheConfig.shortLived,
+    // CRITICAL: staleTime 0 para refetch imediato após mutações
+    staleTime: 0,
+    gcTime: 2.5 * 60 * 1000,
     // Keep previous data while fetching new data
     placeholderData: (previousData) => previousData,
     // CRITICAL: Always refetch on mount to ensure fresh data
-    refetchOnMount: true,
+    refetchOnMount: 'always',
     refetchOnWindowFocus: true,
   });
 
@@ -252,9 +253,11 @@ export function useInfiniteTransactions(params: UseInfiniteTransactionsParams = 
     getNextPageParam: () => undefined,
     initialPageParam: 0,
     enabled: !!user && enabled,
-    ...cacheConfig.shortLived,
+    // CRITICAL: staleTime 0 para refetch imediato após mutações
+    staleTime: 0,
+    gcTime: 2.5 * 60 * 1000,
     // CRITICAL: Always refetch on mount to ensure fresh count
-    refetchOnMount: true,
+    refetchOnMount: 'always',
     refetchOnWindowFocus: true,
   });
 
@@ -302,9 +305,15 @@ export function useInfiniteTransactions(params: UseInfiniteTransactionsParams = 
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
+      ]);
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.refetchQueries({ queryKey: queryKeys.accounts }),
+      ]);
     },
     onError: (error) => {
       logger.error('Error adding transaction:', error);
@@ -338,9 +347,15 @@ export function useInfiniteTransactions(params: UseInfiniteTransactionsParams = 
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
+      ]);
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.refetchQueries({ queryKey: queryKeys.accounts }),
+      ]);
     },
   });
 
@@ -361,9 +376,15 @@ export function useInfiniteTransactions(params: UseInfiniteTransactionsParams = 
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
+      ]);
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.refetchQueries({ queryKey: queryKeys.accounts }),
+      ]);
     },
   });
 

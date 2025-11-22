@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Transaction } from '@/types';
 import { logger } from '@/lib/logger';
-import { queryKeys, cacheConfig } from '@/lib/queryClient';
+import { queryKeys } from '@/lib/queryClient';
 import { createDateFromString } from '@/lib/dateUtils';
 import { addTransactionSchema, editTransactionSchema } from '@/lib/validationSchemas';
 import { z } from 'zod';
@@ -136,10 +136,13 @@ export function useTransactions(params: UseTransactionsParams = {}) {
       return count || 0;
     },
     enabled: !!user && enabled,
-    // Count queries: 30s stale, 2.5min cache
-    ...cacheConfig.shortLived,
+    // CRITICAL: staleTime 0 para refetch imediato após mutações
+    staleTime: 0,
+    gcTime: 2.5 * 60 * 1000,
     // Keep previous data while fetching new data
     placeholderData: (previousData) => previousData,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
   });
 
   // Query for paginated data with filters
@@ -261,12 +264,13 @@ export function useTransactions(params: UseTransactionsParams = {}) {
       return results;
     },
     enabled: !!user && enabled,
-    // Transaction data: 30s stale, 2.5min cache
-    ...cacheConfig.shortLived,
+    // CRITICAL: staleTime 0 para refetch imediato após mutações
+    staleTime: 0,
+    gcTime: 2.5 * 60 * 1000,
     // Keep previous data while fetching new data (prevents loading states)
     placeholderData: (previousData) => previousData,
     // CRITICAL: Always refetch on mount to ensure fresh data
-    refetchOnMount: true,
+    refetchOnMount: 'always',
     refetchOnWindowFocus: true,
   });
 
@@ -304,15 +308,15 @@ export function useTransactions(params: UseTransactionsParams = {}) {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
-      // Invalidate all transaction queries (count and data)
-      queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
-      // Invalidate accounts to reflect balance changes
-      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
-      // Prefetch first page to speed up navigation
-      queryClient.prefetchQuery({
-        queryKey: [...queryKeys.transactions(), 0, pageSize, '', 'all', 'all', 'all', 'all', 'all', undefined, undefined, 'date', 'desc'],
-      });
+    onSuccess: async () => {
+      // Invalidate and refetch immediately
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
+      ]);
+      // Force refetch of all active queries
+      await queryClient.refetchQueries({ queryKey: queryKeys.transactions() });
+      await queryClient.refetchQueries({ queryKey: queryKeys.accounts });
     },
     onError: (error) => {
       logger.error('Error adding transaction:', error);
@@ -342,11 +346,15 @@ export function useTransactions(params: UseTransactionsParams = {}) {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
-      // Invalidate all transaction queries
-      queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
-      // Invalidate accounts to reflect balance changes
-      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+    onSuccess: async () => {
+      // Invalidate and refetch immediately
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
+      ]);
+      // Force refetch of all active queries
+      await queryClient.refetchQueries({ queryKey: queryKeys.transactions() });
+      await queryClient.refetchQueries({ queryKey: queryKeys.accounts });
     },
   });
 
@@ -367,11 +375,15 @@ export function useTransactions(params: UseTransactionsParams = {}) {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
-      // Invalidate all transaction queries
-      queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
-      // Invalidate accounts to reflect balance changes
-      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+    onSuccess: async () => {
+      // Invalidate and refetch immediately
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
+      ]);
+      // Force refetch of all active queries
+      await queryClient.refetchQueries({ queryKey: queryKeys.transactions() });
+      await queryClient.refetchQueries({ queryKey: queryKeys.accounts });
     },
   });
 
@@ -414,11 +426,19 @@ export function useTransactions(params: UseTransactionsParams = {}) {
       if (error) throw error;
       return newTransactions;
     },
-    onSuccess: () => {
-      // Invalidate all queries after bulk import
-      queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
-      queryClient.invalidateQueries({ queryKey: queryKeys.categories });
+    onSuccess: async () => {
+      // Invalidate and refetch immediately
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.categories }),
+      ]);
+      // Force refetch of all active queries
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.refetchQueries({ queryKey: queryKeys.accounts }),
+        queryClient.refetchQueries({ queryKey: queryKeys.categories }),
+      ]);
     },
   });
 
