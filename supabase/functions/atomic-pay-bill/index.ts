@@ -114,13 +114,13 @@ Deno.serve(async (req) => {
     const debitAcc = accounts.find(a => a.id === debit_account_id)!;
 
     // Inserir as duas transações vinculadas
-    // 1) Saída da conta bancária (expense, negativo)
+    // 1) Saída da conta bancária (expense, valor positivo)
     const { data: debitTx, error: debitErr } = await supabaseClient
       .from('transactions')
       .insert({
         user_id: user.id,
         description: description || `Pagamento Fatura ${creditAcc.name}`,
-        amount: -Math.abs(amount),
+        amount: Math.abs(amount), // Sempre positivo - o tipo 'expense' indica que é saída
         date: payment_date,
         type: 'expense',
         category_id: null,
@@ -135,13 +135,13 @@ Deno.serve(async (req) => {
       throw debitErr;
     }
 
-    // 2) Entrada no cartão (income, positivo)
+    // 2) Entrada no cartão (income, valor positivo)
     const { data: creditTx, error: creditErr } = await supabaseClient
       .from('transactions')
       .insert({
         user_id: user.id,
         description: description || `Pagamento Recebido de ${debitAcc.name}`,
-        amount: Math.abs(amount),
+        amount: Math.abs(amount), // Sempre positivo - o tipo 'income' indica que é entrada
         date: payment_date,
         type: 'income',
         category_id: null,

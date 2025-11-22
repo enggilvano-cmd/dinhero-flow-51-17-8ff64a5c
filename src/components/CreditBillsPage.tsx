@@ -192,8 +192,10 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
       // Calcula se está paga
       const paidAmount = details.paymentTransactions.reduce((sum, t) => sum + Math.abs(t.amount), 0);
       const amountDue = Math.max(0, details.currentBillAmount);
-      // Uma fatura está "Paga" se não há valor a pagar (crédito) OU se está fechada e foi paga
-      const isPaid = amountDue <= 0 || (isClosed && paidAmount >= amountDue);
+      // Uma fatura está "Paga" se:
+      // 1. Não há valor a pagar (amountDue <= 0) - conta tem crédito
+      // 2. OU o valor pago é igual ou maior que o valor devido (com margem de 1 centavo)
+      const isPaid = amountDue <= 0 || paidAmount >= (amountDue - 1);
 
       logger.debug("[CreditBillsPage] Status check", {
         account: details.account.name,
@@ -437,6 +439,9 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
               date: typeof t.date === 'string' ? new Date(t.date + 'T00:00:00') : t.date
             })) as AppTransaction[];
 
+            // Calcula a dívida total real (soma das faturas atual e próxima)
+            const totalDebt = Math.max(0, details.currentBillAmount) + Math.max(0, details.nextBillAmount);
+            
             return (
               <CreditCardBillCard
                 key={`${details.account.id}-${updateKey}`}
@@ -448,7 +453,7 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
                     details.account,
                     details.currentBillAmount,
                     details.nextBillAmount,
-                    details.totalBalance 
+                    totalDebt // Passa a dívida total correta (soma das faturas)
                   )
                 }
                 onReversePayment={() => onReversePayment(details.paymentTransactions)}
