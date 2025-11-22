@@ -78,9 +78,7 @@ export function AccountsSummary({
                       : 'balance-negative'
                   }`}
                 >
-                  {account.type === 'credit'
-                    ? formatCurrency(Math.abs(account.balance) / 100)
-                    : formatCurrency(account.balance / 100)}
+                  {formatCurrency(account.balance / 100)}
                 </div>
               </div>
             ))}
