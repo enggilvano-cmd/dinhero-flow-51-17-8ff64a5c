@@ -127,6 +127,66 @@ export type Database = {
         }
         Relationships: []
       }
+      backup_history: {
+        Row: {
+          backup_type: string
+          created_at: string
+          file_path: string
+          file_size: number | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          backup_type: string
+          created_at?: string
+          file_path: string
+          file_size?: number | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          backup_type?: string
+          created_at?: string
+          file_path?: string
+          file_size?: number | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      backup_schedules: {
+        Row: {
+          created_at: string
+          frequency: string
+          id: string
+          is_active: boolean
+          last_backup_at: string | null
+          next_backup_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          frequency: string
+          id?: string
+          is_active?: boolean
+          last_backup_at?: string | null
+          next_backup_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          frequency?: string
+          id?: string
+          is_active?: boolean
+          last_backup_at?: string | null
+          next_backup_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           color: string

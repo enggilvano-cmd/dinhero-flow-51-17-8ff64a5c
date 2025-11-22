@@ -14,12 +14,17 @@ import {
   Bell,
   Database,
   FileText,
-  Shield
+  Shield,
+  Clock,
+  Calendar
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { logger } from "@/lib/logger";
 import { supabase } from "@/integrations/supabase/client";
 import type { AppSettings } from "@/context/SettingsContext";
+import { useBackupSchedule } from "@/hooks/useBackupSchedule";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 interface SettingsPageProps {
   settings: AppSettings;
@@ -31,7 +36,19 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
   const [localSettings, setLocalSettings] = useState(settings);
   const [isImporting, setIsImporting] = useState(false);
   const [clearDataConfirmation, setClearDataConfirmation] = useState("");
+  const [scheduleFrequency, setScheduleFrequency] = useState<'daily' | 'weekly' | 'monthly'>('weekly');
   const { toast } = useToast();
+  
+  const {
+    schedule,
+    history,
+    historyLoading,
+    saveSchedule,
+    isSaving,
+    deleteSchedule,
+    isDeleting,
+    downloadBackup,
+  } = useBackupSchedule();
 
   // Sync local settings when props change
   useEffect(() => {
@@ -519,6 +536,167 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
               <p className="text-sm text-muted-foreground">
                 Esta ação irá remover permanentemente todas as suas contas, transações e configurações.
               </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Scheduled Backups */}
+        <Card className="financial-card lg:col-span-2">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5" />
+              Backups Agendados
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Configuração de Agendamento */}
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-medium mb-2">Configurar Backup Automático</h4>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Os backups são salvos na nuvem e podem ser baixados a qualquer momento
+                  </p>
+                </div>
+
+                {!schedule ? (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Frequência</Label>
+                      <Select 
+                        value={scheduleFrequency}
+                        onValueChange={(value: any) => setScheduleFrequency(value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="daily">Diário (todo dia às 3h)</SelectItem>
+                          <SelectItem value="weekly">Semanal (toda segunda às 3h)</SelectItem>
+                          <SelectItem value="monthly">Mensal (dia 1 às 3h)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <Button 
+                      onClick={() => saveSchedule({ frequency: scheduleFrequency, is_active: true })}
+                      disabled={isSaving}
+                      className="w-full"
+                    >
+                      <Calendar className="h-4 w-4 mr-2" />
+                      {isSaving ? "Salvando..." : "Ativar Backup Automático"}
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="p-4 bg-muted rounded-lg space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Status</span>
+                        <span className={`text-sm ${schedule.is_active ? 'text-success' : 'text-muted-foreground'}`}>
+                          {schedule.is_active ? 'Ativo' : 'Inativo'}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Frequência</span>
+                        <span className="text-sm">
+                          {schedule.frequency === 'daily' && 'Diário'}
+                          {schedule.frequency === 'weekly' && 'Semanal'}
+                          {schedule.frequency === 'monthly' && 'Mensal'}
+                        </span>
+                      </div>
+                      {schedule.last_backup_at && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium">Último backup</span>
+                          <span className="text-sm">
+                            {format(new Date(schedule.last_backup_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                          </span>
+                        </div>
+                      )}
+                      {schedule.next_backup_at && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium">Próximo backup</span>
+                          <span className="text-sm">
+                            {format(new Date(schedule.next_backup_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button 
+                        onClick={() => saveSchedule({ 
+                          frequency: schedule.frequency, 
+                          is_active: !schedule.is_active 
+                        })}
+                        disabled={isSaving}
+                        variant="outline"
+                      >
+                        {schedule.is_active ? 'Pausar' : 'Reativar'}
+                      </Button>
+                      <Button 
+                        onClick={() => deleteSchedule()}
+                        disabled={isDeleting}
+                        variant="destructive"
+                      >
+                        {isDeleting ? "Removendo..." : "Remover"}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Histórico de Backups */}
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-medium mb-2">Histórico de Backups</h4>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Últimos 10 backups gerados automaticamente
+                  </p>
+                </div>
+
+                {historyLoading ? (
+                  <div className="text-sm text-muted-foreground">Carregando...</div>
+                ) : !history || history.length === 0 ? (
+                  <div className="text-sm text-muted-foreground">
+                    Nenhum backup gerado ainda
+                  </div>
+                ) : (
+                  <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                    {history.map((backup) => (
+                      <div 
+                        key={backup.id}
+                        className="p-3 bg-muted rounded-lg hover:bg-muted/80 transition-colors"
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium">
+                            {format(new Date(backup.created_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                          </span>
+                          <span className={`text-xs px-2 py-1 rounded ${
+                            backup.backup_type === 'scheduled' 
+                              ? 'bg-primary/10 text-primary' 
+                              : 'bg-muted-foreground/10'
+                          }`}>
+                            {backup.backup_type === 'scheduled' ? 'Automático' : 'Manual'}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-muted-foreground">
+                            {(backup.file_size / 1024).toFixed(2)} KB
+                          </span>
+                          <Button 
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => downloadBackup(backup.file_path)}
+                          >
+                            <Download className="h-3 w-3 mr-1" />
+                            Baixar
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>
