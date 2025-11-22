@@ -42,6 +42,7 @@ export function EditTransactionModal({
     status: "completed" as "pending" | "completed",
     invoiceMonth: "", // Mês da fatura (YYYY-MM)
   });
+  const [originalData, setOriginalData] = useState(formData);
   const [scopeDialogOpen, setScopeDialogOpen] = useState(false);
   const { toast } = useToast();
   const { categories } = useCategories();
@@ -54,7 +55,7 @@ export function EditTransactionModal({
       
       const transactionType = transaction.type === "transfer" ? "expense" : transaction.type;
       
-      setFormData({
+      const initialData = {
         description: transaction.description || "",
         amountInCents: Math.abs(transaction.amount),
         date: transactionDate,
@@ -63,7 +64,10 @@ export function EditTransactionModal({
         account_id: transaction.account_id || "",
         status: transaction.status || "completed",
         invoiceMonth: transaction.invoice_month_overridden ? (transaction.invoice_month || "") : "",
-      });
+      };
+      
+      setFormData(initialData);
+      setOriginalData(initialData);
     }
   }, [open, transaction, accounts]);
 
@@ -103,28 +107,67 @@ export function EditTransactionModal({
   const processEdit = (editScope: EditScope) => {
     if (!transaction) return;
 
-    // =================================================================
-    // LÓGICA DE SALVAMENTO (Correta):
-    // Na hora de salvar, aplicamos o negativo de volta se for 'expense'
-    // =================================================================
-    const finalAmount = formData.type === 'income' 
+    // Detectar apenas os campos que foram modificados
+    const updates: Partial<Transaction> = {};
+    
+    if (formData.description.trim() !== originalData.description) {
+      updates.description = formData.description.trim();
+    }
+    
+    // Verificar se o amount mudou (considerando o tipo)
+    const originalAmount = originalData.type === 'income' 
+      ? originalData.amountInCents 
+      : -Math.abs(originalData.amountInCents);
+    const newAmount = formData.type === 'income' 
       ? formData.amountInCents 
       : -Math.abs(formData.amountInCents);
+    
+    if (newAmount !== originalAmount) {
+      updates.amount = newAmount;
+    }
+    
+    // Verificar data
+    const originalDateStr = originalData.date.toISOString().split('T')[0];
+    const newDateStr = formData.date.toISOString().split('T')[0];
+    if (newDateStr !== originalDateStr) {
+      updates.date = formData.date;
+    }
+    
+    if (formData.type !== originalData.type) {
+      updates.type = formData.type;
+    }
+    
+    if (formData.category_id !== originalData.category_id) {
+      updates.category_id = formData.category_id;
+    }
+    
+    if (formData.account_id !== originalData.account_id) {
+      updates.account_id = formData.account_id;
+    }
+    
+    if (formData.status !== originalData.status) {
+      updates.status = formData.status;
+    }
+    
+    if (formData.invoiceMonth !== originalData.invoiceMonth) {
+      updates.invoice_month = formData.invoiceMonth || undefined;
+      updates.invoice_month_overridden = Boolean(formData.invoiceMonth);
+    }
+
+    // Se nenhum campo foi modificado, não fazer nada
+    if (Object.keys(updates).length === 0) {
+      toast({
+        title: "Aviso",
+        description: "Nenhuma alteração foi detectada",
+        variant: "default",
+      });
+      onOpenChange(false);
+      return;
+    }
 
     const updatedTransaction: Transaction = {
       ...transaction,
-      description: formData.description.trim(),
-      amount: finalAmount, // Salva o valor com o sinal correto
-      date: formData.date,
-      type: formData.type,
-      category_id: formData.category_id,
-      account_id: formData.account_id,
-      status: formData.status,
-      invoice_month: formData.invoiceMonth || undefined,
-      invoice_month_overridden: Boolean(formData.invoiceMonth),
-      is_recurring: transaction.is_recurring,
-      recurrence_type: transaction.recurrence_type,
-      recurrence_end_date: transaction.recurrence_end_date,
+      ...updates,
     };
 
     onEditTransaction(updatedTransaction, editScope);

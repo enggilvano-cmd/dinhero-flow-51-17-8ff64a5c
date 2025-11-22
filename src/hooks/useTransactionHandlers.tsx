@@ -143,21 +143,40 @@ export function useTransactionHandlers() {
   ) => {
     if (!user) return;
     try {
+      // Extrair apenas os campos que foram modificados
+      const updates: any = {};
+      
+      if (updatedTransaction.description !== undefined) {
+        updates.description = updatedTransaction.description;
+      }
+      if (updatedTransaction.amount !== undefined) {
+        updates.amount = updatedTransaction.amount;
+      }
+      if (updatedTransaction.date !== undefined) {
+        updates.date = typeof updatedTransaction.date === 'string'
+          ? updatedTransaction.date
+          : updatedTransaction.date.toISOString().split('T')[0];
+      }
+      if (updatedTransaction.type !== undefined) {
+        updates.type = updatedTransaction.type;
+      }
+      if (updatedTransaction.category_id !== undefined) {
+        updates.category_id = updatedTransaction.category_id;
+      }
+      if (updatedTransaction.account_id !== undefined) {
+        updates.account_id = updatedTransaction.account_id;
+      }
+      if (updatedTransaction.status !== undefined) {
+        updates.status = updatedTransaction.status;
+      }
+      if (updatedTransaction.invoice_month !== undefined) {
+        updates.invoice_month = updatedTransaction.invoice_month || null;
+      }
+
       const { error } = await supabase.functions.invoke('atomic-edit-transaction', {
         body: {
           transaction_id: updatedTransaction.id,
-          updates: {
-            description: updatedTransaction.description,
-            amount: updatedTransaction.amount,
-            date: typeof updatedTransaction.date === 'string'
-              ? updatedTransaction.date
-              : updatedTransaction.date.toISOString().split('T')[0],
-            type: updatedTransaction.type,
-            category_id: updatedTransaction.category_id,
-            account_id: updatedTransaction.account_id,
-            status: updatedTransaction.status || 'completed',
-            invoice_month: updatedTransaction.invoice_month || null,
-          },
+          updates,
           scope: editScope || 'current',
         }
       });
