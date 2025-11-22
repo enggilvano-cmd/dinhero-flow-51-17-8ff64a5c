@@ -32,7 +32,8 @@ export function useAccounts() {
     ...cacheConfig.mediumLived,
     // Keep previous data while fetching
     placeholderData: (previousData) => previousData,
-    // Refetch on window focus to get latest balances
+    // CRITICAL: Always refetch on mount and window focus to get latest balances
+    refetchOnMount: true,
     refetchOnWindowFocus: true,
   });
 
@@ -56,10 +57,10 @@ export function useAccounts() {
         return old.map(acc => acc.id === updatedAccount.id ? { ...acc, ...updatedAccount } : acc);
       });
       // Then invalidate to ensure consistency
-      queryClient.invalidateQueries({ queryKey: queryKeys.accounts, refetchType: 'active' });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
       // Also invalidate transactions if balance changed
       if (updatedAccount.balance !== undefined) {
-        queryClient.invalidateQueries({ queryKey: queryKeys.transactions(), refetchType: 'active' });
+        queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
       }
     },
     onError: (error) => {
@@ -87,9 +88,9 @@ export function useAccounts() {
         return old.filter(acc => acc.id !== deletedAccountId);
       });
       // Then invalidate to ensure consistency
-      queryClient.invalidateQueries({ queryKey: queryKeys.accounts, refetchType: 'active' });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
       // Also invalidate transactions
-      queryClient.invalidateQueries({ queryKey: queryKeys.transactions(), refetchType: 'active' });
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
     },
     onError: (error) => {
       logger.error('Error deleting account:', error);
@@ -120,7 +121,7 @@ export function useAccounts() {
     },
     onSuccess: () => {
       // Invalidate accounts after bulk import
-      queryClient.invalidateQueries({ queryKey: queryKeys.accounts, refetchType: 'active' });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
     },
   });
 

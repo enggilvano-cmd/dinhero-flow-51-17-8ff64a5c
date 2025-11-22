@@ -195,6 +195,9 @@ export function useInfiniteTransactions(params: UseInfiniteTransactionsParams = 
     ...cacheConfig.shortLived,
     // Keep previous data while fetching new data
     placeholderData: (previousData) => previousData,
+    // CRITICAL: Always refetch on mount to ensure fresh data
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 
   // Separate count query
@@ -250,6 +253,9 @@ export function useInfiniteTransactions(params: UseInfiniteTransactionsParams = 
     initialPageParam: 0,
     enabled: !!user && enabled,
     ...cacheConfig.shortLived,
+    // CRITICAL: Always refetch on mount to ensure fresh count
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 
   // Mutations
@@ -297,8 +303,8 @@ export function useInfiniteTransactions(params: UseInfiniteTransactionsParams = 
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.transactions(), refetchType: 'active' });
-      queryClient.invalidateQueries({ queryKey: queryKeys.accounts, refetchType: 'active' });
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
     },
     onError: (error) => {
       logger.error('Error adding transaction:', error);
@@ -333,8 +339,8 @@ export function useInfiniteTransactions(params: UseInfiniteTransactionsParams = 
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.transactions(), refetchType: 'active' });
-      queryClient.invalidateQueries({ queryKey: queryKeys.accounts, refetchType: 'active' });
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
     },
   });
 
@@ -356,8 +362,8 @@ export function useInfiniteTransactions(params: UseInfiniteTransactionsParams = 
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.transactions(), refetchType: 'active' });
-      queryClient.invalidateQueries({ queryKey: queryKeys.accounts, refetchType: 'active' });
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
     },
   });
 

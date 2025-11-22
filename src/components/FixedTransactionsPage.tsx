@@ -312,8 +312,8 @@ export function FixedTransactionsPage() {
       }
 
       // Invalidar cache do React Query
-      await queryClient.invalidateQueries({ queryKey: queryKeys.transactions(), refetchType: 'active' });
-      await queryClient.invalidateQueries({ queryKey: queryKeys.accounts, refetchType: 'active' });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
 
       // Excluir todas as transações filhas pendentes
       const { error: childrenError } = await supabase

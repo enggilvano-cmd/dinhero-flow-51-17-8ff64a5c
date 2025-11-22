@@ -22,7 +22,7 @@ export function useAccountHandlers() {
         .eq('user_id', user.id);
       if (error) throw error;
       
-      queryClient.invalidateQueries({ queryKey: queryKeys.accounts, refetchType: 'active' });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
     } catch (error) {
       logger.error('Error updating account:', error);
       throw error;
@@ -40,7 +40,7 @@ export function useAccountHandlers() {
       
       if (error) throw error;
       
-      queryClient.invalidateQueries({ queryKey: queryKeys.accounts, refetchType: 'active' });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
       toast({
         title: 'Sucesso',
         description: 'Conta excluída com sucesso',
@@ -84,7 +84,7 @@ export function useAccountHandlers() {
       
       if (error) throw error;
       
-      queryClient.invalidateQueries({ queryKey: queryKeys.accounts, refetchType: 'active' });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
       toast({
         title: 'Sucesso',
         description: `${accountsToAdd.length} contas importadas com sucesso!`,
