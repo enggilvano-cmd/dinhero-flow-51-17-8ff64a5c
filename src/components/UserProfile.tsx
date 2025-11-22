@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { User, Shield, Key, Activity, ShieldCheck, ShieldOff } from 'lucide-react';
 import { TwoFactorSetup } from './TwoFactorSetup';
 import { logger } from '@/lib/logger';
+import { t } from "@/lib/t";
 import {
   AlertDialog,
   AlertDialogAction,
