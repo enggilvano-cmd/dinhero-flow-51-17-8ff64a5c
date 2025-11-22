@@ -656,9 +656,9 @@ export default function AnalyticsPage({
     <div ref={contentRef} className="spacing-responsive-lg fade-in pb-6 sm:pb-8">{/*  Header */}
       <div className="flex flex-col gap-3">
         <div className="min-w-0 w-full">
-          <h1 className="text-system-h1 leading-tight">{t("analytics.title")}</h1>
+          <h1 className="text-system-h1 leading-tight">Análises</h1>
           <p className="text-sm text-muted-foreground leading-tight">
-            {t("analytics.subtitle")}
+            Visualize relatórios e análises financeiras detalhadas
           </p>
         </div>
 
@@ -669,7 +669,7 @@ export default function AnalyticsPage({
             className="gap-2 apple-interaction h-9 text-xs sm:text-sm"
           >
             <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span>{t("analytics.exportPdf")}</span>
+            <span>Exportar PDF</span>
           </Button>
         </div>
       </div>
@@ -770,7 +770,7 @@ export default function AnalyticsPage({
             </div>
 
             <div>
-              <label htmlFor="filter-date" className="text-caption">{t("dashboard.period")}</label>
+              <label htmlFor="filter-date" className="text-caption">Período</label>
               <Select
                 value={dateFilter}
                 onValueChange={(
@@ -778,13 +778,13 @@ export default function AnalyticsPage({
                 ) => setDateFilter(value)}
               >
                 <SelectTrigger id="filter-date" className="touch-target mt-2">
-                  <SelectValue placeholder={t("dashboard.period")} />
+                  <SelectValue placeholder="Período" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">{t("analytics.allPeriods")}</SelectItem>
-                  <SelectItem value="current_month">{t("dashboard.currentMonth")}</SelectItem>
-                  <SelectItem value="month_picker">{t("analytics.browseByMonth")}</SelectItem>
-                  <SelectItem value="custom">{t("dashboard.customPeriod")}</SelectItem>
+                  <SelectItem value="all">Todos os períodos</SelectItem>
+                  <SelectItem value="current_month">Mês Atual</SelectItem>
+                  <SelectItem value="month_picker">Navegar por Mês</SelectItem>
+                  <SelectItem value="custom">Período Personalizado</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -792,7 +792,7 @@ export default function AnalyticsPage({
 
           {dateFilter === "month_picker" && (
             <div className="mt-4">
-              <label className="text-caption">{t("analytics.selectMonth")}</label>
+              <label className="text-caption">Selecione o Mês</label>
               <div className="flex items-center gap-2 border border-input rounded-md px-3 py-2 mt-2">
                 <Button
                   variant="ghost"
@@ -820,7 +820,7 @@ export default function AnalyticsPage({
           {dateFilter === "custom" && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
               <div>
-                <label className="text-caption">{t("analytics.startDate")}</label>
+                <label className="text-caption">Data Inicial</label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
@@ -833,7 +833,7 @@ export default function AnalyticsPage({
                       <CalendarIcon className="mr-2 h-4 w-4" />
                       {customStartDate
                         ? format(customStartDate, "dd/MM/yyyy")
-                        : t("analytics.selectDate")}
+                        : "Selecione a data"}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
@@ -849,7 +849,7 @@ export default function AnalyticsPage({
               </div>
 
               <div>
-                <label className="text-caption">{t("analytics.endDate")}</label>
+                <label className="text-caption">Data Final</label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
@@ -862,7 +862,7 @@ export default function AnalyticsPage({
                       <CalendarIcon className="mr-2 h-4 w-4" />
                       {customEndDate
                         ? format(customEndDate, "dd/MM/yyyy")
-                        : t("analytics.selectDate")}
+                        : "Selecione a data"}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
@@ -890,8 +890,8 @@ export default function AnalyticsPage({
                 <TrendingUp className="h-5 w-5 text-success" />
               </div>
               <div className="col-start-2">
-                <p className="text-sm font-semibold">{t("analytics.income")}</p>
-                <p className="text-xs text-muted-foreground">{t("analytics.filteredPeriod")}</p>
+                <p className="text-sm font-semibold">Receitas</p>
+                <p className="text-xs text-muted-foreground">Período filtrado</p>
               </div>
               <div className="col-start-2 text-responsive-xl font-bold balance-positive leading-tight truncate max-w-full">
                 {formatCurrency(totalsByType.income)}
@@ -907,8 +907,8 @@ export default function AnalyticsPage({
                 <TrendingDown className="h-5 w-5 text-destructive" />
               </div>
               <div className="col-start-2">
-                <p className="text-sm font-semibold">{t("analytics.expenses")}</p>
-                <p className="text-xs text-muted-foreground">{t("analytics.filteredPeriod")}</p>
+                <p className="text-sm font-semibold">Despesas</p>
+                <p className="text-xs text-muted-foreground">Período filtrado</p>
               </div>
               <div className="col-start-2 text-responsive-xl font-bold balance-negative leading-tight truncate max-w-full">
                 {formatCurrency(totalsByType.expenses)}
@@ -924,8 +924,8 @@ export default function AnalyticsPage({
                 <BarChart3 className="h-5 w-5 text-primary" />
               </div>
               <div className="col-start-2">
-                <p className="text-sm font-semibold">{t("analytics.netBalance")}</p>
-                <p className="text-xs text-muted-foreground">{t("analytics.filteredPeriod")}</p>
+                <p className="text-sm font-semibold">Saldo Líquido</p>
+                <p className="text-xs text-muted-foreground">Período filtrado</p>
               </div>
               <div className={`col-start-2 text-responsive-xl font-bold leading-tight truncate max-w-full ${
                 totalsByType.income - totalsByType.expenses >= 0 ? "balance-positive" : "balance-negative"
@@ -945,7 +945,7 @@ export default function AnalyticsPage({
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3 pt-3 sm:px-4 sm:pt-4">
             <CardTitle className="flex items-center gap-2 text-sm sm:text-base font-medium">
               <PieChart className="h-4 w-4 sm:h-5 sm:w-5" />
-              {categoryChartType === "income" ? t("analytics.income") : t("analytics.expenses")} {t("analytics.byCategory")}
+              {categoryChartType === "income" ? "Receitas" : "Despesas"} por Categoria
             </CardTitle>
 
             <div className="flex gap-1 rounded-lg bg-muted p-1">
@@ -957,7 +957,7 @@ export default function AnalyticsPage({
                 onClick={() => setCategoryChartType("expense")}
                 className="h-6 px-2 text-xs sm:h-7 sm:px-3"
               >
-                {t("analytics.expenses")}
+                Despesas
               </Button>
               <Button
                 size="sm"
@@ -969,7 +969,7 @@ export default function AnalyticsPage({
                     "bg-success text-success-foreground hover:bg-success/90"
                 )}
               >
-                {t("analytics.income")}
+                Receitas
               </Button>
             </div>
           </CardHeader>
@@ -1190,15 +1190,15 @@ export default function AnalyticsPage({
               <div className="grid grid-cols-3 gap-2 mt-3 text-xs">
                 <div className="flex items-center gap-1 justify-center">
                   <div className="w-3 h-3 rounded bg-success flex-shrink-0"></div>
-                  <span className="text-muted-foreground truncate">{t("analytics.income")}</span>
+                  <span className="text-muted-foreground truncate">Receitas</span>
                 </div>
                 <div className="flex items-center gap-1 justify-center">
                   <div className="w-3 h-3 rounded bg-destructive flex-shrink-0"></div>
-                  <span className="text-muted-foreground truncate">{t("analytics.expenses")}</span>
+                  <span className="text-muted-foreground truncate">Despesas</span>
                 </div>
                 <div className="flex items-center gap-1 justify-center">
                   <div className="w-3 h-0.5 bg-primary flex-shrink-0"></div>
-                  <span className="text-muted-foreground truncate">{t("analytics.balance")}</span>
+                  <span className="text-muted-foreground truncate">Saldo</span>
                 </div>
               </div>
             )}
@@ -1211,12 +1211,12 @@ export default function AnalyticsPage({
         <CardHeader>
           <CardTitle className="text-sm sm:text-base">
             <span className="block sm:hidden">
-              {t("analytics.details")} -{" "}
-              {categoryChartType === "income" ? t("analytics.income") : t("analytics.expenses")}
+              Detalhes -{" "}
+              {categoryChartType === "income" ? "Receitas" : "Despesas"}
             </span>
             <span className="hidden sm:block">
-              {t("analytics.detailsByCategory")} -{" "}
-              {categoryChartType === "income" ? t("analytics.income") : t("analytics.expenses")}
+              Detalhes por Categoria -{" "}
+              {categoryChartType === "income" ? "Receitas" : "Despesas"}
             </span>
           </CardTitle>
         </CardHeader>
@@ -1225,7 +1225,7 @@ export default function AnalyticsPage({
             <div className="text-center py-8 text-muted-foreground">
               <PieChart className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p className="text-sm">
-                {t("analytics.noTransactionsForPeriod")}
+                Nenhuma transação no período selecionado
               </p>
             </div>
           ) : (
@@ -1234,16 +1234,16 @@ export default function AnalyticsPage({
                 <thead>
                   <tr className="border-b">
                     <th className="text-left py-2 text-xs sm:text-sm">
-                      {t("transactions.category")}
+                      Categoria
                     </th>
                     <th className="text-right py-2 text-xs sm:text-sm">
-                      {t("analytics.amount")}
+                      Valor
                     </th>
                     <th className="text-right py-2 text-xs sm:text-sm hidden sm:table-cell">
                       %
                     </th>
                     <th className="text-right py-2 text-xs sm:text-sm hidden md:table-cell">
-                      {t("analytics.qty")}
+                      Qtd.
                     </th>
                   </tr>
                 </thead>

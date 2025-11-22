@@ -232,9 +232,9 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
-          <h1 className="text-system-h1 leading-tight">{t("creditBills.title")}</h1>
+          <h1 className="text-system-h1 leading-tight">Faturas de Cartão</h1>
           <p className="text-sm text-muted-foreground leading-tight">
-            {t("creditBills.subtitle")}
+            Gerencie as faturas dos seus cartões de crédito
           </p>
         </div>
       </div>
@@ -250,7 +250,7 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs sm:text-sm font-medium text-muted-foreground">
-                  {t("creditBills.currentBill")}
+                  Fatura Atual
                 </p>
                 <div className="text-base sm:text-lg lg:text-xl font-bold balance-negative leading-tight">
                   {/* BUGFIX: Corrigido para mostrar o valor correto, mesmo se for crédito (negativo) */}
@@ -270,7 +270,7 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs sm:text-sm font-medium text-muted-foreground">
-                  {t("creditBills.nextBill")}
+                  Próxima Fatura
                 </p>
                 <div className="text-base sm:text-lg lg:text-xl font-bold text-muted-foreground leading-tight">
                   {formatCents(totalSummary.nextBill)}
@@ -289,7 +289,7 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs sm:text-sm font-medium text-muted-foreground">
-                  {t("accounts.available")}
+                  Disponível
                 </p>
                 <div
                   className={cn(
@@ -418,13 +418,13 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
           <CreditCard className="h-12 w-12 mx-auto mb-4 opacity-50" />
           <p className="text-sm font-medium">
             {searchTerm
-              ? t("messages.noDataFound")
-              : t("creditBills.noBills")}
+              ? "Nenhum resultado encontrado"
+              : "Nenhuma fatura de cartão encontrada"}
           </p>
           <p className="text-xs">
             {searchTerm
-              ? t("messages.tryAgain")
-              : t("accounts.addFirstAccount")}
+              ? "Tente novamente com outros termos"
+              : "Adicione sua primeira conta para começar"}
           </p>
         </div>
       ) : (

@@ -279,8 +279,8 @@ export function ImportCategoriesModal({
 
     if (categoriesToAdd.length === 0 && categoriesToReplaceIds.length === 0) {
       toast({
-        title: t('common.error'),
-        description: t('modals.import.noItemsToImport'),
+        title: 'Erro',
+        description: 'Nenhum item válido para importar',
         variant: "destructive",
       });
       return;
@@ -289,8 +289,8 @@ export function ImportCategoriesModal({
     onImportCategories(categoriesToAdd, categoriesToReplaceIds);
     
     toast({
-      title: t('common.success'),
-      description: t('modals.import.categoriesImported', { count: categoriesToAdd.length }),
+      title: 'Sucesso',
+      description: `${categoriesToAdd.length} categoria(s) importada(s) com sucesso`,
     });
 
     // Reset
