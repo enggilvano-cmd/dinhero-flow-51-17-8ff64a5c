@@ -77,9 +77,8 @@ export function EditAccountModal({
     // Mantém o saldo atual da conta sem permitir edição
     const balanceInCents = account.balance;
 
-
-    const limitInCents =
-      formData.limitInCents > 0 ? formData.limitInCents : undefined;
+    const dbLimitAmount =
+      formData.limitInCents > 0 ? formData.limitInCents : null;
 
     let dueDate: number | undefined;
     if (formData.type === "credit" && formData.dueDate) {
@@ -107,13 +106,15 @@ export function EditAccountModal({
       }
     }
 
-    const updatedAccount = {
+    const updatedAccount: Account = {
       id: account.id,
       user_id: account.user_id,
       name: formData.name.trim(),
       type: formData.type,
-      balance: balanceInCents, // Usa o saldo com sinal corrigido
-      limit_amount: limitInCents,
+      balance: balanceInCents,
+      // Para o tipo Account usamos undefined quando não houver limite,
+      // mas para o banco vamos enviar null explicitamente ao salvar.
+      limit_amount: formData.limitInCents > 0 ? formData.limitInCents : undefined,
       due_date: dueDate,
       closing_date: closingDate,
       color: formData.color,
@@ -121,7 +122,10 @@ export function EditAccountModal({
 
     setIsSubmitting(true);
     try {
-      await onEditAccount(updatedAccount);
+      await onEditAccount({
+        ...updatedAccount,
+        limit_amount: dbLimitAmount as any,
+      });
 
       toast({
         title: "Sucesso",
