@@ -45,11 +45,11 @@ export function BalanceCards({
   return (
     <>
       <Card
-        className="financial-card cursor-pointer apple-interaction"
+        className="financial-card cursor-pointer apple-interaction hover:scale-[1.02] transition-transform"
         onClick={() => onNavigateToAccounts?.()}
         role="button"
         tabIndex={0}
-        aria-label={`Saldo Total: ${formatCurrency(totalBalance / 100)}`}
+        aria-label={`Saldo Total: ${formatCurrency(totalBalance / 100)}. Clique para ver contas`}
       >
         <CardContent className="p-3 text-center">
           <div className="flex items-center justify-center gap-2 mb-1">
@@ -74,7 +74,7 @@ export function BalanceCards({
       </Card>
 
       <Card
-        className="financial-card cursor-pointer apple-interaction"
+        className="financial-card cursor-pointer apple-interaction hover:scale-[1.02] transition-transform"
         onClick={() => {
           const params = getNavigationParams();
           onNavigateToTransactions?.(
@@ -89,6 +89,7 @@ export function BalanceCards({
         }}
         role="button"
         tabIndex={0}
+        aria-label={`Receitas do Mês: ${formatCurrency(periodIncome / 100)}. Clique para ver todas as receitas`}
       >
         <CardContent className="p-3 text-center">
           <div className="flex items-center justify-center gap-2 mb-1">
@@ -109,7 +110,7 @@ export function BalanceCards({
       </Card>
 
       <Card
-        className="financial-card cursor-pointer apple-interaction"
+        className="financial-card cursor-pointer apple-interaction hover:scale-[1.02] transition-transform"
         onClick={() => {
           const params = getNavigationParams();
           onNavigateToTransactions?.(
@@ -124,6 +125,7 @@ export function BalanceCards({
         }}
         role="button"
         tabIndex={0}
+        aria-label={`Despesas do Mês: ${formatCurrency(periodExpenses / 100)}. Clique para ver todas as despesas`}
       >
         <CardContent className="p-3 text-center">
           <div className="flex items-center justify-center gap-2 mb-1">
@@ -144,10 +146,11 @@ export function BalanceCards({
       </Card>
 
       <Card
-        className="financial-card cursor-pointer apple-interaction"
+        className="financial-card cursor-pointer apple-interaction hover:scale-[1.02] transition-transform"
         onClick={() => onNavigateToAccounts?.('credit')}
         role="button"
         tabIndex={0}
+        aria-label={`Crédito Disponível: ${formatCurrency(creditAvailable / 100)}. Clique para ver cartões`}
       >
         <CardContent className="p-3 text-center">
           <div className="flex items-center justify-center gap-2 mb-1">
@@ -168,7 +171,7 @@ export function BalanceCards({
       </Card>
 
       <Card
-        className="financial-card cursor-pointer apple-interaction"
+        className="financial-card cursor-pointer apple-interaction hover:scale-[1.02] transition-transform"
         onClick={() => {
           const params = getNavigationParams();
           onNavigateToTransactions?.(
@@ -183,6 +186,7 @@ export function BalanceCards({
         }}
         role="button"
         tabIndex={0}
+        aria-label={`Despesas no Cartão: ${formatCurrency(creditCardExpenses / 100)}. Clique para ver detalhes`}
       >
         <CardContent className="p-3 text-center">
           <div className="flex items-center justify-center gap-2 mb-1">
@@ -203,7 +207,7 @@ export function BalanceCards({
       </Card>
 
       <Card
-        className="financial-card cursor-pointer apple-interaction"
+        className="financial-card cursor-pointer apple-interaction hover:scale-[1.02] transition-transform"
         onClick={() => {
           const params = getNavigationParams();
           onNavigateToTransactions?.(
@@ -218,6 +222,7 @@ export function BalanceCards({
         }}
         role="button"
         tabIndex={0}
+        aria-label={`Receitas Pendentes: ${formatCurrency(pendingIncome / 100)}. Clique para ver detalhes`}
       >
         <CardContent className="p-3 text-center">
           <div className="flex items-center justify-center gap-2 mb-1">
@@ -243,7 +248,7 @@ export function BalanceCards({
       </Card>
 
       <Card
-        className="financial-card cursor-pointer apple-interaction"
+        className="financial-card cursor-pointer apple-interaction hover:scale-[1.02] transition-transform"
         onClick={() => {
           const params = getNavigationParams();
           onNavigateToTransactions?.(
@@ -258,6 +263,7 @@ export function BalanceCards({
         }}
         role="button"
         tabIndex={0}
+        aria-label={`Despesas Pendentes: ${formatCurrency(pendingExpenses / 100)}. Clique para ver detalhes`}
       >
         <CardContent className="p-3 text-center">
           <div className="flex items-center justify-center gap-2 mb-1">
