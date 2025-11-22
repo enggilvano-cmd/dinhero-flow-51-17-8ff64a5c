@@ -315,6 +315,13 @@ export function AddTransactionModal({
                 ? baseInstallmentCents + remainderCents
                 : baseInstallmentCents;
             const installmentDate = addMonthsToDate(baseDate, i);
+            
+            // Log para debug
+            logger.debug(`Parcela ${i + 1}/${installments}:`, {
+              baseDate: baseDate.toISOString(),
+              installmentDate: installmentDate.toISOString(),
+              monthsAdded: i
+            });
 
             // Para cartão de crédito, todas as parcelas são criadas com status concluída
             const installmentStatus: "completed" | "pending" = "completed";
@@ -353,6 +360,14 @@ export function AddTransactionModal({
                 : baseInstallmentCents;
             const installmentDate = addMonthsToDate(baseDate, i);
             const installmentDateStr = installmentDate.toISOString().split("T")[0];
+            
+            // Log para debug
+            logger.debug(`Parcela ${i + 1}/${installments} (conta comum):`, {
+              baseDate: baseDate.toISOString(),
+              installmentDate: installmentDate.toISOString(),
+              installmentDateStr,
+              monthsAdded: i
+            });
 
             // Para contas comuns, a primeira parcela usa o status do formulário se for hoje ou passado
             // As demais parcelas são pendentes

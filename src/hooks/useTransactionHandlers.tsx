@@ -66,13 +66,21 @@ export function useTransactionHandlers() {
       const totalInstallments = transactionsData.length;
 
       const results = await Promise.all(
-        transactionsData.map((data) =>
-          supabase.functions.invoke('atomic-transaction', {
+        transactionsData.map((data, index) => {
+          const dateStr = data.date.toISOString().split('T')[0];
+          logger.debug(`Criando parcela ${index + 1}/${totalInstallments}:`, {
+            description: data.description,
+            originalDate: data.date.toISOString(),
+            dateStr,
+            currentInstallment: data.currentInstallment
+          });
+          
+          return supabase.functions.invoke('atomic-transaction', {
             body: {
               transaction: {
                 description: data.description,
                 amount: data.amount,
-                date: data.date.toISOString().split('T')[0],
+                date: dateStr,
                 type: data.type,
                 category_id: data.category_id,
                 account_id: data.account_id,
@@ -81,8 +89,8 @@ export function useTransactionHandlers() {
                 invoice_month_overridden: !!data.invoiceMonth,
               },
             },
-          })
-        )
+          });
+        })
       );
 
       const errors = results.filter((r) => r.error);
