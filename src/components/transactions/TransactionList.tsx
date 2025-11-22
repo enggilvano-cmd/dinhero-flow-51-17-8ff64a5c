@@ -1,5 +1,4 @@
 import { Badge } from "@/components/ui/badge";
-import { VirtualizedTable } from "@/components/ui/virtualized-table";
 import { TrendingUp, TrendingDown, ArrowLeftRight } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -15,7 +14,6 @@ interface TransactionListProps {
   onEdit: (transaction: any) => void;
   onDelete: (transactionId: string, scope?: EditScope) => void;
   onMarkAsPaid?: (transaction: any) => void;
-  t: (key: string) => string;
 }
 
 export function TransactionList({
@@ -26,11 +24,10 @@ export function TransactionList({
   onEdit,
   onDelete,
   onMarkAsPaid,
-  t,
 }: TransactionListProps) {
   const getAccountName = (accountId: string) => {
     const account = accounts.find((a) => a.id === accountId);
-    return account?.name || t("transactions.unknownAccount");
+    return account?.name || "Conta Desconhecida";
   };
 
   const getCategoryName = (categoryId: string | null) => {
@@ -52,103 +49,70 @@ export function TransactionList({
     }
   };
 
-  const columns = [
-    {
-      key: "date",
-      header: t("transactions.table.date"),
-      accessorKey: "date",
-      render: (row: any) => {
-        const date = row.date;
-        return format(date, "dd/MM/yyyy", { locale: ptBR });
-      },
-    },
-    {
-      key: "description",
-      header: t("transactions.table.description"),
-      accessorKey: "description",
-      render: (row: any) => {
-        return (
-          <div className="flex items-center gap-2">
-            {getTypeIcon(row.type)}
-            <span>{row.description}</span>
-            {row.installments && row.installments > 1 && (
-              <Badge variant="secondary" className="ml-2">
-                {row.current_installment}/{row.installments}
-              </Badge>
-            )}
-          </div>
-        );
-      },
-    },
-    {
-      key: "category",
-      header: t("transactions.table.category"),
-      accessorKey: "category_id",
-      render: (row: any) => getCategoryName(row.category_id),
-    },
-    {
-      key: "account",
-      header: t("transactions.table.account"),
-      accessorKey: "account_id",
-      render: (row: any) => getAccountName(row.account_id),
-    },
-    {
-      key: "amount",
-      header: t("transactions.table.amount"),
-      accessorKey: "amount",
-      render: (row: any) => {
-        const colorClass =
-          row.type === "income"
-            ? "text-success"
-            : row.type === "expense"
-            ? "text-destructive"
-            : "text-primary";
-        return (
-          <span className={`font-medium ${colorClass}`}>
-            {formatCurrency(row.amount, currency)}
-          </span>
-        );
-      },
-    },
-    {
-      key: "status",
-      header: t("transactions.table.status"),
-      accessorKey: "status",
-      render: (row: any) => {
-        return (
-          <Badge variant={row.status === "completed" ? "default" : "secondary"}>
-            {t(`transactions.status.${row.status}`)}
-          </Badge>
-        );
-      },
-    },
-    {
-      key: "actions",
-      header: t("common.actions"),
-      accessorKey: "id",
-      render: (row: any) => (
-        <TransactionActions
-          transaction={row}
-          onEdit={onEdit}
-          onDelete={onDelete}
-          onMarkAsPaid={onMarkAsPaid}
-        />
-      ),
-    },
-  ];
+  if (transactions.length === 0) {
+    return (
+      <div className="text-center py-12 text-muted-foreground">
+        Nenhuma transação encontrada
+      </div>
+    );
+  }
 
   return (
-    <VirtualizedTable
-      data={transactions}
-      columns={columns}
-      keyField="id"
-      emptyState={
-        <div className="text-center py-8 text-muted-foreground">
-          <p>{t("transactions.noTransactions")}</p>
+    <div className="space-y-2">
+      {transactions.map((transaction) => (
+        <div
+          key={transaction.id}
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 border rounded-lg hover:bg-muted/50 transition-colors bg-background"
+        >
+          <div className="flex items-start gap-3 flex-1 min-w-0">
+            <div className="flex-shrink-0 mt-1">{getTypeIcon(transaction.type)}</div>
+            
+            <div className="flex-1 min-w-0 space-y-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-medium truncate">{transaction.description}</span>
+                {transaction.installments && transaction.installments > 1 && (
+                  <Badge variant="secondary" className="text-xs">
+                    {transaction.current_installment}/{transaction.installments}
+                  </Badge>
+                )}
+                {transaction.status === "pending" && (
+                  <Badge variant="destructive" className="text-xs">
+                    Pendente
+                  </Badge>
+                )}
+              </div>
+              
+              <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                <span className="truncate">{format(transaction.date, "dd/MM/yyyy", { locale: ptBR })}</span>
+                <span className="truncate">{getCategoryName(transaction.category_id)}</span>
+                <span className="truncate">{getAccountName(transaction.account_id)}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between sm:justify-end gap-3 flex-shrink-0">
+            <span
+              className={`font-semibold text-lg ${
+                transaction.type === "income"
+                  ? "text-success"
+                  : transaction.type === "expense"
+                  ? "text-destructive"
+                  : "text-primary"
+              }`}
+            >
+              {transaction.type === "income" ? "+" : transaction.type === "expense" ? "-" : ""}
+              {formatCurrency(Math.abs(transaction.amount), currency)}
+            </span>
+
+            <TransactionActions
+              transaction={transaction}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              onMarkAsPaid={onMarkAsPaid}
+            />
+          </div>
         </div>
-      }
-      estimateSize={80}
-      overscan={5}
-    />
+      ))}
+    </div>
   );
 }

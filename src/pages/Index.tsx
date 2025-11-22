@@ -62,11 +62,8 @@ const PlaniFlowApp = () => {
   const {
     transactions, 
     isLoading: loadingTransactions,
-    isFetchingNextPage,
-    hasNextPage,
-    fetchNextPage,
     totalCount,
-  } = useInfiniteTransactions({ 
+  } = useInfiniteTransactions({
     pageSize: transactionsPageSize,
     search: transactionsSearch,
     type: transactionsFilterType,
@@ -303,9 +300,6 @@ const PlaniFlowApp = () => {
             sortOrder={transactionsSortOrder}
             onSortOrderChange={setTransactionsSortOrder}
             isLoading={loadingTransactions}
-            hasNextPage={hasNextPage}
-            fetchNextPage={fetchNextPage}
-            isFetchingNextPage={isFetchingNextPage}
           />
         );
       case "fixed":
