@@ -210,7 +210,42 @@ const PlaniFlowApp = () => {
         }
         setCurrentPage("accounts");
       }}
-      onNavigateToTransactions={() => {
+      onNavigateToTransactions={(
+        filterType,
+        filterStatus,
+        dateFilter,
+        filterAccountType,
+        selectedMonth,
+        customStartDate,
+        customEndDate
+      ) => {
+        // Apply filters
+        if (filterType) {
+          setTransactionsFilterType(filterType);
+        }
+        if (filterStatus) {
+          setTransactionsFilterStatus(filterStatus);
+        }
+        if (filterAccountType) {
+          setTransactionsFilterAccountType(filterAccountType);
+        }
+        
+        // Apply date filters based on dateFilter type
+        if (dateFilter === 'current_month' && selectedMonth) {
+          const startOfMonth = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), 1);
+          const endOfMonth = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1, 0);
+          setTransactionsDateFrom(startOfMonth.toISOString().split('T')[0]);
+          setTransactionsDateTo(endOfMonth.toISOString().split('T')[0]);
+        } else if (dateFilter === 'custom' && customStartDate && customEndDate) {
+          setTransactionsDateFrom(customStartDate.toISOString().split('T')[0]);
+          setTransactionsDateTo(customEndDate.toISOString().split('T')[0]);
+        } else if (dateFilter === 'month_picker' && selectedMonth) {
+          const startOfMonth = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), 1);
+          const endOfMonth = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1, 0);
+          setTransactionsDateFrom(startOfMonth.toISOString().split('T')[0]);
+          setTransactionsDateTo(endOfMonth.toISOString().split('T')[0]);
+        }
+        
         setCurrentPage("transactions");
       }}
     />
