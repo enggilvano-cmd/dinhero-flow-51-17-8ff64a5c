@@ -14,6 +14,7 @@ import { BankReconciliationPage } from "@/components/BankReconciliationPage";
 import { AccountingPage } from "@/components/AccountingPage";
 import { UserProfile } from "@/components/UserProfile";
 import { SettingsPage } from "@/components/SettingsPage";
+import { useSettings } from "@/context/SettingsContext";
 import { AddAccountModal } from "@/components/AddAccountModal";
 import { AddTransactionModal } from "@/components/AddTransactionModal";
 import { EditAccountModal } from "@/components/EditAccountModal";
@@ -36,6 +37,7 @@ import { useTransactionHandlers } from "@/hooks/useTransactionHandlers";
 
 const PlaniFlowApp = () => {
   const { user, loading: authLoading, isAdmin } = useAuth();
+  const { settings, updateSettings } = useSettings();
   const { toast } = useToast();
   const [currentPage, setCurrentPage] = useState("dashboard");
   const queryClient = useQueryClient();
@@ -343,15 +345,8 @@ const PlaniFlowApp = () => {
         return <UserProfile />;
       case "settings":
         return <SettingsPage 
-          settings={{
-            userId: user?.id || "",
-            theme: "system",
-            currency: "BRL",
-            language: "pt-BR",
-            notifications: true,
-            autoBackup: false
-          }}
-          onUpdateSettings={() => Promise.resolve()}
+          settings={settings}
+          onUpdateSettings={updateSettings}
           onClearAllData={handleClearAllData}
         />;
       default:
