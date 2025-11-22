@@ -27,7 +27,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 
-import { Account, Transaction } from '@/types';
+import { Account, Transaction, ACCOUNT_TYPE_LABELS } from '@/types';
 
 interface MarkAsPaidModalProps {
   open: boolean;
@@ -130,7 +130,18 @@ export function MarkAsPaidModal({
               <SelectContent>
                 {accounts.map((account) => (
                   <SelectItem key={account.id} value={account.id}>
-                    {account.name}
+                    <div className="flex justify-between items-center w-full">
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="w-3 h-3 rounded-full"
+                          style={{ backgroundColor: account.color || "#6b7280" }}
+                        />
+                        <span>{account.name}</span>
+                      </div>
+                      <span className="ml-2 text-sm text-muted-foreground">
+                        {ACCOUNT_TYPE_LABELS[account.type]}
+                      </span>
+                    </div>
                   </SelectItem>
                 ))}
               </SelectContent>
