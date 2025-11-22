@@ -91,14 +91,14 @@ export function ImportTransactionsModal({
 
   // Suporte a cabeçalhos exportados em diferentes idiomas
   const HEADERS = {
-    date: ['Data', 'Date', 'Fecha', t('transactions.date')],
-    description: ['Descrição', 'Description', 'Descripción', t('transactions.description')],
-    category: ['Categoria', 'Category', 'Categoría', t('transactions.category')],
-    type: ['Tipo', 'Type', 'Tipo', t('transactions.type')],
-    account: ['Conta', 'Account', 'Cuenta', t('transactions.account')],
-    amount: ['Valor', 'Amount', 'Valor', t('transactions.amount')],
-    status: ['Status', 'Status', 'Estado', t('transactions.status')],
-    installments: ['Parcelas', 'Installments', 'Cuotas', t('transactions.installments')]
+    date: ['Data', 'Date', 'Fecha'],
+    description: ['Descrição', 'Description', 'Descripción'],
+    category: ['Categoria', 'Category', 'Categoría'],
+    type: ['Tipo', 'Type', 'Tipo'],
+    account: ['Conta', 'Account', 'Cuenta'],
+    amount: ['Valor', 'Amount', 'Valor'],
+    status: ['Status', 'Status', 'Estado'],
+    installments: ['Parcelas', 'Installments', 'Cuotas']
   } as const;
 
   const pick = (row: any, keys: readonly string[]) => {
@@ -198,59 +198,59 @@ export function ImportTransactionsModal({
     const valor = parseFloat(pick(row, HEADERS.amount) || '0');
 
     if (!data) {
-      errors.push(t('modals.import.errors.dateRequired'));
+      errors.push('Data é obrigatória');
       isValid = false;
     }
 
     if (!descricao) {
-      errors.push(t('modals.import.errors.descriptionRequired'));
+      errors.push('Descrição é obrigatória');
       isValid = false;
     }
 
     if (!categoria) {
-      errors.push(t('modals.import.errors.categoryRequired'));
+      errors.push('Categoria é obrigatória');
       isValid = false;
     }
 
     if (!tipo) {
-      errors.push(t('modals.import.errors.typeRequired'));
+      errors.push('Tipo é obrigatório');
       isValid = false;
     }
 
     if (!conta) {
-      errors.push(t('modals.import.errors.accountRequired'));
+      errors.push('Conta é obrigatória');
       isValid = false;
     }
 
     if (isNaN(valor) || valor <= 0) {
-      errors.push(t('modals.import.errors.invalidAmount'));
+      errors.push('Valor inválido. Deve ser um número positivo');
       isValid = false;
     }
 
     // Validações específicas (Bloco único e corrigido)
     const parsedDate = parseDate(data);
     if (!parsedDate) {
-      errors.push(t('modals.import.errors.invalidDateFormat'));
+      errors.push('Formato de data inválido. Use dd/MM/yyyy');
       isValid = false;
     }
 
     const parsedType = validateTransactionType(tipo);
     if (!parsedType) {
-      errors.push(t('modals.import.errors.invalidTransactionType'));
+      errors.push('Tipo inválido. Use: Receita, Despesa ou Transferência');
       isValid = false;
     }
 
     const account = findAccountByName(conta);
     const accountId = account?.id; // Definir accountId aqui
     if (!account) {
-      errors.push(t('modals.import.errors.accountNotFound'));
+      errors.push('Conta não encontrada. Verifique se a conta existe');
       isValid = false;
     }
 
     const status = pick(row, HEADERS.status) || 'completed';
     const parsedStatus = validateStatus(status.toString());
     if (!parsedStatus) {
-      errors.push(t('modals.import.errors.invalidStatus'));
+      errors.push('Status inválido. Use: Concluída ou Pendente');
       isValid = false;
     }
 
@@ -326,8 +326,8 @@ export function ImportTransactionsModal({
 
     if (!selectedFile.name.match(/\.(xlsx|xls)$/)) {
       toast({
-        title: t('common.error'),
-        description: t('modals.import.errorInvalidFile'),
+        title: 'Erro',
+        description: 'Arquivo inválido. Selecione um arquivo Excel (.xlsx ou .xls)',
         variant: "destructive"
       });
       return;
@@ -347,8 +347,8 @@ export function ImportTransactionsModal({
 
       if (rawData.length === 0) {
         toast({
-          title: t('common.error'),
-          description: t('modals.import.errorEmpty'),
+          title: 'Erro',
+          description: 'O arquivo está vazio. Adicione dados antes de importar',
           variant: "destructive"
         });
         setIsProcessing(false);
@@ -370,18 +370,14 @@ export function ImportTransactionsModal({
       }, { new: 0, duplicates: 0, invalid: 0 });
 
       toast({
-        title: t('modals.import.fileProcessed'),
-        description: t('modals.import.summaryDesc', {
-          new: summary.new,
-          duplicates: summary.duplicates,
-          errors: summary.invalid
-        }),
+        title: 'Arquivo processado',
+        description: `Encontradas: ${summary.new} novas, ${summary.duplicates} duplicadas, ${summary.invalid} com erros`,
       });
 
     } catch (error) {
       toast({
-        title: t('common.error'),
-        description: t('modals.import.errorReadFile'),
+        title: 'Erro',
+        description: 'Erro ao ler o arquivo. Verifique o formato e tente novamente',
         variant: "destructive"
       });
     }
@@ -429,8 +425,8 @@ export function ImportTransactionsModal({
 
     if (transactionsToAdd.length === 0 && transactionsToReplaceIds.length === 0) {
       toast({
-        title: t('common.error'),
-        description: t('modals.import.noItemsToImport'),
+        title: 'Erro',
+        description: 'Nenhum item válido para importar',
         variant: "destructive",
       });
       return;
@@ -439,8 +435,8 @@ export function ImportTransactionsModal({
     onImportTransactions(transactionsToAdd, transactionsToReplaceIds);
     
     toast({
-      title: t('common.success'),
-      description: t('modals.import.transactionsImported', { count: transactionsToAdd.length }),
+      title: 'Sucesso',
+      description: `${transactionsToAdd.length} transação(ões) importada(s) com sucesso`,
     });
 
     // Reset
@@ -551,8 +547,8 @@ export function ImportTransactionsModal({
     XLSX.writeFile(wb, 'modelo-importacao-transacoes.xlsx');
 
     toast({
-      title: t('common.success'),
-      description: t('modals.import.templateDownloaded'),
+      title: 'Sucesso',
+      description: 'Modelo de exemplo baixado com sucesso',
     });
   };
 
@@ -586,10 +582,10 @@ export function ImportTransactionsModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Upload className="h-5 w-5" />
-            {t('modals.import.titleTransactions')}
+            Importar Transações
           </DialogTitle>
           <DialogDescription>
-            {t('modals.import.subtitleTransactions')}
+            Importe transações em lote a partir de um arquivo Excel
           </DialogDescription>
         </DialogHeader>
 
@@ -723,7 +719,7 @@ export function ImportTransactionsModal({
               <AlertDescription className="text-amber-900 dark:text-amber-200">
                 <div className="space-y-2">
                   <p className="font-semibold text-base">
-                    {t('modals.import.duplicatesFound')}: {summary.duplicates} {t('modals.import.typeTransactions').toLowerCase()}
+                    Duplicatas Encontradas: {summary.duplicates} transações
                   </p>
                   <p className="text-sm">
                     Para cada item duplicado, escolha uma ação clicando no menu ao lado: <strong>Pular</strong> (ignorar), <strong>Adicionar</strong> (criar novo) ou <strong>Substituir</strong> (sobrescrever existente).
@@ -832,13 +828,13 @@ export function ImportTransactionsModal({
         {/* Actions */}
         <div className="flex justify-end gap-3 pt-4 border-t">
           <Button variant="outline" onClick={handleCancel}>
-            {t('common.cancel')}
+            Cancelar
           </Button>
           <Button 
             onClick={handleImport}
             disabled={transactionsToImportCount === 0 || isProcessing}
           >
-            {t('modals.import.importButton', { count: transactionsToImportCount, type: t('modals.import.typeTransactions') })}
+            Importar {transactionsToImportCount} transação{transactionsToImportCount !== 1 ? 'ões' : ''}
           </Button>
         </div>
       </DialogContent>

@@ -17,7 +17,6 @@ interface InfiniteTransactionListProps {
   onEdit: (transaction: any) => void;
   onDelete: (transactionId: string, scope?: EditScope) => void;
   onMarkAsPaid?: (transaction: any) => void;
-  t: (key: string) => string;
   hasNextPage?: boolean;
   isFetchingNextPage?: boolean;
   fetchNextPage?: () => void;
@@ -31,7 +30,6 @@ export function InfiniteTransactionList({
   onEdit,
   onDelete,
   onMarkAsPaid,
-  t,
   hasNextPage,
   isFetchingNextPage,
   fetchNextPage,
@@ -49,7 +47,7 @@ export function InfiniteTransactionList({
 
   const getAccountName = (accountId: string) => {
     const account = accounts.find((a) => a.id === accountId);
-    return account?.name || t("transactions.unknownAccount");
+    return account?.name || "Conta Desconhecida";
   };
 
   const getCategoryName = (categoryId: string | null) => {
@@ -148,7 +146,7 @@ export function InfiniteTransactionList({
                       )}
                       {transaction.status === "pending" && (
                         <Badge variant="destructive" className="text-xs">
-                          {t("transactions.pending")}
+                          Pendente
                         </Badge>
                       )}
                     </div>
@@ -201,11 +199,11 @@ export function InfiniteTransactionList({
           {isFetchingNextPage && (
             <div className="flex items-center gap-2 text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" />
-              <span className="text-sm">{t("common.loading")}</span>
+              <span className="text-sm">Carregando...</span>
             </div>
           )}
           {!hasNextPage && transactions.length > 0 && (
-            <p className="text-sm text-muted-foreground">{t("transactions.noMoreTransactions")}</p>
+            <p className="text-sm text-muted-foreground">Não há mais transações</p>
           )}
         </div>
 
@@ -224,7 +222,7 @@ export function InfiniteTransactionList({
               onClick={fetchNextPage}
               className="w-full sm:w-auto"
             >
-              {t("transactions.loadMore")}
+              Carregar Mais
             </Button>
           </div>
         )}
