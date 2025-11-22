@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
@@ -30,6 +31,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { CurrencyInput } from "@/components/forms/CurrencyInput";
 import { addTransactionSchema } from "@/lib/validationSchemas";
 import { z } from "zod";
+import { queryKeys } from "@/lib/queryClient";
 
 interface Transaction {
   id?: string;
@@ -90,6 +92,7 @@ export function AddTransactionModal({
   initialAccountType = "",
   lockType = false,
 }: AddTransactionModalProps) {
+  const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     description: "",
     // 3. ALTERAR O ESTADO 'amount' PARA NÚMERO (CENTAVOS)
@@ -492,6 +495,16 @@ export function AddTransactionModal({
           }
         }
 
+        // 🔄 Invalidar e refazer fetch imediatamente para refletir as transações fixas
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase }),
+          queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
+        ]);
+        await Promise.all([
+          queryClient.refetchQueries({ queryKey: queryKeys.transactionsBase }),
+          queryClient.refetchQueries({ queryKey: queryKeys.accounts }),
+        ]);
+
         toast({
           title: "Transação Fixa Adicionada",
           description: `${transactionsToGenerate.length} transações foram geradas (até o final de ${nextYear})`,
@@ -502,7 +515,6 @@ export function AddTransactionModal({
         if (onSuccess) {
           onSuccess();
         }
-
 
       } else {
         // Cenário 3: Transação Única (sem parcelamento)
