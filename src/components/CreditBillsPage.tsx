@@ -21,13 +21,12 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { useAccountStore } from "@/stores/AccountStore";
 import { useTransactions } from "@/hooks/queries/useTransactions";
-import { AppTransaction } from "@/types";
+import { useAccounts } from "@/hooks/queries/useAccounts";
+import { AppTransaction, Account } from "@/types";
 import { calculateBillDetails, calculateInvoiceMonthByDue } from "@/lib/dateUtils";
 import { CreditCardBillCard } from "@/components/CreditCardBillCard";
 import { CreditBillDetailsModal } from "@/components/CreditBillDetailsModal";
-import { Account } from "@/types";
 import { cn } from "@/lib/utils";
 import { format, addMonths, isPast } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -46,10 +45,10 @@ interface CreditBillsPageProps {
 }
 
 export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBillsPageProps) {
-  const allAccounts = useAccountStore((state) => state.accounts);
+  const { accounts: allAccounts = [] } = useAccounts();
   const { transactions: allTransactions = [] } = useTransactions({ 
-    page: 1, 
-    pageSize: 10000, // Carrega todas as transações
+    page: 0, 
+    pageSize: 10000, // Carrega todas as transações de cartão
     type: 'all',
     accountType: 'credit'
   });
@@ -58,7 +57,7 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
   // Força atualização quando contas ou transações mudam
   const updateKey = useMemo(() => {
     const key = `${allAccounts.length}-${allTransactions.length}-${allAccounts.map(a => a.balance).join(',').substring(0, 50)}`;
-    logger.debug('CreditBillsPage updateKey:', key);
+    logger.debug('CreditBillsPage updateKey:', key, { accounts: allAccounts.length, transactions: allTransactions.length });
     return key;
   }, [allAccounts, allTransactions]);
 
