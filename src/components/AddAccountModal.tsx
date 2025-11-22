@@ -237,9 +237,12 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
 
           {/* Limite da Conta */}
           <div className="space-y-2">
-            {/* --- CORREÇÃO: Rótulo dinâmico --- */}
             <Label className="text-sm font-medium">
-              Limite (opcional)
+              {formData.type === "credit" 
+                ? "Limite do Cartão" 
+                : formData.type === "checking" 
+                ? "Limite de Cheque Especial (opcional)" 
+                : "Limite (opcional)"}
             </Label>
             <CurrencyInput
               value={formData.limitInCents || 0}
@@ -247,6 +250,16 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
                 setFormData((prev) => ({ ...prev, limitInCents: value || 0 }))
               }
             />
+            {formData.type === "checking" && (
+              <p className="text-xs text-muted-foreground">
+                Informe o limite de cheque especial disponível na conta
+              </p>
+            )}
+            {formData.type === "credit" && (
+              <p className="text-xs text-muted-foreground">
+                Limite total disponível no cartão de crédito
+              </p>
+            )}
           </div>
 
           {/* Campos específicos para Cartão de Crédito */}
