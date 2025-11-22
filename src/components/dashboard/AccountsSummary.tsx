@@ -6,16 +6,26 @@ import { Account } from '@/types';
 
 interface AccountsSummaryProps {
   accounts: Account[];
+  accountTypes?: ('checking' | 'savings' | 'credit' | 'investment')[];
+  title?: string;
+  emptyMessage?: string;
   onNavigateToAccounts?: () => void;
   onAddAccount?: () => void;
 }
 
 export function AccountsSummary({
   accounts,
+  accountTypes,
+  title = 'Suas Contas',
+  emptyMessage = 'Nenhuma conta cadastrada',
   onNavigateToAccounts,
   onAddAccount,
 }: AccountsSummaryProps) {
   const { formatCurrency } = useSettings();
+
+  const filteredAccounts = accountTypes
+    ? accounts.filter((account) => accountTypes.includes(account.type))
+    : accounts;
 
   return (
     <Card
@@ -27,13 +37,13 @@ export function AccountsSummary({
       <CardHeader className="pb-2">
         <CardTitle className="text-sm flex items-center gap-2">
           <CreditCard className="h-4 w-4" />
-          Suas Contas ({accounts.length})
+          {title} ({filteredAccounts.length})
         </CardTitle>
       </CardHeader>
       <CardContent className="p-3 pt-0">
-        {accounts.length === 0 ? (
+        {filteredAccounts.length === 0 ? (
           <div className="text-center py-3 text-muted-foreground">
-            <p className="text-xs">Nenhuma conta cadastrada</p>
+            <p className="text-xs">{emptyMessage}</p>
             <Button
               variant="outline"
               size="sm"
@@ -48,7 +58,7 @@ export function AccountsSummary({
           </div>
         ) : (
           <div className="space-y-1.5">
-            {accounts.map((account) => (
+            {filteredAccounts.map((account) => (
               <div
                 key={account.id}
                 className="flex items-center justify-between p-1.5 rounded-md bg-muted/20 hover:bg-muted/40 transition-colors"
