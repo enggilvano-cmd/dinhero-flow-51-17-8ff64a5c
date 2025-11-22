@@ -59,12 +59,12 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
   const handleSaveSettings = () => {
     try {
       // Validate settings before saving
-      if (!localSettings.currency || !localSettings.language || !localSettings.theme) {
-      toast({
-        title: 'Configurações inválidas',
-        description: 'Por favor, preencha todos os campos obrigatórios',
-        variant: "destructive"
-      });
+      if (!localSettings.theme) {
+        toast({
+          title: 'Configurações inválidas',
+          description: 'Por favor, preencha todos os campos obrigatórios',
+          variant: "destructive"
+        });
         return;
       }
 
@@ -352,50 +352,6 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="currency">Moeda</Label>
-              <p className="text-xs text-muted-foreground mb-2">
-                Escolha a moeda padrão para exibição de valores
-              </p>
-              <Select 
-                value={localSettings.currency} 
-                onValueChange={(value) => setLocalSettings(prev => ({ ...prev, currency: value }))}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="BRL">🇧🇷 Real Brasileiro (R$)</SelectItem>
-                  <SelectItem value="USD">🇺🇸 Dólar Americano ($)</SelectItem>
-                  <SelectItem value="EUR">🇪🇺 Euro (€)</SelectItem>
-                  <SelectItem value="GBP">🇬🇧 Libra Esterlina (£)</SelectItem>
-                  <SelectItem value="JPY">🇯🇵 Iene Japonês (¥)</SelectItem>
-                  <SelectItem value="ARS">🇦🇷 Peso Argentino ($)</SelectItem>
-                  <SelectItem value="MXN">🇲🇽 Peso Mexicano ($)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="language">Idioma</Label>
-              <p className="text-xs text-muted-foreground mb-2">
-                Selecione o idioma do aplicativo
-              </p>
-              <Select 
-                value={localSettings.language} 
-                onValueChange={(value) => setLocalSettings(prev => ({ ...prev, language: value }))}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="pt-BR">🇧🇷 Português (Brasil)</SelectItem>
-                  <SelectItem value="en-US">🇺🇸 English (US)</SelectItem>
-                  <SelectItem value="es-ES">🇪🇸 Español (España)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
             <div className="space-y-2">
               <Label htmlFor="theme">Tema</Label>
               <p className="text-xs text-muted-foreground mb-2">
