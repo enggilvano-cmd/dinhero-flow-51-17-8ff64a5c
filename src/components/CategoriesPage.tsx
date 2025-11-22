@@ -504,13 +504,6 @@ export function CategoriesPage({}: CategoriesPageProps) {
                       </DropdownMenu>
                     </div>
                   </div>
-
-                  {/* Informações Adicionais */}
-                  <div className="pl-[52px] sm:pl-[60px]">
-                    <p className="text-xs text-muted-foreground">
-                      Criada em {new Date(category.created_at).toLocaleDateString('pt-BR')}
-                    </p>
-                  </div>
                 </div>
               </CardContent>
             </Card>
