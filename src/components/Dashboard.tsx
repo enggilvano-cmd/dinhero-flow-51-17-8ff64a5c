@@ -143,10 +143,22 @@ export function Dashboard({
           customEndDate={customEndDate}
         />
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
           <AccountsSummary
             accounts={accounts}
+            accountTypes={['checking', 'savings', 'investment']}
+            title="Suas Contas"
+            emptyMessage="Nenhuma conta cadastrada"
             onNavigateToAccounts={onNavigateToAccounts}
+            onAddAccount={onAddAccount}
+          />
+
+          <AccountsSummary
+            accounts={accounts}
+            accountTypes={['credit']}
+            title="Seus Cartões"
+            emptyMessage="Nenhum cartão cadastrado"
+            onNavigateToAccounts={() => onNavigateToAccounts?.('credit')}
             onAddAccount={onAddAccount}
           />
 
