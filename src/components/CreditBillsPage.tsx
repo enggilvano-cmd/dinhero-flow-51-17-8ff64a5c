@@ -105,13 +105,6 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
   // Memo para calcular os detalhes da fatura do mês selecionado (alinhado ao mês exibido)
   const allBillDetails = useMemo(() => {
     logger.debug('Recalculando faturas...', updateKey);
-    
-    console.log('🔍 [CreditBillsPage] Debug:', {
-      creditAccounts: filteredCreditAccounts.length,
-      allTransactions: allTransactions.length,
-      selectedMonthOffset,
-      sampleTransaction: allTransactions[0],
-    });
 
     return filteredCreditAccounts.map((account) => {
       const accountTransactions = allTransactions
@@ -124,27 +117,12 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
               : t.date,
         })) as AppTransaction[];
 
-      console.log(`🔍 [CreditBillsPage] Conta ${account.name}:`, {
-        accountId: account.id,
-        transactionsCount: accountTransactions.length,
-        closingDate: account.closing_date,
-        dueDate: account.due_date,
-      });
-
       // Base (limite, saldo total, meses de referência)
       const base = calculateBillDetails(
         accountTransactions,
         account,
         selectedMonthOffset
       );
-
-      console.log(`🔍 [CreditBillsPage] Bill details base:`, {
-        account: account.name,
-        currentInvoiceMonth: base.currentInvoiceMonth,
-        nextInvoiceMonth: base.nextInvoiceMonth,
-        currentBillAmount: base.currentBillAmount,
-        nextBillAmount: base.nextBillAmount,
-      });
 
       // Usar SEMPRE os meses calculados pela função base, com fallback seguro
       const targetMonth = base.currentInvoiceMonth ?? format(selectedMonthDate, "yyyy-MM");
@@ -180,17 +158,6 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
 
         const eff = effectiveMonth(d, t.invoice_month, t.invoice_month_overridden);
         
-        console.log(`🔍 [CreditBillsPage] Transação ${t.description}:`, {
-          date: format(d, 'yyyy-MM-dd'),
-          amount: t.amount,
-          type: t.type,
-          invoiceMonth: t.invoice_month,
-          invoiceMonthOverridden: t.invoice_month_overridden,
-          effectiveMonth: eff,
-          targetMonth,
-          matchesTarget: eff === targetMonth,
-        });
-        
         if (eff === targetMonth) {
           if (t.type === "expense") currentBillAmount += Math.abs(t.amount);
           else if (t.type === "income") {
@@ -201,13 +168,6 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
           nextBillAmount += Math.abs(t.amount);
         }
       }
-
-      console.log(`🔍 [CreditBillsPage] Valores finais ${account.name}:`, {
-        currentBillAmount,
-        nextBillAmount,
-        targetMonth,
-        nextMonth,
-      });
 
       return {
         account,
