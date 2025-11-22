@@ -141,11 +141,12 @@ export function CreditPaymentModal({
     // Validação contra a dívida total normalizada (valor absoluto)
     const totalDebtInCents = totalDebtNorm;
     
-    // Pequena margem de 1 centavo para erros de arredondamento
-    if (amountInCents > totalDebtInCents + 1) { 
+    // Permite pagamento maior que a fatura atual, mas não maior que dívida total + pequena margem
+    // Margem de 100 centavos (R$ 1,00) para erros de arredondamento
+    if (amountInCents > totalDebtInCents + 100) { 
       toast({
         title: "Valor Inválido",
-        description: `O valor ${formatBRL(amountInCents)} é maior que a dívida total de ${formatBRL(totalDebtInCents)}.`,
+        description: `O valor ${formatBRL(amountInCents)} é maior que a dívida total de ${formatBRL(totalDebtInCents)}. Para pagar mais, o valor excedente será tratado como crédito a favor.`,
         variant: "destructive",
       });
       return;
