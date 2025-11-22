@@ -6,7 +6,6 @@ import { CreditCard, RotateCcw, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { isPast } from 'date-fns';
 import { Badge } from "@/components/ui/badge";
-import { useTranslation } from "react-i18next";
 import { useSettings } from "@/context/SettingsContext";
 import { logger } from "@/lib/logger";
 
@@ -41,7 +40,6 @@ export function CreditCardBillCard({
   onReversePayment,
   onViewDetails
 }: CreditCardBillCardProps) {
-  const { t } = useTranslation();
   const { settings } = useSettings();
   
   logger.debug('CreditCardBillCard renderizando:', {
@@ -88,8 +86,6 @@ export function CreditCardBillCard({
   // 1. Não há valor a pagar (amountDue <= 0, ou seja, crédito ou zero)
   // 2. OU está fechada E o valor pago >= valor devido
   const isPaid = amountDue <= 0 || (isClosed && paidAmount >= amountDue);
-  const isBillPaid = isPaid;
-  const isFullyPaid = isPaid && totalBalance <= 0;
   
   // Botão de estorno aparece sempre que há pagamentos registrados
   const canReverse = paymentTransactions && paymentTransactions.length > 0;
@@ -113,8 +109,8 @@ export function CreditCardBillCard({
     : "text-muted-foreground";
   
   const billLabel = currentBillAmount < 0 
-    ? t("creditBills.currentBill")
-    : `${t("creditBills.currentBill")} (${t("creditBills.dueDate")} ${due_date || 'N/A'})`;
+    ? "Fatura Atual"
+    : `Fatura Atual (Vence dia ${due_date || 'N/A'})`;
 
   return (
     <Card className="financial-card flex flex-col shadow-md hover:shadow-lg transition-shadow">
@@ -130,11 +126,11 @@ export function CreditCardBillCard({
         </CardTitle>
         <div className="flex gap-2 flex-shrink-0">
           <Badge variant={isClosed ? 'secondary' : 'outline'}>
-            {isClosed ? t("transactions.completed") : t("transactions.pending")}
+            {isClosed ? "Fechada" : "Aberta"}
           </Badge>
           {/* Badge de Pago/Pendente baseado no fechamento + pagamentos */}
           <Badge variant={isPaid ? 'default' : 'destructive'}>
-            {isPaid ? t("transactions.completed") : t("transactions.pending")}
+            {isPaid ? "Paga" : "Pendente"}
           </Badge>
         </div>
       </CardHeader>
@@ -151,23 +147,23 @@ export function CreditCardBillCard({
         {/* Detalhes de Limite */}
         <div className="space-y-2">
           <div className="flex justify-between text-xs text-muted-foreground">
-            <span>{t("accounts.used")}</span>
+            <span>Usado</span>
             <span>{formatCents(totalBalance)} / {formatCents(limit_amount)}</span>
           </div>
           <Progress value={limitUsedPercentage} className="h-2" />
           <div className="flex justify-between text-xs">
-            <span className="text-muted-foreground">{t("creditBills.nextBill")}</span>
+            <span className="text-muted-foreground">Próxima Fatura</span>
             <span className="font-medium text-muted-foreground">{formatCents(nextBillAmount)}</span>
           </div>
           <div className="flex justify-between text-xs">
-            <span className="text-muted-foreground">{t("accounts.available")}</span>
+            <span className="text-muted-foreground">Disponível</span>
             <span className={cn("font-medium", availableLimit >= 0 ? "balance-positive" : "balance-negative")}>
               {formatCents(availableLimit)}
             </span>
           </div>
           <div className="flex justify-between text-xs border-t pt-2 mt-2">
-            <span className="text-muted-foreground">{t("creditBills.closingDate")}</span>
-            <span className="font-medium">{t("dashboard.daily")} {closing_date || 'N/A'}</span>
+            <span className="text-muted-foreground">Data de Fechamento</span>
+            <span className="font-medium">Dia {closing_date || 'N/A'}</span>
           </div>
         </div>
       </CardContent>
@@ -182,7 +178,7 @@ export function CreditCardBillCard({
               onClick={onReversePayment}
             >
               <RotateCcw className="h-4 w-4 mr-2" />
-              {t("common.cancel")}
+              Estornar
             </Button>
           )}
           
@@ -191,7 +187,7 @@ export function CreditCardBillCard({
           className="flex-1" 
           onClick={onPayBill} 
         >
-          {isBillPaid && !isFullyPaid ? t("accounts.payBill") : t("accounts.payBill")}
+          Pagar Fatura
         </Button>
         </div>
         
@@ -201,7 +197,7 @@ export function CreditCardBillCard({
           onClick={onViewDetails}
         >
           <FileText className="h-4 w-4 mr-2" />
-          {t("creditBills.viewDetails")}
+          Ver Detalhes
         </Button>
       </CardFooter>
       {/* --- FIM DO NOVO --- */}

@@ -7,13 +7,9 @@ import { TransactionsPage } from "@/components/TransactionsPage";
 import { CategoriesPage } from "@/components/CategoriesPage";
 import AnalyticsPage from "@/components/AnalyticsPage";
 import SystemSettings from "@/components/SystemSettings";
-import { SettingsPage } from "@/components/SettingsPage";
 import { UserManagement } from "@/components/UserManagement";
-import { UserProfile } from "@/components/UserProfile";
 import { RecurringTransactionsPage } from "@/components/RecurringTransactionsPage";
 import { FixedTransactionsPage } from "@/components/FixedTransactionsPage";
-import { BankReconciliationPage } from "@/components/BankReconciliationPage";
-import { AccountingPage } from "@/components/AccountingPage";
 import { AddAccountModal } from "@/components/AddAccountModal";
 import { AddTransactionModal } from "@/components/AddTransactionModal";
 import { EditAccountModal } from "@/components/EditAccountModal";
@@ -121,12 +117,7 @@ const PlaniFlowApp = () => {
     handleImportTransactions,
     handleCreditPayment,
     handleReversePayment,
-  } = useTransactionHandlers(); // ✅ Sem passar dados como props
-
-  const handleUpdateSettings = (newSettings: typeof settings) => {
-    logger.debug("Updating settings:", newSettings);
-    updateSettings(newSettings);
-  };
+  } = useTransactionHandlers();
 
   const handleClearAllData = async () => {
     if (!user) return;
@@ -283,8 +274,6 @@ const PlaniFlowApp = () => {
             isFetchingNextPage={isFetchingNextPage}
           />
         );
-      case "recurring":
-        return <RecurringTransactionsPage />;
       case "fixed":
         return <FixedTransactionsPage />;
       case "categories":
@@ -327,7 +316,7 @@ const PlaniFlowApp = () => {
 
   return (
     <Layout
-      pageTitle={getPageTitle(currentPage)}
+      currentPage={currentPage}
       onNavigate={setCurrentPage}
       onClearAllData={handleClearAllData}
       loading={loadingData}
@@ -340,7 +329,7 @@ const PlaniFlowApp = () => {
       <AddAccountModal
         open={addAccountModalOpen}
         onOpenChange={setAddAccountModalOpen}
-        onAccountAdded={(account) => {
+        onAddAccount={async (account) => {
           queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
           toast({
             title: "Conta adicionada",
@@ -352,8 +341,8 @@ const PlaniFlowApp = () => {
       <AddTransactionModal
         open={addTransactionModalOpen}
         onOpenChange={setAddTransactionModalOpen}
-        onTransactionAdded={handleAddTransaction}
-        onInstallmentTransactionAdded={handleAddInstallmentTransactions}
+        onAddTransaction={handleAddTransaction}
+        onAddInstallmentTransactions={handleAddInstallmentTransactions}
         accounts={accounts}
         categories={categories}
         initialType={transactionInitialType}
@@ -365,14 +354,14 @@ const PlaniFlowApp = () => {
         open={editAccountModalOpen}
         onOpenChange={setEditAccountModalOpen}
         account={editingAccount}
-        onAccountEdited={handleEditAccount}
+        onEditAccount={handleEditAccount}
       />
 
       <EditTransactionModal
         open={editTransactionModalOpen}
         onOpenChange={setEditTransactionModalOpen}
         transaction={editingTransaction}
-        onTransactionEdited={handleEditTransaction}
+        onEditTransaction={handleEditTransaction}
         accounts={accounts}
         categories={categories}
       />
@@ -380,7 +369,6 @@ const PlaniFlowApp = () => {
       <TransferModal
         open={transferModalOpen}
         onOpenChange={setTransferModalOpen}
-        accounts={accounts}
         onTransfer={async (fromAccountId, toAccountId, amountInCents, date) => {
           await handleTransfer(fromAccountId, toAccountId, amountInCents, date);
           const fromAccount = accounts.find(acc => acc.id === fromAccountId)!;

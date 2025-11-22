@@ -10,7 +10,6 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
-import BybitPage from "./pages/BybitPage"; // 2. Import the new page component
 import NotFound from "./pages/NotFound";
 import { queryClient } from './lib/queryClient';
 
