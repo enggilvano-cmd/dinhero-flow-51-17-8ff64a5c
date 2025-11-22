@@ -70,6 +70,12 @@ Deno.serve(async (req) => {
       delete (body.updates as any).invoice_month;
     }
 
+    // Normalizar amount: sempre positivo para passar na validação
+    // A função SQL aplicará o sinal correto baseado no tipo da transação
+    if (body?.updates && body.updates.amount !== undefined) {
+      body.updates.amount = Math.abs(body.updates.amount);
+    }
+
     console.log('[atomic-edit] INFO: Editing transaction for user:', user.id);
 
     // Validação Zod
