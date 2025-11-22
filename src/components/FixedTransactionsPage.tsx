@@ -23,6 +23,7 @@ import { EditFixedTransactionModal } from "./EditFixedTransactionModal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryClient";
+import { FixedTransactionScopeDialog, FixedScope } from "./FixedTransactionScopeDialog";
 
 interface FixedTransaction {
   id: string;
@@ -57,6 +58,10 @@ export function FixedTransactionsPage() {
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [transactionToEdit, setTransactionToEdit] = useState<FixedTransaction | null>(null);
+  const [scopeDialogOpen, setScopeDialogOpen] = useState(false);
+  const [scopeDialogMode, setScopeDialogMode] = useState<"edit" | "delete">("edit");
+  const [pendingEditTransaction, setPendingEditTransaction] = useState<FixedTransaction | null>(null);
+  const [pendingScopeCount, setPendingScopeCount] = useState(0);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -263,21 +268,70 @@ export function FixedTransactionsPage() {
     }
   };
 
-  const handleEdit = async (transaction: FixedTransaction) => {
-    try {
-      const { error } = await supabase
+  const handleEdit = async (transaction: FixedTransaction, scope?: FixedScope) => {
+    if (!scope) {
+      // Abrir diálogo de escopo
+      setPendingEditTransaction(transaction);
+      setScopeDialogMode("edit");
+      
+      // Contar transações pendentes geradas
+      const { count } = await supabase
         .from("transactions")
-        .update({
-          description: transaction.description,
-          amount: transaction.amount,
-          type: transaction.type,
-          category_id: transaction.category_id,
-          account_id: transaction.account_id,
-          date: transaction.date,
-        })
-        .eq("id", transaction.id);
+        .select("*", { count: 'exact', head: true })
+        .eq("parent_transaction_id", transaction.id)
+        .eq("status", "pending");
+      
+      setPendingScopeCount(count || 0);
+      setScopeDialogOpen(true);
+      return;
+    }
 
-      if (error) throw error;
+    try {
+      // Executar edição com escopo definido
+      const updates = {
+        description: transaction.description,
+        amount: transaction.amount,
+        type: transaction.type,
+        category_id: transaction.category_id,
+        account_id: transaction.account_id,
+        date: transaction.date,
+      };
+
+      if (scope === "current") {
+        // Editar apenas a transação atual
+        const { error } = await supabase
+          .from("transactions")
+          .update(updates)
+          .eq("id", transaction.id);
+        if (error) throw error;
+      } else if (scope === "current-and-remaining") {
+        // Editar esta e futuras pendentes
+        const { error: mainError } = await supabase
+          .from("transactions")
+          .update(updates)
+          .eq("id", transaction.id);
+        if (mainError) throw mainError;
+
+        const { error: childrenError } = await supabase
+          .from("transactions")
+          .update(updates)
+          .eq("parent_transaction_id", transaction.id)
+          .eq("status", "pending");
+        if (childrenError) throw childrenError;
+      } else if (scope === "all") {
+        // Editar todas (incluindo concluídas)
+        const { error: mainError } = await supabase
+          .from("transactions")
+          .update(updates)
+          .eq("id", transaction.id);
+        if (mainError) throw mainError;
+
+        const { error: childrenError } = await supabase
+          .from("transactions")
+          .update(updates)
+          .eq("parent_transaction_id", transaction.id);
+        if (childrenError) throw childrenError;
+      }
 
       toast({
         title: "Transação atualizada",
@@ -296,6 +350,7 @@ export function FixedTransactionsPage() {
 
       loadFixedTransactions();
       setEditModalOpen(false);
+      setPendingEditTransaction(null);
     } catch (error) {
       logger.error("Error updating transaction:", error);
       toast({
@@ -306,51 +361,71 @@ export function FixedTransactionsPage() {
     }
   };
 
-  const handleDelete = async () => {
+  const handleDelete = async (scope?: FixedScope) => {
     if (!transactionToDelete) return;
 
-    try {
-      // Verificar o status da transação principal
-      const { data: mainTransaction, error: fetchError } = await supabase
+    if (!scope) {
+      // Abrir diálogo de escopo
+      setScopeDialogMode("delete");
+      
+      // Contar transações pendentes geradas
+      const { count } = await supabase
         .from("transactions")
-        .select("status")
-        .eq("id", transactionToDelete)
-        .single();
-
-      if (fetchError) throw fetchError;
-
-      // Se a transação principal já foi concluída, não pode ser excluída
-      if (mainTransaction.status === "completed") {
-        toast({
-          title: "Não é possível excluir",
-          description: "Esta transação fixa já foi concluída e não pode ser excluída. Apenas transações pendentes podem ser removidas.",
-          variant: "destructive",
-        });
-        setDeleteDialogOpen(false);
-        setTransactionToDelete(null);
-        return;
-      }
-
-      // Excluir todas as transações filhas pendentes
-      const { error: childrenError } = await supabase
-        .from("transactions")
-        .delete()
+        .select("*", { count: 'exact', head: true })
         .eq("parent_transaction_id", transactionToDelete)
         .eq("status", "pending");
+      
+      setPendingScopeCount(count || 0);
+      setScopeDialogOpen(true);
+      setDeleteDialogOpen(false);
+      return;
+    }
 
-      if (childrenError) throw childrenError;
+    try {
+      // Executar exclusão com escopo definido
+      if (scope === "current") {
+        // Deletar apenas a transação principal
+        const { error } = await supabase
+          .from("transactions")
+          .delete()
+          .eq("id", transactionToDelete);
+        if (error) throw error;
+      } else if (scope === "current-and-remaining") {
+        // Deletar esta e futuras pendentes
+        const { error: childrenError } = await supabase
+          .from("transactions")
+          .delete()
+          .eq("parent_transaction_id", transactionToDelete)
+          .eq("status", "pending");
+        if (childrenError) throw childrenError;
 
-      // Depois, excluir a transação principal (que já verificamos que é "pending")
-      const { error } = await supabase
-        .from("transactions")
-        .delete()
-        .eq("id", transactionToDelete);
+        const { error } = await supabase
+          .from("transactions")
+          .delete()
+          .eq("id", transactionToDelete);
+        if (error) throw error;
+      } else if (scope === "all") {
+        // Deletar todas (incluindo concluídas)
+        const { error: childrenError } = await supabase
+          .from("transactions")
+          .delete()
+          .eq("parent_transaction_id", transactionToDelete);
+        if (childrenError) throw childrenError;
 
-      if (error) throw error;
+        const { error } = await supabase
+          .from("transactions")
+          .delete()
+          .eq("id", transactionToDelete);
+        if (error) throw error;
+      }
 
       toast({
         title: "Transação removida",
-        description: "A transação fixa e todas as transações pendentes foram removidas com sucesso.",
+        description: scope === "all" 
+          ? "A transação fixa e todas as transações geradas foram removidas."
+          : scope === "current-and-remaining"
+          ? "A transação fixa e todas as pendentes futuras foram removidas."
+          : "A transação fixa foi removida.",
       });
 
       // 🔄 Sincronizar listas e dashboard imediatamente
@@ -611,13 +686,15 @@ export function FixedTransactionsPage() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-          <AlertDialogDescription>
-            Tem certeza que deseja excluir esta transação fixa? Todas as transações pendentes também serão removidas. Transações já concluídas permanecerão no sistema.
-          </AlertDialogDescription>
+            <AlertDialogDescription>
+              Esta ação abrirá um diálogo para escolher o escopo da exclusão.
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>Excluir</AlertDialogAction>
+            <AlertDialogAction onClick={() => handleDelete()}>
+              Continuar
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -633,11 +710,25 @@ export function FixedTransactionsPage() {
         <EditFixedTransactionModal
           open={editModalOpen}
           onOpenChange={setEditModalOpen}
-          onEditTransaction={handleEdit}
+          onEditTransaction={(transaction) => handleEdit(transaction)}
           transaction={transactionToEdit}
           accounts={accounts}
         />
       )}
+
+      <FixedTransactionScopeDialog
+        open={scopeDialogOpen}
+        onOpenChange={setScopeDialogOpen}
+        onScopeSelected={(scope) => {
+          if (scopeDialogMode === "edit" && pendingEditTransaction) {
+            handleEdit(pendingEditTransaction, scope);
+          } else if (scopeDialogMode === "delete") {
+            handleDelete(scope);
+          }
+        }}
+        mode={scopeDialogMode}
+        pendingCount={pendingScopeCount}
+      />
     </div>
   );
 }
