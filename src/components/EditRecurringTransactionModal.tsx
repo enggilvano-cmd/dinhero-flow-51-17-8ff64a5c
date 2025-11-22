@@ -13,7 +13,6 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { useCategories } from "@/hooks/useCategories";
 import { CurrencyInput } from "@/components/forms/CurrencyInput";
-import { useTranslation } from "react-i18next";
 
 interface RecurringTransaction {
   id: string;
@@ -60,7 +59,6 @@ export function EditRecurringTransactionModal({
   });
   const { toast } = useToast();
   const { categories } = useCategories();
-  const { t } = useTranslation();
 
   useEffect(() => {
     if (open && transaction) {
@@ -85,8 +83,8 @@ export function EditRecurringTransactionModal({
     
     if (!formData.description.trim() || formData.amountInCents <= 0 || !formData.account_id) {
       toast({
-        title: t("common.error"),
-        description: t("modals.editRecurringTransaction.errors.required"),
+        title: "Erro",
+        description: "Preencha todos os campos obrigatórios",
         variant: "destructive",
       });
       return;
@@ -94,8 +92,8 @@ export function EditRecurringTransactionModal({
 
     if (!formData.category_id) {
       toast({
-        title: t("common.error"),
-        description: t("modals.editRecurringTransaction.errors.categoryRequired"),
+        title: "Erro",
+        description: "Selecione uma categoria para a transação",
         variant: "destructive",
       });
       return;
@@ -120,8 +118,8 @@ export function EditRecurringTransactionModal({
     onEditTransaction(updatedTransaction);
     
     toast({
-      title: t("common.success"),
-      description: t("modals.editRecurringTransaction.success"),
+      title: "Sucesso",
+      description: "Transação recorrente atualizada com sucesso",
     });
 
     onOpenChange(false);
@@ -135,25 +133,25 @@ export function EditRecurringTransactionModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{t("modals.editRecurringTransaction.title")}</DialogTitle>
+          <DialogTitle>Editar Transação Recorrente</DialogTitle>
           <DialogDescription>
-            {t("modals.editRecurringTransaction.subtitle")}
+            Atualize as informações da transação recorrente
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="description">{t("modals.editRecurringTransaction.fields.description.label")}</Label>
+            <Label htmlFor="description">Descrição</Label>
             <Input
               id="description"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder={t("modals.editRecurringTransaction.fields.description.placeholder")}
+              placeholder="Ex: Aluguel, Salário..."
               required
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="amount">{t("modals.editRecurringTransaction.fields.amount.label")}</Label>
+            <Label htmlFor="amount">Valor</Label>
             <CurrencyInput
               id="amount"
               value={formData.amountInCents}
@@ -162,7 +160,7 @@ export function EditRecurringTransactionModal({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="type">{t("modals.editRecurringTransaction.fields.type.label")}</Label>
+            <Label htmlFor="type">Tipo</Label>
             <Select
               value={formData.type}
               onValueChange={(value: "income" | "expense") => 
@@ -170,23 +168,23 @@ export function EditRecurringTransactionModal({
               }
             >
               <SelectTrigger>
-                <SelectValue placeholder={t("modals.editRecurringTransaction.fields.type.placeholder")} />
+                <SelectValue placeholder="Selecione o tipo" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="income">{t("transactions.income")}</SelectItem>
-                <SelectItem value="expense">{t("transactions.expense")}</SelectItem>
+                <SelectItem value="income">Receita</SelectItem>
+                <SelectItem value="expense">Despesa</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="category">{t("modals.editRecurringTransaction.fields.category.label")}</Label>
+            <Label htmlFor="category">Categoria</Label>
             <Select
               value={formData.category_id}
               onValueChange={(value) => setFormData({ ...formData, category_id: value })}
             >
               <SelectTrigger>
-                <SelectValue placeholder={t("modals.editRecurringTransaction.fields.category.placeholder")} />
+                <SelectValue placeholder="Selecione uma categoria" />
               </SelectTrigger>
               <SelectContent>
                 {filteredCategories.map((category) => (
@@ -205,13 +203,13 @@ export function EditRecurringTransactionModal({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="account">{t("modals.editRecurringTransaction.fields.account.label")}</Label>
+            <Label htmlFor="account">Conta</Label>
             <Select
               value={formData.account_id}
               onValueChange={(value) => setFormData({ ...formData, account_id: value })}
             >
               <SelectTrigger>
-                <SelectValue placeholder={t("modals.editRecurringTransaction.fields.account.placeholder")} />
+                <SelectValue placeholder="Selecione uma conta" />
               </SelectTrigger>
               <SelectContent>
                 {accounts.map((account) => (
@@ -230,7 +228,7 @@ export function EditRecurringTransactionModal({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="recurrence_type">{t("modals.editRecurringTransaction.fields.frequency.label")}</Label>
+            <Label htmlFor="recurrence_type">Frequência</Label>
             <Select
               value={formData.recurrence_type}
               onValueChange={(value: "daily" | "weekly" | "monthly" | "yearly") => 
@@ -241,17 +239,17 @@ export function EditRecurringTransactionModal({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="daily">{t("recurringTransactions.frequency.daily")}</SelectItem>
-                <SelectItem value="weekly">{t("recurringTransactions.frequency.weekly")}</SelectItem>
-                <SelectItem value="monthly">{t("recurringTransactions.frequency.monthly")}</SelectItem>
-                <SelectItem value="yearly">{t("recurringTransactions.frequency.yearly")}</SelectItem>
+                <SelectItem value="daily">Diária</SelectItem>
+                <SelectItem value="weekly">Semanal</SelectItem>
+                <SelectItem value="monthly">Mensal</SelectItem>
+                <SelectItem value="yearly">Anual</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="recurrence_end_date">
-              {t("modals.editRecurringTransaction.fields.endDate.label")}
+              Data de Término (opcional)
             </Label>
             <Popover>
               <PopoverTrigger asChild>
@@ -266,7 +264,7 @@ export function EditRecurringTransactionModal({
                   {formData.recurrence_end_date ? (
                     format(formData.recurrence_end_date, "PPP", { locale: ptBR })
                   ) : (
-                    <span>{t("modals.editRecurringTransaction.fields.endDate.placeholder")}</span>
+                    <span>Sem data de término</span>
                   )}
                 </Button>
               </PopoverTrigger>
@@ -280,16 +278,16 @@ export function EditRecurringTransactionModal({
               </PopoverContent>
             </Popover>
             <p className="text-xs text-muted-foreground">
-              {t("modals.editRecurringTransaction.fields.endDate.help")}
+              Deixe em branco para recorrência indefinida
             </p>
           </div>
 
           <div className="flex gap-3 pt-4">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
-              {t("common.cancel")}
+              Cancelar
             </Button>
             <Button type="submit" className="flex-1">
-              {t("modals.editRecurringTransaction.actions.save")}
+              Salvar Alterações
             </Button>
           </div>
         </form>
