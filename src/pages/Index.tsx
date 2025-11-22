@@ -34,6 +34,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryClient";
 import { useAccountHandlers } from "@/hooks/useAccountHandlers";
 import { useTransactionHandlers } from "@/hooks/useTransactionHandlers";
+import { InstallmentEditScopeDialog, EditScope } from "@/components/InstallmentEditScopeDialog";
 
 const PlaniFlowApp = () => {
   const { user, loading: authLoading, isAdmin } = useAuth();
@@ -104,6 +105,8 @@ const PlaniFlowApp = () => {
   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [payingCreditAccount, setPayingCreditAccount] = useState<Account | null>(null);
+  const [markingAsPaidTransaction, setMarkingAsPaidTransaction] = useState<Transaction | null>(null);
+  const [markAsPaidScopeDialogOpen, setMarkAsPaidScopeDialogOpen] = useState(false);
   
   const [currentInvoiceValue, setCurrentInvoiceValue] = useState(0);
   const [nextInvoiceValue, setNextInvoiceValue] = useState(0);
@@ -168,6 +171,51 @@ const PlaniFlowApp = () => {
     setNextInvoiceValue(nextBill);
     setPayingTotalDebt(totalBalance);
     setCreditPaymentModalOpen(true);
+  };
+
+  const handleMarkAsPaid = async (transaction: Transaction) => {
+    // Verificar se é parcela ou transação fixa
+    const isInstallment = Boolean(transaction.installments && transaction.installments > 1);
+    const isFixed = Boolean(transaction.is_fixed || transaction.parent_transaction_id);
+    
+    if (isInstallment || isFixed) {
+      // Abrir diálogo para escolher escopo
+      setMarkingAsPaidTransaction(transaction);
+      setMarkAsPaidScopeDialogOpen(true);
+    } else {
+      // Marcar como pago diretamente
+      await processMarkAsPaid(transaction, 'current');
+    }
+  };
+
+  const processMarkAsPaid = async (transaction: Transaction, scope: 'current' | 'current-and-remaining' | 'all') => {
+    try {
+      await handleEditTransaction(
+        {
+          ...transaction,
+          status: 'completed',
+        },
+        scope
+      );
+      
+      toast({
+        title: "Sucesso",
+        description: scope === 'current' 
+          ? "Transação marcada como paga" 
+          : scope === 'all' 
+          ? "Todas as parcelas marcadas como pagas"
+          : "Parcelas selecionadas marcadas como pagas",
+      });
+      
+      setMarkAsPaidScopeDialogOpen(false);
+      setMarkingAsPaidTransaction(null);
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Erro ao marcar transação como paga",
+        variant: "destructive",
+      });
+    }
   };
 
   const analyticsTransactions = useMemo(() => 
@@ -284,7 +332,7 @@ const PlaniFlowApp = () => {
             onEditTransaction={openEditTransaction}
             onDeleteTransaction={handleDeleteTransaction}
             onImportTransactions={handleImportTransactions}
-            onMarkAsPaid={handleEditTransaction}
+            onMarkAsPaid={handleMarkAsPaid}
             totalCount={totalCount}
             pageCount={pageCount}
             currentPage={transactionsPage}
@@ -420,6 +468,19 @@ const PlaniFlowApp = () => {
         invoiceValueInCents={currentInvoiceValue}
         nextInvoiceValueInCents={nextInvoiceValue}
         totalDebtInCents={payingTotalDebt}
+      />
+
+      <InstallmentEditScopeDialog
+        open={markAsPaidScopeDialogOpen}
+        onOpenChange={setMarkAsPaidScopeDialogOpen}
+        onScopeSelected={(scope: EditScope) => {
+          if (markingAsPaidTransaction) {
+            processMarkAsPaid(markingAsPaidTransaction, scope);
+          }
+        }}
+        currentInstallment={markingAsPaidTransaction?.current_installment || 1}
+        totalInstallments={markingAsPaidTransaction?.installments || 1}
+        mode="edit"
       />
     </Layout>
   );
