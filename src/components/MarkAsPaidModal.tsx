@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useTranslation } from "react-i18next";
 import {
   Dialog,
   DialogContent,
@@ -45,8 +44,6 @@ export function MarkAsPaidModal({
   accounts,
   onConfirm,
 }: MarkAsPaidModalProps) {
-  const { t } = useTranslation();
-  
   const [date, setDate] = useState<Date>(new Date());
   const [amount, setAmount] = useState<string>("");
   const [accountId, setAccountId] = useState<string>("");
@@ -80,12 +77,12 @@ export function MarkAsPaidModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{t("transactions.markAsPaid")}</DialogTitle>
+          <DialogTitle>Marcar como Pago</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           {/* Data */}
           <div className="grid gap-2">
-            <Label htmlFor="date">{t("transactions.date")}</Label>
+            <Label htmlFor="date">Data</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -96,7 +93,7 @@ export function MarkAsPaidModal({
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {date ? format(date, "dd/MM/yyyy", { locale: ptBR }) : t("common.selectDate")}
+                  {date ? format(date, "dd/MM/yyyy", { locale: ptBR }) : "Selecione uma data"}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -113,7 +110,7 @@ export function MarkAsPaidModal({
 
           {/* Valor */}
           <div className="grid gap-2">
-            <Label htmlFor="amount">{t("transactions.amount")}</Label>
+            <Label htmlFor="amount">Valor</Label>
             <Input
               id="amount"
               type="text"
@@ -125,10 +122,10 @@ export function MarkAsPaidModal({
 
           {/* Conta */}
           <div className="grid gap-2">
-            <Label htmlFor="account">{t("transactions.account")}</Label>
+            <Label htmlFor="account">Conta</Label>
             <Select value={accountId} onValueChange={setAccountId}>
               <SelectTrigger>
-                <SelectValue placeholder={t("transactions.selectAccount")} />
+                <SelectValue placeholder="Selecione uma conta" />
               </SelectTrigger>
               <SelectContent>
                 {accounts.map((account) => (
@@ -142,13 +139,13 @@ export function MarkAsPaidModal({
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            {t("common.cancel")}
+            Cancelar
           </Button>
           <Button 
             onClick={handleConfirm}
             disabled={!accountId || !amount || parseFloat(amount) <= 0}
           >
-            {t("common.confirm")}
+            Confirmar
           </Button>
         </DialogFooter>
       </DialogContent>
