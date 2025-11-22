@@ -690,9 +690,9 @@ export function ImportAccountsModal({
                                       </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent>
-                                      <DropdownMenuItem onClick={() => handleResolutionChange(index, 'skip')}>{t('modals.import.resolutions.skip')}</DropdownMenuItem>
-                                      <DropdownMenuItem onClick={() => handleResolutionChange(index, 'add')}>{t('modals.import.resolutions.addAsNew')}</DropdownMenuItem>
-                                      <DropdownMenuItem onClick={() => handleResolutionChange(index, 'replace')} className="text-destructive">{t('modals.import.resolutions.replace')}</DropdownMenuItem>
+                                      <DropdownMenuItem onClick={() => handleResolutionChange(index, 'skip')}>Pular</DropdownMenuItem>
+                                      <DropdownMenuItem onClick={() => handleResolutionChange(index, 'add')}>Adicionar como Nova</DropdownMenuItem>
+                                      <DropdownMenuItem onClick={() => handleResolutionChange(index, 'replace')} className="text-destructive">Substituir Existente</DropdownMenuItem>
                                     </DropdownMenuContent>
                                   </DropdownMenu>
                                 )}
@@ -712,13 +712,13 @@ export function ImportAccountsModal({
         {/* Actions */}
         <div className="flex justify-end gap-3 pt-4 border-t">
           <Button variant="outline" onClick={handleCancel}>
-            {t('common.cancel')}
+            Cancelar
           </Button>
           <Button 
             onClick={handleImport}
             disabled={accountsToImportCount === 0 || isProcessing}
           >
-            {t('modals.import.importButton', { count: accountsToImportCount, type: t('modals.import.typeAccounts') })}
+            Importar {accountsToImportCount} contas
           </Button>
         </div>
       </DialogContent>
