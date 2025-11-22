@@ -14,7 +14,6 @@ import { loadXLSX } from "@/lib/lazyImports";
 import { parse, isValid } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { createDateFromString } from "@/lib/dateUtils";
-import { t } from "@/lib/t";
 
 interface Account {
   id: string;

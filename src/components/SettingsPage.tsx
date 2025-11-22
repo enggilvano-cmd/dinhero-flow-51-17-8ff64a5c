@@ -19,7 +19,6 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { logger } from "@/lib/logger";
 import { supabase } from "@/integrations/supabase/client";
-import { t } from "@/lib/t";
 import type { AppSettings } from "@/context/SettingsContext";
 
 interface SettingsPageProps {

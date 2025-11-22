@@ -12,7 +12,6 @@ import { useToast } from '@/hooks/use-toast';
 import { User, Shield, Key, Activity, ShieldCheck, ShieldOff } from 'lucide-react';
 import { TwoFactorSetup } from './TwoFactorSetup';
 import { logger } from '@/lib/logger';
-import { t } from "@/lib/t";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -93,7 +92,7 @@ export function UserProfile() {
 
       const totpFactor = factors?.totp?.[0];
       if (!totpFactor) {
-        throw new Error(t('profile.mfaNotFound'));
+        throw new Error('Autenticação de dois fatores não encontrada');
       }
 
       const { error } = await supabase.auth.mfa.unenroll({ factorId: totpFactor.id });
@@ -103,14 +102,14 @@ export function UserProfile() {
       setShowDisableMfaDialog(false);
       
       toast({
-        title: t('profile.mfaDisabled'),
-        description: t('profile.mfaDisabledDescription'),
+        title: '2FA Desabilitado',
+        description: 'A autenticação de dois fatores foi desabilitada',
       });
     } catch (error: any) {
       logger.error('Error disabling MFA:', error);
       toast({
-        title: t('common.error'),
-        description: t('profile.mfaDisableError'),
+        title: 'Erro',
+        description: 'Erro ao desabilitar 2FA',
         variant: 'destructive',
       });
     } finally {
@@ -277,7 +276,7 @@ export function UserProfile() {
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 space-y-1">
-                  <h3 className="font-semibold text-base sm:text-lg">{profile.full_name || t('profile.noName')}</h3>
+                  <h3 className="font-semibold text-base sm:text-lg">{profile.full_name || 'Sem Nome'}</h3>
                   <p className="text-xs sm:text-sm text-muted-foreground break-all">{profile.email}</p>
                   <Badge 
                     variant={getRoleBadgeVariant(profile.role)}
@@ -293,7 +292,7 @@ export function UserProfile() {
               {/* Form Fields */}
               <div className="grid gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="fullName" className="text-sm">{t('profile.fullName')}</Label>
+                  <Label htmlFor="fullName" className="text-sm">Nome Completo</Label>
                   <Input
                     id="fullName"
                     value={formData.fullName}
@@ -301,13 +300,13 @@ export function UserProfile() {
                       ...prev,
                       fullName: e.target.value
                     }))}
-                    placeholder={t('profile.fullNamePlaceholder')}
+                    placeholder="Digite seu nome completo"
                     className="text-sm"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm">{t('auth.email')}</Label>
+                  <Label htmlFor="email" className="text-sm">Email</Label>
                   <Input
                     id="email"
                     type="email"
@@ -316,7 +315,7 @@ export function UserProfile() {
                       ...prev,
                       email: e.target.value
                     }))}
-                    placeholder={t('profile.emailPlaceholder')}
+                    placeholder="Digite seu email"
                     className="text-sm"
                   />
                 </div>
@@ -326,7 +325,7 @@ export function UserProfile() {
                   disabled={loading}
                   className="w-full sm:w-fit"
                 >
-                  {loading ? t('common.saving') : t('profile.saveChanges')}
+                  {loading ? 'Salvando...' : 'Salvar Alterações'}
                 </Button>
               </div>
             </CardContent>
@@ -337,10 +336,10 @@ export function UserProfile() {
             <CardHeader className="space-y-1">
               <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
                 <Key className="h-4 w-4 sm:h-5 sm:w-5" />
-                {t('profile.security')}
+                Segurança
               </CardTitle>
               <CardDescription className="text-xs sm:text-sm">
-                {t('profile.securityDescription')}
+                Gerencie a segurança da sua conta
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -414,26 +413,26 @@ export function UserProfile() {
             <CardHeader className="space-y-1">
               <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
                 <Shield className="h-4 w-4 sm:h-5 sm:w-5" />
-                {t('profile.accountStatus')}
+                Status da Conta
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between py-1.5">
-                <span className="text-xs sm:text-sm font-medium">{t('transactions.status')}</span>
+                <span className="text-xs sm:text-sm font-medium">Status</span>
                 <Badge variant={profile.is_active ? 'default' : 'secondary'} className="text-xs">
-                  {profile.is_active ? t('profile.active') : t('profile.inactive')}
+                  {profile.is_active ? 'Ativa' : 'Inativa'}
                 </Badge>
               </div>
               <Separator />
               <div className="flex items-center justify-between py-1.5">
-                <span className="text-xs sm:text-sm font-medium">{t('profile.role')}</span>
+                <span className="text-xs sm:text-sm font-medium">Função</span>
                 <Badge variant={getRoleBadgeVariant(profile.role)} className="text-xs">
                   {getRoleLabel(profile.role)}
                 </Badge>
               </div>
               <Separator />
               <div className="flex items-center justify-between py-1.5">
-                <span className="text-xs sm:text-sm font-medium">{t('profile.memberSince')}</span>
+                <span className="text-xs sm:text-sm font-medium">Membro desde</span>
                 <span className="text-xs sm:text-sm text-muted-foreground">
                   {new Date(profile.created_at).toLocaleDateString()}
                 </span>
@@ -446,10 +445,10 @@ export function UserProfile() {
             <CardHeader className="space-y-1">
               <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
                 <Activity className="h-4 w-4 sm:h-5 sm:w-5" />
-                {t('profile.recentActivity')}
+                Atividade Recente
               </CardTitle>
               <CardDescription className="text-xs sm:text-sm">
-                {t('profile.recentActivityDescription')}
+                Últimas ações realizadas na sua conta
               </CardDescription>
             </CardHeader>
             <CardContent>

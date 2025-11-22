@@ -11,7 +11,6 @@ import { Upload, FileSpreadsheet, AlertCircle, MoreVertical, Copy, AlertTriangle
 import { useToast } from "@/hooks/use-toast";
 import { logger } from "@/lib/logger";
 import { loadXLSX } from "@/lib/lazyImports";
-import { t } from "@/lib/t";
 
 interface Category {
   id: string;
