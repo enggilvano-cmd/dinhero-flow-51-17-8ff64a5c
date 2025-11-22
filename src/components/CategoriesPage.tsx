@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -32,7 +31,6 @@ export function CategoriesPage({}: CategoriesPageProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  const { t } = useTranslation();
 
   useEffect(() => {
     const loadCategories = async () => {
@@ -83,8 +81,8 @@ export function CategoriesPage({}: CategoriesPageProps) {
     if (data) {
       setCategories(prev => [...prev, data]);
       toast({
-        title: t("categories.categoryAdded"),
-        description: t("messages.saveSuccess"),
+        title: "Categoria Adicionada",
+        description: "Categoria criada com sucesso",
       });
     }
   };
@@ -112,8 +110,8 @@ export function CategoriesPage({}: CategoriesPageProps) {
       setEditingCategory(null);
       
       toast({
-        title: t("categories.categoryUpdated"),
-        description: t("messages.updateSuccess"),
+        title: "Categoria Atualizada",
+        description: "Categoria atualizada com sucesso",
       });
     }
   };
@@ -135,8 +133,8 @@ export function CategoriesPage({}: CategoriesPageProps) {
 
         if (transactions && transactions.length > 0) {
           toast({
-            title: t("common.error"),
-            description: t("categories.cannotDeleteInUse"),
+            title: "Erro",
+            description: "Não é possível excluir uma categoria que está sendo usada em transações",
             variant: "destructive"
           });
           return null;
@@ -158,8 +156,8 @@ export function CategoriesPage({}: CategoriesPageProps) {
       setCategories(prev => prev.filter(cat => cat.id !== categoryId));
       
       toast({
-        title: t("categories.categoryDeleted"),
-        description: t("messages.deleteSuccess"),
+        title: "Categoria Excluída",
+        description: "Categoria removida com sucesso",
       });
     }
   };
@@ -211,8 +209,8 @@ export function CategoriesPage({}: CategoriesPageProps) {
       });
 
       toast({
-        title: t("common.success"),
-        description: `${categoriesToAdd.length} ${t("categories.title").toLowerCase()}`,
+        title: "Sucesso",
+        description: `${categoriesToAdd.length} categorias importadas`,
       });
     }
   };
@@ -221,14 +219,14 @@ export function CategoriesPage({}: CategoriesPageProps) {
     const XLSX = await loadXLSX();
     
     const dataToExport = filteredCategories.map((category) => ({
-      [t('categories.categoryName')]: category.name,
-      [t('categories.categoryType')]: getTypeLabel(category.type),
-      [t('categories.categoryColor')]: category.color,
+      'Nome da Categoria': category.name,
+      'Tipo de Categoria': getTypeLabel(category.type),
+      'Cor da Categoria': category.color,
     }));
 
     const ws = XLSX.utils.json_to_sheet(dataToExport);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, t('categories.title'));
+    XLSX.utils.book_append_sheet(wb, ws, 'Categorias');
 
     const colWidths = [
       { wch: 30 }, // Nome
@@ -237,15 +235,15 @@ export function CategoriesPage({}: CategoriesPageProps) {
     ];
     ws['!cols'] = colWidths;
 
-    let fileName = t('categories.title').toLowerCase();
+    let fileName = 'categorias';
     if (filterType !== "all") fileName += `_${filterType}`;
     fileName += ".xlsx";
 
     XLSX.writeFile(wb, fileName);
 
     toast({
-      title: t("common.success"),
-      description: t('categories.exportSuccess', { count: filteredCategories.length }),
+      title: "Sucesso",
+      description: `${filteredCategories.length} categorias exportadas com sucesso`,
     });
   };
 
@@ -269,11 +267,11 @@ export function CategoriesPage({}: CategoriesPageProps) {
   const getTypeLabel = (type: string) => {
     switch (type) {
       case "income":
-        return t("transactions.income");
+        return "Receita";
       case "expense":
-        return t("transactions.expense");
+        return "Despesa";
       case "both":
-        return t("categories.both");
+        return "Ambos";
     }
   };
 
@@ -304,9 +302,9 @@ export function CategoriesPage({}: CategoriesPageProps) {
       {/* Header */}
       <div className="flex flex-col gap-3">
         <div className="min-w-0 w-full">
-          <h1 className="text-system-h1 leading-tight">{t("categories.title")}</h1>
+          <h1 className="text-system-h1 leading-tight">Categorias</h1>
           <p className="text-sm text-muted-foreground leading-tight">
-            {t("categories.subtitle")}
+            Gerencie suas categorias de receitas e despesas
           </p>
         </div>
         <div className="grid grid-cols-2 gap-2 w-full md:grid-cols-3 lg:flex lg:flex-nowrap lg:gap-2 lg:w-auto lg:ml-auto">
@@ -317,7 +315,7 @@ export function CategoriesPage({}: CategoriesPageProps) {
             disabled={categories.length === 0}
           >
             <FileDown className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span>{t("common.export")}</span>
+            <span>Exportar</span>
           </Button>
           <Button 
             variant="outline" 
@@ -325,11 +323,11 @@ export function CategoriesPage({}: CategoriesPageProps) {
             className="gap-2 apple-interaction h-9 text-xs sm:text-sm"
           >
             <Upload className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span>{t("common.import")}</span>
+            <span>Importar</span>
           </Button>
           <Button onClick={() => setAddModalOpen(true)} className="gap-2 apple-interaction h-9 text-xs sm:text-sm col-span-2 md:col-span-1">
             <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span>{t("categories.addCategory")}</span>
+            <span>Adicionar Categoria</span>
           </Button>
         </div>
       </div>
@@ -344,7 +342,7 @@ export function CategoriesPage({}: CategoriesPageProps) {
                   <Tag className="h-5 w-5 text-primary" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-caption font-medium">{t("common.total")}</p>
+                  <p className="text-caption font-medium">Total</p>
                   <div className="text-responsive-xl font-bold leading-tight">{categories.length}</div>
                 </div>
               </div>
@@ -360,7 +358,7 @@ export function CategoriesPage({}: CategoriesPageProps) {
                   <TrendingUp className="h-5 w-5 text-success" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-caption font-medium">{t("dashboard.revenues")}</p>
+                  <p className="text-caption font-medium">Receitas</p>
                   <div className="text-responsive-xl font-bold balance-positive leading-tight">
                     {categories.filter(c => c.type === "income" || c.type === "both").length}
                   </div>
@@ -378,7 +376,7 @@ export function CategoriesPage({}: CategoriesPageProps) {
                   <TrendingDown className="h-5 w-5 text-destructive" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-caption font-medium">{t("dashboard.expenses")}</p>
+                  <p className="text-caption font-medium">Despesas</p>
                   <div className="text-responsive-xl font-bold balance-negative leading-tight">
                     {categories.filter(c => c.type === "expense" || c.type === "both").length}
                   </div>
@@ -396,7 +394,7 @@ export function CategoriesPage({}: CategoriesPageProps) {
                   <ArrowUpDown className="h-5 w-5 text-primary" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-caption font-medium">{t("categories.both")}</p>
+                  <p className="text-caption font-medium">Ambos</p>
                   <div className="text-responsive-xl font-bold text-primary leading-tight">
                     {categories.filter(c => c.type === "both").length}
                   </div>
@@ -412,12 +410,12 @@ export function CategoriesPage({}: CategoriesPageProps) {
         <CardContent className="p-2 sm:p-3">
           <div className="flex flex-col gap-4 sm:flex-row">
             <div className="flex-1">
-              <Label htmlFor="search" className="text-caption">{t("categories.searchPlaceholder")}</Label>
+              <Label htmlFor="search" className="text-caption">Buscar categorias</Label>
               <div className="relative mt-2">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="search"
-                  placeholder={t("categories.searchPlaceholder")}
+                  placeholder="Buscar categorias..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 touch-target"
@@ -425,7 +423,7 @@ export function CategoriesPage({}: CategoriesPageProps) {
               </div>
             </div>
             <div className="sm:w-48">
-              <Label htmlFor="filter" className="text-caption">{t("accounts.filterByType")}</Label>
+              <Label htmlFor="filter" className="text-caption">Filtrar por tipo</Label>
               <Select 
                 value={filterType} 
                 onValueChange={(value) => setFilterType(value as typeof filterType)}
@@ -434,10 +432,10 @@ export function CategoriesPage({}: CategoriesPageProps) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">{t("common.all")}</SelectItem>
-                  <SelectItem value="income">{t("transactions.income")}</SelectItem>
-                  <SelectItem value="expense">{t("transactions.expense")}</SelectItem>
-                  <SelectItem value="both">{t("categories.both")}</SelectItem>
+                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="income">Receitas</SelectItem>
+                  <SelectItem value="expense">Despesas</SelectItem>
+                  <SelectItem value="both">Ambos</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -450,17 +448,17 @@ export function CategoriesPage({}: CategoriesPageProps) {
         {filteredCategories.length === 0 ? (
           <div className="col-span-full text-center py-12">
             <Tag className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-headline font-semibold mb-2">{t("categories.noCategories")}</h3>
+            <h3 className="text-headline font-semibold mb-2">Nenhuma categoria encontrada</h3>
             <p className="text-body text-muted-foreground mb-4">
               {searchTerm || filterType !== "all" 
-                ? t("messages.noDataFound")
-                : t("categories.addFirstCategory")
+                ? "Nenhum resultado encontrado"
+                : "Adicione sua primeira categoria para começar"
               }
             </p>
             {(!searchTerm && filterType === "all") && (
               <Button onClick={() => setAddModalOpen(true)} className="gap-2 apple-interaction">
                 <Plus className="h-4 w-4" />
-                {t("categories.addCategory")}
+                Adicionar Categoria
               </Button>
             )}
           </div>
@@ -505,7 +503,7 @@ export function CategoriesPage({}: CategoriesPageProps) {
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => openEditModal(category)}>
                             <Edit className="h-4 w-4 mr-2" />
-                            {t("common.edit")}
+                            Editar
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => {
@@ -515,7 +513,7 @@ export function CategoriesPage({}: CategoriesPageProps) {
                             className="text-destructive focus:text-destructive"
                           >
                             <Trash2 className="h-4 w-4 mr-2" />
-                            {t("common.delete")}
+                            Excluir
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -560,13 +558,13 @@ export function CategoriesPage({}: CategoriesPageProps) {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("categories.confirmDelete")}</AlertDialogTitle>
+            <AlertDialogTitle>Excluir categoria?</AlertDialogTitle>
             <AlertDialogDescription>
               {categoryToDelete?.name}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 if (categoryToDelete) {
@@ -577,7 +575,7 @@ export function CategoriesPage({}: CategoriesPageProps) {
               }}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {t("common.delete")}
+              Excluir
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
