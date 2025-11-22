@@ -32,6 +32,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { formatCurrency } from "@/lib/formatters";
 import { getUserId, withErrorHandling } from "@/lib/supabase-utils";
+import { t } from "@/lib/t";
 
 interface BankReconciliationPageProps {
   transactions: any[];
