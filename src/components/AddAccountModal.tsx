@@ -25,7 +25,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryClient";
-import { useTranslation } from "react-i18next";
 
 interface AddAccountModalProps {
   open: boolean;
@@ -45,7 +44,6 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-  const { t } = useTranslation();
 
   const handleColorChange = (color: string) => {
     setFormData((prev) => ({ ...prev, color }));
@@ -56,8 +54,8 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
 
     if (!formData.name || !formData.type) {
       toast({
-        title: t("common.error"),
-        description: t("modals.addAccount.errors.required"),
+        title: "Erro",
+        description: "Preencha todos os campos obrigatórios",
         variant: "destructive",
       });
       return;
@@ -67,24 +65,24 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
     if (formData.type === "credit") {
       if (formData.limitInCents <= 0) {
         toast({
-          title: t("common.error"),
-          description: t("modals.addAccount.errors.limitRequired"),
+          title: "Erro",
+          description: "O limite é obrigatório para cartões de crédito",
           variant: "destructive",
         });
         return;
       }
       if (!formData.closingDate) {
         toast({
-          title: t("common.error"),
-          description: t("modals.addAccount.errors.closingDateRequired"),
+          title: "Erro",
+          description: "A data de fechamento é obrigatória para cartões de crédito",
           variant: "destructive",
         });
         return;
       }
       if (!formData.dueDate) {
         toast({
-          title: t("common.error"),
-          description: t("modals.addAccount.errors.dueDateRequired"),
+          title: "Erro",
+          description: "A data de vencimento é obrigatória para cartões de crédito",
           variant: "destructive",
         });
         return;
@@ -103,8 +101,8 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
       dueDate = parseInt(formData.dueDate);
       if (isNaN(dueDate) || dueDate < 1 || dueDate > 31) {
         toast({
-          title: t("common.error"),
-          description: t("modals.addAccount.errors.invalidDueDate"),
+          title: "Erro",
+          description: "Data de vencimento inválida (1-31)",
           variant: "destructive",
         });
         return;
@@ -116,8 +114,8 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
       closingDate = parseInt(formData.closingDate);
       if (isNaN(closingDate) || closingDate < 1 || closingDate > 31) {
         toast({
-          title: t("common.error"),
-          description: t("modals.addAccount.errors.invalidClosingDate"),
+          title: "Erro",
+          description: "Data de fechamento inválida (1-31)",
           variant: "destructive",
         });
         return;
@@ -149,8 +147,8 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
 
       toast({
-        title: t("common.success"),
-        description: t("modals.addAccount.success"),
+        title: "Sucesso",
+        description: "Conta adicionada com sucesso",
         variant: "default",
       });
 
@@ -168,8 +166,8 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
     } catch (error) {
       logger.error("Failed to add account:", error);
       toast({
-        title: t("modals.addAccount.errors.serverError"),
-        description: t("modals.addAccount.errors.serverErrorDescription"),
+        title: "Erro no Servidor",
+        description: "Não foi possível adicionar a conta. Tente novamente.",
         variant: "destructive",
       });
     } finally {
@@ -182,10 +180,10 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
       <DialogContent className="w-[95vw] max-w-md sm:max-w-lg md:max-w-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader className="pb-4">
           <DialogTitle className="text-lg sm:text-xl">
-            {t("modals.addAccount.title")}
+            Adicionar Conta
           </DialogTitle>
           <DialogDescription>
-            {t("modals.addAccount.subtitle")}
+            Crie uma nova conta para gerenciar suas finanças
           </DialogDescription>
         </DialogHeader>
 
@@ -193,11 +191,11 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
           {/* Nome da Conta */}
           <div className="space-y-2">
             <Label htmlFor="name" className="text-sm font-medium">
-              {t("modals.addAccount.fields.name.label")}
+              Nome da Conta
             </Label>
             <Input
               id="name"
-              placeholder={t("modals.addAccount.fields.name.placeholder")}
+              placeholder="Ex: Conta Corrente, Cartão Nubank..."
               value={formData.name}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, name: e.target.value }))
@@ -209,7 +207,7 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
           {/* Tipo de Conta */}
           <div className="space-y-2">
             <Label htmlFor="type" className="text-sm font-medium">
-              {t("modals.addAccount.fields.type.label")}
+              Tipo de Conta
             </Label>
             <Select
               value={formData.type}
@@ -218,7 +216,7 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
               }
             >
               <SelectTrigger className="h-10 sm:h-11">
-                <SelectValue placeholder={t("modals.addAccount.fields.type.placeholder")} />
+                <SelectValue placeholder="Selecione o tipo de conta" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="checking">
@@ -241,7 +239,7 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
           <div className="space-y-2">
             {/* --- CORREÇÃO: Rótulo dinâmico --- */}
             <Label className="text-sm font-medium">
-              {t("modals.addAccount.fields.limit.label")}
+              Limite (opcional)
             </Label>
             <CurrencyInput
               value={formData.limitInCents || 0}
@@ -257,14 +255,14 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
               <div className="space-y-2">
                 {/* --- CORREÇÃO: Rótulo removido (opcional) --- */}
                 <Label htmlFor="closingDate" className="text-sm font-medium">
-                  {t("modals.addAccount.fields.closingDate.label")}
+                  Data de Fechamento
                 </Label>
                 <Input
                   id="closingDate"
                   type="number"
                   min="1"
                   max="31"
-                  placeholder={t("modals.addAccount.fields.closingDate.placeholder")}
+                  placeholder="Ex: 15"
                   value={formData.closingDate}
                   onChange={(e) =>
                     setFormData((prev) => ({
@@ -275,21 +273,21 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
                   className="h-10 sm:h-11"
                 />
                 <p className="text-xs text-muted-foreground">
-                  {t("modals.addAccount.fields.closingDate.help")}
+                  Dia do mês em que a fatura fecha
                 </p>
               </div>
 
               <div className="space-y-2">
                 {/* --- CORREÇÃO: Rótulo removido (opcional) --- */}
                 <Label htmlFor="dueDate" className="text-sm font-medium">
-                  {t("modals.addAccount.fields.dueDate.label")}
+                  Data de Vencimento
                 </Label>
                 <Input
                   id="dueDate"
                   type="number"
                   min="1"
                   max="31"
-                  placeholder={t("modals.addAccount.fields.dueDate.placeholder")}
+                  placeholder="Ex: 20"
                   value={formData.dueDate}
                   onChange={(e) =>
                     setFormData((prev) => ({
@@ -300,7 +298,7 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
                   className="h-10 sm:h-11"
                 />
                 <p className="text-xs text-muted-foreground">
-                  {t("modals.addAccount.fields.dueDate.help")}
+                  Dia do mês em que a fatura vence
                 </p>
               </div>
             </div>
@@ -310,7 +308,7 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
           <ColorPicker
             value={formData.color}
             onChange={handleColorChange}
-            label={t("modals.addAccount.fields.color.label")}
+            label="Cor da Conta"
           />
 
           {/* Botões de Ação */}
@@ -321,14 +319,14 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
               onClick={() => onOpenChange(false)}
               className="flex-1 h-10 sm:h-11"
             >
-              {t("common.cancel")}
+              Cancelar
             </Button>
             <Button
               type="submit"
               className="flex-1 h-10 sm:h-11"
               disabled={isSubmitting}
             >
-              {isSubmitting ? t("modals.addAccount.actions.adding") : t("modals.addAccount.actions.add")}
+              {isSubmitting ? "Adicionando..." : "Adicionar Conta"}
             </Button>
           </div>
         </form>

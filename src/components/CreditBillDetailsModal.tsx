@@ -5,7 +5,6 @@ import { Badge } from '@/components/ui/badge'
 import { ptBR } from 'date-fns/locale'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { useTranslation } from 'react-i18next'
 import { logger } from '@/lib/logger'
 
 interface CreditBillDetailsModalProps {
@@ -14,8 +13,6 @@ interface CreditBillDetailsModalProps {
 }
 
 export function CreditBillDetailsModal({ bill, onClose }: CreditBillDetailsModalProps) {
-  const { t } = useTranslation();
-  
   if (!bill) return null
 
   const paidAmount = bill.paid_amount
@@ -60,35 +57,35 @@ export function CreditBillDetailsModal({ bill, onClose }: CreditBillDetailsModal
               </span>
               <div className="flex gap-2 flex-shrink-0">
                 <Badge variant={isClosed ? 'secondary' : 'outline'}>
-                  {isClosed ? t('creditBills.closed') : t('creditBills.open')}
+                  {isClosed ? 'Fechada' : 'Aberta'}
                 </Badge>
                 <Badge variant={isPaid ? 'default' : 'destructive'}>
-                  {isPaid ? t('creditBills.paid') : t('creditBills.pending')}
+                  {isPaid ? 'Paga' : 'Pendente'}
                 </Badge>
               </div>
             </div>
           </DialogTitle>
           <DialogDescription>
-            {t('creditBills.dueOn')} {format(new Date(bill.due_date), 'dd/MM/yyyy', { locale: ptBR })} | {t('creditBills.closingOn')} {format(new Date(bill.closing_date), 'dd/MM/yyyy', { locale: ptBR })}
+            Vencimento em {format(new Date(bill.due_date), 'dd/MM/yyyy', { locale: ptBR })} | Fechamento em {format(new Date(bill.closing_date), 'dd/MM/yyyy', { locale: ptBR })}
           </DialogDescription>
         </DialogHeader>
         <div className="flex justify-between items-center p-4 bg-muted/50 rounded-lg border">
           <div>
-            <div className="text-sm text-muted-foreground">{t('creditBills.totalAmount')}</div>
+            <div className="text-sm text-muted-foreground">Valor Total</div>
             <div className="text-2xl font-bold text-foreground">{formatCurrency(bill.total_amount)}</div>
           </div>
           <div className="text-right">
-            <div className="text-sm font-medium text-green-600 dark:text-green-500">{t('creditBills.paidAmount')}: {formatCurrency(paidAmount)}</div>
-            <div className="text-sm font-medium text-red-600 dark:text-red-500">{t('creditBills.remaining')}: {formatCurrency(remainingAmount)}</div>
+            <div className="text-sm font-medium text-green-600 dark:text-green-500">Pago: {formatCurrency(paidAmount)}</div>
+            <div className="text-sm font-medium text-red-600 dark:text-red-500">Restante: {formatCurrency(remainingAmount)}</div>
           </div>
         </div>
         <div className="max-h-[400px] overflow-y-auto">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>{t('transactions.date')}</TableHead>
-                <TableHead>{t('transactions.description')}</TableHead>
-                <TableHead className="text-right">{t('transactions.amount')}</TableHead>
+                <TableHead>Data</TableHead>
+                <TableHead>Descrição</TableHead>
+                <TableHead className="text-right">Valor</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
