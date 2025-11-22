@@ -32,12 +32,12 @@ export function InstallmentEditScopeDialog({
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>
-            {isDelete ? "Deletar Parcelas" : "Editar Parcelas"}
+            {isDelete ? "Escolher escopo da exclusão" : "Escolher escopo da edição"}
           </DialogTitle>
           <DialogDescription>
             {isDelete 
-              ? `Escolha quais parcelas deseja deletar (parcela ${currentInstallment} de ${totalInstallments})`
-              : `Escolha quais parcelas deseja editar (parcela ${currentInstallment} de ${totalInstallments})`
+              ? `Defina se deseja excluir apenas esta ocorrência ou toda a série (atual: ${currentInstallment} de ${totalInstallments}).`
+              : `Defina se deseja editar apenas esta ocorrência ou toda a série (atual: ${currentInstallment} de ${totalInstallments}).`
             }
           </DialogDescription>
         </DialogHeader>
