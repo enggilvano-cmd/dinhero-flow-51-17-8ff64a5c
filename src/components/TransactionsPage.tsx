@@ -761,7 +761,6 @@ export function TransactionsPage({
               onEdit={onEditTransaction}
               onDelete={onDeleteTransaction}
               onMarkAsPaid={onMarkAsPaid}
-              t={t}
               hasNextPage={hasNextPage}
               isFetchingNextPage={isFetchingNextPage}
               fetchNextPage={fetchNextPage}
