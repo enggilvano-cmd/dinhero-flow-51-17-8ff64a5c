@@ -52,13 +52,19 @@ export const addTransactionSchema = z.object({
     .optional()
     .refine((val) => {
       if (!val) return true;
+      if (val === "custom") return true; // "custom" é válido aqui
       const num = parseInt(val);
       return !isNaN(num) && num >= 2 && num <= 360;
     }, { message: "O número de parcelas deve estar entre 2 e 360" }),
   
   customInstallments: z
     .string()
-    .optional(),
+    .optional()
+    .refine((val) => {
+      if (!val) return true;
+      const num = parseInt(val);
+      return !isNaN(num) && num >= 2 && num <= 360;
+    }, { message: "O número de parcelas deve estar entre 2 e 360" }),
   
   invoiceMonth: z.string().optional(),
   
