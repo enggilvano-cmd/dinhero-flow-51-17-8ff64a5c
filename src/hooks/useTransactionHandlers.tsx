@@ -38,9 +38,15 @@ export function useTransactionHandlers() {
 
       if (error) throw error;
 
-      // Invalidar TODAS as queries sem refetchType para forçar atualização imediata
-      await queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
-      await queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+      // Invalidar e forçar refetch imediato
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
+      ]);
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.refetchQueries({ queryKey: queryKeys.accounts }),
+      ]);
     } catch (error) {
       logger.error('Error adding transaction:', error);
       if (error instanceof Error) {
@@ -80,8 +86,14 @@ export function useTransactionHandlers() {
       const errors = results.filter(r => r.error);
       if (errors.length > 0) throw errors[0].error;
 
-      await queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
-      await queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
+      ]);
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.refetchQueries({ queryKey: queryKeys.accounts }),
+      ]);
     } catch (error) {
       logger.error('Error adding installment transactions:', error);
       throw error;
@@ -115,8 +127,14 @@ export function useTransactionHandlers() {
 
       if (error) throw error;
 
-      await queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
-      await queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
+      ]);
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.refetchQueries({ queryKey: queryKeys.accounts }),
+      ]);
     } catch (error) {
       logger.error('Error updating transaction:', error);
       if (error instanceof Error) {
@@ -155,8 +173,14 @@ export function useTransactionHandlers() {
         throw new Error(data.error || 'Transação não encontrada ou já foi excluída');
       }
 
-      await queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
-      await queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
+      ]);
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.refetchQueries({ queryKey: queryKeys.accounts }),
+      ]);
 
       toast({
         title: 'Sucesso',
@@ -204,8 +228,14 @@ export function useTransactionHandlers() {
 
       if (error) throw error;
 
-      await queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
-      await queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
+      ]);
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.refetchQueries({ queryKey: queryKeys.accounts }),
+      ]);
     } catch (error) {
       logger.error('Error processing transfer:', error);
       if (error instanceof Error) {
@@ -271,8 +301,14 @@ export function useTransactionHandlers() {
       const errors = results.filter(r => r.error);
       if (errors.length > 0) throw errors[0].error;
 
-      await queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
-      await queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
+      ]);
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.refetchQueries({ queryKey: queryKeys.accounts }),
+      ]);
       
       toast({
         title: 'Importação concluída',
@@ -326,8 +362,14 @@ export function useTransactionHandlers() {
       }
 
       logger.info('🔄 Refazendo fetch após pagamento...');
-      await queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
-      await queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
+      ]);
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.refetchQueries({ queryKey: queryKeys.accounts }),
+      ]);
 
       return {
         creditAccount: { ...creditAccount, balance: data.credit_balance?.[0]?.new_balance || creditAccount.balance },
@@ -364,8 +406,14 @@ export function useTransactionHandlers() {
       if (errors.length > 0) throw errors[0].error;
 
       logger.info('🔄 Refazendo fetch após estorno...');
-      await queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
-      await queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
+      ]);
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.refetchQueries({ queryKey: queryKeys.accounts }),
+      ]);
 
       toast({ title: 'Pagamento estornado com sucesso!' });
     } catch (error) {

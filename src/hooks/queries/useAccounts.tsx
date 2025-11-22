@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Account } from '@/types';
 import { logger } from '@/lib/logger';
-import { queryKeys, cacheConfig } from '@/lib/queryClient';
+import { queryKeys } from '@/lib/queryClient';
 
 export function useAccounts() {
   const { user } = useAuth();
@@ -28,12 +28,13 @@ export function useAccounts() {
       })) as Account[];
     },
     enabled: !!user,
-    // Accounts change less frequently: 2min stale, 10min cache
-    ...cacheConfig.mediumLived,
+    // CRITICAL: staleTime 0 para refetch imediato após mutações
+    staleTime: 0,
+    gcTime: 10 * 60 * 1000,
     // Keep previous data while fetching
     placeholderData: (previousData) => previousData,
     // CRITICAL: Always refetch on mount and window focus to get latest balances
-    refetchOnMount: true,
+    refetchOnMount: 'always',
     refetchOnWindowFocus: true,
   });
 
@@ -50,17 +51,19 @@ export function useAccounts() {
       if (error) throw error;
       return updatedAccount;
     },
-    onSuccess: (updatedAccount) => {
+    onSuccess: async (updatedAccount) => {
       // Optimistic update: update cache immediately
       queryClient.setQueryData<Account[]>(queryKeys.accounts, (old) => {
         if (!old) return old;
         return old.map(acc => acc.id === updatedAccount.id ? { ...acc, ...updatedAccount } : acc);
       });
-      // Then invalidate to ensure consistency
-      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+      // Then invalidate and refetch to ensure consistency
+      await queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+      await queryClient.refetchQueries({ queryKey: queryKeys.accounts });
       // Also invalidate transactions if balance changed
       if (updatedAccount.balance !== undefined) {
-        queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
+        await queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
+        await queryClient.refetchQueries({ queryKey: queryKeys.transactions() });
       }
     },
     onError: (error) => {
@@ -81,16 +84,18 @@ export function useAccounts() {
       if (error) throw error;
       return accountId;
     },
-    onSuccess: (deletedAccountId) => {
+    onSuccess: async (deletedAccountId) => {
       // Optimistic update: remove from cache immediately
       queryClient.setQueryData<Account[]>(queryKeys.accounts, (old) => {
         if (!old) return old;
         return old.filter(acc => acc.id !== deletedAccountId);
       });
-      // Then invalidate to ensure consistency
-      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+      // Then invalidate and refetch to ensure consistency
+      await queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+      await queryClient.refetchQueries({ queryKey: queryKeys.accounts });
       // Also invalidate transactions
-      queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
+      await queryClient.refetchQueries({ queryKey: queryKeys.transactions() });
     },
     onError: (error) => {
       logger.error('Error deleting account:', error);
@@ -119,9 +124,10 @@ export function useAccounts() {
       if (error) throw error;
       return accountsToAdd;
     },
-    onSuccess: () => {
-      // Invalidate accounts after bulk import
-      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+    onSuccess: async () => {
+      // Invalidate and refetch accounts after bulk import
+      await queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+      await queryClient.refetchQueries({ queryKey: queryKeys.accounts });
     },
   });
 
