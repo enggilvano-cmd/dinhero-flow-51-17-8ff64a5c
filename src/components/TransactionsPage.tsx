@@ -34,7 +34,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { InfiniteTransactionList } from "@/components/transactions/InfiniteTransactionList";
+import { TransactionList } from "@/components/transactions/TransactionList";
 import {
   format,
   startOfMonth,
@@ -78,9 +78,6 @@ interface TransactionsPageProps {
   sortOrder: "asc" | "desc";
   onSortOrderChange: (order: "asc" | "desc") => void;
   isLoading?: boolean;
-  hasNextPage?: boolean;
-  fetchNextPage?: () => void;
-  isFetchingNextPage?: boolean;
 }
 
 export function TransactionsPage({
@@ -112,9 +109,6 @@ export function TransactionsPage({
   sortOrder,
   onSortOrderChange,
   isLoading = false,
-  hasNextPage,
-  fetchNextPage,
-  isFetchingNextPage,
 }: TransactionsPageProps) {
   const [dateFilter, setDateFilter] = useState<
     "all" | "current_month" | "month_picker" | "custom"
@@ -691,7 +685,7 @@ export function TransactionsPage({
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 sm:p-6">
-            <InfiniteTransactionList
+            <TransactionList
               transactions={transactions}
               accounts={accounts}
               categories={categories}
@@ -699,9 +693,6 @@ export function TransactionsPage({
               onEdit={onEditTransaction}
               onDelete={handleDeleteWithScope}
               onMarkAsPaid={onMarkAsPaid}
-              hasNextPage={hasNextPage}
-              isFetchingNextPage={isFetchingNextPage}
-              fetchNextPage={fetchNextPage}
             />
           </CardContent>
         </Card>
