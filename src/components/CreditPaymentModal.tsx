@@ -205,7 +205,7 @@ export function CreditPaymentModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] overflow-visible">
         <DialogHeader>
           <DialogTitle>Pagar Fatura do Cartão</DialogTitle>
           <DialogDescription>
@@ -244,32 +244,39 @@ export function CreditPaymentModal({
             <Label htmlFor="bankAccount">Conta para Pagamento</Label>
             <Select
               value={formData.bankAccountId}
-              onValueChange={(value) =>
-                setFormData((prev) => ({ ...prev, bankAccountId: value }))
-              }
+              onValueChange={(value) => {
+                console.log('Selected account:', value);
+                setFormData((prev) => ({ ...prev, bankAccountId: value }));
+              }}
             >
-              <SelectTrigger>
+              <SelectTrigger id="bankAccount">
                 <SelectValue placeholder="Selecione a conta" />
               </SelectTrigger>
-              <SelectContent>
-                {bankAccounts.map((account) => (
-                  <SelectItem key={account.id} value={account.id}>
-                    <div className="flex justify-between items-center w-full">
-                      <div className="flex items-center gap-2">
-                        <div
-                          className="w-3 h-3 rounded-full"
-                          style={{
-                            backgroundColor: account.color || "#6b7280",
-                          }}
-                        />
-                        <span>{account.name}</span>
+              <SelectContent className="z-[9999]">
+                {bankAccounts.length === 0 ? (
+                  <div className="px-2 py-6 text-sm text-muted-foreground text-center">
+                    Nenhuma conta disponível
+                  </div>
+                ) : (
+                  bankAccounts.map((account) => (
+                    <SelectItem key={account.id} value={account.id}>
+                      <div className="flex justify-between items-center w-full gap-4">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div
+                            className="w-3 h-3 rounded-full flex-shrink-0"
+                            style={{
+                              backgroundColor: account.color || "#6b7280",
+                            }}
+                          />
+                          <span className="truncate">{account.name}</span>
+                        </div>
+                        <span className="text-sm text-muted-foreground whitespace-nowrap">
+                          {formatBRL(getAvailableBalance(account))}
+                        </span>
                       </div>
-                      <span className="ml-2 text-sm text-muted-foreground">
-                        {formatBRL(getAvailableBalance(account))}
-                      </span>
-                    </div>
-                  </SelectItem>
-                ))}
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
             {formData.bankAccountId && (
