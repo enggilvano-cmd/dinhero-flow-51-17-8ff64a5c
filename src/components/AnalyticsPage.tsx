@@ -69,7 +69,6 @@ import { ptBR } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { useCategories } from "@/hooks/useCategories";
-import { useTranslation } from "react-i18next";
 import { formatCurrency } from "@/lib/formatters";
 
 interface Account {
@@ -131,7 +130,6 @@ export default function AnalyticsPage({
   transactions,
   accounts,
 }: AnalyticsPageProps) {
-  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<
     "all" | "income" | "expense" | "transfer"
@@ -172,7 +170,7 @@ export default function AnalyticsPage({
   const getTransactionCategory = (transaction: Transaction) => {
     // Check if it's a transfer
     if (transaction.type === "transfer" || transaction.to_account_id) {
-      return t("common.transfer");
+      return "Transferência";
     }
 
     // Prioritize category_id for more reliable mapping
@@ -180,7 +178,7 @@ export default function AnalyticsPage({
       const category = categories.find(
         (cat) => cat.id === transaction.category_id
       );
-      return category?.name || t("common.noCategory");
+      return category?.name || "Sem categoria";
     }
 
     // Fallback to transaction.category if it exists and is not an ID-like string
@@ -192,7 +190,7 @@ export default function AnalyticsPage({
       return transaction.category;
     }
 
-    return t("common.noCategory");
+    return "Sem categoria";
   };
 
   const filteredTransactions = useMemo(() => {
@@ -264,7 +262,7 @@ export default function AnalyticsPage({
 
     const categoryFilteredTransactions = typeFilteredTransactions.filter((transaction) => {
       const category = getTransactionCategory(transaction);
-      return category !== t("analytics.billPayment");
+      return category !== "Pagamento de Fatura";
     });
 
     if (categoryFilteredTransactions.length === 0) {
@@ -555,14 +553,14 @@ export default function AnalyticsPage({
       pdf.save(`relatorio-analises-${periodLabel}.pdf`);
 
       toast({
-        title: t("analytics.reportExported"),
-        description: t("analytics.pdfDownloadSuccess"),
+        title: "Relatório Exportado",
+        description: "PDF baixado com sucesso",
       });
     } catch (error) {
       logger.error("Erro ao gerar PDF:", error);
       toast({
-        title: t("analytics.pdfError"),
-        description: t("analytics.pdfErrorDescription"),
+        title: "Erro ao Gerar PDF",
+        description: "Não foi possível criar o arquivo PDF. Tente novamente.",
         variant: "destructive",
       });
     }
@@ -570,15 +568,15 @@ export default function AnalyticsPage({
 
   const chartConfig = {
     receitas: {
-      label: t("analytics.income"),
+      label: "Receitas",
       color: "hsl(var(--success))",
     },
     despesas: {
-      label: t("analytics.expenses"),
+      label: "Despesas",
       color: "hsl(var(--destructive))",
     },
     saldo: {
-      label: t("analytics.balance"),
+      label: "Saldo",
       color: "hsl(var(--primary))",
     },
   };

@@ -8,16 +8,13 @@ import { CategoriesPage } from "@/components/CategoriesPage";
 import AnalyticsPage from "@/components/AnalyticsPage";
 import SystemSettings from "@/components/SystemSettings";
 import { UserManagement } from "@/components/UserManagement";
-import { RecurringTransactionsPage } from "@/components/RecurringTransactionsPage";
 import { FixedTransactionsPage } from "@/components/FixedTransactionsPage";
 import { AddAccountModal } from "@/components/AddAccountModal";
 import { AddTransactionModal } from "@/components/AddTransactionModal";
 import { EditAccountModal } from "@/components/EditAccountModal";
 import { EditTransactionModal } from "@/components/EditTransactionModal";
-
 import { TransferModal } from "@/components/TransferModal";
 import { CreditPaymentModal } from "@/components/CreditPaymentModal";
-import { useSettings } from "@/context/SettingsContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -33,7 +30,6 @@ import { useAccountHandlers } from "@/hooks/useAccountHandlers";
 import { useTransactionHandlers } from "@/hooks/useTransactionHandlers";
 
 const PlaniFlowApp = () => {
-  const { settings, updateSettings } = useSettings();
   const { user, loading: authLoading, isAdmin } = useAuth();
   const { toast } = useToast();
   const [currentPage, setCurrentPage] = useState("dashboard");
@@ -294,25 +290,6 @@ const PlaniFlowApp = () => {
     }
   };
 
-  const pageTitles: { [key: string]: string } = {
-    dashboard: "Dashboard",
-    accounts: "Contas",
-    "credit-bills": "Faturas de Crédito",
-    transactions: "Transações",
-    recurring: "Transações Recorrentes",
-    fixed: "Transações Fixas",
-    categories: "Categorias",
-    analytics: "Análises",
-    bybit: "Integração Bybit",
-    settings: "Configurações",
-    profile: "Meu Perfil",
-    users: "Gerenciar Usuários",
-    "system-settings": "Configurações do Sistema",
-  };
-
-  const getPageTitle = (page: string) => {
-    return pageTitles[page] || "Dashboard";
-  };
 
   return (
     <Layout
@@ -329,13 +306,6 @@ const PlaniFlowApp = () => {
       <AddAccountModal
         open={addAccountModalOpen}
         onOpenChange={setAddAccountModalOpen}
-        onAddAccount={async (account) => {
-          queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
-          toast({
-            title: "Conta adicionada",
-            description: `A conta "${account.name}" foi adicionada com sucesso.`,
-          });
-        }}
       />
 
       <AddTransactionModal
@@ -344,7 +314,6 @@ const PlaniFlowApp = () => {
         onAddTransaction={handleAddTransaction}
         onAddInstallmentTransactions={handleAddInstallmentTransactions}
         accounts={accounts}
-        categories={categories}
         initialType={transactionInitialType}
         initialAccountType={transactionInitialAccountType}
         lockType={transactionLockType}
@@ -363,7 +332,6 @@ const PlaniFlowApp = () => {
         transaction={editingTransaction}
         onEditTransaction={handleEditTransaction}
         accounts={accounts}
-        categories={categories}
       />
 
       <TransferModal
