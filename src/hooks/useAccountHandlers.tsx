@@ -56,17 +56,32 @@ export function useAccountHandlers() {
     }
   }, [user, toast, queryClient]);
 
-  const handleImportAccounts = useCallback(async (accountsData: Array<{
-    name: string;
-    type: 'checking' | 'savings' | 'credit' | 'investment';
-    balance?: number;
-    color: string;
-    limit_amount?: number;
-    due_date?: number;
-    closing_date?: number;
-  }>) => {
+  const handleImportAccounts = useCallback(async (
+    accountsData: Array<{
+      name: string;
+      type: 'checking' | 'savings' | 'credit' | 'investment';
+      balance?: number;
+      color: string;
+      limit_amount?: number;
+      due_date?: number;
+      closing_date?: number;
+    }>,
+    accountsToReplace: string[] = []
+  ) => {
     if (!user) return;
     try {
+      // 1. Deletar contas que serão substituídas
+      if (accountsToReplace.length > 0) {
+        const { error: deleteError } = await supabase
+          .from('accounts')
+          .delete()
+          .in('id', accountsToReplace)
+          .eq('user_id', user.id);
+        
+        if (deleteError) throw deleteError;
+      }
+
+      // 2. Inserir novas contas
       const accountsToAdd = accountsData.map(acc => ({
         name: acc.name,
         type: acc.type,
@@ -87,7 +102,7 @@ export function useAccountHandlers() {
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
       toast({
         title: 'Sucesso',
-        description: `${accountsToAdd.length} contas importadas com sucesso!`,
+        description: `${accountsToAdd.length} contas importadas${accountsToReplace.length > 0 ? ` (${accountsToReplace.length} substituídas)` : ''} com sucesso!`,
       });
     } catch (error) {
       logger.error('Error importing accounts:', error);
