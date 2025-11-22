@@ -104,7 +104,7 @@ export function AccountsPage({
       checking: "default",
       savings: "secondary",
       credit: "destructive",
-      investment: "secondary", // Corrigido de 'outline' para 'secondary'
+      investment: "secondary",
     } as const;
     return variants[type as keyof typeof variants] || "default";
   };
@@ -133,13 +133,10 @@ export function AccountsPage({
     }
   };
 
-  // Os totais agora são calculados a partir das 'filteredAccounts'
-  // Saldo total: apenas contas não-crédito
   const totalBalance = filteredAccounts
     .filter((acc) => acc.type !== "credit")
     .reduce((sum, acc) => sum + acc.balance, 0);
 
-  // Dívida total de cartões: soma do valor absoluto dos saldos negativos
   const creditUsed = filteredAccounts
     .filter((acc) => acc.type === "credit")
     .reduce((sum, acc) => sum + Math.abs(Math.min(acc.balance, 0)), 0);
@@ -169,7 +166,7 @@ export function AccountsPage({
   };
 
   return (
-    <div className="spacing-responsive-lg fade-in pb-6 sm:pb-8">
+    <div className="spacing-responsive-md fade-in pb-6 sm:pb-8">
       {/* Header */}
       <div className="flex flex-col gap-3">
         <div className="min-w-0 w-full">
@@ -213,24 +210,22 @@ export function AccountsPage({
         </div>
       </div>
 
-      {/* Summary Cards - Layout otimizado */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         <Card className="financial-card">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <DollarSign className="h-5 w-5 text-primary" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm font-medium text-muted-foreground">
-                  Saldo Total
-                </p>
-                <div
-                  className={`text-base sm:text-lg lg:text-xl font-bold ${
+          <CardContent className="p-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <DollarSign className="h-5 w-5 text-primary" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-caption font-medium">Saldo Total</p>
+                  <div className={`text-responsive-xl font-bold leading-tight ${
                     totalBalance >= 0 ? "balance-positive" : "balance-negative"
-                  } leading-tight`}
-                >
-                  {formatCents(totalBalance)}
+                  }`}>
+                    {formatCents(totalBalance)}
+                  </div>
                 </div>
               </div>
             </div>
@@ -238,35 +233,35 @@ export function AccountsPage({
         </Card>
 
         <Card className="financial-card">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center flex-shrink-0">
-                <CreditCard className="h-5 w-5 text-destructive" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm font-medium text-muted-foreground">
-                  Dívida Total
-                </p>
-                <div className="text-base sm:text-lg lg:text-xl font-bold text-destructive leading-tight">
-                  {formatCents(creditUsed)}
+          <CardContent className="p-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center flex-shrink-0">
+                  <CreditCard className="h-5 w-5 text-destructive" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-caption font-medium">Dívida Total</p>
+                  <div className="text-responsive-xl font-bold balance-negative leading-tight">
+                    {formatCents(creditUsed)}
+                  </div>
                 </div>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="financial-card sm:col-span-2 lg:col-span-1">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center flex-shrink-0">
-                <Wallet className="h-5 w-5 text-accent" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm font-medium text-muted-foreground">
-                  Total de Contas
-                </p>
-                <div className="text-base sm:text-lg lg:text-xl font-bold leading-tight">
-                  {filteredAccounts.length}
+        <Card className="financial-card col-span-2 lg:col-span-1">
+          <CardContent className="p-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
+                  <Wallet className="h-5 w-5 text-accent" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-caption font-medium">Total de Contas</p>
+                  <div className="text-responsive-xl font-bold leading-tight">
+                    {filteredAccounts.length}
+                  </div>
                 </div>
               </div>
             </div>
@@ -277,8 +272,8 @@ export function AccountsPage({
       {/* Filters */}
       <Card>
         <CardContent className="p-2 sm:p-3">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div className="lg:col-span-2">
+          <div className="flex flex-col gap-4 sm:flex-row">
+            <div className="flex-1">
               <Label htmlFor="search" className="text-caption">Buscar contas</Label>
               <div className="relative mt-2">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -291,13 +286,13 @@ export function AccountsPage({
                 />
               </div>
             </div>
-            <div>
+            <div className="sm:w-48">
               <Label htmlFor="filter" className="text-caption">Filtrar por tipo</Label>
               <Select 
                 value={filterType} 
                 onValueChange={(value) => setFilterType(value as typeof filterType)}
               >
-                <SelectTrigger id="filter" className="touch-target mt-2">
+                <SelectTrigger className="touch-target mt-2">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -314,34 +309,31 @@ export function AccountsPage({
       </Card>
 
       {/* Accounts Grid */}
-      {filteredAccounts.length === 0 ? (
-        <Card className="financial-card">
-          <CardContent className="text-center py-12">
-            <CreditCard className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-            <h3 className="text-lg font-semibold mb-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filteredAccounts.length === 0 ? (
+          <div className="col-span-full text-center py-12">
+            <CreditCard className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-headline font-semibold mb-2">
               {searchTerm || filterType !== "all"
                 ? "Nenhum resultado encontrado"
                 : "Nenhuma conta cadastrada"}
             </h3>
-            <p className="text-muted-foreground mb-4">
+            <p className="text-body text-muted-foreground mb-4">
               {searchTerm || filterType !== "all"
                 ? "Tente ajustar os filtros"
                 : "Adicione sua primeira conta para começar"}
             </p>
             {!searchTerm && filterType === "all" && (
-              <Button onClick={onAddAccount}>Adicionar Conta</Button>
+              <Button onClick={onAddAccount} className="gap-2 apple-interaction">
+                <Plus className="h-4 w-4" />
+                Adicionar Conta
+              </Button>
             )}
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-2">
-          {filteredAccounts.map((account) => (
-            <Card
-              key={account.id}
-              className="financial-card apple-interaction group"
-            >
+          </div>
+        ) : (
+          filteredAccounts.map((account) => (
+            <Card key={account.id} className="financial-card apple-interaction group">
               <CardContent className="p-3 sm:p-4">
-                {/* Layout Mobile vs Desktop */}
                 <div className="space-y-3">
                   {/* Header com Ícone, Nome e Menu */}
                   <div className="flex items-center gap-3">
@@ -360,7 +352,7 @@ export function AccountsPage({
                       </h3>
                       <Badge
                         variant={getAccountTypeBadge(account.type)}
-                        className="text-xs h-5 px-2 inline-flex"
+                        className="gap-1 text-xs h-5 px-2 inline-flex"
                       >
                         {getAccountTypeLabel(account.type)}
                       </Badge>
@@ -379,22 +371,16 @@ export function AccountsPage({
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={() => onEditAccount(account)}
-                          >
+                          <DropdownMenuItem onClick={() => onEditAccount(account)}>
                             <Edit className="h-4 w-4 mr-2" />
                             Editar
                           </DropdownMenuItem>
-                          {account.type === "credit" &&
-                            account.balance < 0 &&
-                            onPayCreditCard && (
-                              <DropdownMenuItem
-                                onClick={() => onPayCreditCard(account)}
-                              >
-                                <DollarSign className="h-4 w-4 mr-2" />
-                                Pagar Fatura
-                              </DropdownMenuItem>
-                            )}
+                          {account.type === "credit" && account.balance < 0 && onPayCreditCard && (
+                            <DropdownMenuItem onClick={() => onPayCreditCard(account)}>
+                              <DollarSign className="h-4 w-4 mr-2" />
+                              Pagar Fatura
+                            </DropdownMenuItem>
+                          )}
                           <DropdownMenuItem
                             onClick={() => handleDeleteAccount(account)}
                             className="text-destructive"
@@ -407,132 +393,52 @@ export function AccountsPage({
                     </div>
                   </div>
 
-                  {/* Saldo e Informações Financeiras */}
-                  <div className="flex flex-col gap-2">
-                    {/* Para cartões de crédito */}
+                  {/* Informações de Saldo */}
+                  <div className="pt-2 border-t border-border/50">
                     {account.type === "credit" ? (
-                      <>
-                        {/* Dívida ou Crédito a favor */}
+                      <div className="space-y-1">
                         <div className="flex items-center justify-between">
-                          <span className="text-xs sm:text-sm text-muted-foreground font-medium">
-                            {account.balance < 0 ? "Dívida" : "Crédito a favor"}:
+                          <span className="text-xs text-muted-foreground">
+                            {account.balance < 0 ? "Dívida" : "Crédito"}
                           </span>
                           <span
-                            className={`text-sm sm:text-base font-bold ${
-                              account.balance < 0 ? "text-destructive" : "text-emerald-600"
+                            className={`text-sm font-bold ${
+                              account.balance < 0 ? "text-destructive" : "text-success"
                             }`}
                           >
                             {formatCents(Math.abs(account.balance))}
                           </span>
                         </div>
-                        
-                        {/* Limite disponível */}
                         {account.limit_amount && account.limit_amount > 0 && (
                           <div className="flex items-center justify-between">
-                            <span className="text-xs sm:text-sm text-muted-foreground">
-                              Disponível:
+                            <span className="text-xs text-muted-foreground">
+                              Disponível
                             </span>
-                            <span className="text-xs sm:text-sm font-medium text-blue-600">
+                            <span className="text-xs font-medium text-primary">
                               {formatCents((account.limit_amount || 0) - Math.abs(Math.min(account.balance, 0)))}
                             </span>
                           </div>
                         )}
-                      </>
+                      </div>
                     ) : (
-                      /* Outras contas: comportamento normal */
-                      <>
-                        {/* Saldo */}
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs sm:text-sm text-muted-foreground font-medium">
-                            Saldo:
-                          </span>
-                          <span
-                            className={`text-sm sm:text-base font-bold ${
-                              account.balance >= 0
-                                ? "balance-positive"
-                                : "balance-negative"
-                            }`}
-                          >
-                            {formatCents(account.balance)}
-                          </span>
-                        </div>
-
-                        {/* Disponível (com limite) */}
-                        {account.limit_amount && account.limit_amount > 0 && (
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs sm:text-sm text-muted-foreground">
-                              Disponível:
-                            </span>
-                            <span className="text-xs sm:text-sm font-medium text-blue-600">
-                              {formatCents(account.balance + (account.limit_amount || 0))}
-                            </span>
-                          </div>
-                        )}
-                      </>
-                    )}
-
-                    {/* Barra de progresso de uso */}
-                    {account.limit_amount && account.limit_amount > 0 && (
-                      <div className="space-y-1">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs text-muted-foreground">
-                            {account.type === "credit" ? "Usado" : "Limite"}:
-                          </span>
-                          <span className="text-xs font-medium">
-                            {formatCents(account.limit_amount || 0)}
-                          </span>
-                        </div>
-
-                        {/* Barra de progresso */}
-                        <div className="flex items-center gap-2">
-                          <div className="flex-1 bg-muted rounded-full h-2">
-                            <div
-                              className={`h-2 rounded-full transition-all duration-300 ${
-                                account.type === "credit"
-                                  ? "bg-destructive"
-                                  : "bg-warning"
-                              }`}
-                              style={{
-                                width: `${Math.min(
-                                  account.type === "credit"
-                                    ? (Math.abs(Math.min(account.balance, 0)) /
-                                        (account.limit_amount || 1)) *
-                                      100
-                                    : account.balance < 0
-                                    ? (Math.abs(account.balance) /
-                                        (account.limit_amount || 1)) *
-                                      100
-                                    : 0,
-                                  100
-                                )}%`,
-                              }}
-                            />
-                          </div>
-                          <span className="text-xs font-medium">
-                            {account.type === "credit"
-                              ? `${Math.round(
-                                  (Math.abs(Math.min(account.balance, 0)) /
-                                    (account.limit_amount || 1)) *
-                                    100
-                                )}%`
-                              : account.balance < 0
-                              ? `${Math.round(
-                                  (Math.abs(account.balance) /
-                                    (account.limit_amount || 1)) *
-                                    100
-                                )}%`
-                              : "0%"}
-                          </span>
-                        </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground">Saldo</span>
+                        <span
+                          className={`text-sm font-bold ${
+                            account.balance >= 0 ? "balance-positive" : "balance-negative"
+                          }`}
+                        >
+                          {formatCents(account.balance)}
+                        </span>
                       </div>
                     )}
                   </div>
                 </div>
               </CardContent>
             </Card>
-          ))}
-        </div>
-      )}
+          ))
+        )}
+      </div>
 
       {/* Import Modal */}
       <ImportAccountsModal
