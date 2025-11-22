@@ -35,6 +35,7 @@ import { queryKeys } from "@/lib/queryClient";
 import { useAccountHandlers } from "@/hooks/useAccountHandlers";
 import { useTransactionHandlers } from "@/hooks/useTransactionHandlers";
 import { InstallmentEditScopeDialog, EditScope } from "@/components/InstallmentEditScopeDialog";
+import { MarkAsPaidModal } from "@/components/MarkAsPaidModal";
 
 const PlaniFlowApp = () => {
   const { user, loading: authLoading, isAdmin } = useAuth();
@@ -107,6 +108,12 @@ const PlaniFlowApp = () => {
   const [payingCreditAccount, setPayingCreditAccount] = useState<Account | null>(null);
   const [markingAsPaidTransaction, setMarkingAsPaidTransaction] = useState<Transaction | null>(null);
   const [markAsPaidScopeDialogOpen, setMarkAsPaidScopeDialogOpen] = useState(false);
+  const [markAsPaidModalOpen, setMarkAsPaidModalOpen] = useState(false);
+  const [markAsPaidData, setMarkAsPaidData] = useState<{
+    date: Date;
+    amount: number;
+    accountId: string;
+  } | null>(null);
   
   const [currentInvoiceValue, setCurrentInvoiceValue] = useState(0);
   const [nextInvoiceValue, setNextInvoiceValue] = useState(0);
@@ -174,26 +181,52 @@ const PlaniFlowApp = () => {
   };
 
   const handleMarkAsPaid = async (transaction: Transaction) => {
+    setMarkingAsPaidTransaction(transaction);
+    setMarkAsPaidModalOpen(true);
+  };
+
+  const handleMarkAsPaidConfirm = async (
+    _transactionId: string,
+    date: Date,
+    amount: number,
+    accountId: string
+  ) => {
+    const transaction = markingAsPaidTransaction;
+    if (!transaction) return;
+
+    // Guardar os dados do modal
+    setMarkAsPaidData({ date, amount, accountId });
+
     // Verificar se é parcela ou transação fixa
     const isInstallment = Boolean(transaction.installments && transaction.installments > 1);
     const isFixed = Boolean(transaction.is_fixed || transaction.parent_transaction_id);
     
     if (isInstallment || isFixed) {
-      // Abrir diálogo para escolher escopo
-      setMarkingAsPaidTransaction(transaction);
+      // Fechar o modal e abrir diálogo de escopo
+      setMarkAsPaidModalOpen(false);
       setMarkAsPaidScopeDialogOpen(true);
     } else {
-      // Marcar como pago diretamente
-      await processMarkAsPaid(transaction, 'current');
+      // Processar diretamente
+      await processMarkAsPaid(transaction, 'current', { date, amount, accountId });
     }
   };
 
-  const processMarkAsPaid = async (transaction: Transaction, scope: 'current' | 'current-and-remaining' | 'all') => {
+  const processMarkAsPaid = async (
+    transaction: Transaction,
+    scope: 'current' | 'current-and-remaining' | 'all',
+    data?: { date: Date; amount: number; accountId: string }
+  ) => {
     try {
+      const updatedData = data || markAsPaidData;
+      if (!updatedData) return;
+
       await handleEditTransaction(
         {
           ...transaction,
           status: 'completed',
+          date: updatedData.date.toISOString().split('T')[0],
+          amount: updatedData.amount,
+          account_id: updatedData.accountId,
         },
         scope
       );
@@ -207,8 +240,10 @@ const PlaniFlowApp = () => {
           : "Parcelas selecionadas marcadas como pagas",
       });
       
+      setMarkAsPaidModalOpen(false);
       setMarkAsPaidScopeDialogOpen(false);
       setMarkingAsPaidTransaction(null);
+      setMarkAsPaidData(null);
     } catch (error) {
       toast({
         title: "Erro",
@@ -468,6 +503,14 @@ const PlaniFlowApp = () => {
         invoiceValueInCents={currentInvoiceValue}
         nextInvoiceValueInCents={nextInvoiceValue}
         totalDebtInCents={payingTotalDebt}
+      />
+
+      <MarkAsPaidModal
+        open={markAsPaidModalOpen}
+        onOpenChange={setMarkAsPaidModalOpen}
+        transaction={markingAsPaidTransaction}
+        accounts={accounts}
+        onConfirm={handleMarkAsPaidConfirm}
       />
 
       <InstallmentEditScopeDialog
