@@ -27,6 +27,11 @@ export function AccountsSummary({
     ? accounts.filter((account) => accountTypes.includes(account.type))
     : accounts;
 
+  const totalBalance = filteredAccounts.reduce(
+    (sum, account) => sum + account.balance,
+    0
+  );
+
   return (
     <Card
       className="financial-card cursor-pointer apple-interaction"
@@ -92,6 +97,26 @@ export function AccountsSummary({
                 </div>
               </div>
             ))}
+            {filteredAccounts.length > 0 && (
+              <div className="mt-3 pt-3 border-t border-border">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold">Total:</span>
+                  <span
+                    className={`text-sm font-bold ${
+                      accountTypes?.includes('credit')
+                        ? totalBalance < 0
+                          ? 'text-destructive'
+                          : 'text-emerald-600'
+                        : totalBalance >= 0
+                        ? 'balance-positive'
+                        : 'balance-negative'
+                    }`}
+                  >
+                    {formatCurrency(totalBalance / 100)}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </CardContent>
