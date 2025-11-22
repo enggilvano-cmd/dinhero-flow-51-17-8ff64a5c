@@ -1,4 +1,3 @@
-import { createDateFromString } from "@/lib/dateUtils";
 import { useSettings } from "@/context/SettingsContext";
 import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -45,7 +44,6 @@ import {
 } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import { loadXLSX } from "@/lib/lazyImports";
 import { ImportTransactionsModal } from "./ImportTransactionsModal";
 import { EditScope } from "./InstallmentEditScopeDialog";
 
@@ -157,32 +155,6 @@ export function TransactionsPage({
     }).format(valueInCents / 100); // Dividido por 100
   };
 
-  // Helper functions for export
-  const getCategoryName = (categoryId: string | null, isTransfer: boolean) => {
-    if (isTransfer) return "Transferência";
-    if (!categoryId) return "-";
-    const category = categories.find((c) => c.id === categoryId);
-    return category?.name || "-";
-  };
-
-  const getTransactionTypeLabel = (type: string) => {
-    if (type === "income") return "Receita";
-    if (type === "expense") return "Despesa";
-    if (type === "transfer") return "Transferência";
-    return type;
-  };
-
-  const getAccountName = (accountId: string) => {
-    const account = accounts.find((a) => a.id === accountId);
-    return account?.name || "Conta Desconhecida";
-  };
-
-  const getStatusLabel = (status: string) => {
-    if (status === "completed") return "Concluído";
-    if (status === "pending") return "Pendente";
-    return status;
-  };
-
   // Filter accounts by type for the account selector
   const accountsByType = useMemo(() => {
     if (filterAccountType === "all") {
@@ -248,77 +220,21 @@ export function TransactionsPage({
   }, [transactions]);
 
   const exportToExcel = async () => {
-    const XLSX = await loadXLSX();
-    
-    const dataToExport = transactions.map((transaction) => {
-      const transactionDate =
-        typeof transaction.date === "string"
-          ? createDateFromString(transaction.date)
-          : transaction.date;
-      const isTransfer = transaction.to_account_id != null;
-      const transactionType = isTransfer ? "transfer" : transaction.type;
-
-      // Exportar valor sempre positivo em Reais (dividido por 100)
-      // O tipo (Receita/Despesa) define se é entrada ou saída
-      return {
-        Data: format(transactionDate, "dd/MM/yyyy", { locale: ptBR }),
-        Descrição: transaction.description,
-        Categoria: getCategoryName(transaction.category_id, isTransfer),
-        Tipo: getTransactionTypeLabel(transactionType),
-        Conta: getAccountName(transaction.account_id),
-        Valor: Math.abs(transaction.amount / 100), // Sempre positivo
-        Status: getStatusLabel(transaction.status),
-        Parcelas: transaction.installments
-          ? `${transaction.current_installment}/${transaction.installments}`
-          : "",
-      };
-    });
-
-    const ws = XLSX.utils.json_to_sheet(dataToExport);
-
-    // Adiciona formatação de moeda à coluna 'Valor' (coluna F)
-    ws["!cols"] = [
-      { wch: 12 }, // Data
-      { wch: 30 }, // Descrição
-      { wch: 20 }, // Categoria
-      { wch: 15 }, // Tipo
-      { wch: 25 }, // Conta
-      { wch: 15 }, // Valor
-      { wch: 12 }, // Status
-      { wch: 12 }, // Parcelas
-    ];
-
-    // Aplicar a formatação de moeda para todas as células na coluna F (Valor), exceto o cabeçalho
-    for (let i = 2; i <= dataToExport.length + 1; i++) {
-      const cellRef = `F${i}`;
-      if (ws[cellRef]) {
-        // Verifica se a célula existe
-        ws[cellRef].t = "n"; // 'n' significa número
-        ws[cellRef].z = "R$ #,##0.00"; // Formato de moeda
-      }
+    try {
+      const { exportTransactionsToExcel } = await import('@/lib/exportUtils');
+      await exportTransactionsToExcel(transactions, accounts, categories);
+      
+      toast({
+        title: "Sucesso",
+        description: `${transactions.length} transação${transactions.length !== 1 ? 'ões' : ''} exportada${transactions.length !== 1 ? 's' : ''} com sucesso`,
+      });
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Erro ao exportar transações",
+        variant: "destructive",
+      });
     }
-
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Transações');
-
-    // Gerar nome do arquivo com filtros aplicados
-    let fileName = "transacoes";
-    if (filterType !== "all") fileName += `_${filterType}`;
-    if (dateFilter === "current_month") fileName += "_mes-atual";
-    if (dateFilter === "custom" && customStartDate && customEndDate) {
-      fileName += `_${format(customStartDate, "dd-MM-yyyy")}_${format(
-        customEndDate,
-        "dd-MM-yyyy",
-      )}`;
-    }
-    fileName += ".xlsx";
-
-    XLSX.writeFile(wb, fileName);
-
-    toast({
-      title: "Sucesso",
-      description: `${transactions.length} transações exportadas com sucesso`,
-    });
   };
 
   return (

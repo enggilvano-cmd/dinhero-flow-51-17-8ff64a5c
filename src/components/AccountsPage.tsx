@@ -29,7 +29,6 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useAccounts } from "@/hooks/queries/useAccounts";
 import { ImportAccountsModal } from "@/components/ImportAccountsModal";
-import { loadXLSX } from "@/lib/lazyImports";
 import { useSettings } from "@/context/SettingsContext";
 
 import { Account } from '@/types';
@@ -146,57 +145,21 @@ export function AccountsPage({
     .reduce((sum, acc) => sum + Math.abs(Math.min(acc.balance, 0)), 0);
 
   const exportToExcel = async () => {
-    const XLSX = await loadXLSX();
-    
-    const dataToExport = filteredAccounts.map((account) => ({
-      "Nome da Conta": account.name,
-      "Tipo de Conta": getAccountTypeLabel(account.type),
-      "Saldo": account.balance / 100,
-      "Limite": account.limit_amount ? account.limit_amount / 100 : 0,
-      "Data de Fechamento": account.closing_date || '',
-      "Data de Vencimento": account.due_date || '',
-      "Cor": account.color,
-    }));
-
-    const ws = XLSX.utils.json_to_sheet(dataToExport);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Contas");
-
-    const colWidths = [
-      { wch: 30 }, // Nome
-      { wch: 20 }, // Tipo
-      { wch: 15 }, // Saldo
-      { wch: 15 }, // Limite
-      { wch: 12 }, // Fechamento
-      { wch: 12 }, // Vencimento
-      { wch: 12 }, // Cor
-    ];
-    ws['!cols'] = colWidths;
-
-    // Formatar colunas de valores como moeda
-    for (let i = 2; i <= dataToExport.length + 1; i++) {
-      const saldoCell = `C${i}`;
-      const limiteCell = `D${i}`;
-      if (ws[saldoCell]) {
-        ws[saldoCell].t = "n";
-        ws[saldoCell].z = "R$ #,##0.00";
-      }
-      if (ws[limiteCell]) {
-        ws[limiteCell].t = "n";
-        ws[limiteCell].z = "R$ #,##0.00";
-      }
+    try {
+      const { exportAccountsToExcel } = await import('@/lib/exportUtils');
+      await exportAccountsToExcel(filteredAccounts);
+      
+      toast({
+        title: "Sucesso",
+        description: `${filteredAccounts.length} conta${filteredAccounts.length !== 1 ? 's' : ''} exportada${filteredAccounts.length !== 1 ? 's' : ''} com sucesso`,
+      });
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Erro ao exportar contas",
+        variant: "destructive",
+      });
     }
-
-    let fileName = "contas";
-    if (filterType !== "all") fileName += `_${filterType}`;
-    fileName += ".xlsx";
-
-    XLSX.writeFile(wb, fileName);
-
-    toast({
-      title: "Sucesso",
-      description: `${filteredAccounts.length} contas exportadas com sucesso`,
-    });
   };
 
   const handleImportAccounts = (accountsToAdd: Omit<Account, 'id'>[], accountsToReplaceIds: string[]) => {
