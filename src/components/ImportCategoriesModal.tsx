@@ -9,7 +9,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Upload, FileSpreadsheet, AlertCircle, MoreVertical, Copy, AlertTriangle, PlusCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useTranslation } from "react-i18next";
 import { logger } from "@/lib/logger";
 import { loadXLSX } from "@/lib/lazyImports";
 
@@ -45,7 +44,6 @@ export function ImportCategoriesModal({
   categories,
   onImportCategories 
 }: ImportCategoriesModalProps) {
-  const { t } = useTranslation();
   const [file, setFile] = useState<File | null>(null);
   const [importedData, setImportedData] = useState<ImportedCategory[]>([]);
   const [excludedIndexes, setExcludedIndexes] = useState<Set<number>>(new Set());

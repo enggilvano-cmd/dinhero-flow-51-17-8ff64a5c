@@ -7,7 +7,6 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Repeat, Pencil, Trash2, Calendar, DollarSign, TrendingUp, TrendingDown, Search } from "lucide-react";
-import { useTranslation } from "react-i18next";
 import { logger } from "@/lib/logger";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -48,7 +47,6 @@ export function RecurringTransactionsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<"all" | "income" | "expense">("all");
   const { toast } = useToast();
-  const { t } = useTranslation();
   const { formatCurrency: formatCurrencyFromSettings } = useSettings();
 
   const formatCurrency = (value: number) => {

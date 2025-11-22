@@ -1,5 +1,4 @@
 import { useState, useMemo } from "react";
-import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -45,7 +44,6 @@ export function BankReconciliationPage({
   accounts,
   categories,
 }: BankReconciliationPageProps) {
-  const { t } = useTranslation();
   const { toast } = useToast();
 
   const [selectedAccount, setSelectedAccount] = useState<string>("all");

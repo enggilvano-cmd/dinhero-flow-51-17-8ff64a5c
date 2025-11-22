@@ -1,6 +1,5 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { useTranslation } from "react-i18next";
 
 export type EditScope = "current" | "current-and-remaining" | "all";
 
@@ -21,25 +20,25 @@ export function InstallmentEditScopeDialog({
   totalInstallments,
   mode = "edit"
 }: InstallmentEditScopeDialogProps) {
-  const { t } = useTranslation();
-  
   const handleScopeSelection = (scope: EditScope) => {
     onScopeSelected(scope);
     onOpenChange(false);
   };
 
-  const translationPrefix = mode === "delete" ? "modals.deleteInstallmentScope" : "modals.installmentScope";
+  const isDelete = mode === "delete";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>{t(`${translationPrefix}.title`)}</DialogTitle>
+          <DialogTitle>
+            {isDelete ? "Deletar Parcelas" : "Editar Parcelas"}
+          </DialogTitle>
           <DialogDescription>
-            {t(`${translationPrefix}.subtitle`, { 
-              current: currentInstallment, 
-              total: totalInstallments 
-            })}
+            {isDelete 
+              ? `Escolha quais parcelas deseja deletar (parcela ${currentInstallment} de ${totalInstallments})`
+              : `Escolha quais parcelas deseja editar (parcela ${currentInstallment} de ${totalInstallments})`
+            }
           </DialogDescription>
         </DialogHeader>
         
@@ -50,12 +49,12 @@ export function InstallmentEditScopeDialog({
             onClick={() => handleScopeSelection("current")}
           >
             <div className="text-left">
-              <div className="font-medium">{t(`${translationPrefix}.options.current.label`)}</div>
+              <div className="font-medium">Apenas Esta Parcela</div>
               <div className="text-sm text-muted-foreground">
-                {t(`${translationPrefix}.options.current.description`, { 
-                  current: currentInstallment, 
-                  total: totalInstallments 
-                })}
+                {isDelete 
+                  ? `Deletar apenas a parcela ${currentInstallment} de ${totalInstallments}`
+                  : `Editar apenas a parcela ${currentInstallment} de ${totalInstallments}`
+                }
               </div>
             </div>
           </Button>
@@ -67,12 +66,12 @@ export function InstallmentEditScopeDialog({
               onClick={() => handleScopeSelection("current-and-remaining")}
             >
               <div className="text-left">
-                <div className="font-medium">{t(`${translationPrefix}.options.remaining.label`)}</div>
+                <div className="font-medium">Esta e Próximas Parcelas</div>
                 <div className="text-sm text-muted-foreground">
-                  {t(`${translationPrefix}.options.remaining.description`, { 
-                    current: currentInstallment, 
-                    total: totalInstallments 
-                  })}
+                  {isDelete 
+                    ? `Deletar da parcela ${currentInstallment} até a ${totalInstallments}`
+                    : `Editar da parcela ${currentInstallment} até a ${totalInstallments}`
+                  }
                 </div>
               </div>
             </Button>
@@ -84,11 +83,12 @@ export function InstallmentEditScopeDialog({
             onClick={() => handleScopeSelection("all")}
           >
             <div className="text-left">
-              <div className="font-medium">{t(`${translationPrefix}.options.all.label`)}</div>
+              <div className="font-medium">Todas as Parcelas</div>
               <div className="text-sm text-muted-foreground">
-                {t(`${translationPrefix}.options.all.description`, { 
-                  total: totalInstallments 
-                })}
+                {isDelete 
+                  ? `Deletar todas as ${totalInstallments} parcelas`
+                  : `Editar todas as ${totalInstallments} parcelas`
+                }
               </div>
             </div>
           </Button>
@@ -96,7 +96,7 @@ export function InstallmentEditScopeDialog({
 
         <div className="flex gap-3 pt-4">
           <Button variant="ghost" onClick={() => onOpenChange(false)} className="flex-1">
-            {t("common.cancel")}
+            Cancelar
           </Button>
         </div>
       </DialogContent>

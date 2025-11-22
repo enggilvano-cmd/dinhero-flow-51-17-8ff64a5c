@@ -1,5 +1,4 @@
 import { useState, useMemo } from "react";
-import { useTranslation } from "react-i18next";
 import { useSettings } from "@/context/SettingsContext";
 import { logger } from "@/lib/logger";
 import { Card, CardContent } from "@/components/ui/card";
@@ -54,7 +53,6 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
     type: 'all',
     accountType: 'credit'
   });
-  const { t } = useTranslation();
   const { settings } = useSettings();
   
   // Força atualização quando contas ou transações mudam
