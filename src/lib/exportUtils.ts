@@ -49,8 +49,7 @@ export async function exportCategoriesToExcel(categories: any[]) {
   const exportData = categories.map(category => ({
     'Nome': category.name,
     'Tipo': getCategoryTypeLabel(category.type),
-    'Cor': category.color,
-    'Criado em': format(new Date(category.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })
+    'Cor': category.color
   }));
 
   const ws = XLSX.utils.json_to_sheet(exportData);
@@ -62,7 +61,6 @@ export async function exportCategoriesToExcel(categories: any[]) {
     { wch: 30 }, // Nome
     { wch: 15 }, // Tipo
     { wch: 12 }, // Cor
-    { wch: 18 }, // Criado em
   ];
   ws['!cols'] = colWidths;
 
