@@ -44,8 +44,8 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
       // Validate settings before saving
       if (!localSettings.currency || !localSettings.language || !localSettings.theme) {
       toast({
-        title: t('settings.invalidSettings'),
-        description: t('settings.invalidSettingsDescription'),
+        title: 'Configurações inválidas',
+        description: 'Por favor, preencha todos os campos obrigatórios',
         variant: "destructive"
       });
         return;
@@ -53,14 +53,14 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
 
       onUpdateSettings(localSettings);
       toast({
-        title: t('settings.settingsSaved'),
-        description: t('settings.settingsSavedDescription'),
+        title: 'Configurações salvas',
+        description: 'Suas configurações foram atualizadas com sucesso',
       });
     } catch (error) {
       logger.error('Settings save error:', error);
       toast({
-        title: t('common.error'),
-        description: t('settings.errorSaving'),
+        title: 'Erro',
+        description: 'Erro ao salvar configurações',
         variant: "destructive"
       });
     }
@@ -108,8 +108,8 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
       // Validate data before export
       if (Object.keys(data).length === 0) {
         toast({
-          title: t('settings.noDataToExport'),
-          description: t('settings.noDataToExportDescription'),
+          title: 'Nenhum dado para exportar',
+          description: 'Não há dados disponíveis para exportação',
           variant: "destructive"
         });
         return;
@@ -135,14 +135,14 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
       setTimeout(() => URL.revokeObjectURL(url), 100);
       
       toast({
-        title: t('settings.backupCreated'),
-        description: t('settings.backupCreatedDescription', { filename: `planiflow-backup-${dateStr}-${timeStr}.json` }),
+        title: 'Backup criado',
+        description: `Backup salvo como planiflow-backup-${dateStr}-${timeStr}.json`,
       });
     } catch (error) {
       logger.error('Export error:', error);
       toast({
-        title: t('settings.backupError'),
-        description: t('settings.backupErrorDescription'),
+        title: 'Erro no backup',
+        description: 'Erro ao criar backup dos dados',
         variant: "destructive"
       });
     }
@@ -155,8 +155,8 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
     // Validate file type
     if (!file.name.endsWith('.json')) {
       toast({
-        title: t('settings.invalidFile'),
-        description: t('settings.invalidFileDescription'),
+        title: 'Arquivo inválido',
+        description: 'Por favor, selecione um arquivo JSON válido',
         variant: "destructive"
       });
       return;
@@ -165,8 +165,8 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
     // Validate file size (max 10MB)
     if (file.size > 10 * 1024 * 1024) {
       toast({
-        title: t('settings.fileTooLarge'),
-        description: t('settings.fileTooLargeDescription'),
+        title: 'Arquivo muito grande',
+        description: 'O arquivo deve ter no máximo 10MB',
         variant: "destructive"
       });
       return;
@@ -179,21 +179,21 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
       try {
         const jsonString = e.target?.result as string;
         if (!jsonString || jsonString.trim() === '') {
-          throw new Error(t('settings.emptyFile'));
+          throw new Error('Arquivo vazio');
         }
 
         const data = JSON.parse(jsonString);
         
         // Validate data structure
         if (!data || typeof data !== 'object') {
-          throw new Error(t('settings.invalidDataStructure'));
+          throw new Error('Estrutura de dados inválida');
         }
 
         if (data.accounts && !Array.isArray(data.accounts)) {
-          throw new Error(t('settings.invalidAccountsFormat'));
+          throw new Error('Formato de contas inválido');
         }
         if (data.transactions && !Array.isArray(data.transactions)) {
-          throw new Error(t('settings.invalidTransactionsFormat'));
+          throw new Error('Formato de transações inválido');
         }
 
         const { data: { user } } = await supabase.auth.getUser();
@@ -216,22 +216,22 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
         
         if (failed.length === 0) {
           toast({
-            title: t('settings.dataImported'),
-            description: t('settings.dataImportedSuccessfully'),
+            title: 'Dados importados',
+            description: 'Seus dados foram importados com sucesso',
           });
           setTimeout(() => window.location.reload(), 1500);
         } else {
           toast({
-            title: t('settings.importError'),
-            description: t('settings.partialImportError'),
+            title: 'Erro na importação',
+            description: 'Alguns dados não puderam ser importados',
             variant: "destructive"
           });
         }
       } catch (error) {
         logger.error('Import error:', error);
         toast({
-          title: t('settings.importError'),
-          description: error instanceof Error ? error.message : t('settings.invalidOrCorruptedFile'),
+          title: 'Erro na importação',
+          description: error instanceof Error ? error.message : 'Arquivo inválido ou corrompido',
           variant: "destructive"
         });
       } finally {
@@ -245,8 +245,8 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
     reader.onerror = () => {
       setIsImporting(false);
       toast({
-        title: t('settings.readError'),
-        description: t('settings.readErrorDescription'),
+        title: 'Erro de leitura',
+        description: 'Erro ao ler o arquivo',
         variant: "destructive"
       });
     };
@@ -257,12 +257,12 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
 
   const handleClearData = () => {
     if (window.confirm(
-      t('settings.clearDataConfirm')
+      'Tem certeza que deseja apagar todos os dados? Esta ação não pode ser desfeita.'
     )) {
       onClearAllData();
       toast({
-        title: t('settings.dataCleared'),
-        description: t('settings.dataClearedDescription'),
+        title: 'Dados apagados',
+        description: 'Todos os dados foram removidos com sucesso',
         variant: "destructive"
       });
     }
@@ -272,9 +272,9 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
     <div className="space-y-8 fade-in pb-6 sm:pb-8">
       {/* Header */}
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold leading-tight">{t('settings.title')}</h1>
+        <h1 className="text-xl sm:text-2xl font-bold leading-tight">Configurações</h1>
         <p className="text-sm text-muted-foreground leading-tight">
-          {t('settings.subtitle')}
+          Gerencie suas preferências e configurações do sistema
         </p>
       </div>
 
@@ -284,14 +284,14 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Settings className="h-5 w-5" />
-              {t('settings.general')}
+              Configurações Gerais
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="currency">{t('settings.currency')}</Label>
+              <Label htmlFor="currency">Moeda</Label>
               <p className="text-xs text-muted-foreground mb-2">
-                {t('settings.currencyDescription')}
+                Escolha a moeda padrão para exibição de valores
               </p>
               <Select 
                 value={localSettings.currency} 
@@ -313,9 +313,9 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="language">{t('settings.language')}</Label>
+              <Label htmlFor="language">Idioma</Label>
               <p className="text-xs text-muted-foreground mb-2">
-                {t('settings.languageDescription')}
+                Selecione o idioma do aplicativo
               </p>
               <Select 
                 value={localSettings.language} 
@@ -333,9 +333,9 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="theme">{t('settings.theme')}</Label>
+              <Label htmlFor="theme">Tema</Label>
               <p className="text-xs text-muted-foreground mb-2">
-                {t('settings.themeDescription')}
+                Escolha a aparência do aplicativo
               </p>
               <Select 
                 value={localSettings.theme} 
@@ -345,15 +345,15 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="system">{t('settings.themeSystem')}</SelectItem>
-                  <SelectItem value="light">{t('settings.themeLight')}</SelectItem>
-                  <SelectItem value="dark">{t('settings.themeDark')}</SelectItem>
+                  <SelectItem value="system">Sistema</SelectItem>
+                  <SelectItem value="light">Claro</SelectItem>
+                  <SelectItem value="dark">Escuro</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <Button onClick={handleSaveSettings} className="w-full">
-              {t('settings.saveSettings')}
+              Salvar Configurações
             </Button>
           </CardContent>
         </Card>
