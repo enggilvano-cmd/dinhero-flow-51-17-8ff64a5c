@@ -106,55 +106,65 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
   // Memo para calcular os detalhes da fatura do mês selecionado (alinhado ao mês exibido)
   const allBillDetails = useMemo(() => {
     logger.debug('Recalculando faturas...', updateKey);
-    const targetMonth = format(selectedMonthDate, 'yyyy-MM');
-    const nextMonth = format(addMonths(selectedMonthDate, 1), 'yyyy-MM');
 
     return filteredCreditAccounts.map((account) => {
-      const accountTransactions = allTransactions.filter(
-        (t) => t.account_id === account.id
-      ).map(t => ({
-        ...t,
-        date: typeof t.date === 'string' ? new Date(t.date + 'T00:00:00') : t.date
-      })) as AppTransaction[];
+      const accountTransactions = allTransactions
+        .filter((t) => t.account_id === account.id)
+        .map((t) => ({
+          ...t,
+          date:
+            typeof t.date === "string"
+              ? new Date(t.date + "T00:00:00")
+              : t.date,
+        })) as AppTransaction[];
 
-      // Base (limite, pagamentos, etc.)
+      // Base (limite, saldo total, meses de referência)
       const base = calculateBillDetails(
         accountTransactions,
         account,
         selectedMonthOffset
       );
 
-      // Recalcular valores alinhados ao mês exibido
+      // Usar SEMPRE os meses calculados pela função base, com fallback seguro
+      const targetMonth = base.currentInvoiceMonth ?? format(selectedMonthDate, "yyyy-MM");
+      const nextMonth = base.nextInvoiceMonth ?? format(addMonths(selectedMonthDate, 1), "yyyy-MM");
+
       // Usa invoice_month salvo apenas se for override manual; senão calcula pela data
       const effectiveMonth = (
         d: Date,
         savedInvoiceMonth?: string | null,
         overridden?: boolean | null
-      ) => (overridden && savedInvoiceMonth)
+      ) =>
+        overridden && savedInvoiceMonth
           ? savedInvoiceMonth
-          : (account.closing_date
-              ? calculateInvoiceMonthByDue(d, account.closing_date, account.due_date || 1)
-              : format(d, 'yyyy-MM'));
+          : account.closing_date
+          ? calculateInvoiceMonthByDue(
+              d,
+              account.closing_date,
+              account.due_date || 1
+            )
+          : format(d, "yyyy-MM");
 
       let currentBillAmount = 0;
       let nextBillAmount = 0;
       const paymentTransactions: AppTransaction[] = [];
 
       for (const t of accountTransactions) {
-        const d = typeof t.date === 'string' ? new Date(t.date) : t.date;
+        const d =
+          typeof t.date === "string" ? new Date(t.date) : (t.date as Date);
         if (!d || isNaN(d.getTime())) continue;
-        
+
         // APENAS transações concluídas devem ser contabilizadas
-        if (t.status !== 'completed') continue;
-        
+        if (t.status !== "completed") continue;
+
         const eff = effectiveMonth(d, t.invoice_month, t.invoice_month_overridden);
         if (eff === targetMonth) {
-          if (t.type === 'expense') currentBillAmount += Math.abs(t.amount);
-          else if (t.type === 'income') {
+          if (t.type === "expense") currentBillAmount += Math.abs(t.amount);
+          else if (t.type === "income") {
             currentBillAmount -= Math.abs(t.amount);
-            paymentTransactions.push(t);
+            paymentTransactions.push(t as AppTransaction);
           }
-        } else if (eff === nextMonth && t.type === 'expense') {
+        } else if (eff === nextMonth && t.type === "expense") {
           nextBillAmount += Math.abs(t.amount);
         }
       }
@@ -169,14 +179,20 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
         nextInvoiceMonth: nextMonth,
       };
     });
-  }, [filteredCreditAccounts, allTransactions, selectedMonthDate, selectedMonthOffset, updateKey]);
+  }, [
+    filteredCreditAccounts,
+    allTransactions,
+    selectedMonthDate,
+    selectedMonthOffset,
+    updateKey,
+  ]);
 
   // Memo para aplicar os filtros de status
   const billDetails = useMemo(() => {
     return allBillDetails.filter((details) => {
       // Calcula se a fatura está fechada baseado no mês da fatura (não no mês selecionado)
       // Ex: Se estamos vendo a fatura de nov/2025 e hoje é dez/2025, precisa verificar se 08/nov já passou
-      const targetMonth = details.currentInvoiceMonth; // Ex: "2025-11"
+      const targetMonth = details.currentInvoiceMonth || format(selectedMonthDate, 'yyyy-MM'); // Ex: "2025-11"
       const [year, month] = targetMonth.split('-').map(Number);
       
       const closingDate = details.account.closing_date 
