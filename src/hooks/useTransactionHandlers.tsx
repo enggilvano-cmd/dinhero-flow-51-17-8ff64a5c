@@ -317,9 +317,27 @@ export function useTransactionHandlers() {
     }
   }, [user, accounts, queryClient, toast]);
 
-  const handleImportTransactions = useCallback(async (transactionsData: any[]) => {
+  const handleImportTransactions = useCallback(async (
+    transactionsData: any[],
+    transactionsToReplace: string[] = []
+  ) => {
     if (!user) return;
     try {
+      // 1. Deletar transações que serão substituídas usando atomic-delete
+      if (transactionsToReplace.length > 0) {
+        await Promise.all(
+          transactionsToReplace.map(txId =>
+            supabase.functions.invoke('atomic-delete-transaction', {
+              body: {
+                transaction_id: txId,
+                scope: 'current',
+              }
+            })
+          )
+        );
+      }
+
+      // 2. Importar novas transações
       // ✅ CORREÇÃO: Usar atomic-transaction para cada transação importada
       const results = await Promise.all(
         transactionsData.map(async (data) => {
@@ -380,7 +398,7 @@ export function useTransactionHandlers() {
       
       toast({
         title: 'Importação concluída',
-        description: `${results.length} transações importadas com sucesso`,
+        description: `${results.length} transações importadas${transactionsToReplace.length > 0 ? ` (${transactionsToReplace.length} substituídas)` : ''} com sucesso`,
       });
     } catch (error) {
       logger.error('Error importing transactions:', error);
