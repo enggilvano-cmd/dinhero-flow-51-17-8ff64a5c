@@ -25,7 +25,7 @@ import { MigrationWarning } from "@/components/MigrationWarning";
 import { Account, Transaction } from "@/types";
 import { logger } from "@/lib/logger";
 import { useAccounts } from "@/hooks/queries/useAccounts";
-import { useInfiniteTransactions } from "@/hooks/queries/useInfiniteTransactions";
+import { useTransactions } from "@/hooks/queries/useTransactions";
 import { useCategories } from "@/hooks/useCategories";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryClient";
@@ -38,8 +38,9 @@ const PlaniFlowApp = () => {
   const [currentPage, setCurrentPage] = useState("dashboard");
   const queryClient = useQueryClient();
 
-  // Pagination state (não mais necessário com infinite scroll, mas mantido para compatibilidade)
-  const [transactionsPageSize] = useState(50);
+  // Pagination state
+  const [transactionsPage, setTransactionsPage] = useState(0);
+  const [transactionsPageSize, setTransactionsPageSize] = useState(50);
 
   // Transaction filters state
   const [transactionsSearch, setTransactionsSearch] = useState("");
@@ -63,7 +64,9 @@ const PlaniFlowApp = () => {
     transactions, 
     isLoading: loadingTransactions,
     totalCount,
-  } = useInfiniteTransactions({
+    pageCount,
+  } = useTransactions({
+    page: transactionsPage,
     pageSize: transactionsPageSize,
     search: transactionsSearch,
     type: transactionsFilterType,
@@ -279,6 +282,11 @@ const PlaniFlowApp = () => {
             onImportTransactions={handleImportTransactions}
             onMarkAsPaid={handleEditTransaction}
             totalCount={totalCount}
+            pageCount={pageCount}
+            currentPage={transactionsPage}
+            pageSize={transactionsPageSize}
+            onPageChange={setTransactionsPage}
+            onPageSizeChange={setTransactionsPageSize}
             search={transactionsSearch}
             onSearchChange={setTransactionsSearch}
             filterType={transactionsFilterType}

@@ -46,6 +46,7 @@ import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { ImportTransactionsModal } from "./ImportTransactionsModal";
 import { EditScope, InstallmentEditScopeDialog } from "./InstallmentEditScopeDialog";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 
 interface TransactionsPageProps {
   transactions: any[];
@@ -57,6 +58,11 @@ interface TransactionsPageProps {
   onImportTransactions: (transactions: any[], transactionsToReplace: string[]) => void;
   onMarkAsPaid?: (transaction: any) => Promise<void>;
   totalCount: number;
+  pageCount: number;
+  currentPage: number;
+  pageSize: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (pageSize: number) => void;
   search: string;
   onSearchChange: (search: string) => void;
   filterType: "all" | "income" | "expense" | "transfer";
@@ -90,6 +96,11 @@ export function TransactionsPage({
   onImportTransactions,
   onMarkAsPaid,
   totalCount,
+  pageCount,
+  currentPage,
+  pageSize,
+  onPageChange,
+  onPageSizeChange,
   search,
   onSearchChange,
   filterType,
@@ -697,6 +708,17 @@ export function TransactionsPage({
           </CardContent>
         </Card>
       )}
+
+      {/* Pagination Controls */}
+      <PaginationControls
+        currentPage={currentPage}
+        pageCount={pageCount}
+        totalCount={totalCount}
+        pageSize={pageSize}
+        onPageChange={onPageChange}
+        onPageSizeChange={onPageSizeChange}
+        pageSizeOptions={[50, 100, 200]}
+      />
 
       <ImportTransactionsModal
         open={importModalOpen}
