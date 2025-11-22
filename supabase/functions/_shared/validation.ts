@@ -8,8 +8,12 @@ import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
 
 // Tipos básicos reutilizáveis (exportados para uso em outros módulos)
 export const uuidSchema = z.string().uuid({ message: 'Invalid UUID format' });
-export const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM format');
-export const invoiceMonthSchema = z.string().regex(/^\d{4}-\d{2}$/, 'Invoice month must be in YYYY-MM format').optional();
+export const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format');
+export const invoiceMonthSchema = z
+  .string()
+  .regex(/^\d{4}-\d{2}$/, 'Invoice month must be in YYYY-MM format')
+  .nullable()
+  .optional();
 
 // ============= Transaction Schemas =============
 
