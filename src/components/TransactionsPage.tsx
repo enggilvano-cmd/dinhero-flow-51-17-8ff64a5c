@@ -159,27 +159,27 @@ export function TransactionsPage({
 
   // Helper functions for export
   const getCategoryName = (categoryId: string | null, isTransfer: boolean) => {
-    if (isTransfer) return t("transactions.transfer");
+    if (isTransfer) return "Transferência";
     if (!categoryId) return "-";
     const category = categories.find((c) => c.id === categoryId);
     return category?.name || "-";
   };
 
   const getTransactionTypeLabel = (type: string) => {
-    if (type === "income") return t("transactions.income");
-    if (type === "expense") return t("transactions.expense");
-    if (type === "transfer") return t("transactions.transfer");
+    if (type === "income") return "Receita";
+    if (type === "expense") return "Despesa";
+    if (type === "transfer") return "Transferência";
     return type;
   };
 
   const getAccountName = (accountId: string) => {
     const account = accounts.find((a) => a.id === accountId);
-    return account?.name || t("transactions.unknownAccount");
+    return account?.name || "Conta Desconhecida";
   };
 
   const getStatusLabel = (status: string) => {
-    if (status === "completed") return t("transactions.completed");
-    if (status === "pending") return t("transactions.pending");
+    if (status === "completed") return "Concluído";
+    if (status === "pending") return "Pendente";
     return status;
   };
 
@@ -261,14 +261,14 @@ export function TransactionsPage({
       // Exportar valor sempre positivo em Reais (dividido por 100)
       // O tipo (Receita/Despesa) define se é entrada ou saída
       return {
-        [t('transactions.date')]: format(transactionDate, "dd/MM/yyyy", { locale: ptBR }),
-        [t('transactions.description')]: transaction.description,
-        [t('transactions.category')]: getCategoryName(transaction.category_id, isTransfer),
-        [t('transactions.type')]: getTransactionTypeLabel(transactionType),
-        [t('transactions.account')]: getAccountName(transaction.account_id),
-        [t('transactions.amount')]: Math.abs(transaction.amount / 100), // Sempre positivo
-        [t('transactions.status')]: getStatusLabel(transaction.status),
-        [t('transactions.installments')]: transaction.installments
+        Data: format(transactionDate, "dd/MM/yyyy", { locale: ptBR }),
+        Descrição: transaction.description,
+        Categoria: getCategoryName(transaction.category_id, isTransfer),
+        Tipo: getTransactionTypeLabel(transactionType),
+        Conta: getAccountName(transaction.account_id),
+        Valor: Math.abs(transaction.amount / 100), // Sempre positivo
+        Status: getStatusLabel(transaction.status),
+        Parcelas: transaction.installments
           ? `${transaction.current_installment}/${transaction.installments}`
           : "",
       };
@@ -299,7 +299,7 @@ export function TransactionsPage({
     }
 
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, t('transactions.title'));
+    XLSX.utils.book_append_sheet(wb, ws, 'Transações');
 
     // Gerar nome do arquivo com filtros aplicados
     let fileName = "transacoes";
@@ -316,8 +316,8 @@ export function TransactionsPage({
     XLSX.writeFile(wb, fileName);
 
     toast({
-      title: t("common.success"),
-      description: t('transactions.exportSuccess', { count: transactions.length }),
+      title: "Sucesso",
+      description: `${transactions.length} transações exportadas com sucesso`,
     });
   };
 
@@ -326,9 +326,9 @@ export function TransactionsPage({
       {/* Header */}
       <div className="flex flex-col gap-3">
         <div className="min-w-0 w-full">
-          <h1 className="text-system-h1 leading-tight">{t("transactions.title")}</h1>
+          <h1 className="text-system-h1 leading-tight">Transações</h1>
           <p className="text-sm text-muted-foreground leading-tight">
-            {t("transactions.subtitle")}
+            Gerencie todas as suas transações financeiras
           </p>
         </div>
         <div className="grid grid-cols-2 gap-2 w-full md:grid-cols-3 lg:flex lg:flex-nowrap lg:gap-2 lg:w-auto lg:ml-auto">
@@ -338,7 +338,7 @@ export function TransactionsPage({
             className="gap-2 apple-interaction h-9 text-xs sm:text-sm"
           >
             <Upload className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span>{t("common.import")}</span>
+            <span>Importar</span>
           </Button>
           <Button
             variant="outline"
@@ -347,14 +347,14 @@ export function TransactionsPage({
             disabled={transactions.length === 0}
           >
             <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span>{t("common.export")}</span>
+            <span>Exportar</span>
           </Button>
           <Button
             onClick={onAddTransaction}
             className="gap-2 apple-interaction h-9 text-xs sm:text-sm col-span-2 md:col-span-1"
           >
             <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span>{t("common.add")}</span>
+            <span>Adicionar</span>
           </Button>
         </div>
       </div>
@@ -372,7 +372,7 @@ export function TransactionsPage({
                 </div>
                 <div>
                   <p className="text-caption font-medium text-muted-foreground">
-                    {t("common.total")} {t("transactions.title")}
+                    Total Transações
                   </p>
                   <div className="text-responsive-xl font-bold leading-tight">
                     {totalCount}
@@ -390,7 +390,7 @@ export function TransactionsPage({
                 </div>
                 <div>
                   <p className="text-caption font-medium text-muted-foreground">
-                    {t("dashboard.revenues")}
+                    Receitas
                   </p>
                   <div className="text-responsive-xl font-bold balance-positive leading-tight">
                     {formatCurrency(totals.income)}
@@ -408,7 +408,7 @@ export function TransactionsPage({
                 </div>
                 <div>
                   <p className="text-caption font-medium text-muted-foreground">
-                    {t("dashboard.expenses")}
+                    Despesas
                   </p>
                   <div className="text-responsive-xl font-bold balance-negative leading-tight">
                     {formatCurrency(totals.expenses)}
@@ -426,7 +426,7 @@ export function TransactionsPage({
                 </div>
                 <div>
                   <p className="text-caption font-medium text-muted-foreground">
-                    {t("dashboard.balance")}
+                    Saldo
                   </p>
                   <div
                     className={`text-responsive-xl font-bold leading-tight ${
@@ -451,44 +451,44 @@ export function TransactionsPage({
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Tipo */}
             <div>
-              <Label htmlFor="filterType" className="text-caption">{t("transactions.type")}</Label>
+              <Label htmlFor="filterType" className="text-caption">Tipo</Label>
               <Select
                 value={filterType}
                 onValueChange={(value: any) => onFilterTypeChange(value)}
               >
                 <SelectTrigger className="touch-target mt-2" id="filterType">
-                  <SelectValue placeholder={t('transactions.type')} />
+                  <SelectValue placeholder="Tipo" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">{t("common.all")}</SelectItem>
-                  <SelectItem value="income">{t("transactions.income")}</SelectItem>
-                  <SelectItem value="expense">{t("transactions.expense")}</SelectItem>
-                  <SelectItem value="transfer">{t("transactions.transfer")}</SelectItem>
+                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="income">Receita</SelectItem>
+                  <SelectItem value="expense">Despesa</SelectItem>
+                  <SelectItem value="transfer">Transferência</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             {/* Status */}
             <div>
-              <Label htmlFor="filterStatus" className="text-caption">{t("transactions.status")}</Label>
+              <Label htmlFor="filterStatus" className="text-caption">Status</Label>
               <Select
                 value={filterStatus}
                 onValueChange={(value: any) => onFilterStatusChange(value)}
               >
                 <SelectTrigger className="touch-target mt-2" id="filterStatus">
-                  <SelectValue placeholder={t('transactions.status')} />
+                  <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">{t("common.all")}</SelectItem>
-                  <SelectItem value="completed">{t("transactions.completed")}</SelectItem>
-                  <SelectItem value="pending">{t("transactions.pending")}</SelectItem>
+                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="completed">Concluído</SelectItem>
+                  <SelectItem value="pending">Pendente</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             {/* Tipo de Conta */}
             <div>
-              <Label htmlFor="filterAccountType" className="text-caption">{t("accounts.accountType")}</Label>
+              <Label htmlFor="filterAccountType" className="text-caption">Tipo de Conta</Label>
               <Select
                 value={filterAccountType}
                 onValueChange={(value: string) => onFilterAccountTypeChange(value)}
@@ -497,30 +497,30 @@ export function TransactionsPage({
                   className="touch-target mt-2"
                   id="filterAccountType"
                 >
-                  <SelectValue placeholder={t('transactions.accountType')} />
+                  <SelectValue placeholder="Tipo de Conta" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">{t("common.all")}</SelectItem>
-                  <SelectItem value="checking">{t("accounts.checking")}</SelectItem>
-                  <SelectItem value="credit">{t("accounts.credit")}</SelectItem>
-                  <SelectItem value="investment">{t("accounts.investment")}</SelectItem>
-                  <SelectItem value="savings">{t("accounts.savings")}</SelectItem>
+                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="checking">Conta Corrente</SelectItem>
+                  <SelectItem value="credit">Cartão de Crédito</SelectItem>
+                  <SelectItem value="investment">Investimento</SelectItem>
+                  <SelectItem value="savings">Poupança</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             {/* Conta Específica */}
             <div>
-              <Label htmlFor="filterAccount" className="text-caption">{t("transactions.account")}</Label>
+              <Label htmlFor="filterAccount" className="text-caption">Conta</Label>
               <Select value={filterAccount} onValueChange={onFilterAccountChange}>
                 <SelectTrigger
                   className="touch-target mt-2"
                   id="filterAccount"
                 >
-                  <SelectValue placeholder={t('transactions.specificAccount')} />
+                  <SelectValue placeholder="Conta Específica" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">{t("common.all")}</SelectItem>
+                  <SelectItem value="all">Todos</SelectItem>
                   {accountsByType.map((account) => (
                     <SelectItem key={account.id} value={account.id}>
                       <div className="flex items-center gap-2">
@@ -540,7 +540,7 @@ export function TransactionsPage({
 
             {/* Categoria */}
             <div>
-              <Label htmlFor="filterCategory" className="text-caption">{t("transactions.category")}</Label>
+              <Label htmlFor="filterCategory" className="text-caption">Categoria</Label>
               <Select
                 value={filterCategory}
                 onValueChange={onFilterCategoryChange}
@@ -549,10 +549,10 @@ export function TransactionsPage({
                   className="touch-target mt-2"
                   id="filterCategory"
                 >
-                  <SelectValue placeholder={t('transactions.category')} />
+                  <SelectValue placeholder="Categoria" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">{t("common.all")}</SelectItem>
+                  <SelectItem value="all">Todos</SelectItem>
                   {categories.map((category) => (
                     <SelectItem key={category.id} value={category.id}>
                       <div className="flex items-center gap-2">
@@ -572,26 +572,26 @@ export function TransactionsPage({
 
             {/* Período */}
             <div>
-              <Label htmlFor="dateFilter" className="text-caption">{t("dateFilter.custom")}</Label>
+              <Label htmlFor="dateFilter" className="text-caption">Personalizado</Label>
               <Select
                 value={dateFilter}
                 onValueChange={handleDateFilterChange}
               >
                 <SelectTrigger className="touch-target mt-2" id="dateFilter">
-                  <SelectValue placeholder={t('dashboard.period')} />
+                  <SelectValue placeholder="Período" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">{t("dateFilter.all")}</SelectItem>
-                  <SelectItem value="current_month">{t("dateFilter.currentMonth")}</SelectItem>
-                  <SelectItem value="month_picker">{t("dateFilter.monthPicker")}</SelectItem>
-                  <SelectItem value="custom">{t("dateFilter.custom")}</SelectItem>
+                  <SelectItem value="all">Todas</SelectItem>
+                  <SelectItem value="current_month">Mês Atual</SelectItem>
+                  <SelectItem value="month_picker">Seletor de Mês</SelectItem>
+                  <SelectItem value="custom">Personalizado</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             {/* Ordenação */}
             <div>
-              <Label className="text-caption">{t("common.filter")}</Label>
+              <Label className="text-caption">Filtrar</Label>
               <div className="flex gap-1 mt-2">
                 <Select
                   value={sortBy}
@@ -601,8 +601,8 @@ export function TransactionsPage({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="date">{t("transactions.date")}</SelectItem>
-                    <SelectItem value="amount">{t("transactions.amount")}</SelectItem>
+                    <SelectItem value="date">Data</SelectItem>
+                    <SelectItem value="amount">Valor</SelectItem>
                   </SelectContent>
                 </Select>
                 <Button
@@ -620,12 +620,12 @@ export function TransactionsPage({
 
             {/* Busca */}
             <div className="sm:col-span-2">
-              <Label htmlFor="search" className="text-caption">{t("common.search")}</Label>
+              <Label htmlFor="search" className="text-caption">Buscar</Label>
               <div className="relative mt-2">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="search"
-                  placeholder={t("transactions.searchPlaceholder")}
+                  placeholder="Buscar transações..."
                   value={localSearch}
                   onChange={(e) => setLocalSearch(e.target.value)}
                   className="pl-10 touch-target"
@@ -683,7 +683,7 @@ export function TransactionsPage({
                           ? format(customStartDate, "dd/MM/yyyy", {
                               locale: ptBR,
                             })
-                          : t("dateFilter.startDate")}
+                          : "Data Inicial"}
                       </span>
                     </Button>
                   </PopoverTrigger>
@@ -719,7 +719,7 @@ export function TransactionsPage({
                           ? format(customEndDate, "dd/MM/yyyy", {
                               locale: ptBR,
                             })
-                          : t("dateFilter.endDate")}
+                          : "Data Final"}
                       </span>
                     </Button>
                   </PopoverTrigger>
@@ -749,7 +749,7 @@ export function TransactionsPage({
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-lg sm:text-xl">
-              {t("transactions.title")} ({totalCount})
+              Transações ({totalCount})
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 sm:p-6">
