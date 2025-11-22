@@ -35,7 +35,7 @@ export const EditTransactionInputSchema = z.object({
     category_id: uuidSchema.optional(),
     account_id: uuidSchema.optional(),
     status: z.enum(['pending', 'completed']).optional(),
-    invoice_month: invoiceMonthSchema,
+    invoice_month: z.string().regex(/^\d{4}-\d{2}$/, 'Invoice month must be in YYYY-MM format').nullable().optional(),
     invoice_month_overridden: z.boolean().optional(),
   }),
   scope: z.enum(['current', 'current-and-remaining', 'all']).optional(),
