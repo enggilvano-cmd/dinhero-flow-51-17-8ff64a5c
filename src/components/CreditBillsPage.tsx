@@ -31,7 +31,6 @@ import { Account } from "@/types";
 import { cn } from "@/lib/utils";
 import { format, addMonths, isPast } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { t } from "@/lib/t";
 
 // This will be replaced with a method inside the component
 

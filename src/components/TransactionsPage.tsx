@@ -1,6 +1,5 @@
 import { createDateFromString } from "@/lib/dateUtils";
 import { useSettings } from "@/context/SettingsContext";
-import { t } from "@/lib/t";
 import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useDebounce } from "@/hooks/useDebounce";

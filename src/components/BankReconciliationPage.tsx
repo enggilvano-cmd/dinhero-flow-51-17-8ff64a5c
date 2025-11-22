@@ -32,7 +32,6 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { formatCurrency } from "@/lib/formatters";
 import { getUserId, withErrorHandling } from "@/lib/supabase-utils";
-import { t } from "@/lib/t";
 
 interface BankReconciliationPageProps {
   transactions: any[];
@@ -272,7 +271,7 @@ export function BankReconciliationPage({
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              {t("reconciliation.totalTransactions")}
+              Total de Transações
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -283,7 +282,7 @@ export function BankReconciliationPage({
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              {t("reconciliation.reconciled")}
+              Reconciliadas
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -294,7 +293,7 @@ export function BankReconciliationPage({
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              {t("reconciliation.notReconciled")}
+              Não Reconciliadas
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -305,7 +304,7 @@ export function BankReconciliationPage({
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              {t("reconciliation.reconciledAmount")}
+              Valor Reconciliado
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -319,20 +318,20 @@ export function BankReconciliationPage({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Filter className="w-5 h-5" />
-            {t("common.filters")}
+            Filtros
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Filtro de Conta */}
             <div className="space-y-2">
-              <Label>{t("transactions.account")}</Label>
+              <Label>Conta</Label>
               <Select value={selectedAccount} onValueChange={setSelectedAccount}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">{t("common.all")}</SelectItem>
+                  <SelectItem value="all">Todas</SelectItem>
                   {accounts.map((account) => (
                     <SelectItem key={account.id} value={account.id}>
                       {account.name}
@@ -344,22 +343,22 @@ export function BankReconciliationPage({
 
             {/* Filtro de Status */}
             <div className="space-y-2">
-              <Label>{t("reconciliation.status")}</Label>
+              <Label>Status</Label>
               <Select value={reconciledFilter} onValueChange={(value: any) => setReconciledFilter(value)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">{t("common.all")}</SelectItem>
-                  <SelectItem value="reconciled">{t("reconciliation.reconciled")}</SelectItem>
-                  <SelectItem value="not_reconciled">{t("reconciliation.notReconciled")}</SelectItem>
+                  <SelectItem value="all">Todas</SelectItem>
+                  <SelectItem value="reconciled">Reconciliadas</SelectItem>
+                  <SelectItem value="not_reconciled">Não Reconciliadas</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             {/* Data Início */}
             <div className="space-y-2">
-              <Label>{t("common.startDate")}</Label>
+              <Label>Data Inicial</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="w-full justify-start text-left font-normal">
@@ -381,7 +380,7 @@ export function BankReconciliationPage({
 
             {/* Data Fim */}
             <div className="space-y-2">
-              <Label>{t("common.endDate")}</Label>
+              <Label>Data Final</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="w-full justify-start text-left font-normal">

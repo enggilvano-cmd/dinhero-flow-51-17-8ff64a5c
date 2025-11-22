@@ -29,7 +29,6 @@ import { useCategories } from "@/hooks/useCategories";
 import { supabase } from "@/integrations/supabase/client";
 import { CurrencyInput } from "@/components/forms/CurrencyInput";
 import { addTransactionSchema } from "@/lib/validationSchemas";
-import { t } from "@/lib/t";
 import { z } from "zod";
 
 interface Transaction {
@@ -727,7 +726,7 @@ export function AddTransactionModal({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="status">{t("modals.addTransaction.fields.status.label")}</Label>
+              <Label htmlFor="status">Status</Label>
               <Select
                 value={formData.status}
                 onValueChange={(value) =>
@@ -738,11 +737,11 @@ export function AddTransactionModal({
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder={t("modals.addTransaction.fields.status.placeholder")} />
+                  <SelectValue placeholder="Selecione o status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="completed">{t("transactions.completed")}</SelectItem>
-                  <SelectItem value="pending">{t("transactions.pending")}</SelectItem>
+                  <SelectItem value="completed">Concluída</SelectItem>
+                  <SelectItem value="pending">Pendente</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -752,7 +751,7 @@ export function AddTransactionModal({
           {formData.account_id && 
            accounts.find(acc => acc.id === formData.account_id)?.type === "credit" && (
             <div className="space-y-2 border-t pt-4">
-              <Label htmlFor="invoiceMonth">{t("modals.addTransaction.fields.invoiceMonth.label")}</Label>
+              <Label htmlFor="invoiceMonth">Mês da Fatura</Label>
               <Select
                 value={formData.invoiceMonth}
                 onValueChange={(value) =>
@@ -760,7 +759,7 @@ export function AddTransactionModal({
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder={t("modals.addTransaction.fields.invoiceMonth.placeholder")} />
+                  <SelectValue placeholder="Selecione o mês" />
                 </SelectTrigger>
                 <SelectContent>
                   {(() => {
@@ -819,7 +818,7 @@ export function AddTransactionModal({
             {formData.isInstallment && (
               <div className="space-y-4 pt-2 animate-fade-in">
                 <div className="space-y-2">
-                  <Label htmlFor="installments">{t("modals.addTransaction.fields.installment.numberOfInstallments")}</Label>
+                  <Label htmlFor="installments">Número de Parcelas</Label>
                   <Select
                     value={formData.installments}
                     onValueChange={(value) => {
@@ -830,7 +829,7 @@ export function AddTransactionModal({
                     }}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder={t("modals.addTransaction.fields.installment.selectPlaceholder")} />
+                      <SelectValue placeholder="Selecione o número de parcelas" />
                     </SelectTrigger>
                     <SelectContent>
                           {Array.from({ length: 59 }, (_, i) => i + 2).map((num) => (
@@ -847,19 +846,19 @@ export function AddTransactionModal({
                           })()}
                         </SelectItem>
                       ))}
-                      <SelectItem value="custom">{t("modals.addTransaction.fields.installment.custom")}</SelectItem>
+                      <SelectItem value="custom">Personalizado</SelectItem>
                     </SelectContent>
                   </Select>
                   
                   {formData.installments === "custom" && (
                     <div className="space-y-2 pt-2 animate-fade-in">
-                      <Label htmlFor="customInstallments">{t("modals.addTransaction.fields.installment.customLabel")}</Label>
+                      <Label htmlFor="customInstallments">Número personalizado de parcelas</Label>
                       <Input
                         id="customInstallments"
                         type="number"
                         min="61"
                         max="360"
-                        placeholder={t("modals.addTransaction.fields.installment.customPlaceholder")}
+                        placeholder="Ex: 120"
                         value={customInstallments}
                         onChange={(e) => setCustomInstallments(e.target.value)}
                       />
@@ -885,11 +884,11 @@ export function AddTransactionModal({
               <div className="space-y-1 flex-1">
                 <div className="flex items-center gap-2">
                   <Label htmlFor="recurring" className="text-base font-semibold cursor-pointer">
-                    {t("modals.addTransaction.fields.recurring.label")}
+                    Transação Recorrente
                   </Label>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  {t("modals.addTransaction.fields.recurring.help")}
+                  Crie transações que se repetem automaticamente
                 </p>
               </div>
               <Switch
@@ -909,7 +908,7 @@ export function AddTransactionModal({
             {formData.isRecurring && (
               <div className="space-y-4 pt-2 animate-fade-in">
                 <div className="space-y-2">
-                  <Label htmlFor="recurrenceType">{t("modals.addTransaction.fields.recurring.frequency")}</Label>
+                  <Label htmlFor="recurrenceType">Frequência</Label>
                   <Select
                     value={formData.recurrenceType}
                     onValueChange={(value: "daily" | "weekly" | "monthly" | "yearly") =>
@@ -920,16 +919,16 @@ export function AddTransactionModal({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="daily">{t("modals.addTransaction.fields.recurring.daily")}</SelectItem>
-                      <SelectItem value="weekly">{t("modals.addTransaction.fields.recurring.weekly")}</SelectItem>
-                      <SelectItem value="monthly">{t("modals.addTransaction.fields.recurring.monthly")}</SelectItem>
-                      <SelectItem value="yearly">{t("modals.addTransaction.fields.recurring.yearly")}</SelectItem>
+                      <SelectItem value="daily">Diário</SelectItem>
+                      <SelectItem value="weekly">Semanal</SelectItem>
+                      <SelectItem value="monthly">Mensal</SelectItem>
+                      <SelectItem value="yearly">Anual</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="recurrenceEndDate">{t("modals.addTransaction.fields.recurring.endDate")}</Label>
+                  <Label htmlFor="recurrenceEndDate">Data de Término</Label>
                   <Input
                     id="recurrenceEndDate"
                     type="date"
@@ -940,7 +939,7 @@ export function AddTransactionModal({
                     min={getTodayString()}
                   />
                   <p className="text-xs text-muted-foreground">
-                    {t("modals.addTransaction.fields.recurring.endDateHelp")}
+                    Opcional - deixe em branco para recorrência indefinida
                   </p>
                 </div>
               </div>
@@ -990,10 +989,10 @@ export function AddTransactionModal({
               onClick={() => onOpenChange(false)}
               className="flex-1"
             >
-              {t("common.cancel")}
+              Cancelar
             </Button>
             <Button type="submit" className="flex-1">
-              {t("modals.addTransaction.actions.add")}
+              Adicionar
             </Button>
           </div>
         </form>
