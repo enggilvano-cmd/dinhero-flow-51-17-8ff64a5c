@@ -12,6 +12,8 @@ import { FixedTransactionsPage } from "@/components/FixedTransactionsPage";
 import { RecurringTransactionsPage } from "@/components/RecurringTransactionsPage";
 import { BankReconciliationPage } from "@/components/BankReconciliationPage";
 import { AccountingPage } from "@/components/AccountingPage";
+import { UserProfile } from "@/components/UserProfile";
+import { SettingsPage } from "@/components/SettingsPage";
 import { AddAccountModal } from "@/components/AddAccountModal";
 import { AddTransactionModal } from "@/components/AddTransactionModal";
 import { EditAccountModal } from "@/components/EditAccountModal";
@@ -337,6 +339,21 @@ const PlaniFlowApp = () => {
         return isAdmin() ? <UserManagement /> : renderDashboard();
       case "system-settings":
         return isAdmin() ? <SystemSettings /> : renderDashboard();
+      case "profile":
+        return <UserProfile />;
+      case "settings":
+        return <SettingsPage 
+          settings={{
+            userId: user?.id || "",
+            theme: "system",
+            currency: "BRL",
+            language: "pt-BR",
+            notifications: true,
+            autoBackup: false
+          }}
+          onUpdateSettings={() => Promise.resolve()}
+          onClearAllData={handleClearAllData}
+        />;
       default:
         return renderDashboard();
     }
