@@ -72,7 +72,7 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedAccountId, setSelectedAccountId] = useState("all");
-  const [selectedMonthOffset, setSelectedMonthOffset] = useState(1); // 1 = próximo mês (pré-selecionado)
+  const [selectedMonthOffset, setSelectedMonthOffset] = useState(0); // 0 = mês atual (pré-selecionado)
   const [filterBillStatus, setFilterBillStatus] = useState<"all" | "open" | "closed">("all");
   const [filterPaymentStatus, setFilterPaymentStatus] = useState<"all" | "paid" | "pending">("all");
   const [selectedBillForDetails, setSelectedBillForDetails] = useState<{
