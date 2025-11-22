@@ -83,8 +83,6 @@ export function calculateInvoiceMonthByDue(
   }
 
   const result = `${invoiceYear}-${String(invoiceMonth + 1).padStart(2, '0')}`;
-  
-  console.info(`[calculateInvoiceMonthByDue] Compra ${format(txDate, 'dd/MM/yyyy')} | Fecha ${closingDate}/${closingMonth+1} | Vence ${dueDate}/${invoiceMonth+1} → Fatura ${result}`);
 
   return result;
 }
@@ -256,6 +254,8 @@ export function calculateBillDetails(
   }
   
   // Data de vencimento da próxima fatura
+  // CORREÇÃO: Usar a mesma lógica da currentDueDate
+  // nextBillEnd já está 1 mês à frente do currentBillEnd
   let nextDueDate = new Date(
     Date.UTC(
       nextBillEnd.getUTCFullYear(),
@@ -266,13 +266,7 @@ export function calculateBillDetails(
   
   // Se a data de vencimento for antes do fechamento, o vencimento é no mês seguinte
   if (dueDate <= closingDate) {
-    nextDueDate = new Date(
-      Date.UTC(
-        nextBillEnd.getUTCFullYear(),
-        nextBillEnd.getUTCMonth() + 1,
-        dueDate, 12, 0, 0
-      )
-    );
+    nextDueDate = addMonths(currentDueDate, 1);
   }
 
   // Calcula o mês da fatura baseado na data de VENCIMENTO no formato YYYY-MM
