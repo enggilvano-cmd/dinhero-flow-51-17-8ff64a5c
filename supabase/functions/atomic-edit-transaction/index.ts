@@ -63,7 +63,12 @@ Deno.serve(async (req) => {
       );
     }
 
-    const body = await req.json();
+    const body: EditInput = await req.json();
+
+    // Normalizar invoice_month: se vier como null, remover a chave para passar na validação
+    if (body?.updates && body.updates.invoice_month === null) {
+      delete (body.updates as any).invoice_month;
+    }
 
     console.log('[atomic-edit] INFO: Editing transaction for user:', user.id);
 
