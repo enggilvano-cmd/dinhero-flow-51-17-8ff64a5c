@@ -63,8 +63,10 @@ export function useTransactionHandlers() {
   const handleAddInstallmentTransactions = useCallback(async (transactionsData: any[]) => {
     if (!user) return;
     try {
+      const totalInstallments = transactionsData.length;
+
       const results = await Promise.all(
-        transactionsData.map(data =>
+        transactionsData.map((data) =>
           supabase.functions.invoke('atomic-transaction', {
             body: {
               transaction: {
@@ -77,14 +79,41 @@ export function useTransactionHandlers() {
                 status: data.status,
                 invoice_month: data.invoiceMonth || null,
                 invoice_month_overridden: !!data.invoiceMonth,
-              }
-            }
+              },
+            },
           })
         )
       );
 
-      const errors = results.filter(r => r.error);
+      const errors = results.filter((r) => r.error);
       if (errors.length > 0) throw errors[0].error;
+
+      const createdIds = results
+        .map((r) => (r.data as any)?.transaction?.id as string | undefined)
+        .filter(Boolean) as string[];
+
+      if (createdIds.length !== totalInstallments) {
+        logger.error('Mismatch between installments created and expected', {
+          expected: totalInstallments,
+          created: createdIds.length,
+        });
+        throw new Error('Erro ao registrar metadados das parcelas');
+      }
+
+      const parentId = createdIds[0];
+
+      const { error: metaError } = await supabase
+        .from('transactions')
+        .update({
+          installments: totalInstallments,
+          parent_transaction_id: parentId,
+        })
+        .in('id', createdIds);
+
+      if (metaError) {
+        logger.error('Error updating installment metadata:', metaError);
+        throw metaError;
+      }
 
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase }),
