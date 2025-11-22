@@ -114,16 +114,10 @@ export function EditTransactionModal({
       updates.description = formData.description.trim();
     }
     
-    // Verificar se o amount mudou (considerando o tipo)
-    const originalAmount = originalData.type === 'income' 
-      ? originalData.amountInCents 
-      : -Math.abs(originalData.amountInCents);
-    const newAmount = formData.type === 'income' 
-      ? formData.amountInCents 
-      : -Math.abs(formData.amountInCents);
-    
-    if (newAmount !== originalAmount) {
-      updates.amount = newAmount;
+    // Verificar se o amount ou tipo mudou
+    // Backend sempre espera valores positivos, o tipo determina débito/crédito
+    if (formData.amountInCents !== originalData.amountInCents || formData.type !== originalData.type) {
+      updates.amount = Math.abs(formData.amountInCents);
     }
     
     // Verificar data - usar getTime() para comparação precisa
