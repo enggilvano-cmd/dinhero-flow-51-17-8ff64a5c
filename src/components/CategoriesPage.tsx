@@ -14,7 +14,6 @@ import { AddCategoryModal } from "@/components/AddCategoryModal";
 import { EditCategoryModal } from "@/components/EditCategoryModal";
 import { ImportCategoriesModal } from "@/components/ImportCategoriesModal";
 import { getUserId, withErrorHandling } from "@/lib/supabase-utils";
-import { loadXLSX } from "@/lib/lazyImports";
 import { Category } from "@/types";
 
 interface CategoriesPageProps {}
@@ -216,35 +215,21 @@ export function CategoriesPage({}: CategoriesPageProps) {
   };
 
   const exportToExcel = async () => {
-    const XLSX = await loadXLSX();
-    
-    const dataToExport = filteredCategories.map((category) => ({
-      'Nome da Categoria': category.name,
-      'Tipo de Categoria': getTypeLabel(category.type),
-      'Cor da Categoria': category.color,
-    }));
-
-    const ws = XLSX.utils.json_to_sheet(dataToExport);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Categorias');
-
-    const colWidths = [
-      { wch: 30 }, // Nome
-      { wch: 15 }, // Tipo
-      { wch: 15 }, // Cor
-    ];
-    ws['!cols'] = colWidths;
-
-    let fileName = 'categorias';
-    if (filterType !== "all") fileName += `_${filterType}`;
-    fileName += ".xlsx";
-
-    XLSX.writeFile(wb, fileName);
-
-    toast({
-      title: "Sucesso",
-      description: `${filteredCategories.length} categorias exportadas com sucesso`,
-    });
+    try {
+      const { exportCategoriesToExcel } = await import('@/lib/exportUtils');
+      await exportCategoriesToExcel(filteredCategories);
+      
+      toast({
+        title: "Sucesso",
+        description: `${filteredCategories.length} categoria${filteredCategories.length !== 1 ? 's' : ''} exportada${filteredCategories.length !== 1 ? 's' : ''} com sucesso`,
+      });
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Erro ao exportar categorias",
+        variant: "destructive",
+      });
+    }
   };
 
   const filteredCategories = categories.filter(category => {
