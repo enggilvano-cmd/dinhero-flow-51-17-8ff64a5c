@@ -11,7 +11,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { User, Shield, Key, Activity, ShieldCheck, ShieldOff } from 'lucide-react';
 import { TwoFactorSetup } from './TwoFactorSetup';
-import { useTranslation } from 'react-i18next';
 import { logger } from '@/lib/logger';
 import {
   AlertDialog,
@@ -34,7 +33,6 @@ interface AuditLog {
 export function UserProfile() {
   const { user, profile, signOut } = useAuth();
   const { toast } = useToast();
-  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [recentActivities, setRecentActivities] = useState<AuditLog[]>([]);
   const [mfaEnabled, setMfaEnabled] = useState(false);

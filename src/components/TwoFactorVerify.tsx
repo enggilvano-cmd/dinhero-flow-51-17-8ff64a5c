@@ -5,7 +5,6 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from '@/hooks/use-toast';
 import { Shield } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { logger } from '@/lib/logger';
 
 interface TwoFactorVerifyProps {
@@ -14,15 +13,14 @@ interface TwoFactorVerifyProps {
 }
 
 export function TwoFactorVerify({ onVerified, onCancel }: TwoFactorVerifyProps) {
-  const { t } = useTranslation();
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleVerify = async () => {
     if (!code || code.length !== 6) {
       toast({
-        title: t('twoFactor.verify.errors.invalidCode'),
-        description: t('twoFactor.verify.errors.invalidCodeDescription'),
+        title: 'Código Inválido',
+        description: 'O código de verificação deve ter 6 dígitos',
         variant: 'destructive'
       });
       return;
@@ -35,7 +33,7 @@ export function TwoFactorVerify({ onVerified, onCancel }: TwoFactorVerifyProps) 
 
       const totpFactor = factors.data?.totp?.[0];
       if (!totpFactor) {
-        throw new Error(t('twoFactor.verify.errors.notConfigured'));
+        throw new Error('2FA não configurado');
       }
 
       const challenge = await supabase.auth.mfa.challenge({ factorId: totpFactor.id });
@@ -50,16 +48,16 @@ export function TwoFactorVerify({ onVerified, onCancel }: TwoFactorVerifyProps) 
       if (verify.error) throw verify.error;
 
       toast({
-        title: t('twoFactor.verify.success.title'),
-        description: t('twoFactor.verify.success.description')
+        title: 'Verificação Bem-sucedida',
+        description: 'Você foi autenticado com sucesso'
       });
 
       onVerified();
     } catch (error: any) {
       logger.error('Erro ao verificar 2FA:', error);
       toast({
-        title: t('twoFactor.verify.errors.invalidCode'),
-        description: t('twoFactor.verify.errors.incorrectCode'),
+        title: 'Código Inválido',
+        description: 'O código está incorreto. Verifique e tente novamente.',
         variant: 'destructive'
       });
     } finally {
@@ -73,15 +71,15 @@ export function TwoFactorVerify({ onVerified, onCancel }: TwoFactorVerifyProps) 
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Shield className="h-5 w-5" />
-            {t('twoFactor.verify.title')}
+            Verificação em Duas Etapas
           </CardTitle>
           <CardDescription>
-            {t('twoFactor.verify.subtitle')}
+            Digite o código de verificação do seu aplicativo autenticador
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium">{t('twoFactor.verify.verificationCode')}</label>
+            <label className="text-sm font-medium">Código de Verificação</label>
             <Input
               type="text"
               placeholder="000000"
@@ -100,14 +98,14 @@ export function TwoFactorVerify({ onVerified, onCancel }: TwoFactorVerifyProps) 
               disabled={loading || code.length !== 6}
               className="flex-1"
             >
-              {loading ? t('twoFactor.verify.verifying') : t('twoFactor.verify.verify')}
+              {loading ? 'Verificando...' : 'Verificar'}
             </Button>
             <Button 
               onClick={onCancel} 
               variant="outline"
               disabled={loading}
             >
-              {t('common.cancel')}
+              Cancelar
             </Button>
           </div>
         </CardContent>
