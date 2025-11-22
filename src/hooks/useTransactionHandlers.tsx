@@ -183,6 +183,9 @@ export function useTransactionHandlers() {
 
       if (error) throw error;
 
+      // Aguardar um pouco para garantir que o banco processou
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase }),
         queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
@@ -191,6 +194,9 @@ export function useTransactionHandlers() {
         queryClient.refetchQueries({ queryKey: queryKeys.transactionsBase }),
         queryClient.refetchQueries({ queryKey: queryKeys.accounts }),
       ]);
+      
+      // Refetch adicional para garantir
+      await queryClient.refetchQueries({ queryKey: queryKeys.accounts });
     } catch (error) {
       logger.error('Error updating transaction:', error);
       if (error instanceof Error) {
@@ -229,6 +235,9 @@ export function useTransactionHandlers() {
         throw new Error(data.error || 'Transação não encontrada ou já foi excluída');
       }
 
+      // Aguardar um pouco para garantir que o banco processou
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase }),
         queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
@@ -237,6 +246,9 @@ export function useTransactionHandlers() {
         queryClient.refetchQueries({ queryKey: queryKeys.transactionsBase }),
         queryClient.refetchQueries({ queryKey: queryKeys.accounts }),
       ]);
+      
+      // Refetch adicional para garantir
+      await queryClient.refetchQueries({ queryKey: queryKeys.accounts });
 
       toast({
         title: 'Sucesso',
