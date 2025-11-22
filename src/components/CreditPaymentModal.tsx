@@ -22,8 +22,8 @@ import { logger } from "@/lib/logger";
 import { getTodayString } from "@/lib/dateUtils";
 import { getAvailableBalance } from "@/lib/formatters";
 import { AccountBalanceDetails } from "./AccountBalanceDetails";
-import { useAccountStore } from "@/stores/AccountStore";
 import { CurrencyInput } from "./forms/CurrencyInput";
+import { useAccounts } from "@/hooks/queries/useAccounts";
 
 // Helper para formatar moeda (R$)
 const formatBRL = (valueInCents: number) => {
@@ -72,11 +72,11 @@ export function CreditPaymentModal({
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-  const accounts = useAccountStore((state) => state.accounts);
+  const { accounts: allAccounts = [] } = useAccounts();
   
   const bankAccounts = useMemo(
-    () => accounts.filter((acc) => acc.type !== "credit"),
-    [accounts]
+    () => allAccounts.filter((acc) => acc.type !== "credit"),
+    [allAccounts]
   );
 
   // Normalização: garantir valores positivos em centavos
@@ -120,7 +120,7 @@ export function CreditPaymentModal({
 
     const { amountInCents } = formData;
 
-    const bankAccount = accounts.find(
+    const bankAccount = allAccounts.find(
       (acc) => acc.id === formData.bankAccountId
     );
     if (bankAccount) {
@@ -281,7 +281,7 @@ export function CreditPaymentModal({
             </Select>
             {formData.bankAccountId && (
               <AccountBalanceDetails
-                account={accounts.find(
+                account={allAccounts.find(
                   (acc) => acc.id === formData.bankAccountId
                 )}
               />
