@@ -65,13 +65,24 @@ Deno.serve(async (req) => {
       throw functionError;
     }
 
-    const record = result[0];
+    const record = result?.[0];
+    
+    if (!record) {
+      console.error('[atomic-delete-transaction] ERROR: No result returned');
+      return new Response(
+        JSON.stringify({ 
+          error: 'Failed to delete transaction',
+          success: false 
+        }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
     
     if (!record.success) {
       console.error('[atomic-delete-transaction] ERROR:', record.error_message);
       return new Response(
         JSON.stringify({ 
-          error: record.error_message,
+          error: record.error_message || 'Failed to delete transaction',
           success: false 
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

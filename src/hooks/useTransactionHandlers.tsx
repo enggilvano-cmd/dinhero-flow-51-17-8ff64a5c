@@ -144,24 +144,35 @@ export function useTransactionHandlers() {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        // Check if error has a message property from the edge function response
+        const errorMessage = (error as any)?.message || 'Erro ao excluir transação';
+        throw new Error(errorMessage);
+      }
+
+      // Check if the response indicates failure
+      if (data && !data.success) {
+        throw new Error(data.error || 'Transação não encontrada ou já foi excluída');
+      }
 
       await queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
       await queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
 
       toast({
         title: 'Sucesso',
-        description: `${data.deleted} transação(ões) excluída(s)`,
+        description: `${data?.deleted || 1} transação(ões) excluída(s)`,
       });
     } catch (error) {
       logger.error('Error deleting transaction:', error);
-      if (error instanceof Error) {
-        toast({
-          title: 'Erro',
-          description: error.message,
-          variant: 'destructive',
-        });
-      }
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : 'Erro ao excluir transação';
+      
+      toast({
+        title: 'Erro ao excluir',
+        description: errorMessage,
+        variant: 'destructive',
+      });
       throw error;
     }
   }, [user, queryClient, toast]);
