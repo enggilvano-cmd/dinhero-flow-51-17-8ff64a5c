@@ -394,9 +394,9 @@ export function AccountsPage({
                   </div>
 
                   {/* Informações de Saldo */}
-                  <div className="pt-2 border-t border-border/50">
+                  <div className="pt-2 border-t border-border/50 space-y-2">
                     {account.type === "credit" ? (
-                      <div className="space-y-1">
+                      <div className="space-y-1.5">
                         <div className="flex items-center justify-between">
                           <span className="text-xs text-muted-foreground">
                             {account.balance < 0 ? "Dívida" : "Crédito"}
@@ -410,27 +410,88 @@ export function AccountsPage({
                           </span>
                         </div>
                         {account.limit_amount && account.limit_amount > 0 && (
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs text-muted-foreground">
-                              Disponível
-                            </span>
-                            <span className="text-xs font-medium text-primary">
-                              {formatCents((account.limit_amount || 0) - Math.abs(Math.min(account.balance, 0)))}
-                            </span>
-                          </div>
+                          <>
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs text-muted-foreground">
+                                Disponível
+                              </span>
+                              <span className="text-xs font-medium text-primary">
+                                {formatCents((account.limit_amount || 0) - Math.abs(Math.min(account.balance, 0)))}
+                              </span>
+                            </div>
+                            {/* Barra de Progresso */}
+                            <div className="space-y-1">
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs text-muted-foreground">Limite</span>
+                                <span className="text-xs font-medium">
+                                  {formatCents(account.limit_amount)}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <div className="flex-1 bg-muted rounded-full h-2">
+                                  <div
+                                    className="h-2 rounded-full transition-all duration-300 bg-destructive"
+                                    style={{
+                                      width: `${Math.min(
+                                        (Math.abs(Math.min(account.balance, 0)) / (account.limit_amount || 1)) * 100,
+                                        100
+                                      )}%`,
+                                    }}
+                                  />
+                                </div>
+                                <span className="text-xs font-medium w-10 text-right">
+                                  {Math.round(
+                                    (Math.abs(Math.min(account.balance, 0)) / (account.limit_amount || 1)) * 100
+                                  )}%
+                                </span>
+                              </div>
+                            </div>
+                          </>
                         )}
                       </div>
                     ) : (
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-muted-foreground">Saldo</span>
-                        <span
-                          className={`text-sm font-bold ${
-                            account.balance >= 0 ? "balance-positive" : "balance-negative"
-                          }`}
-                        >
-                          {formatCents(account.balance)}
-                        </span>
-                      </div>
+                      <>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-muted-foreground">Saldo</span>
+                          <span
+                            className={`text-sm font-bold ${
+                              account.balance >= 0 ? "balance-positive" : "balance-negative"
+                            }`}
+                          >
+                            {formatCents(account.balance)}
+                          </span>
+                        </div>
+                        {account.limit_amount && account.limit_amount > 0 && (
+                          <div className="space-y-1">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs text-muted-foreground">Limite</span>
+                              <span className="text-xs font-medium">
+                                {formatCents(account.limit_amount)}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="flex-1 bg-muted rounded-full h-2">
+                                <div
+                                  className="h-2 rounded-full transition-all duration-300 bg-warning"
+                                  style={{
+                                    width: `${Math.min(
+                                      account.balance < 0 
+                                        ? (Math.abs(account.balance) / (account.limit_amount || 1)) * 100
+                                        : 0,
+                                      100
+                                    )}%`,
+                                  }}
+                                />
+                              </div>
+                              <span className="text-xs font-medium w-10 text-right">
+                                {account.balance < 0 
+                                  ? Math.round((Math.abs(account.balance) / (account.limit_amount || 1)) * 100)
+                                  : 0}%
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>
