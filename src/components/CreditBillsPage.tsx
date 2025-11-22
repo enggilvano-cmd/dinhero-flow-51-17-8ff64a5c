@@ -313,13 +313,13 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             {/* Cartão */}
             <div className="lg:col-span-1">
-              <Label htmlFor="filterCard" className="text-caption">{t("accounts.credit")}</Label>
+              <Label htmlFor="filterCard" className="text-caption">Cartão de Crédito</Label>
               <Select value={selectedAccountId} onValueChange={setSelectedAccountId}>
                 <SelectTrigger className="touch-target mt-2" id="filterCard">
-                  <SelectValue placeholder={t("transactions.selectAccount")} />
+                  <SelectValue placeholder="Selecione uma conta" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">{t("common.all")}</SelectItem>
+                  <SelectItem value="all">Todos</SelectItem>
                   {creditAccounts.map((account) => (
                     <SelectItem key={account.id} value={account.id}>
                       <div className="flex items-center gap-2">
@@ -339,30 +339,30 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
 
             {/* Status da Fatura (Aberta/Fechada) */}
             <div className="lg:col-span-1">
-              <Label htmlFor="filterBillStatus" className="text-caption">{t("transactions.status")}</Label>
+              <Label htmlFor="filterBillStatus" className="text-caption">Status</Label>
               <Select value={filterBillStatus} onValueChange={(value: any) => setFilterBillStatus(value)}>
                 <SelectTrigger className="touch-target mt-2" id="filterBillStatus">
-                  <SelectValue placeholder={t("transactions.status")} />
+                  <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">{t("common.all")}</SelectItem>
-                  <SelectItem value="open">{t("transactions.pending")}</SelectItem>
-                  <SelectItem value="closed">{t("transactions.completed")}</SelectItem>
+                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="open">Pendente</SelectItem>
+                  <SelectItem value="closed">Concluído</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             {/* Status de Pagamento */}
             <div className="sm:col-span-2 lg:col-span-1">
-              <Label htmlFor="filterPaymentStatus" className="text-caption">{t("transactions.status")}</Label>
+              <Label htmlFor="filterPaymentStatus" className="text-caption">Status</Label>
               <Select value={filterPaymentStatus} onValueChange={(value: any) => setFilterPaymentStatus(value)}>
                 <SelectTrigger className="touch-target mt-2" id="filterPaymentStatus">
-                  <SelectValue placeholder={t("transactions.status")} />
+                  <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">{t("common.all")}</SelectItem>
-                  <SelectItem value="paid">{t("transactions.completed")}</SelectItem>
-                  <SelectItem value="pending">{t("transactions.pending")}</SelectItem>
+                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="paid">Concluído</SelectItem>
+                  <SelectItem value="pending">Pendente</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -370,12 +370,12 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
 
             {/* Busca */}
             <div className="lg:col-span-1">
-              <Label htmlFor="search" className="text-caption">{t("common.search")}</Label>
+              <Label htmlFor="search" className="text-caption">Buscar</Label>
               <div className="relative mt-2">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="search"
-                  placeholder={t("accounts.searchPlaceholder")}
+                  placeholder="Buscar..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 touch-target"
@@ -385,7 +385,7 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
 
             {/* Navegação de Mês */}
             <div className="lg:col-span-1">
-              <Label className="text-caption">{t("dashboard.period")}</Label>
+              <Label className="text-caption">Período</Label>
               <div className="flex items-center gap-1 px-3 border border-input rounded-md bg-background touch-target mt-2">
                 <Button
                   variant="ghost"
