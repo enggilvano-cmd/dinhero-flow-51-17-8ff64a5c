@@ -15,8 +15,7 @@ export async function exportAccountsToExcel(accounts: any[]) {
     'Limite': account.limit_amount ? (account.limit_amount / 100).toFixed(2) : '',
     'Fechamento': account.closing_date || '',
     'Vencimento': account.due_date || '',
-    'Cor': account.color,
-    'Criado em': format(new Date(account.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })
+    'Cor': account.color
   }));
 
   const ws = XLSX.utils.json_to_sheet(exportData);
@@ -32,7 +31,6 @@ export async function exportAccountsToExcel(accounts: any[]) {
     { wch: 12 }, // Fechamento
     { wch: 12 }, // Vencimento
     { wch: 12 }, // Cor
-    { wch: 18 }, // Criado em
   ];
   ws['!cols'] = colWidths;
 
@@ -151,13 +149,12 @@ export async function exportAllDataToExcel(
     'Limite': account.limit_amount ? (account.limit_amount / 100).toFixed(2) : '',
     'Fechamento': account.closing_date || '',
     'Vencimento': account.due_date || '',
-    'Cor': account.color,
-    'Criado em': format(new Date(account.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })
+    'Cor': account.color
   }));
   const wsAccounts = XLSX.utils.json_to_sheet(accountsData);
   wsAccounts['!cols'] = [
     { wch: 30 }, { wch: 20 }, { wch: 15 }, { wch: 15 },
-    { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 18 }
+    { wch: 12 }, { wch: 12 }, { wch: 12 }
   ];
   XLSX.utils.book_append_sheet(wb, wsAccounts, 'Contas');
 
