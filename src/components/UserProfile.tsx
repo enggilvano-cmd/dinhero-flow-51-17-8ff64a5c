@@ -345,10 +345,10 @@ export function UserProfile() {
             <CardContent className="space-y-4">
               {/* Password Change Section */}
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 sm:p-4 border rounded-lg">
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-medium text-sm sm:text-base">{t('profile.changePassword')}</h4>
+              <div className="flex-1 min-w-0">
+                  <h4 className="font-medium text-sm sm:text-base">Alterar Senha</h4>
                   <p className="text-xs sm:text-sm text-muted-foreground">
-                    {t('profile.changePasswordDescription')}
+                    Enviar email para redefinição de senha
                   </p>
                 </div>
                 <Button 
@@ -356,7 +356,7 @@ export function UserProfile() {
                   onClick={changePassword}
                   className="w-full sm:w-auto text-sm shrink-0"
                 >
-                  {t('profile.resetPassword')}
+                  Redefinir Senha
                 </Button>
               </div>
 
@@ -364,23 +364,23 @@ export function UserProfile() {
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 sm:p-4 border rounded-lg">
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h4 className="font-medium text-sm sm:text-base">{t('profile.twoFactorAuth')}</h4>
+                    <h4 className="font-medium text-sm sm:text-base">Autenticação de Dois Fatores</h4>
                     {mfaEnabled ? (
                       <Badge variant="default" className="gap-1 text-xs">
                         <ShieldCheck className="h-3 w-3" />
-                        {t('profile.enabled')}
+                        Ativado
                       </Badge>
                     ) : (
                       <Badge variant="secondary" className="gap-1 text-xs">
                         <ShieldOff className="h-3 w-3" />
-                        {t('profile.disabled')}
+                        Desativado
                       </Badge>
                     )}
                   </div>
                   <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                     {mfaEnabled 
-                      ? t('profile.mfaProtected')
-                      : t('profile.mfaAddLayer')
+                      ? 'Sua conta está protegida com autenticação de dois fatores'
+                      : 'Adicione uma camada extra de segurança à sua conta'
                     }
                   </p>
                 </div>
@@ -390,7 +390,7 @@ export function UserProfile() {
                     onClick={() => setShowDisableMfaDialog(true)}
                     className="w-full sm:w-auto text-sm shrink-0"
                   >
-                    {t('profile.disable')}
+                    Desabilitar
                   </Button>
                 ) : (
                   <Button 
@@ -398,7 +398,7 @@ export function UserProfile() {
                     onClick={() => setShowMfaSetup(true)}
                     className="w-full sm:w-auto text-sm shrink-0"
                   >
-                    {t('profile.enable2FA')}
+                    Habilitar 2FA
                   </Button>
                 )}
               </div>
@@ -476,7 +476,7 @@ export function UserProfile() {
                   </div>
                 ) : (
                   <p className="text-xs sm:text-sm text-muted-foreground text-center py-4">
-                    {t('profile.noRecentActivity')}
+                    Nenhuma atividade recente
                   </p>
                 )}
               </div>
@@ -488,10 +488,10 @@ export function UserProfile() {
             <CardHeader className="space-y-1">
               <CardTitle className="flex items-center gap-2 text-lg sm:text-xl text-destructive">
                 <Shield className="h-4 w-4 sm:h-5 sm:w-5" />
-                {t('profile.dangerZone')}
+                Zona de Perigo
               </CardTitle>
               <CardDescription className="text-xs sm:text-sm">
-                {t('profile.dangerZoneDescription')}
+                Ações irreversíveis da conta
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -500,7 +500,7 @@ export function UserProfile() {
                 className="w-full text-sm"
                 onClick={signOut}
               >
-                {t('profile.signOut')}
+                Sair da Conta
               </Button>
             </CardContent>
           </Card>
@@ -523,19 +523,19 @@ export function UserProfile() {
       <AlertDialog open={showDisableMfaDialog} onOpenChange={setShowDisableMfaDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t('profile.disableMfaTitle')}</AlertDialogTitle>
+            <AlertDialogTitle>Desabilitar Autenticação de Dois Fatores</AlertDialogTitle>
             <AlertDialogDescription>
-              {t('profile.disableMfaDescription')}
+              Tem certeza que deseja desabilitar a autenticação de dois fatores? Isso tornará sua conta menos segura.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDisableMfa}
               disabled={loading}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {loading ? t('profile.disablingMfa') : t('profile.disableMfa')}
+              {loading ? 'Desabilitando...' : 'Desabilitar 2FA'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
