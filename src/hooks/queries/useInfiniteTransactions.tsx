@@ -307,11 +307,11 @@ export function useInfiniteTransactions(params: UseInfiniteTransactionsParams = 
     },
     onSuccess: async () => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase }),
         queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
       ]);
       await Promise.all([
-        queryClient.refetchQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.refetchQueries({ queryKey: queryKeys.transactionsBase }),
         queryClient.refetchQueries({ queryKey: queryKeys.accounts }),
       ]);
     },
@@ -349,11 +349,11 @@ export function useInfiniteTransactions(params: UseInfiniteTransactionsParams = 
     },
     onSuccess: async () => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase }),
         queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
       ]);
       await Promise.all([
-        queryClient.refetchQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.refetchQueries({ queryKey: queryKeys.transactionsBase }),
         queryClient.refetchQueries({ queryKey: queryKeys.accounts }),
       ]);
     },
@@ -378,11 +378,11 @@ export function useInfiniteTransactions(params: UseInfiniteTransactionsParams = 
     },
     onSuccess: async () => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase }),
         queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
       ]);
       await Promise.all([
-        queryClient.refetchQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.refetchQueries({ queryKey: queryKeys.transactionsBase }),
         queryClient.refetchQueries({ queryKey: queryKeys.accounts }),
       ]);
     },

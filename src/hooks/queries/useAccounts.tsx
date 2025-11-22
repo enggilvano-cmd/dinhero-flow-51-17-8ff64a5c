@@ -62,8 +62,8 @@ export function useAccounts() {
       await queryClient.refetchQueries({ queryKey: queryKeys.accounts });
       // Also invalidate transactions if balance changed
       if (updatedAccount.balance !== undefined) {
-        await queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
-        await queryClient.refetchQueries({ queryKey: queryKeys.transactions() });
+        await queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase });
+        await queryClient.refetchQueries({ queryKey: queryKeys.transactionsBase });
       }
     },
     onError: (error) => {
@@ -94,8 +94,8 @@ export function useAccounts() {
       await queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
       await queryClient.refetchQueries({ queryKey: queryKeys.accounts });
       // Also invalidate transactions
-      await queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
-      await queryClient.refetchQueries({ queryKey: queryKeys.transactions() });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase });
+      await queryClient.refetchQueries({ queryKey: queryKeys.transactionsBase });
     },
     onError: (error) => {
       logger.error('Error deleting account:', error);

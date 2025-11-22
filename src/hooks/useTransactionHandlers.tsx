@@ -40,11 +40,11 @@ export function useTransactionHandlers() {
 
       // Invalidar e forçar refetch imediato
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase }),
         queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
       ]);
       await Promise.all([
-        queryClient.refetchQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.refetchQueries({ queryKey: queryKeys.transactionsBase }),
         queryClient.refetchQueries({ queryKey: queryKeys.accounts }),
       ]);
     } catch (error) {
@@ -87,11 +87,11 @@ export function useTransactionHandlers() {
       if (errors.length > 0) throw errors[0].error;
 
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase }),
         queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
       ]);
       await Promise.all([
-        queryClient.refetchQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.refetchQueries({ queryKey: queryKeys.transactionsBase }),
         queryClient.refetchQueries({ queryKey: queryKeys.accounts }),
       ]);
     } catch (error) {
@@ -128,11 +128,11 @@ export function useTransactionHandlers() {
       if (error) throw error;
 
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase }),
         queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
       ]);
       await Promise.all([
-        queryClient.refetchQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.refetchQueries({ queryKey: queryKeys.transactionsBase }),
         queryClient.refetchQueries({ queryKey: queryKeys.accounts }),
       ]);
     } catch (error) {
@@ -174,11 +174,11 @@ export function useTransactionHandlers() {
       }
 
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase }),
         queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
       ]);
       await Promise.all([
-        queryClient.refetchQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.refetchQueries({ queryKey: queryKeys.transactionsBase }),
         queryClient.refetchQueries({ queryKey: queryKeys.accounts }),
       ]);
 
@@ -229,11 +229,11 @@ export function useTransactionHandlers() {
       if (error) throw error;
 
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase }),
         queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
       ]);
       await Promise.all([
-        queryClient.refetchQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.refetchQueries({ queryKey: queryKeys.transactionsBase }),
         queryClient.refetchQueries({ queryKey: queryKeys.accounts }),
       ]);
     } catch (error) {
@@ -302,11 +302,11 @@ export function useTransactionHandlers() {
       if (errors.length > 0) throw errors[0].error;
 
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase }),
         queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
       ]);
       await Promise.all([
-        queryClient.refetchQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.refetchQueries({ queryKey: queryKeys.transactionsBase }),
         queryClient.refetchQueries({ queryKey: queryKeys.accounts }),
       ]);
       
@@ -363,11 +363,11 @@ export function useTransactionHandlers() {
 
       logger.info('🔄 Refazendo fetch após pagamento...');
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase }),
         queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
       ]);
       await Promise.all([
-        queryClient.refetchQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.refetchQueries({ queryKey: queryKeys.transactionsBase }),
         queryClient.refetchQueries({ queryKey: queryKeys.accounts }),
       ]);
 
@@ -407,11 +407,11 @@ export function useTransactionHandlers() {
 
       logger.info('🔄 Refazendo fetch após estorno...');
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase }),
         queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
       ]);
       await Promise.all([
-        queryClient.refetchQueries({ queryKey: queryKeys.transactions() }),
+        queryClient.refetchQueries({ queryKey: queryKeys.transactionsBase }),
         queryClient.refetchQueries({ queryKey: queryKeys.accounts }),
       ]);
 
