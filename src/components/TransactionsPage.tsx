@@ -45,7 +45,7 @@ import {
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { ImportTransactionsModal } from "./ImportTransactionsModal";
-import { EditScope } from "./InstallmentEditScopeDialog";
+import { EditScope, InstallmentEditScopeDialog } from "./InstallmentEditScopeDialog";
 
 interface TransactionsPageProps {
   transactions: any[];
@@ -125,6 +125,8 @@ export function TransactionsPage({
   const [startDatePickerOpen, setStartDatePickerOpen] = useState(false);
   const [endDatePickerOpen, setEndDatePickerOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
+  const [scopeDialogOpen, setScopeDialogOpen] = useState(false);
+  const [pendingDeleteTransaction, setPendingDeleteTransaction] = useState<any>(null);
   
   // Local search state with debounce
   const [localSearch, setLocalSearch] = useState(search);
@@ -235,6 +237,26 @@ export function TransactionsPage({
         variant: "destructive",
       });
     }
+  };
+
+  const handleDeleteWithScope = (transactionId: string, scope?: EditScope) => {
+    const transaction = transactions.find(t => t.id === transactionId);
+    
+    if (!scope && transaction) {
+      // Verificar se é parcela ou transação fixa
+      const isInstallment = Boolean(transaction.installments && transaction.installments > 1);
+      const isFixed = Boolean(transaction.is_fixed || transaction.parent_transaction_id);
+      
+      if (isInstallment || isFixed) {
+        // Abrir diálogo de escopo
+        setPendingDeleteTransaction(transaction);
+        setScopeDialogOpen(true);
+        return;
+      }
+    }
+    
+    // Deletar diretamente se não for parcela/fixa ou se já tiver scope
+    onDeleteTransaction(transactionId, scope);
   };
 
   return (
@@ -675,7 +697,7 @@ export function TransactionsPage({
               categories={categories}
               currency={settings.currency}
               onEdit={onEditTransaction}
-              onDelete={onDeleteTransaction}
+              onDelete={handleDeleteWithScope}
               onMarkAsPaid={onMarkAsPaid}
               hasNextPage={hasNextPage}
               isFetchingNextPage={isFetchingNextPage}
@@ -692,6 +714,22 @@ export function TransactionsPage({
         transactions={transactions}
         onImportTransactions={onImportTransactions}
       />
+
+      {pendingDeleteTransaction && (
+        <InstallmentEditScopeDialog
+          open={scopeDialogOpen}
+          onOpenChange={setScopeDialogOpen}
+          onScopeSelected={(scope) => {
+            if (pendingDeleteTransaction) {
+              onDeleteTransaction(pendingDeleteTransaction.id, scope);
+              setPendingDeleteTransaction(null);
+            }
+          }}
+          currentInstallment={pendingDeleteTransaction.current_installment || 1}
+          totalInstallments={pendingDeleteTransaction.installments || 1}
+          mode="delete"
+        />
+      )}
     </div>
   );
 }

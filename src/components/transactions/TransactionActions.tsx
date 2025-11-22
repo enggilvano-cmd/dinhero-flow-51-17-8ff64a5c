@@ -22,11 +22,8 @@ export function TransactionActions({
   onMarkAsPaid,
 }: TransactionActionsProps) {
   const handleDelete = () => {
-    if (transaction.installments && transaction.installments > 1) {
-      onDelete(transaction.id, 'current');
-    } else {
-      onDelete(transaction.id);
-    }
+    // Não passar escopo - deixar o componente pai decidir se abre diálogo
+    onDelete(transaction.id);
   };
 
   return (
