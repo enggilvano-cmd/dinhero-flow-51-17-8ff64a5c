@@ -650,7 +650,7 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
                 <div>
                   <h4 className="font-medium mb-2">Histórico de Backups</h4>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Últimos 10 backups gerados automaticamente
+                    Últimos 10 backups (backups com +30 dias são deletados automaticamente)
                   </p>
                 </div>
 
