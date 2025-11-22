@@ -110,7 +110,7 @@ export function EditTransactionModal({
     // Detectar apenas os campos que foram modificados
     const updates: Partial<Transaction> = {};
     
-    if (formData.description.trim() !== originalData.description) {
+    if (formData.description.trim() !== originalData.description.trim()) {
       updates.description = formData.description.trim();
     }
     
@@ -126,10 +126,8 @@ export function EditTransactionModal({
       updates.amount = newAmount;
     }
     
-    // Verificar data
-    const originalDateStr = originalData.date.toISOString().split('T')[0];
-    const newDateStr = formData.date.toISOString().split('T')[0];
-    if (newDateStr !== originalDateStr) {
+    // Verificar data - usar getTime() para comparação precisa
+    if (formData.date.getTime() !== originalData.date.getTime()) {
       updates.date = formData.date;
     }
     
