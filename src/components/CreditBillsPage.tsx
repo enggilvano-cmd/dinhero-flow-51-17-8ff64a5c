@@ -245,6 +245,17 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
     );
   }, [billDetails]);
 
+  // Mês de fatura selecionado (baseado no mês da fatura, não no mês corrente do calendário)
+  const selectedInvoiceMonthDate = useMemo(() => {
+    const baseMonth = billDetails[0]?.currentInvoiceMonth;
+    if (!baseMonth) return selectedMonthDate;
+
+    const [year, month] = baseMonth.split("-").map(Number);
+    if (!year || !month) return selectedMonthDate;
+
+    return new Date(year, month - 1, 1);
+  }, [billDetails, selectedMonthDate]);
+
   return (
     <div className="spacing-responsive-lg fade-in pb-6 sm:pb-8">
       {/* Header */}
@@ -414,7 +425,7 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
                   <ChevronLeft className="h-3 w-3" />
                 </Button>
                 <span className="flex-1 text-center text-system-body">
-                  {format(selectedMonthDate, "MMMM 'de' yyyy", { locale: ptBR })}
+                  {format(selectedInvoiceMonthDate, "MMMM 'de' yyyy", { locale: ptBR })}
                 </span>
                 <Button
                   variant="ghost"
