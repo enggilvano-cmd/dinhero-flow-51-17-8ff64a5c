@@ -341,29 +341,29 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
 
             {/* Status da Fatura (Aberta/Fechada) */}
             <div className="lg:col-span-1">
-              <Label htmlFor="filterBillStatus" className="text-caption">Status</Label>
+              <Label htmlFor="filterBillStatus" className="text-caption">Status da Fatura</Label>
               <Select value={filterBillStatus} onValueChange={(value: any) => setFilterBillStatus(value)}>
                 <SelectTrigger className="touch-target mt-2" id="filterBillStatus">
-                  <SelectValue placeholder="Status" />
+                  <SelectValue placeholder="Status da Fatura" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="open">Pendente</SelectItem>
-                  <SelectItem value="closed">Concluído</SelectItem>
+                  <SelectItem value="open">Aberta</SelectItem>
+                  <SelectItem value="closed">Fechada</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             {/* Status de Pagamento */}
             <div className="sm:col-span-2 lg:col-span-1">
-              <Label htmlFor="filterPaymentStatus" className="text-caption">Status</Label>
+              <Label htmlFor="filterPaymentStatus" className="text-caption">Pagamento</Label>
               <Select value={filterPaymentStatus} onValueChange={(value: any) => setFilterPaymentStatus(value)}>
                 <SelectTrigger className="touch-target mt-2" id="filterPaymentStatus">
-                  <SelectValue placeholder="Status" />
+                  <SelectValue placeholder="Pagamento" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="paid">Concluído</SelectItem>
+                  <SelectItem value="paid">Pago</SelectItem>
                   <SelectItem value="pending">Pendente</SelectItem>
                 </SelectContent>
               </Select>
