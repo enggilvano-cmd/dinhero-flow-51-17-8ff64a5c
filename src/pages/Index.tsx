@@ -125,9 +125,9 @@ const PlaniFlowApp = () => {
       await supabase.from("accounts").delete().eq("user_id", user.id);
       await supabase.from("categories").delete().eq("user_id", user.id);
 
-      queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
-      queryClient.invalidateQueries({ queryKey: queryKeys.categories });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.categories });
 
       toast({
         title: "Dados limpos",
