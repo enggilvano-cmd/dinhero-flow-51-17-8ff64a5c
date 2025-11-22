@@ -241,6 +241,16 @@ export function FixedTransactionsPage() {
         description: `${transactionsToGenerate.length} transações foram geradas (até o final de ${nextYearCalc})`,
       });
 
+      // 🔄 Sincronizar listas e dashboard imediatamente
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
+      ]);
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: queryKeys.transactionsBase }),
+        queryClient.refetchQueries({ queryKey: queryKeys.accounts }),
+      ]);
+
       loadFixedTransactions();
       setAddModalOpen(false);
     } catch (error) {
@@ -273,6 +283,16 @@ export function FixedTransactionsPage() {
         title: "Transação atualizada",
         description: "A transação fixa foi atualizada com sucesso.",
       });
+
+      // 🔄 Sincronizar listas e dashboard imediatamente
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
+      ]);
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: queryKeys.transactionsBase }),
+        queryClient.refetchQueries({ queryKey: queryKeys.accounts }),
+      ]);
 
       loadFixedTransactions();
       setEditModalOpen(false);
@@ -311,10 +331,6 @@ export function FixedTransactionsPage() {
         return;
       }
 
-      // Invalidar cache do React Query
-      await queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
-      await queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
-
       // Excluir todas as transações filhas pendentes
       const { error: childrenError } = await supabase
         .from("transactions")
@@ -336,6 +352,16 @@ export function FixedTransactionsPage() {
         title: "Transação removida",
         description: "A transação fixa e todas as transações pendentes foram removidas com sucesso.",
       });
+
+      // 🔄 Sincronizar listas e dashboard imediatamente
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
+      ]);
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: queryKeys.transactionsBase }),
+        queryClient.refetchQueries({ queryKey: queryKeys.accounts }),
+      ]);
 
       loadFixedTransactions();
     } catch (error) {
