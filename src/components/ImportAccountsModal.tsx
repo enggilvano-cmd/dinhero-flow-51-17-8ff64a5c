@@ -321,8 +321,8 @@ export function ImportAccountsModal({
 
     if (accountsToAdd.length === 0 && accountsToReplaceIds.length === 0) {
       toast({
-        title: t('common.error'),
-        description: t('modals.import.noItemsToImport'),
+        title: 'Erro',
+        description: 'Nenhum item válido para importar',
         variant: "destructive",
       });
       return;
@@ -331,8 +331,8 @@ export function ImportAccountsModal({
     onImportAccounts(accountsToAdd, accountsToReplaceIds);
     
     toast({
-      title: t('common.success'),
-      description: t('modals.import.accountsImported', { count: accountsToAdd.length }),
+      title: 'Sucesso',
+      description: `${accountsToAdd.length} conta(s) importada(s) com sucesso`,
     });
 
     // Reset

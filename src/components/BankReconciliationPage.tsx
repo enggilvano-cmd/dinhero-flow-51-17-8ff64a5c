@@ -114,14 +114,14 @@ export function BankReconciliationPage({
 
           if (error) throw error;
         },
-        t("reconciliation.updateError")
+        "Erro ao atualizar status"
       );
 
       toast({
-        title: t("reconciliation.success"),
+        title: "Sucesso",
         description: !currentStatus
-          ? t("reconciliation.markedAsReconciled")
-          : t("reconciliation.markedAsNotReconciled"),
+          ? "Transação marcada como reconciliada"
+          : "Transação marcada como não reconciliada",
       });
 
       // Recarregar transações
@@ -176,18 +176,18 @@ export function BankReconciliationPage({
     },
     {
       key: "date",
-      header: t("transactions.date"),
+      header: "Data",
       render: (transaction: any) => format(new Date(transaction.date), "dd/MM/yyyy"),
     },
     {
       key: "description",
-      header: t("transactions.description"),
+      header: "Descrição",
       render: (transaction: any) => (
         <div className="flex flex-col">
           <span className="font-medium">{transaction.description}</span>
           {transaction.reconciled && transaction.reconciled_at && (
             <span className="text-xs text-muted-foreground">
-              {t("reconciliation.reconciledAt")}: {format(new Date(transaction.reconciled_at), "dd/MM/yyyy HH:mm")}
+              Reconciliado em: {format(new Date(transaction.reconciled_at), "dd/MM/yyyy HH:mm")}
             </span>
           )}
         </div>
@@ -195,7 +195,7 @@ export function BankReconciliationPage({
     },
     {
       key: "account",
-      header: t("transactions.account"),
+      header: "Conta",
       render: (transaction: any) => {
         const account = accounts.find((a) => a.id === transaction.account_id);
         return account ? (
@@ -209,7 +209,7 @@ export function BankReconciliationPage({
     },
     {
       key: "category",
-      header: t("transactions.category"),
+      header: "Categoria",
       render: (transaction: any) => {
         const category = categories.find((c) => c.id === transaction.category_id);
         return category ? (
@@ -223,7 +223,7 @@ export function BankReconciliationPage({
     },
     {
       key: "amount",
-      header: t("transactions.amount"),
+      header: "Valor",
       render: (transaction: any) => (
         <span
           className={cn(
@@ -237,17 +237,17 @@ export function BankReconciliationPage({
     },
     {
       key: "status",
-      header: t("reconciliation.status"),
+      header: "Status",
       render: (transaction: any) =>
         transaction.reconciled ? (
           <Badge variant="default" className="bg-success/10 text-success hover:bg-success/20">
             <CheckCircle2 className="w-3 h-3 mr-1" />
-            {t("reconciliation.reconciled")}
+            Reconciliado
           </Badge>
         ) : (
           <Badge variant="outline" className="text-muted-foreground">
             <XCircle className="w-3 h-3 mr-1" />
-            {t("reconciliation.notReconciled")}
+            Não Reconciliado
           </Badge>
         ),
     },
@@ -257,12 +257,12 @@ export function BankReconciliationPage({
     <div className="space-y-6 p-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">{t("reconciliation.title")}</h1>
-          <p className="text-muted-foreground mt-1">{t("reconciliation.subtitle")}</p>
+          <h1 className="text-3xl font-bold text-foreground">Reconciliação Bancária</h1>
+          <p className="text-muted-foreground mt-1">Confirme e reconcilie suas transações bancárias</p>
         </div>
         <Button onClick={handleExport} variant="outline">
           <Download className="w-4 h-4 mr-2" />
-          {t("common.export")}
+          Exportar
         </Button>
       </div>
 
@@ -410,9 +410,9 @@ export function BankReconciliationPage({
             <div className="flex items-center gap-3">
               <AlertCircle className="w-5 h-5 text-warning" />
               <div>
-                <p className="font-medium text-warning">{t("reconciliation.pendingWarning")}</p>
+                <p className="font-medium text-warning">Atenção: Transações Pendentes</p>
                 <p className="text-sm text-muted-foreground">
-                  {t("reconciliation.pendingWarningDescription", { count: stats.notReconciled })}
+                  Você possui {stats.notReconciled} transação(ões) não reconciliada(s)
                 </p>
               </div>
             </div>
@@ -423,7 +423,7 @@ export function BankReconciliationPage({
       {/* Tabela de Transações */}
       <Card>
         <CardHeader>
-          <CardTitle>{t("reconciliation.transactions")}</CardTitle>
+          <CardTitle>Transações</CardTitle>
         </CardHeader>
         <CardContent>
           <ResponsiveTable
@@ -432,7 +432,7 @@ export function BankReconciliationPage({
             keyField="id"
             emptyState={
               <div className="text-center py-8 text-muted-foreground">
-                <p>{t("transactions.noTransactions")}</p>
+                <p>Nenhuma transação encontrada</p>
               </div>
             }
           />

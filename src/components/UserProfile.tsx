@@ -133,8 +133,8 @@ export function UserProfile() {
         if (authError) throw authError;
 
       toast({
-        title: t('profile.verificationRequired'),
-        description: t('profile.verificationRequiredDescription'),
+        title: 'Verificação Necessária',
+        description: 'Um email de confirmação foi enviado para o novo endereço',
       });
       }
 
@@ -162,16 +162,16 @@ export function UserProfile() {
       });
 
       toast({
-        title: t('common.success'),
+        title: 'Sucesso',
         description: emailChanged
-          ? t('profile.nameUpdatedEmailPending')
-          : t('profile.profileUpdated'),
+          ? 'Nome atualizado. Confirme o novo email para completar a alteração'
+          : 'Perfil atualizado com sucesso',
       });
     } catch (error) {
       logger.error('Error updating profile:', error);
       toast({
-        title: t('common.error'),
-        description: t('profile.profileUpdateError'),
+        title: 'Erro',
+        description: 'Erro ao atualizar perfil',
         variant: 'destructive',
       });
     } finally {
@@ -190,14 +190,14 @@ export function UserProfile() {
       if (error) throw error;
 
       toast({
-        title: t('profile.emailSent'),
-        description: t('profile.emailSentDescription'),
+        title: 'Email Enviado',
+        description: 'Verifique sua caixa de entrada para redefinir sua senha',
       });
     } catch (error) {
       logger.error('Error sending reset email:', error);
       toast({
-        title: t('common.error'),
-        description: t('profile.resetEmailError'),
+        title: 'Erro',
+        description: 'Erro ao enviar email de redefinição',
         variant: 'destructive',
       });
     }
@@ -214,19 +214,18 @@ export function UserProfile() {
 
   const getRoleLabel = (role: string) => {
     switch (role) {
-      case 'admin': return t('profile.roleAdmin');
-      case 'user': return t('profile.roleUser');
-      case 'lifetime': return t('profile.roleLifetime');
-      case 'trial': return t('profile.roleTrial');
-      case 'limited': return t('profile.roleLimited');
+      case 'admin': return 'Administrador';
+      case 'user': return 'Usuário';
+      case 'lifetime': return 'Vitalício';
+      case 'trial': return 'Teste';
+      case 'limited': return 'Limitado';
       default: return role;
     }
   };
 
   const getActivityLabel = (action: string) => {
     const formattedAction = action.replace(/_/g, ' ');
-    const defaultValue = formattedAction.charAt(0).toUpperCase() + formattedAction.slice(1);
-    return t(`profile.activity.${action}`, { defaultValue: defaultValue });
+    return formattedAction.charAt(0).toUpperCase() + formattedAction.slice(1);
   };
 
   if (!profile) {
@@ -235,7 +234,7 @@ export function UserProfile() {
         <CardContent className="pt-6">
           <div className="text-center">
             <User className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold">{t('profile.loadingProfile')}</h3>
+            <h3 className="text-lg font-semibold">Carregando perfil...</h3>
           </div>
         </CardContent>
       </Card>
@@ -246,9 +245,9 @@ export function UserProfile() {
     <div className="space-y-4 sm:space-y-6 pb-6">
       {/* Header */}
       <div className="space-y-1">
-        <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight">{t('profile.title')}</h2>
+        <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight">Meu Perfil</h2>
         <p className="text-sm sm:text-base text-muted-foreground">
-          {t('profile.subtitle')}
+          Gerencie suas informações pessoais e configurações
         </p>
       </div>
 
@@ -261,10 +260,10 @@ export function UserProfile() {
             <CardHeader className="space-y-1">
               <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
                 <User className="h-4 w-4 sm:h-5 sm:w-5" />
-                {t('profile.personalInfo')}
+                Informações Pessoais
               </CardTitle>
               <CardDescription className="text-xs sm:text-sm">
-                {t('profile.personalInfoDescription')}
+                Atualize suas informações de perfil
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">

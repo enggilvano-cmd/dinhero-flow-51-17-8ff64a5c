@@ -105,8 +105,8 @@ export function RecurringTransactionsPage() {
     } catch (error) {
       logger.error('Error loading recurring transactions:', error);
       toast({
-        title: t("common.error"),
-        description: t("recurringTransactions.errors.loadFailed"),
+        title: "Erro",
+        description: "Erro ao carregar transações recorrentes",
         variant: "destructive",
       });
     } finally {
@@ -139,8 +139,8 @@ export function RecurringTransactionsPage() {
     } catch (error) {
       logger.error('Error updating recurring transaction:', error);
       toast({
-        title: t("common.error"),
-        description: t("recurringTransactions.errors.updateFailed"),
+        title: "Erro",
+        description: "Erro ao atualizar transação recorrente",
         variant: "destructive",
       });
     }
@@ -158,8 +158,8 @@ export function RecurringTransactionsPage() {
       if (error) throw error;
 
       toast({
-        title: t("common.success"),
-        description: t("recurringTransactions.deleteSuccess"),
+        title: "Sucesso",
+        description: "Transação recorrente excluída com sucesso",
       });
 
       setTransactions(prev => prev.filter(t => t.id !== deleteId));
@@ -167,8 +167,8 @@ export function RecurringTransactionsPage() {
     } catch (error) {
       logger.error('Error deleting recurring transaction:', error);
       toast({
-        title: t("common.error"),
-        description: t("recurringTransactions.errors.deleteFailed"),
+        title: "Erro",
+        description: "Erro ao excluir transação recorrente",
         variant: "destructive",
       });
     }
@@ -176,10 +176,10 @@ export function RecurringTransactionsPage() {
 
   const getRecurrenceLabel = (type: string) => {
     const labels: Record<string, string> = {
-      daily: t("recurringTransactions.frequency.daily"),
-      weekly: t("recurringTransactions.frequency.weekly"),
-      monthly: t("recurringTransactions.frequency.monthly"),
-      yearly: t("recurringTransactions.frequency.yearly"),
+      daily: "Diário",
+      weekly: "Semanal",
+      monthly: "Mensal",
+      yearly: "Anual",
     };
     return labels[type] || type;
   };
@@ -225,8 +225,8 @@ export function RecurringTransactionsPage() {
       {/* Header */}
       <div className="flex flex-col gap-3">
         <div className="min-w-0 w-full">
-          <h1 className="text-system-h1 leading-tight">{t("recurringTransactions.title")}</h1>
-          <p className="text-sm text-muted-foreground leading-tight">{t("recurringTransactions.subtitle")}</p>
+          <h1 className="text-system-h1 leading-tight">Transações Recorrentes</h1>
+          <p className="text-sm text-muted-foreground leading-tight">Gerencie suas transações recorrentes</p>
         </div>
       </div>
 
@@ -240,7 +240,7 @@ export function RecurringTransactionsPage() {
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs sm:text-sm font-medium text-muted-foreground">
-                  {t("recurringTransactions.totalRecurring")}
+                  Total de Recorrentes
                 </p>
                 <div className="text-base sm:text-lg lg:text-xl font-bold leading-tight">
                   {stats.total}
@@ -258,7 +258,7 @@ export function RecurringTransactionsPage() {
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs sm:text-sm font-medium text-muted-foreground">
-                  {t("recurringTransactions.monthlyIncome")}
+                  Receitas Mensais
                 </p>
                 <div className="text-base sm:text-lg lg:text-xl font-bold balance-positive leading-tight">
                   {formatCents(stats.monthlyIncome)}
@@ -276,7 +276,7 @@ export function RecurringTransactionsPage() {
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs sm:text-sm font-medium text-muted-foreground">
-                  {t("recurringTransactions.monthlyExpenses")}
+                  Despesas Mensais
                 </p>
                 <div className="text-base sm:text-lg lg:text-xl font-bold balance-negative leading-tight">
                   {formatCents(stats.monthlyExpenses)}
@@ -292,12 +292,12 @@ export function RecurringTransactionsPage() {
         <CardContent className="p-2 sm:p-3">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="search" className="text-caption">{t('common.search')}</Label>
+              <Label htmlFor="search" className="text-caption">Buscar</Label>
               <div className="relative mt-2">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="search"
-                  placeholder={t("recurringTransactions.searchPlaceholder")}
+                  placeholder="Buscar transações recorrentes..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 touch-target"
@@ -305,15 +305,15 @@ export function RecurringTransactionsPage() {
               </div>
             </div>
             <div>
-              <Label htmlFor="filter" className="text-caption">{t("recurringTransactions.filterByType")}</Label>
+              <Label htmlFor="filter" className="text-caption">Filtrar por Tipo</Label>
               <Select value={filterType} onValueChange={(value: any) => setFilterType(value)}>
                 <SelectTrigger id="filter" className="touch-target mt-2">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">{t('common.all')}</SelectItem>
-                  <SelectItem value="income">{t('transactions.income')}</SelectItem>
-                  <SelectItem value="expense">{t('transactions.expense')}</SelectItem>
+                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="income">Receitas</SelectItem>
+                  <SelectItem value="expense">Despesas</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -328,9 +328,9 @@ export function RecurringTransactionsPage() {
               <Calendar className="h-5 w-5 text-primary" />
             </div>
             <div className="flex-1">
-              <CardTitle className="text-lg">{t("recurringTransactions.autoGeneration")}</CardTitle>
+              <CardTitle className="text-lg">Geração Automática</CardTitle>
               <CardDescription className="mt-1">
-                {t("recurringTransactions.autoGenerationEnabled")}
+                A geração automática de transações está ativada
               </CardDescription>
             </div>
           </div>
@@ -349,8 +349,8 @@ export function RecurringTransactionsPage() {
             <Repeat className="h-12 w-12 text-muted-foreground/50 mb-4" />
             <p className="text-muted-foreground text-center">
               {searchTerm || filterType !== "all"
-                ? t("common.noResults")
-                : t("recurringTransactions.noTransactions")}
+                ? "Nenhum resultado encontrado"
+                : "Nenhuma transação recorrente cadastrada"}
             </p>
           </CardContent>
         </Card>
@@ -364,7 +364,7 @@ export function RecurringTransactionsPage() {
                     <CardTitle className="text-lg flex items-center gap-2">
                       {transaction.description}
                       <Badge variant={transaction.type === "income" ? "default" : "secondary"}>
-                        {transaction.type === "income" ? t("transactions.income") : t("transactions.expense")}
+                        {transaction.type === "income" ? "Receita" : "Despesa"}
                       </Badge>
                     </CardTitle>
                     <CardDescription className="flex items-center gap-2">
@@ -400,7 +400,7 @@ export function RecurringTransactionsPage() {
                     {transaction.recurrence_end_date && (
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <Calendar className="h-3 w-3" />
-                        {t("recurringTransactions.endsOn")}: {format(new Date(transaction.recurrence_end_date), "dd/MM/yyyy", { locale: ptBR })}
+                        Termina em: {format(new Date(transaction.recurrence_end_date), "dd/MM/yyyy", { locale: ptBR })}
                       </div>
                     )}
                   </div>
@@ -430,15 +430,15 @@ export function RecurringTransactionsPage() {
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("recurringTransactions.deleteTitle")}</AlertDialogTitle>
+            <AlertDialogTitle>Excluir Transação Recorrente</AlertDialogTitle>
             <AlertDialogDescription>
-              {t("recurringTransactions.deleteDescription")}
+              Tem certeza que deseja excluir esta transação recorrente? Esta ação não pode ser desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              {t("common.delete")}
+              Excluir
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
