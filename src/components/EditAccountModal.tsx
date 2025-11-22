@@ -208,14 +208,29 @@ export function EditAccountModal({
               htmlFor="limit"
               className="text-financial-secondary font-medium"
             >
-              Limite (opcional)
+              {formData.type === "credit" 
+                ? "Limite do Cartão" 
+                : formData.type === "checking" 
+                ? "Limite de Cheque Especial (opcional)" 
+                : "Limite (opcional)"}
             </Label>
             <CurrencyInput
+              id="limit"
               value={formData.limitInCents}
               onValueChange={(value) =>
                 setFormData((prev) => ({ ...prev, limitInCents: value || 0 }))
               }
             />
+            {formData.type === "checking" && (
+              <p className="text-xs text-muted-foreground">
+                Informe o limite de cheque especial disponível na conta
+              </p>
+            )}
+            {formData.type === "credit" && (
+              <p className="text-xs text-muted-foreground">
+                Limite total disponível no cartão de crédito
+              </p>
+            )}
           </div>
 
           {formData.type === "credit" && (
