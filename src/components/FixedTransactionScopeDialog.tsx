@@ -34,10 +34,11 @@ export function FixedTransactionScopeDialog({
       <DialogContent className="sm:max-w-[520px]">
         <DialogHeader>
           <DialogTitle>
-            {isDelete ? "Deletar Transação Fixa" : "Editar Transação Fixa"}
+            {isDelete ? "Excluir Transação Fixa" : "Editar Transação Fixa"}
           </DialogTitle>
           <DialogDescription>
-            Esta é uma transação fixa com {pendingCount} transação(ões) pendente(s) gerada(s). Escolha o escopo da {isDelete ? "exclusão" : "edição"}.
+            Esta transação fixa gerou {pendingCount > 0 ? `${pendingCount} transação(ões) pendente(s)` : 'transações adicionais'}. 
+            Escolha quais transações você deseja {isDelete ? "excluir" : "editar"}:
           </DialogDescription>
         </DialogHeader>
         
@@ -45,7 +46,7 @@ export function FixedTransactionScopeDialog({
           <Alert>
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              Algumas transações já foram concluídas e não serão {isDelete ? "deletadas" : "editadas"}.
+              Algumas transações já foram concluídas e não poderão ser {isDelete ? "excluídas" : "editadas"} em alguns escopos.
             </AlertDescription>
           </Alert>
         )}
@@ -60,8 +61,8 @@ export function FixedTransactionScopeDialog({
               <div className="font-medium">Apenas Esta Transação</div>
               <div className="text-sm text-muted-foreground">
                 {isDelete 
-                  ? "Deletar apenas esta ocorrência específica"
-                  : "Editar apenas esta ocorrência específica"
+                  ? "Excluir somente esta transação específica (a principal)"
+                  : "Editar somente esta transação específica (a principal)"
                 }
               </div>
             </div>
@@ -73,11 +74,11 @@ export function FixedTransactionScopeDialog({
             onClick={() => handleScopeSelection("current-and-remaining")}
           >
             <div className="text-left">
-              <div className="font-medium">Esta e Todas as Futuras</div>
+              <div className="font-medium">Esta e Todas as Pendentes Futuras</div>
               <div className="text-sm text-muted-foreground">
                 {isDelete 
-                  ? `Deletar esta e todas as ${pendingCount} transação(ões) pendente(s) futuras`
-                  : `Editar esta e todas as ${pendingCount} transação(ões) pendente(s) futuras`
+                  ? `Excluir esta transação principal e as ${pendingCount} transação(ões) pendente(s) geradas`
+                  : `Editar esta transação principal e as ${pendingCount} transação(ões) pendente(s) geradas`
                 }
               </div>
             </div>
@@ -89,11 +90,11 @@ export function FixedTransactionScopeDialog({
             onClick={() => handleScopeSelection("all")}
           >
             <div className="text-left">
-              <div className="font-medium">Todas as Transações</div>
+              <div className="font-medium">Todas (Incluindo Concluídas)</div>
               <div className="text-sm text-muted-foreground">
                 {isDelete 
-                  ? `Deletar todas as transações desta série (incluindo concluídas)`
-                  : `Editar todas as transações desta série (incluindo concluídas)`
+                  ? `Excluir a transação principal e TODAS as transações geradas, incluindo as já concluídas`
+                  : `Editar a transação principal e TODAS as transações geradas, incluindo as já concluídas`
                 }
               </div>
             </div>

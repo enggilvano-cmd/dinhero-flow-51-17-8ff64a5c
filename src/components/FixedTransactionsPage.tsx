@@ -718,11 +718,18 @@ export function FixedTransactionsPage() {
 
       <FixedTransactionScopeDialog
         open={scopeDialogOpen}
-        onOpenChange={setScopeDialogOpen}
+        onOpenChange={(open) => {
+          setScopeDialogOpen(open);
+          if (!open) {
+            setPendingEditTransaction(null);
+            setTransactionToDelete(null);
+          }
+        }}
         onScopeSelected={(scope) => {
+          setScopeDialogOpen(false);
           if (scopeDialogMode === "edit" && pendingEditTransaction) {
             handleEdit(pendingEditTransaction, scope);
-          } else if (scopeDialogMode === "delete") {
+          } else if (scopeDialogMode === "delete" && transactionToDelete) {
             handleDelete(scope);
           }
         }}
