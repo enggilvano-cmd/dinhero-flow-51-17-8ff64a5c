@@ -357,6 +357,7 @@ export function useTransactionHandlers() {
             amount: amount,
             date: date.toISOString().split('T')[0],
             description: `Transferência para ${toAccount.name}`,
+            status: 'completed' as const,
           }
         }
       });
