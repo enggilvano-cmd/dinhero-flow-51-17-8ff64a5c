@@ -93,9 +93,10 @@ export function PeriodClosurePage() {
       setEndDate(undefined);
       setNotes('');
       loadPeriodClosures();
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido ao fechar período';
       logger.error('Error creating closure:', error);
-      if (error.message?.includes('duplicate key')) {
+      if (errorMessage.includes('duplicate key')) {
         toast.error('Já existe um fechamento para este período');
       } else {
         toast.error('Erro ao fechar período');

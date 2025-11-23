@@ -42,11 +42,12 @@ export function DatabasePerformanceTest() {
 
       // Executar ANALYZE automaticamente
       await runAnalyze();
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       logger.error('Error generating test data:', error);
       toast({
         title: "❌ Erro ao gerar dados",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -133,11 +134,12 @@ export function DatabasePerformanceTest() {
         title: "✅ Testes executados",
         description: "Análise de performance concluída",
       });
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       logger.error('Error running performance tests:', error);
       toast({
         title: "❌ Erro nos testes",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -165,11 +167,12 @@ export function DatabasePerformanceTest() {
         title: "✅ Dados de teste removidos",
         description: "Todas as transações de teste foram excluídas",
       });
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       logger.error('Error clearing test data:', error);
       toast({
         title: "❌ Erro ao limpar dados",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     }

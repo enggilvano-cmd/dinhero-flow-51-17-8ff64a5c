@@ -745,6 +745,50 @@ export type Database = {
       deactivate_expired_subscriptions: { Args: never; Returns: undefined }
       deactivate_expired_trials: { Args: never; Returns: undefined }
       get_system_setting: { Args: { p_setting_key: string }; Returns: string }
+      get_transactions_paginated: {
+        Args: {
+          p_account_id?: string
+          p_account_type?: string
+          p_category_id?: string
+          p_date_from?: string
+          p_date_to?: string
+          p_page?: number
+          p_page_size?: number
+          p_search?: string
+          p_sort_by?: string
+          p_sort_order?: string
+          p_status?: string
+          p_type?: string
+          p_user_id: string
+        }
+        Returns: {
+          account_id: string
+          amount: number
+          category_id: string
+          created_at: string
+          current_installment: number
+          date: string
+          description: string
+          id: string
+          installments: number
+          invoice_month: string
+          invoice_month_overridden: boolean
+          is_fixed: boolean
+          is_recurring: boolean
+          linked_transaction_id: string
+          parent_transaction_id: string
+          reconciled: boolean
+          reconciled_at: string
+          reconciled_by: string
+          recurrence_end_date: string
+          recurrence_type: Database["public"]["Enums"]["recurrence_type"]
+          status: Database["public"]["Enums"]["transaction_status"]
+          to_account_id: string
+          total_count: number
+          type: Database["public"]["Enums"]["transaction_type"]
+          updated_at: string
+        }[]
+      }
       get_user_role: {
         Args: { user_id: string }
         Returns: Database["public"]["Enums"]["user_role"]

@@ -105,7 +105,7 @@ export function UserProfile() {
         title: '2FA Desabilitado',
         description: 'A autenticação de dois fatores foi desabilitada',
       });
-    } catch (error: any) {
+    } catch (error) {
       logger.error('Error disabling MFA:', error);
       toast({
         title: 'Erro',

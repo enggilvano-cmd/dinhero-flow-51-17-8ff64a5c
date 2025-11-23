@@ -34,11 +34,12 @@ export function TwoFactorSetup({ onComplete }: TwoFactorSetupProps) {
         setSecret(data.totp.secret);
         setStep('verify');
       }
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao configurar 2FA';
       logger.error('Erro ao iniciar 2FA:', error);
       toast({
         title: 'Falha na Configuração',
-        description: error.message || 'Não foi possível iniciar a configuração do 2FA',
+        description: errorMessage || 'Não foi possível iniciar a configuração do 2FA',
         variant: 'destructive'
       });
     } finally {
@@ -77,7 +78,7 @@ export function TwoFactorSetup({ onComplete }: TwoFactorSetupProps) {
       });
 
       onComplete();
-    } catch (error: any) {
+    } catch (error) {
       logger.error('Erro ao verificar código:', error);
       toast({
         title: 'Código Inválido',
