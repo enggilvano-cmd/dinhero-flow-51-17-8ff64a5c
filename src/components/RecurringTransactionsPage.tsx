@@ -47,14 +47,7 @@ export function RecurringTransactionsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<"all" | "income" | "expense">("all");
   const { toast } = useToast();
-  const { formatCurrency: formatCurrencyFromSettings } = useSettings();
-
-  const formatCurrency = (value: number) => {
-    return formatCurrencyFromSettings(value);
-  };
-
-  const formatCents = (valueInCents: number) =>
-    formatCurrency(valueInCents / 100);
+  const { formatCurrency } = useSettings();
 
   useEffect(() => {
     loadRecurringTransactions();
@@ -254,7 +247,7 @@ export function RecurringTransactionsPage() {
                   Receitas Mensais
                 </p>
                 <div className="balance-text font-bold balance-positive leading-tight">
-                  {formatCents(stats.monthlyIncome)}
+                  {formatCurrency(stats.monthlyIncome)}
                 </div>
               </div>
             </div>
@@ -272,7 +265,7 @@ export function RecurringTransactionsPage() {
                   Despesas Mensais
                 </p>
                 <div className="balance-text font-bold balance-negative leading-tight">
-                  {formatCents(stats.monthlyExpenses)}
+                  {formatCurrency(stats.monthlyExpenses)}
                 </div>
               </div>
             </div>
@@ -345,7 +338,7 @@ export function RecurringTransactionsPage() {
                   </div>
                   <div className="text-right">
                     <div className={`balance-text font-bold ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
-                      {transaction.type === 'income' ? '+' : '-'} {formatCents(Math.abs(transaction.amount))}
+                      {transaction.type === 'income' ? '+' : '-'} {formatCurrency(Math.abs(transaction.amount))}
                     </div>
                   </div>
                 </div>

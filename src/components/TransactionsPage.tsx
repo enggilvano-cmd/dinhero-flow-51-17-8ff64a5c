@@ -155,17 +155,7 @@ export function TransactionsPage({
   }, [search]);
 
   const { toast } = useToast();
-  const { settings } = useSettings();
-
-  // =================================================================
-  // CORREÇÃO 1: A função 'formatCurrency' local deve dividir por 100
-  // =================================================================
-  const formatCurrency = (valueInCents: number) => {
-    return new Intl.NumberFormat(settings.language === 'pt-BR' ? 'pt-BR' : settings.language === 'es-ES' ? 'es-ES' : 'en-US', {
-      style: "currency",
-      currency: settings.currency,
-    }).format(valueInCents / 100); // Dividido por 100
-  };
+  const { settings, formatCurrency } = useSettings();
 
   // Filter accounts by type for the account selector
   const accountsByType = useMemo(() => {

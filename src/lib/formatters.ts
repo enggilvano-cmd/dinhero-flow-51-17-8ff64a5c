@@ -1,22 +1,57 @@
 import { Account } from "@/types";
 
 /**
+ * Mapeamento de moedas para locales padrão
+ */
+const CURRENCY_LOCALES: Record<string, string> = {
+  'BRL': 'pt-BR',
+  'USD': 'en-US', 
+  'EUR': 'de-DE',
+  'GBP': 'en-GB',
+  'JPY': 'ja-JP',
+  'ARS': 'es-AR',
+  'MXN': 'es-MX',
+};
+
+/**
+ * Símbolos de moedas para fallback
+ */
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  'BRL': 'R$',
+  'USD': '$',
+  'EUR': '€',
+  'GBP': '£',
+  'JPY': '¥',
+  'ARS': '$',
+  'MXN': '$',
+};
+
+/**
  * Formata um valor numérico (em centavos) para uma string de moeda.
  * @param valueInCents O valor em centavos.
  * @param currency Código da moeda (padrão: 'BRL').
- * @param locale Locale para formatação (padrão: 'pt-BR').
+ * @param locale Locale para formatação (padrão: automático baseado na moeda).
  * @returns A string formatada, ex: "R$ 1.234,56".
  */
 export function formatCurrency(
   valueInCents: number, 
   currency: string = 'BRL', 
-  locale: string = 'pt-BR'
+  locale?: string
 ): string {
   const value = valueInCents / 100;
-  return new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency: currency,
-  }).format(value);
+  const finalLocale = locale || CURRENCY_LOCALES[currency] || 'pt-BR';
+  
+  try {
+    return new Intl.NumberFormat(finalLocale, {
+      style: 'currency',
+      currency: currency,
+      minimumFractionDigits: 2,
+    }).format(value);
+  } catch (error) {
+    // Fallback se a moeda não for suportada
+    const symbol = CURRENCY_SYMBOLS[currency] || currency;
+    return `${symbol} ${value.toFixed(2).replace('.', ',')}`;
+  }
 }
 
 /**

@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Upload, FileSpreadsheet, AlertCircle, MoreVertical, Copy, AlertTriangle, PlusCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { loadXLSX } from "@/lib/lazyImports";
+import { formatCurrency } from "@/lib/formatters";
 
 interface Account {
   id: string;
@@ -442,13 +443,6 @@ export function ImportAccountsModal({
     ).length;
   }, [importedData, excludedIndexes]);
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    }).format(value);
-  };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col" onInteractOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()}>
@@ -644,10 +638,10 @@ export function ImportAccountsModal({
                             <TableCell>{account.nome}</TableCell>
                             <TableCell>{account.tipo}</TableCell>
                             <TableCell className={account.saldo < 0 ? "text-destructive font-medium" : "text-success font-medium"}>
-                              {formatCurrency(account.saldo)}
+                              {formatCurrency(account.saldo * 100)}
                             </TableCell>
                             <TableCell>
-                              {account.limite > 0 ? formatCurrency(account.limite) : '-'}
+                              {account.limite > 0 ? formatCurrency(account.limite * 100) : '-'}
                             </TableCell>
                             <TableCell>
                               <div className="flex items-center gap-2">
