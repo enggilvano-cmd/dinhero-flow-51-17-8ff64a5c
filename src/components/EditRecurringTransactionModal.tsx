@@ -14,7 +14,6 @@ import { cn } from "@/lib/utils";
 import { useCategories } from "@/hooks/useCategories";
 import { CurrencyInput } from "@/components/forms/CurrencyInput";
 import { ACCOUNT_TYPE_LABELS } from "@/types";
-import { TransactionScopeDialog, EditScope } from "./TransactionScopeDialog";
 
 interface RecurringTransaction {
   id: string;
@@ -26,7 +25,6 @@ interface RecurringTransaction {
   account_id: string;
   recurrence_type: "daily" | "weekly" | "monthly" | "yearly" | null;
   recurrence_end_date: string | null;
-  parent_transaction_id?: string | null;
 }
 
 interface Account {
@@ -39,7 +37,7 @@ interface Account {
 interface EditRecurringTransactionModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onEditTransaction: (transaction: RecurringTransaction, scope?: EditScope) => void;
+  onEditTransaction: (transaction: RecurringTransaction) => void;
   transaction: RecurringTransaction | null;
   accounts: Account[];
 }
@@ -60,8 +58,6 @@ export function EditRecurringTransactionModal({
     recurrence_type: "monthly" as "daily" | "weekly" | "monthly" | "yearly",
     recurrence_end_date: null as Date | null,
   });
-  const [originalData, setOriginalData] = useState(formData);
-  const [scopeDialogOpen, setScopeDialogOpen] = useState(false);
   const { toast } = useToast();
   const { categories } = useCategories();
 
@@ -69,7 +65,7 @@ export function EditRecurringTransactionModal({
     if (open && transaction) {
       const transactionType = transaction.type === "transfer" ? "expense" : transaction.type;
       
-      const initialData = {
+      setFormData({
         description: transaction.description,
         amountInCents: Math.abs(transaction.amount),
         type: transactionType as "income" | "expense",
@@ -77,10 +73,7 @@ export function EditRecurringTransactionModal({
         account_id: transaction.account_id,
         recurrence_type: transaction.recurrence_type || "monthly",
         recurrence_end_date: transaction.recurrence_end_date ? new Date(transaction.recurrence_end_date) : null,
-      };
-      
-      setFormData(initialData);
-      setOriginalData(initialData);
+      });
     }
   }, [open, transaction]);
 
@@ -107,84 +100,30 @@ export function EditRecurringTransactionModal({
       return;
     }
 
-    // Verificar se há mudanças
-    const hasChanges = 
-      formData.description.trim() !== originalData.description.trim() ||
-      formData.amountInCents !== originalData.amountInCents ||
-      formData.type !== originalData.type ||
-      formData.category_id !== originalData.category_id ||
-      formData.account_id !== originalData.account_id ||
-      formData.recurrence_type !== originalData.recurrence_type ||
-      formData.recurrence_end_date?.getTime() !== originalData.recurrence_end_date?.getTime();
+    const finalAmount = formData.type === 'income' 
+      ? formData.amountInCents 
+      : -Math.abs(formData.amountInCents);
 
-    if (!hasChanges) {
-      toast({
-        title: "Aviso",
-        description: "Nenhuma alteração foi detectada",
-        variant: "default",
-      });
-      onOpenChange(false);
-      return;
-    }
-
-    // Abrir diálogo de escopo para transações recorrentes
-    setScopeDialogOpen(true);
-  };
-
-  const processEdit = (scope: EditScope) => {
-    if (!transaction) return;
-
-    // Detectar apenas os campos que foram modificados
-    const updates: Partial<RecurringTransaction> = {
+    const updatedTransaction: RecurringTransaction = {
       id: transaction.id,
+      description: formData.description.trim(),
+      amount: finalAmount,
       date: transaction.date,
-      parent_transaction_id: transaction.parent_transaction_id ?? undefined,
+      type: formData.type,
+      category_id: formData.category_id,
+      account_id: formData.account_id,
+      recurrence_type: formData.recurrence_type,
+      recurrence_end_date: formData.recurrence_end_date ? format(formData.recurrence_end_date, 'yyyy-MM-dd') : null,
     };
-    
-    if (formData.description.trim() !== originalData.description.trim()) {
-      updates.description = formData.description.trim();
-    }
-    
-    if (formData.amountInCents !== originalData.amountInCents || formData.type !== originalData.type) {
-      const finalAmount = formData.type === 'income' 
-        ? formData.amountInCents 
-        : -Math.abs(formData.amountInCents);
-      updates.amount = finalAmount;
-    }
-    
-    if (formData.type !== originalData.type) {
-      updates.type = formData.type;
-    }
-    
-    if (formData.category_id !== originalData.category_id) {
-      updates.category_id = formData.category_id;
-    }
-    
-    if (formData.account_id !== originalData.account_id) {
-      updates.account_id = formData.account_id;
-    }
-    
-    if (formData.recurrence_type !== originalData.recurrence_type) {
-      updates.recurrence_type = formData.recurrence_type;
-    }
-    
-    if (formData.recurrence_end_date?.getTime() !== originalData.recurrence_end_date?.getTime()) {
-      updates.recurrence_end_date = formData.recurrence_end_date ? format(formData.recurrence_end_date, 'yyyy-MM-dd') : null;
-    }
 
-    onEditTransaction(updates as RecurringTransaction, scope);
-    
-    const scopeDescription = scope === "current" ? "Transação recorrente atualizada com sucesso" : 
-                             scope === "all" ? "Todas as ocorrências atualizadas com sucesso" :
-                             "Ocorrências selecionadas atualizadas com sucesso";
+    onEditTransaction(updatedTransaction);
     
     toast({
       title: "Sucesso",
-      description: scopeDescription,
+      description: "Transação recorrente atualizada com sucesso",
     });
 
     onOpenChange(false);
-    setScopeDialogOpen(false);
   };
 
   const filteredCategories = categories.filter(cat => 
@@ -192,7 +131,6 @@ export function EditRecurringTransactionModal({
   );
 
   return (
-    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
@@ -361,14 +299,5 @@ export function EditRecurringTransactionModal({
         </form>
       </DialogContent>
     </Dialog>
-
-    <TransactionScopeDialog
-      open={scopeDialogOpen}
-      onOpenChange={setScopeDialogOpen}
-      onScopeSelected={processEdit}
-      isRecurring={true}
-      mode="edit"
-    />
-    </>
   );
 }

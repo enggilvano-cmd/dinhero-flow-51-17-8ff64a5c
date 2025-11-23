@@ -12,8 +12,17 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/context/SettingsContext";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { EditRecurringTransactionModal } from "./EditRecurringTransactionModal";
-import { TransactionScopeDialog, EditScope } from "./TransactionScopeDialog";
 
 interface RecurringTransaction {
   id: string;
@@ -25,7 +34,6 @@ interface RecurringTransaction {
   account_id: string;
   recurrence_type: "daily" | "weekly" | "monthly" | "yearly" | null;
   recurrence_end_date: string | null;
-  parent_transaction_id?: string | null;
   category?: { name: string; color: string } | null;
   account?: { name: string } | null;
 }
@@ -34,8 +42,7 @@ export function RecurringTransactionsPage() {
   const [transactions, setTransactions] = useState<RecurringTransaction[]>([]);
   const [accounts, setAccounts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [scopeDialogOpen, setScopeDialogOpen] = useState(false);
-  const [pendingDeleteTransaction, setPendingDeleteTransaction] = useState<RecurringTransaction | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [editTransaction, setEditTransaction] = useState<RecurringTransaction | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<"all" | "income" | "expense">("all");
@@ -107,78 +114,25 @@ export function RecurringTransactionsPage() {
     }
   };
 
-  const handleEdit = async (updatedTransaction: RecurringTransaction, scope?: EditScope) => {
+  const handleEdit = async (updatedTransaction: RecurringTransaction) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      const { error } = await supabase
+        .from('transactions')
+        .update({
+          description: updatedTransaction.description,
+          amount: updatedTransaction.amount,
+          type: updatedTransaction.type,
+          category_id: updatedTransaction.category_id,
+          account_id: updatedTransaction.account_id,
+          recurrence_type: updatedTransaction.recurrence_type,
+          recurrence_end_date: updatedTransaction.recurrence_end_date,
+        })
+        .eq('id', updatedTransaction.id);
 
-      // Extrair apenas os campos que foram passados (excluindo id, date e parent_transaction_id)
-      const { id, date, parent_transaction_id, ...updates } = updatedTransaction;
-
-      // Determinar o ID da transação principal (parent)
-      const parentId = parent_transaction_id || id;
-
-      let description = "";
-
-      if (!scope || scope === "current") {
-        // Editar apenas a transação atual
-        const { error } = await supabase
-          .from('transactions')
-          .update(updates)
-          .eq('id', id);
-        if (error) throw error;
-        description = "Transação recorrente atualizada com sucesso";
-      } else if (scope === "current-and-remaining") {
-        // Buscar a data da transação atual
-        const { data: currentTx } = await supabase
-          .from('transactions')
-          .select('date')
-          .eq('id', id)
-          .single();
-
-        if (!currentTx) throw new Error("Transação não encontrada");
-
-        // Editar esta transação
-        const { error: currentError } = await supabase
-          .from('transactions')
-          .update(updates)
-          .eq('id', id);
-        if (currentError) throw currentError;
-
-        // Editar transações futuras (com data >= data atual)
-        const { error: futureError } = await supabase
-          .from('transactions')
-          .update(updates)
-          .eq('parent_transaction_id', parentId)
-          .gte('date', currentTx.date)
-          .neq('id', id);
-        if (futureError) throw futureError;
-
-        description = "Transação recorrente e futuras atualizadas com sucesso";
-      } else if (scope === "all") {
-        // Editar toda a série
-        const { error: mainError } = await supabase
-          .from('transactions')
-          .update(updates)
-          .eq('id', parentId);
-        if (mainError) throw mainError;
-
-        // Editar TODAS as filhas
-        const { error: childrenError } = await supabase
-          .from('transactions')
-          .update(updates)
-          .eq('parent_transaction_id', parentId);
-        if (childrenError) throw childrenError;
-        description = "Todas as transações recorrentes da série atualizadas com sucesso";
-      }
-
-      toast({
-        title: "Sucesso",
-        description,
-      });
+      if (error) throw error;
 
       setTransactions(prev => prev.map(t => 
-        t.id === id ? { ...t, ...updatedTransaction } : t
+        t.id === updatedTransaction.id ? { ...t, ...updatedTransaction } : t
       ));
       
       loadRecurringTransactions();
@@ -192,67 +146,24 @@ export function RecurringTransactionsPage() {
     }
   };
 
-  const handleDeleteWithScope = (transaction: RecurringTransaction) => {
-    // Abrir diálogo de escopo para transações recorrentes
-    setPendingDeleteTransaction(transaction);
-    setScopeDialogOpen(true);
-  };
-
-  const handleDelete = async (scope: EditScope) => {
-    if (!pendingDeleteTransaction) return;
+  const handleDelete = async () => {
+    if (!deleteId) return;
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      const { error } = await supabase
+        .from('transactions')
+        .delete()
+        .eq('id', deleteId);
 
-      // Determinar o ID da transação principal (parent)
-      const parentId = pendingDeleteTransaction.parent_transaction_id || pendingDeleteTransaction.id;
-
-      let description = "";
-
-      if (scope === "current") {
-        // Deletar apenas a transação atual
-        const { error } = await supabase
-          .from('transactions')
-          .delete()
-          .eq('id', pendingDeleteTransaction.id);
-        if (error) throw error;
-        description = "Transação recorrente removida com sucesso";
-      } else if (scope === "current-and-remaining") {
-        // Buscar a data da transação atual
-        const { data: currentTx } = await supabase
-          .from('transactions')
-          .select('date')
-          .eq('id', pendingDeleteTransaction.id)
-          .single();
-
-        if (!currentTx) throw new Error("Transação não encontrada");
-
-        // Deletar esta transação e transações futuras (com data >= data atual)
-        const { error } = await supabase
-          .from('transactions')
-          .delete()
-          .or(`id.eq.${pendingDeleteTransaction.id},and(parent_transaction_id.eq.${parentId},date.gte.${currentTx.date})`)
-          .eq('user_id', user.id);
-        if (error) throw error;
-        description = "Transação recorrente e futuras removidas com sucesso";
-      } else if (scope === "all") {
-        // Deletar toda a série
-        const { error } = await supabase
-          .from('transactions')
-          .delete()
-          .or(`id.eq.${parentId},parent_transaction_id.eq.${parentId}`)
-          .eq('user_id', user.id);
-        if (error) throw error;
-        description = "Todas as transações recorrentes da série removidas com sucesso";
-      }
+      if (error) throw error;
 
       toast({
         title: "Sucesso",
-        description,
+        description: "Transação recorrente excluída com sucesso",
       });
 
-      setTransactions(prev => prev.filter(t => t.id !== pendingDeleteTransaction.id));
+      setTransactions(prev => prev.filter(t => t.id !== deleteId));
+      setDeleteId(null);
     } catch (error) {
       logger.error('Error deleting recurring transaction:', error);
       toast({
@@ -260,9 +171,6 @@ export function RecurringTransactionsPage() {
         description: "Erro ao excluir transação recorrente",
         variant: "destructive",
       });
-    } finally {
-      setScopeDialogOpen(false);
-      setPendingDeleteTransaction(null);
     }
   };
 
@@ -496,7 +404,7 @@ export function RecurringTransactionsPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleDeleteWithScope(transaction)}
+                      onClick={() => setDeleteId(transaction.id)}
                     >
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
@@ -508,15 +416,22 @@ export function RecurringTransactionsPage() {
         </div>
       )}
 
-      {pendingDeleteTransaction && (
-        <TransactionScopeDialog
-          open={scopeDialogOpen}
-          onOpenChange={setScopeDialogOpen}
-          onScopeSelected={handleDelete}
-          isRecurring={true}
-          mode="delete"
-        />
-      )}
+      <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir Transação Recorrente</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir esta transação recorrente? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <EditRecurringTransactionModal
         open={!!editTransaction}
