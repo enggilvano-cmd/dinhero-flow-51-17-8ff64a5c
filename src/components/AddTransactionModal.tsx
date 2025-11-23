@@ -139,16 +139,8 @@ export function AddTransactionModal({
       });
       setCustomInstallments("");
       setValidationErrors({});
-      
-      // Pré-seleciona a conta se um tipo de conta foi especificado
-      if (initialAccountType && accounts.length > 0) {
-        const accountOfType = accounts.find(acc => acc.type === initialAccountType);
-        if (accountOfType) {
-          setFormData((prev) => ({ ...prev, account_id: accountOfType.id }));
-        }
-      }
     }
-  }, [open, initialType, initialAccountType, accounts]);
+  }, [open, initialType, accounts]);
 
   // Recalcula o mês da fatura quando a data ou conta mudam
   useEffect(() => {
