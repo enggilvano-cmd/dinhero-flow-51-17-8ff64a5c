@@ -461,30 +461,27 @@ export function AccountingReportsPage() {
 
       {/* Abas de Relatórios */}
       <Tabs defaultValue="dre" className="space-y-4">
-        <div className="overflow-x-auto -mx-2 px-2 sm:mx-0 sm:px-0 pb-1">
-          <TabsList className="inline-flex w-auto min-w-full lg:w-full lg:grid lg:grid-cols-5 gap-2 p-1">
-            <TabsTrigger value="dre" className="flex items-center gap-2 flex-shrink-0 px-4">
-              <TrendingUp className="h-4 w-4 flex-shrink-0" />
+        <div className="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0 pb-2">
+          <TabsList className="inline-flex w-auto gap-1.5 p-1 h-auto">
+            <TabsTrigger value="dre" className="flex items-center gap-1.5 flex-shrink-0 px-3 py-2 text-xs sm:text-sm">
+              <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
               <span>DRE</span>
             </TabsTrigger>
-            <TabsTrigger value="balance" className="flex items-center gap-2 flex-shrink-0 px-4">
-              <Scale className="h-4 w-4 flex-shrink-0" />
+            <TabsTrigger value="balance" className="flex items-center gap-1.5 flex-shrink-0 px-3 py-2 text-xs sm:text-sm">
+              <Scale className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
               <span>Balanço</span>
             </TabsTrigger>
-            <TabsTrigger value="cashflow" className="flex items-center gap-2 flex-shrink-0 px-4">
-              <Waves className="h-4 w-4 flex-shrink-0" />
-              <span className="hidden sm:inline">Fluxo de Caixa</span>
-              <span className="sm:hidden">Fluxo</span>
+            <TabsTrigger value="cashflow" className="flex items-center gap-1.5 flex-shrink-0 px-3 py-2 text-xs sm:text-sm">
+              <Waves className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+              <span>Fluxo</span>
             </TabsTrigger>
-            <TabsTrigger value="trial-balance" className="flex items-center gap-2 flex-shrink-0 px-4">
-              <Wallet className="h-4 w-4 flex-shrink-0" />
-              <span className="hidden sm:inline">Balancete</span>
-              <span className="sm:hidden">Balanc.</span>
+            <TabsTrigger value="trial-balance" className="flex items-center gap-1.5 flex-shrink-0 px-3 py-2 text-xs sm:text-sm">
+              <Wallet className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+              <span>Balancete</span>
             </TabsTrigger>
-            <TabsTrigger value="journal" className="flex items-center gap-2 flex-shrink-0 px-4">
-              <BookOpen className="h-4 w-4 flex-shrink-0" />
-              <span className="hidden sm:inline">Livro Diário</span>
-              <span className="sm:hidden">Diário</span>
+            <TabsTrigger value="journal" className="flex items-center gap-1.5 flex-shrink-0 px-3 py-2 text-xs sm:text-sm">
+              <BookOpen className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+              <span>Diário</span>
             </TabsTrigger>
           </TabsList>
         </div>
