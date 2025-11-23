@@ -36,9 +36,10 @@ export function TwoFactorSetup({ onComplete }: TwoFactorSetupProps) {
       }
     } catch (error) {
       logger.error('Erro ao iniciar 2FA:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Não foi possível iniciar a configuração do 2FA';
       toast({
         title: 'Falha na Configuração',
-        description: error.message || 'Não foi possível iniciar a configuração do 2FA',
+        description: errorMessage,
         variant: 'destructive'
       });
     } finally {

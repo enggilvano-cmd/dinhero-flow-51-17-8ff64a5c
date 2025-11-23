@@ -44,9 +44,10 @@ export function DatabasePerformanceTest() {
       await runAnalyze();
     } catch (error) {
       logger.error('Error generating test data:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       toast({
         title: "❌ Erro ao gerar dados",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -135,9 +136,10 @@ export function DatabasePerformanceTest() {
       });
     } catch (error) {
       logger.error('Error running performance tests:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       toast({
         title: "❌ Erro nos testes",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
