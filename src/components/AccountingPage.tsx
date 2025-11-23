@@ -6,7 +6,7 @@ import { BookOpen, BookText, Calendar } from "lucide-react";
 
 export function AccountingPage() {
   return (
-    <div className="space-y-6 fade-in">
+    <div className="spacing-responsive-lg fade-in pb-6 sm:pb-8">
 
       <Tabs defaultValue="reports" className="w-full">
         <TabsList className="grid w-full grid-cols-3 gap-2 h-auto p-1">

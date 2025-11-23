@@ -21,9 +21,10 @@ import {
   CheckCircle2,
   XCircle,
   CalendarIcon,
-  Filter,
   Download,
   AlertCircle,
+  BarChart3,
+  DollarSign,
 } from "lucide-react";
 import { ResponsiveTable } from "@/components/ui/responsive-table";
 import { format, startOfMonth, endOfMonth } from "date-fns";
@@ -254,71 +255,80 @@ export function BankReconciliationPage({
   ];
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex justify-end">
-        <Button onClick={handleExport} variant="outline" className="gap-1.5 apple-interaction h-9 text-xs sm:text-sm px-3">
-          <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
-          <span className="truncate">Exportar</span>
-        </Button>
+    <div className="spacing-responsive-lg fade-in pb-6 sm:pb-8">
+      {/* Header */}
+      <div className="flex flex-col gap-3">
+        <div className="grid grid-cols-1 gap-2 w-full lg:flex lg:flex-nowrap lg:gap-2 lg:w-auto lg:ml-auto">
+          <Button onClick={handleExport} variant="outline" className="gap-1.5 apple-interaction h-9 text-xs sm:text-sm px-3">
+            <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+            <span className="truncate">Exportar</span>
+          </Button>
+        </div>
       </div>
 
-      {/* Estatísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total de Transações
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <Card className="financial-card">
+          <CardContent className="p-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <BarChart3 className="h-5 w-5 text-primary" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-caption font-medium text-muted-foreground">Total de Transações</p>
+                <div className="text-responsive-xl font-bold leading-tight">{stats.total}</div>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Reconciliadas
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-success">{stats.reconciled}</div>
+        <Card className="financial-card">
+          <CardContent className="p-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-success/10 flex items-center justify-center flex-shrink-0">
+                <CheckCircle2 className="h-5 w-5 text-success" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-caption font-medium text-muted-foreground">Reconciliadas</p>
+                <div className="text-responsive-xl font-bold balance-positive leading-tight">{stats.reconciled}</div>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Não Reconciliadas
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-destructive">{stats.notReconciled}</div>
+        <Card className="financial-card">
+          <CardContent className="p-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center flex-shrink-0">
+                <XCircle className="h-5 w-5 text-destructive" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-caption font-medium text-muted-foreground">Não Reconciliadas</p>
+                <div className="text-responsive-xl font-bold balance-negative leading-tight">{stats.notReconciled}</div>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Valor Reconciliado
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.reconciledAmount)}</div>
+        <Card className="financial-card">
+          <CardContent className="p-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-muted/50 flex items-center justify-center flex-shrink-0">
+                <DollarSign className="h-5 w-5 text-muted-foreground" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-caption font-medium text-muted-foreground">Valor Reconciliado</p>
+                <div className="text-responsive-xl font-bold leading-tight">{formatCurrency(stats.reconciledAmount)}</div>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Filtros */}
+      {/* Filters */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Filter className="w-5 h-5" />
-            Filtros
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <CardContent className="p-2 sm:p-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Filtro de Conta */}
             <div className="space-y-2">
               <Label>Conta</Label>
