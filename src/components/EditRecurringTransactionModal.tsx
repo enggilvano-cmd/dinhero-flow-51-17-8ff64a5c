@@ -26,6 +26,7 @@ interface RecurringTransaction {
   account_id: string;
   recurrence_type: "daily" | "weekly" | "monthly" | "yearly" | null;
   recurrence_end_date: string | null;
+  parent_transaction_id?: string | null;
 }
 
 interface Account {
@@ -137,6 +138,7 @@ export function EditRecurringTransactionModal({
     const updates: Partial<RecurringTransaction> = {
       id: transaction.id,
       date: transaction.date,
+      parent_transaction_id: transaction.parent_transaction_id ?? undefined,
     };
     
     if (formData.description.trim() !== originalData.description.trim()) {

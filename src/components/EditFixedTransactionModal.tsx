@@ -31,6 +31,7 @@ interface FixedTransaction {
   category_id: string | null;
   account_id: string;
   is_fixed: boolean;
+  parent_transaction_id?: string | null;
 }
 
 interface Account {
@@ -148,6 +149,7 @@ export function EditFixedTransactionModal({
     const updates: Partial<FixedTransaction> = {
       id: transaction.id,
       is_fixed: true,
+      parent_transaction_id: (transaction as any).parent_transaction_id ?? undefined,
     };
     
     if (formData.description.trim() !== originalData.description.trim()) {
