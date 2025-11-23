@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { Account } from '@/types';
 import { formatCurrency } from '@/lib/formatters';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
 
 export type ValidationStatus = 'success' | 'warning' | 'danger';
 
@@ -348,18 +349,19 @@ export async function validateCreditLimitForAdd(
       },
     };
   } catch (error) {
-    console.error('Error validating credit limit:', error);
-    // Em caso de erro, retornar válido e deixar backend validar
+    logger.error('Error validating credit limit:', error);
+    // CRÍTICO: Retornar inválido em caso de erro para segurança
     return {
-      isValid: true,
-      status: 'success',
-      message: 'Validação delegada ao servidor',
+      isValid: false,
+      status: 'danger',
+      message: 'Erro ao validar limite',
       details: {
         currentBalance: account.balance,
         limit: account.limit_amount || 0,
         available: (account.limit_amount || 0) - Math.abs(Math.min(account.balance, 0)),
         balanceAfter: account.balance - amountInCents,
       },
+      errorMessage: 'Erro ao verificar limite disponível. Por favor, tente novamente.',
     };
   }
 }
@@ -461,17 +463,19 @@ export async function validateCreditLimitForEdit(
       },
     };
   } catch (error) {
-    // Em caso de erro, retornar válido e deixar o backend validar
+    logger.error('Error validating credit limit for edit:', error);
+    // CRÍTICO: Retornar inválido em caso de erro para segurança
     return {
-      isValid: true,
-      status: 'success',
-      message: 'Validação pendente',
+      isValid: false,
+      status: 'danger',
+      message: 'Erro ao validar limite',
       details: {
         currentBalance: account.balance,
         limit: account.limit_amount || 0,
         available: (account.limit_amount || 0) - Math.abs(Math.min(account.balance, 0)),
         balanceAfter: account.balance,
       },
+      errorMessage: 'Erro ao verificar limite disponível. Por favor, tente novamente.',
     };
   }
 }

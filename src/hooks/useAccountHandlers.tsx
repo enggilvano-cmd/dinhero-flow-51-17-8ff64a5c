@@ -32,6 +32,44 @@ export function useAccountHandlers() {
   const handleDeleteAccount = useCallback(async (accountId: string) => {
     if (!user) return;
     try {
+      // CRITICAL: Verificar se há transações vinculadas antes de deletar
+      const { data: transactions, error: checkError } = await supabase
+        .from('transactions')
+        .select('id', { count: 'exact', head: true })
+        .eq('account_id', accountId)
+        .limit(1);
+
+      if (checkError) throw checkError;
+
+      // Se há transações, bloquear exclusão
+      if (transactions && transactions.length > 0) {
+        toast({
+          title: 'Não é possível excluir',
+          description: 'Esta conta possui transações vinculadas. Exclua as transações primeiro ou transfira-as para outra conta.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // Verificar se é conta destino em transferências
+      const { data: transfers, error: transferCheckError } = await supabase
+        .from('transactions')
+        .select('id', { count: 'exact', head: true })
+        .eq('to_account_id', accountId)
+        .limit(1);
+
+      if (transferCheckError) throw transferCheckError;
+
+      if (transfers && transfers.length > 0) {
+        toast({
+          title: 'Não é possível excluir',
+          description: 'Esta conta é destino de transferências. Exclua as transferências primeiro.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // Se passou nas verificações, pode deletar
       const { error } = await supabase
         .from('accounts')
         .delete()
@@ -49,7 +87,7 @@ export function useAccountHandlers() {
       logger.error('Error deleting account:', error);
       toast({
         title: 'Erro',
-        description: 'Erro ao excluir conta',
+        description: error instanceof Error ? error.message : 'Erro ao excluir conta',
         variant: 'destructive',
       });
       throw error;

@@ -63,12 +63,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           description: "Não foi possível carregar o perfil do usuário.",
           variant: "destructive",
         });
-        return;
+        return null; // CRITICAL: Return null to signal failure
       }
 
       if (!profileData) {
-        setProfile(null);
-        return;
+        return null; // CRITICAL: Return null if no profile
       }
       
       // Fetch user role from user_roles table (security best practice)
@@ -97,15 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         subscription_expires_at: profileData.subscription_expires_at ?? undefined,
       };
       
-      setProfile(enrichedProfile);
-      
-      // Set Sentry user context for error tracking
-      setSentryUser({
-        id: enrichedProfile.user_id,
-        email: enrichedProfile.email,
-        username: enrichedProfile.full_name || enrichedProfile.email,
-        role: enrichedProfile.role,
-      });
+      return enrichedProfile; // CRITICAL: Return profile data
     } catch (error) {
       logger.error('Error fetching profile:', error);
       toast({
@@ -113,6 +104,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         description: "Erro inesperado ao carregar perfil.",
         variant: "destructive",
       });
+      return null; // CRITICAL: Return null on error
     }
   };
 
@@ -192,7 +184,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     logger.debug('Setting up auth state listener...');
     
-    // Flag para rastrear se o componente ainda está montado
+    // CRITICAL: Flag to track if component is still mounted (prevents race conditions)
     let isMounted = true;
     
     // Set up auth state listener
@@ -200,7 +192,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       async (event, session) => {
         logger.debug('Auth state changed:', event, session?.user?.id);
         
-        // Verificar se ainda está montado antes de atualizar estado
+        // CRITICAL: Check if mounted before any state update
         if (!isMounted) return;
         
         setSession(session);
@@ -210,9 +202,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // Execute profile operations sequentially to avoid race conditions
           (async () => {
             try {
-              await fetchProfile(session.user.id);
+              const profileData = await fetchProfile(session.user.id);
               
-              // Verificar novamente antes de continuar
+              // CRITICAL: Check if mounted before state update
+              if (!isMounted) return;
+              
+              if (profileData) {
+                setProfile(profileData);
+                
+                // Set Sentry user context
+                setSentryUser({
+                  id: profileData.user_id,
+                  email: profileData.email,
+                  username: profileData.full_name || profileData.email,
+                  role: profileData.role,
+                });
+              }
+              
+              // CRITICAL: Check again before continuing
               if (!isMounted) return;
               
               await syncProfileEmail(session.user.id, session.user.email);
@@ -227,7 +234,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 await initializeUserData();
               }
             } catch (error) {
-              // Apenas logar se ainda montado
+              // Only log if still mounted
               if (isMounted) {
                 logger.error('Error in auth state change handler:', error);
               }
@@ -238,6 +245,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setSentryUser(null); // Clear Sentry user context on sign out
         }
         
+        // CRITICAL: Check before state update
         if (isMounted) {
           setLoading(false);
         }
@@ -248,13 +256,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       logger.debug('Initial session check:', session?.user?.id);
       
+      // CRITICAL: Check if mounted
       if (!isMounted) return;
       
       setSession(session);
       setUser(session?.user ?? null);
+      
       if (session?.user) {
         try {
-          await fetchProfile(session.user.id);
+          const profileData = await fetchProfile(session.user.id);
+          
+          // CRITICAL: Check if mounted before state update
+          if (!isMounted) return;
+          
+          if (profileData) {
+            setProfile(profileData);
+            
+            // Set Sentry user context
+            setSentryUser({
+              id: profileData.user_id,
+              email: profileData.email,
+              username: profileData.full_name || profileData.email,
+              role: profileData.role,
+            });
+          }
           
           if (!isMounted) return;
           
@@ -266,12 +291,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
       
+      // CRITICAL: Check before state update
       if (isMounted) {
         setLoading(false);
       }
     });
 
-    // Cleanup function
+    // CRITICAL: Cleanup function to prevent race conditions
     return () => {
       isMounted = false;
       subscription.unsubscribe();
