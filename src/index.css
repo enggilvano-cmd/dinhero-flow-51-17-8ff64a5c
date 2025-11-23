@@ -349,7 +349,47 @@
     @apply text-muted-foreground text-lg sm:text-xl md:text-2xl;
   }
 
-  /* Responsive Text Sizes */
+  /* =================================================================
+     SISTEMA DE TIPOGRAFIA PADRONIZADO - Apple-inspired Typography
+     ================================================================= */
+  
+  /* Caption - Para labels, textos auxiliares e informações secundárias */
+  .text-caption {
+    @apply text-xs sm:text-xs font-medium tracking-wide;
+    letter-spacing: 0.025em;
+  }
+
+  /* Body - Texto padrão do corpo */
+  .text-body {
+    @apply text-sm sm:text-sm font-normal leading-relaxed;
+  }
+
+  /* Body Large - Texto do corpo em destaque */
+  .text-body-large {
+    @apply text-sm sm:text-base font-normal leading-relaxed;
+  }
+
+  /* Headline - Títulos de seção e cards */
+  .text-headline {
+    @apply text-base sm:text-lg font-semibold tracking-tight leading-tight;
+  }
+
+  /* Title - Títulos principais de página */
+  .text-title {
+    @apply text-lg sm:text-xl md:text-2xl font-bold tracking-tight leading-tight;
+  }
+
+  /* Display - Títulos hero e destaques principais */
+  .text-display {
+    @apply text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight leading-tight;
+  }
+
+  /* Responsive Balance Display - Para valores monetários */
+  .balance-text {
+    @apply text-lg sm:text-xl md:text-2xl font-bold tracking-tight leading-none;
+  }
+
+  /* Legacy responsive classes - Mantidas para compatibilidade */
   .text-responsive-sm {
     @apply text-xs sm:text-sm md:text-base;
   }

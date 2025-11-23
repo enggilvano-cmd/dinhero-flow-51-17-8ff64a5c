@@ -478,7 +478,7 @@ export function TransactionsPage({
           <Button
             variant="outline"
             onClick={() => setImportModalOpen(true)}
-            className="gap-1.5 apple-interaction h-9 text-xs sm:text-sm px-3"
+            className="gap-1.5 apple-interaction h-9 text-body px-3"
           >
             <Upload className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
             <span className="truncate">Importar</span>
@@ -486,7 +486,7 @@ export function TransactionsPage({
           <Button
             variant="outline"
             onClick={exportToExcel}
-            className="gap-1.5 apple-interaction h-9 text-xs sm:text-sm px-3"
+            className="gap-1.5 apple-interaction h-9 text-body px-3"
             disabled={transactions.length === 0}
           >
             <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
@@ -494,7 +494,7 @@ export function TransactionsPage({
           </Button>
           <Button
             onClick={onAddTransaction}
-            className="gap-1.5 apple-interaction h-9 text-xs sm:text-sm col-span-2 md:col-span-1 px-3"
+            className="gap-1.5 apple-interaction h-9 text-body col-span-2 md:col-span-1 px-3"
           >
             <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
             <span className="truncate">Adicionar</span>
@@ -514,10 +514,10 @@ export function TransactionsPage({
                   <BarChart3 className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <p className="text-caption font-medium text-muted-foreground">
+                  <p className="text-caption text-muted-foreground">
                     Total Transações
                   </p>
-                  <div className="text-responsive-xl font-bold leading-tight">
+                  <div className="balance-text">
                     {totalCount}
                   </div>
                 </div>
@@ -532,10 +532,10 @@ export function TransactionsPage({
                   <TrendingUp className="h-5 w-5 text-success" />
                 </div>
                 <div>
-                  <p className="text-caption font-medium text-muted-foreground">
+                  <p className="text-caption text-muted-foreground">
                     Receitas
                   </p>
-                  <div className="text-responsive-xl font-bold balance-positive leading-tight">
+                  <div className="balance-text balance-positive">
                     {formatCurrency(aggregatedTotals.income)}
                   </div>
                 </div>
@@ -550,10 +550,10 @@ export function TransactionsPage({
                   <TrendingDown className="h-5 w-5 text-destructive" />
                 </div>
                 <div>
-                  <p className="text-caption font-medium text-muted-foreground">
+                  <p className="text-caption text-muted-foreground">
                     Despesas
                   </p>
-                  <div className="text-responsive-xl font-bold balance-negative leading-tight">
+                  <div className="balance-text balance-negative">
                     {formatCurrency(aggregatedTotals.expenses)}
                   </div>
                 </div>
@@ -568,11 +568,11 @@ export function TransactionsPage({
                   <DollarSign className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <p className="text-caption font-medium text-muted-foreground">
+                  <p className="text-caption text-muted-foreground">
                     Saldo
                   </p>
                   <div
-                    className={`text-responsive-xl font-bold leading-tight ${
+                    className={`balance-text ${
                       aggregatedTotals.income - aggregatedTotals.expenses >= 0
                         ? "balance-positive"
                         : "balance-negative"

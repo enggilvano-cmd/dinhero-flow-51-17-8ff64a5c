@@ -33,6 +33,14 @@ export default {
 				display: ['-apple-system', 'BlinkMacSystemFont', 'SF Pro Display', 'system-ui', 'sans-serif'],
 				mono: ['SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', 'Consolas', 'monospace'],
 			},
+			fontSize: {
+				'caption': ['0.75rem', { lineHeight: '1rem', letterSpacing: '0.025em', fontWeight: '500' }],
+				'body': ['0.875rem', { lineHeight: '1.5rem', fontWeight: '400' }],
+				'body-large': ['1rem', { lineHeight: '1.5rem', fontWeight: '400' }],
+				'headline': ['1.125rem', { lineHeight: '1.75rem', letterSpacing: '-0.01em', fontWeight: '600' }],
+				'title': ['1.5rem', { lineHeight: '2rem', letterSpacing: '-0.02em', fontWeight: '700' }],
+				'display': ['2.25rem', { lineHeight: '2.5rem', letterSpacing: '-0.025em', fontWeight: '700' }],
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',

@@ -40,7 +40,7 @@ export function AccountsSummary({
       tabIndex={0}
     >
       <CardHeader className="pb-2">
-        <CardTitle className="text-sm flex items-center gap-2">
+        <CardTitle className="text-headline flex items-center gap-2">
           <CreditCard className="h-4 w-4" />
           {title} ({filteredAccounts.length})
         </CardTitle>
@@ -48,7 +48,7 @@ export function AccountsSummary({
       <CardContent className="p-3 pt-0">
         {filteredAccounts.length === 0 ? (
           <div className="text-center py-3 text-muted-foreground">
-            <p className="text-xs">{emptyMessage}</p>
+            <p className="text-body">{emptyMessage}</p>
             <Button
               variant="outline"
               size="sm"
@@ -56,7 +56,7 @@ export function AccountsSummary({
                 e.stopPropagation();
                 onAddAccount?.();
               }}
-              className="mt-2 h-7 text-xs"
+              className="mt-2 h-7 text-body"
             >
               Adicionar conta
             </Button>
@@ -73,17 +73,17 @@ export function AccountsSummary({
                     className="w-5 h-5 rounded-full flex items-center justify-center text-white flex-shrink-0"
                     style={{ backgroundColor: account.color || '#6b7280' }}
                   >
-                    <div className="text-xs font-semibold">
+                    <div className="text-caption font-semibold">
                       {account.type === 'checking' && 'C'}
                       {account.type === 'savings' && 'P'}
                       {account.type === 'credit' && 'R'}
                       {account.type === 'investment' && 'I'}
                     </div>
                   </div>
-                  <p className="font-medium text-xs truncate">{account.name}</p>
+                  <p className="font-medium text-body truncate">{account.name}</p>
                 </div>
                 <div
-                  className={`text-xs font-medium flex-shrink-0 ${
+                  className={`text-body font-medium flex-shrink-0 ${
                     account.type === 'credit'
                       ? account.balance < 0
                         ? 'text-destructive'
@@ -100,9 +100,9 @@ export function AccountsSummary({
             {filteredAccounts.length > 0 && (
               <div className="mt-3 pt-3 border-t border-border">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold">Total:</span>
+                  <span className="text-headline">Total:</span>
                   <span
-                    className={`text-sm font-bold ${
+                    className={`text-headline ${
                       accountTypes?.includes('credit')
                         ? totalBalance < 0
                           ? 'text-destructive'

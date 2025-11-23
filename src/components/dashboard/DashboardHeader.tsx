@@ -20,7 +20,7 @@ export function DashboardHeader({
         <Button
           onClick={onTransfer}
           variant="outline"
-          className="gap-1.5 apple-interaction h-9 text-xs sm:text-sm px-3"
+          className="gap-1.5 apple-interaction h-9 text-body px-3"
           aria-label="Transferência"
         >
           <ArrowRightLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" aria-hidden="true" />
@@ -29,7 +29,7 @@ export function DashboardHeader({
         <Button
           onClick={onAddExpense}
           variant="destructive"
-          className="gap-1.5 apple-interaction h-9 text-xs sm:text-sm px-3"
+          className="gap-1.5 apple-interaction h-9 text-body px-3"
           aria-label="Despesa"
         >
           <TrendingDown className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" aria-hidden="true" />
@@ -38,7 +38,7 @@ export function DashboardHeader({
         <Button
           onClick={onAddIncome}
           variant="default"
-          className="gap-1.5 apple-interaction h-9 text-xs sm:text-sm bg-success hover:bg-success/90 px-3"
+          className="gap-1.5 apple-interaction h-9 text-body bg-success hover:bg-success/90 px-3"
           aria-label="Receita"
         >
           <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" aria-hidden="true" />
@@ -47,7 +47,7 @@ export function DashboardHeader({
         <Button
           onClick={onAddCreditExpense}
           variant="outline"
-          className="gap-1.5 apple-interaction h-9 text-xs sm:text-sm border-warning text-warning hover:bg-warning hover:text-warning-foreground px-2 sm:px-3"
+          className="gap-1.5 apple-interaction h-9 text-body border-warning text-warning hover:bg-warning hover:text-warning-foreground px-2 sm:px-3"
           aria-label="Cartão de Crédito"
         >
           <CreditCard className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" aria-hidden="true" />

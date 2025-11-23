@@ -55,11 +55,11 @@ export function FilterCard({
       <CardContent className="p-3">
         <div className="space-y-3">
           <div>
-            <label id="period-filter-label" className="text-xs font-medium mb-1 block">
+            <label id="period-filter-label" className="text-caption mb-1 block">
               Período
             </label>
             <Select value={dateFilter} onValueChange={(value: DateFilterType) => setDateFilter(value)}>
-              <SelectTrigger className="h-8 text-xs" aria-labelledby="period-filter-label">
+              <SelectTrigger className="h-8 text-body" aria-labelledby="period-filter-label">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -73,7 +73,7 @@ export function FilterCard({
 
           {dateFilter === 'month_picker' && (
             <div>
-              <label id="month-navigation-label" className="text-xs font-medium mb-1 block">
+              <label id="month-navigation-label" className="text-caption mb-1 block">
                 Mês
               </label>
               <div className="flex items-center gap-1 h-8 px-2 border border-input rounded-md">
@@ -86,7 +86,7 @@ export function FilterCard({
                 >
                   <ChevronLeft className="h-3 w-3" aria-hidden="true" />
                 </Button>
-                <span className="flex-1 text-center text-xs font-medium" aria-live="polite">
+                <span className="flex-1 text-center text-caption" aria-live="polite">
                   {format(selectedMonth, 'MMM/yy', { locale: ptBR })}
                 </span>
                 <Button
@@ -105,7 +105,7 @@ export function FilterCard({
           {dateFilter === 'custom' && (
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label id="start-date-label" className="text-xs font-medium mb-1 block">
+                <label id="start-date-label" className="text-caption mb-1 block">
                   Início
                 </label>
                 <Popover open={startDatePickerOpen} onOpenChange={setStartDatePickerOpen}>
@@ -114,7 +114,7 @@ export function FilterCard({
                       variant="outline"
                       size="sm"
                       className={cn(
-                        'w-full h-8 justify-start text-left font-normal text-xs',
+                        'w-full h-8 justify-start text-left font-normal text-body',
                         !customStartDate && 'text-muted-foreground'
                       )}
                       aria-labelledby="start-date-label"
@@ -143,7 +143,7 @@ export function FilterCard({
               </div>
 
               <div>
-                <label id="end-date-label" className="text-xs font-medium mb-1 block">
+                <label id="end-date-label" className="text-caption mb-1 block">
                   Final
                 </label>
                 <Popover open={endDatePickerOpen} onOpenChange={setEndDatePickerOpen}>
@@ -152,7 +152,7 @@ export function FilterCard({
                       variant="outline"
                       size="sm"
                       className={cn(
-                        'w-full h-8 justify-start text-left font-normal text-xs',
+                        'w-full h-8 justify-start text-left font-normal text-body',
                         !customEndDate && 'text-muted-foreground'
                       )}
                       aria-labelledby="end-date-label"
