@@ -13,7 +13,6 @@ import { AccountBalanceDetails } from "./AccountBalanceDetails";
 import { useAccounts } from "@/hooks/queries/useAccounts";
 import { logger } from "@/lib/logger";
 import { transferSchema } from "@/lib/validationSchemas";
-import { z } from "zod";
 import { TransferModalProps } from "@/types/formProps";
 import { useBalanceValidation } from "@/hooks/useBalanceValidation";
 
@@ -37,53 +36,47 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
     [accounts, formData.fromAccountId]
   );
 
+  // ✅ Validação de saldo movida para o top level (fora do handler)
+  const fromAccount = sourceAccounts.find(acc => acc.id === formData.fromAccountId);
+  const balanceValidation = useBalanceValidation({
+    account: fromAccount,
+    amountInCents: formData.amountInCents,
+    transactionType: 'expense',
+  });
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Validação com Zod
-    try {
-      const validationData = {
-        description: "Transferência",
-        amount: formData.amountInCents,
-        date: formData.date,
-        from_account_id: formData.fromAccountId,
-        to_account_id: formData.toAccountId,
-      };
 
-      transferSchema.parse(validationData);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        const firstError = error.errors[0];
-        toast({
-          title: "Erro de validação",
-          description: firstError.message,
-          variant: "destructive",
-        });
-        logger.error("Validation errors:", error.errors);
-        return;
-      }
+    // Validação Zod
+    const validationResult = transferSchema.safeParse({
+      fromAccountId: formData.fromAccountId,
+      toAccountId: formData.toAccountId,
+      amountInCents: formData.amountInCents,
+      date: formData.date,
+    });
+
+    if (!validationResult.success) {
+      const error = validationResult.error;
+      toast({
+        title: "Erro de Validação",
+        description: error.errors.map(e => e.message).join(", "),
+        variant: "destructive",
+      });
+      logger.error("Validation errors:", error.errors);
+      return;
     }
 
-    // ✅ Usar hook centralizado para validação de saldo da conta de origem
-    const fromAccount = sourceAccounts.find(acc => acc.id === formData.fromAccountId);
-    if (fromAccount) {
-      const validation = useBalanceValidation({
-        account: fromAccount,
-        amountInCents: formData.amountInCents,
-        transactionType: 'expense',
+    // Validar saldo da conta de origem
+    if (fromAccount && !balanceValidation.isValid) {
+      const limitText = fromAccount.limit_amount 
+        ? ` (incluindo limite de ${formatCurrency(fromAccount.limit_amount)})`
+        : '';
+      toast({
+        title: "Saldo Insuficiente",
+        description: `A conta ${fromAccount.name} não possui saldo suficiente${limitText}.`,
+        variant: "destructive"
       });
-
-      if (!validation.isValid) {
-        const limitText = fromAccount.limit_amount 
-          ? ` (incluindo limite de ${formatCurrency(fromAccount.limit_amount)})`
-          : '';
-        toast({
-          title: "Saldo Insuficiente",
-          description: `A conta ${fromAccount.name} não possui saldo suficiente${limitText}.`,
-          variant: "destructive"
-        });
-        return;
-      }
+      return;
     }
 
     setIsSubmitting(true);
