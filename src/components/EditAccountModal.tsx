@@ -147,7 +147,7 @@ export function EditAccountModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[95vw] max-w-[425px] max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+      <DialogContent className="w-[95vw] max-w-[425px] p-4 sm:p-6">
         <DialogHeader className="space-y-2 pb-4">
           <DialogTitle className="text-financial-h3">Editar Conta</DialogTitle>
           <DialogDescription>
