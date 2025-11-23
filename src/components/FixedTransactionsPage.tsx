@@ -771,34 +771,6 @@ export function FixedTransactionsPage() {
         </CardContent>
       </Card>
 
-      {/* Info Card */}
-      <Card className="bg-primary/5 border-primary/20">
-        <CardContent className="p-4">
-          <div className="flex items-start gap-3 mb-3">
-            <div className="p-2 bg-primary/10 rounded-lg flex-shrink-0">
-              <Calendar className="h-5 w-5 text-primary" />
-            </div>
-            <div className="flex-1">
-              <h3 className="text-base font-semibold mb-2">Informações Importantes</h3>
-            </div>
-          </div>
-          <div className="space-y-2 text-sm text-muted-foreground">
-            <p>
-              • <strong>Geração Inicial:</strong> Ao criar uma transação fixa, são geradas automaticamente todas as ocorrências do mês atual até o final do próximo ano.
-            </p>
-            <p>
-              • <strong>Período de Geração:</strong> As transações são criadas para os meses restantes do ano corrente + 12 meses do próximo ano (até 24 ocorrências).
-            </p>
-            <p>
-              • <strong>Edição:</strong> Ao editar uma transação fixa, a transação principal e todas as transações pendentes futuras são atualizadas automaticamente.
-            </p>
-            <p>
-              • <strong>Exclusão:</strong> Ao excluir uma transação fixa, a transação principal e todas as transações pendentes são removidas. As transações já concluídas permanecem no histórico.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-
       <div className="space-y-4">
         {filteredTransactions.length === 0 ? (
           <Card>
