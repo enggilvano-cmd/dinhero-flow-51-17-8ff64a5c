@@ -827,6 +827,24 @@ export type Database = {
           updated_at: string
         }[]
       }
+      get_transactions_totals: {
+        Args: {
+          p_account_id?: string
+          p_account_type?: string
+          p_category_id?: string
+          p_date_from?: string
+          p_date_to?: string
+          p_search?: string
+          p_status?: string
+          p_type?: string
+          p_user_id: string
+        }
+        Returns: {
+          balance: number
+          total_expenses: number
+          total_income: number
+        }[]
+      }
       get_user_role: {
         Args: { user_id: string }
         Returns: Database["public"]["Enums"]["user_role"]
