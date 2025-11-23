@@ -33,6 +33,7 @@ import { addTransactionSchema } from "@/lib/validationSchemas";
 import { z } from "zod";
 import { queryKeys } from "@/lib/queryClient";
 import { ACCOUNT_TYPE_LABELS } from "@/types";
+import { CreditLimitIndicator } from "@/components/forms/CreditLimitIndicator";
 
 interface Transaction {
   id?: string;
@@ -825,8 +826,26 @@ export function AddTransactionModal({
             </div>
           </div>
 
-          {/* Invoice Month Selection for Credit Cards */}
+          {/* Credit Limit Indicator for Credit Cards */}
           {formData.account_id && 
+           formData.type === 'expense' &&
+           accounts.find(acc => acc.id === formData.account_id)?.type === "credit" && (
+            <CreditLimitIndicator
+              accountId={formData.account_id}
+              accountBalance={accounts.find(acc => acc.id === formData.account_id)?.balance || 0}
+              accountLimit={accounts.find(acc => acc.id === formData.account_id)?.limit_amount || 0}
+              transactionAmount={formData.amount}
+              transactionType={formData.type}
+              isInstallment={formData.isInstallment}
+              installmentsCount={formData.isInstallment ? 
+                parseInt(formData.installments === "custom" ? customInstallments : formData.installments) || 1 
+                : 1
+              }
+            />
+          )}
+
+          {/* Invoice Month Selection for Credit Cards */}
+          {formData.account_id &&
            accounts.find(acc => acc.id === formData.account_id)?.type === "credit" && (
             <div className="space-y-2 border-t pt-4">
               <Label htmlFor="invoiceMonth">Mês da Fatura</Label>

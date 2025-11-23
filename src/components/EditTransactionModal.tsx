@@ -17,6 +17,7 @@ import { createDateFromString } from "@/lib/dateUtils";
 import { InstallmentEditScopeDialog, EditScope } from "./InstallmentEditScopeDialog";
 import { CurrencyInput } from "@/components/forms/CurrencyInput";
 import { supabase } from "@/integrations/supabase/client";
+import { CreditLimitIndicator } from "@/components/forms/CreditLimitIndicator";
 
 interface EditTransactionModalProps {
   open: boolean;
@@ -413,8 +414,21 @@ export function EditTransactionModal({
             </Select>
           </div>
 
-          {/* Invoice Month Selection for Credit Cards */}
+          {/* Credit Limit Indicator for Credit Cards */}
           {formData.account_id && 
+           formData.type === 'expense' &&
+           accounts.find(acc => acc.id === formData.account_id)?.type === "credit" && (
+            <CreditLimitIndicator
+              accountId={formData.account_id}
+              accountBalance={accounts.find(acc => acc.id === formData.account_id)?.balance || 0}
+              accountLimit={accounts.find(acc => acc.id === formData.account_id)?.limit_amount || 0}
+              transactionAmount={formData.amountInCents}
+              transactionType={formData.type}
+            />
+          )}
+
+          {/* Invoice Month Selection for Credit Cards */}
+          {formData.account_id &&
            accounts.find(acc => acc.id === formData.account_id)?.type === "credit" && (
             <div className="space-y-2 border-t pt-4">
               <Label htmlFor="invoiceMonth">Mês da Fatura (opcional)</Label>
