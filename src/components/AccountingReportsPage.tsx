@@ -108,6 +108,37 @@ export function AccountingReportsPage() {
     try {
       setMigrating(true);
       
+      // Verificar se chart_of_accounts existe antes de migrar
+      const { data: chartExists, error: chartCheckError } = await supabase
+        .from("chart_of_accounts")
+        .select("id")
+        .limit(1);
+
+      if (chartCheckError) throw chartCheckError;
+
+      // Se não existir chart_of_accounts, inicializar automaticamente
+      if (!chartExists || chartExists.length === 0) {
+        toast({
+          title: "Inicializando Plano de Contas",
+          description: "O plano de contas será criado antes da migração...",
+        });
+
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('Usuário não autenticado');
+
+        const { error: initError } = await supabase.rpc('initialize_chart_of_accounts', {
+          p_user_id: user.id
+        });
+
+        if (initError) {
+          throw new Error(`Falha ao inicializar plano de contas: ${initError.message}`);
+        }
+
+        // Aguardar um momento para garantir que o plano de contas foi criado
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+
+      // Executar migração
       const { data, error } = await supabase.rpc('migrate_existing_transactions_to_journal');
 
       if (error) throw error;
@@ -118,7 +149,7 @@ export function AccountingReportsPage() {
         console.error("Erros na migração:", result.error_details);
         toast({
           title: "Migração Parcial",
-          description: `${result?.processed_count || 0} transações migradas com sucesso. ${result?.error_count || 0} transações falharam. Verifique o console para detalhes.`,
+          description: `${result?.processed_count || 0} transações migradas. ${result?.error_count || 0} falharam. Verifique os detalhes no console.`,
           variant: "default",
         });
       } else {
@@ -131,9 +162,10 @@ export function AccountingReportsPage() {
       await loadData();
     } catch (error) {
       console.error("Erro ao migrar transações:", error);
+      const errorMessage = error instanceof Error ? error.message : "Não foi possível migrar as transações existentes.";
       toast({
         title: "Erro na migração",
-        description: "Não foi possível migrar as transações existentes.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
