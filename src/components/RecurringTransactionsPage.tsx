@@ -12,17 +12,8 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/context/SettingsContext";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { EditRecurringTransactionModal } from "./EditRecurringTransactionModal";
+import { TransactionScopeDialog, EditScope } from "./TransactionScopeDialog";
 
 interface RecurringTransaction {
   id: string;
@@ -34,6 +25,7 @@ interface RecurringTransaction {
   account_id: string;
   recurrence_type: "daily" | "weekly" | "monthly" | "yearly" | null;
   recurrence_end_date: string | null;
+  parent_transaction_id?: string | null;
   category?: { name: string; color: string } | null;
   account?: { name: string } | null;
 }
@@ -42,7 +34,8 @@ export function RecurringTransactionsPage() {
   const [transactions, setTransactions] = useState<RecurringTransaction[]>([]);
   const [accounts, setAccounts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [scopeDialogOpen, setScopeDialogOpen] = useState(false);
+  const [pendingDeleteTransaction, setPendingDeleteTransaction] = useState<RecurringTransaction | null>(null);
   const [editTransaction, setEditTransaction] = useState<RecurringTransaction | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<"all" | "income" | "expense">("all");
@@ -146,24 +139,57 @@ export function RecurringTransactionsPage() {
     }
   };
 
-  const handleDelete = async () => {
-    if (!deleteId) return;
+  const handleDeleteWithScope = (transaction: RecurringTransaction) => {
+    // Abrir diálogo de escopo para transações recorrentes
+    setPendingDeleteTransaction(transaction);
+    setScopeDialogOpen(true);
+  };
+
+  const handleDelete = async (scope: EditScope) => {
+    if (!pendingDeleteTransaction) return;
 
     try {
-      const { error } = await supabase
-        .from('transactions')
-        .delete()
-        .eq('id', deleteId);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-      if (error) throw error;
+      let description = "";
+
+      if (scope === "current") {
+        // Deletar apenas a transação atual
+        const { error } = await supabase
+          .from('transactions')
+          .delete()
+          .eq('id', pendingDeleteTransaction.id);
+        if (error) throw error;
+        description = "Transação recorrente removida com sucesso";
+      } else if (scope === "current-and-remaining") {
+        // Deletar esta e todas as transações futuras desta série
+        const { error } = await supabase
+          .from('transactions')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('parent_transaction_id', pendingDeleteTransaction.parent_transaction_id || pendingDeleteTransaction.id)
+          .gte('date', pendingDeleteTransaction.date);
+        if (error) throw error;
+        description = "Transação recorrente e futuras removidas com sucesso";
+      } else if (scope === "all") {
+        // Deletar toda a série
+        const parentId = pendingDeleteTransaction.parent_transaction_id || pendingDeleteTransaction.id;
+        const { error } = await supabase
+          .from('transactions')
+          .delete()
+          .or(`id.eq.${parentId},parent_transaction_id.eq.${parentId}`)
+          .eq('user_id', user.id);
+        if (error) throw error;
+        description = "Todas as transações recorrentes da série removidas com sucesso";
+      }
 
       toast({
         title: "Sucesso",
-        description: "Transação recorrente excluída com sucesso",
+        description,
       });
 
-      setTransactions(prev => prev.filter(t => t.id !== deleteId));
-      setDeleteId(null);
+      setTransactions(prev => prev.filter(t => t.id !== pendingDeleteTransaction.id));
     } catch (error) {
       logger.error('Error deleting recurring transaction:', error);
       toast({
@@ -171,6 +197,9 @@ export function RecurringTransactionsPage() {
         description: "Erro ao excluir transação recorrente",
         variant: "destructive",
       });
+    } finally {
+      setScopeDialogOpen(false);
+      setPendingDeleteTransaction(null);
     }
   };
 
@@ -404,7 +433,7 @@ export function RecurringTransactionsPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setDeleteId(transaction.id)}
+                      onClick={() => handleDeleteWithScope(transaction)}
                     >
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
@@ -416,22 +445,15 @@ export function RecurringTransactionsPage() {
         </div>
       )}
 
-      <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Excluir Transação Recorrente</AlertDialogTitle>
-            <AlertDialogDescription>
-              Tem certeza que deseja excluir esta transação recorrente? Esta ação não pode ser desfeita.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Excluir
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {pendingDeleteTransaction && (
+        <TransactionScopeDialog
+          open={scopeDialogOpen}
+          onOpenChange={setScopeDialogOpen}
+          onScopeSelected={handleDelete}
+          isRecurring={true}
+          mode="delete"
+        />
+      )}
 
       <EditRecurringTransactionModal
         open={!!editTransaction}
