@@ -333,179 +333,202 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
   };
 
   return (
-    <div className="space-y-8 fade-in pb-6 sm:pb-8">
+    <div className="space-y-6 fade-in pb-6 sm:pb-8 max-w-[1400px] mx-auto">
       {/* Header */}
-      <div>
-        <h1 className="text-xl sm:text-2xl font-bold leading-tight">Configurações</h1>
-        <p className="text-sm text-muted-foreground leading-tight">
+      <div className="mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold leading-tight mb-2">Configurações</h1>
+        <p className="text-muted-foreground">
           Gerencie suas preferências e configurações do sistema
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* General Settings */}
-        <Card className="financial-card">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Settings className="h-5 w-5" />
-              Configurações Gerais
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="theme">Tema</Label>
-              <p className="text-xs text-muted-foreground mb-2">
-                Escolha a aparência do aplicativo
-              </p>
-              <Select 
-                value={localSettings.theme} 
-                onValueChange={(value: any) => setLocalSettings(prev => ({ ...prev, theme: value }))}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="system">Sistema</SelectItem>
-                  <SelectItem value="light">Claro</SelectItem>
-                  <SelectItem value="dark">Escuro</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <Button onClick={handleSaveSettings} className="w-full">
-              Salvar Configurações
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Notifications */}
-        <Card className="financial-card">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Bell className="h-5 w-5" />
-              Notificações
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <Label>Notificações do Sistema</Label>
-                <p className="text-sm text-muted-foreground">
-                  Receber lembretes e alertas importantes
+      {/* Seção: Preferências */}
+      <div>
+        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <Settings className="h-5 w-5" />
+          Preferências
+        </h2>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* General Settings */}
+          <Card className="financial-card">
+            <CardHeader>
+              <CardTitle className="text-base">Aparência</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="theme">Tema</Label>
+                <p className="text-xs text-muted-foreground mb-2">
+                  Escolha a aparência do aplicativo
                 </p>
+                <Select 
+                  value={localSettings.theme} 
+                  onValueChange={(value: any) => setLocalSettings(prev => ({ ...prev, theme: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="system">Sistema</SelectItem>
+                    <SelectItem value="light">Claro</SelectItem>
+                    <SelectItem value="dark">Escuro</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              <Switch
-                checked={localSettings.notifications}
-                onCheckedChange={(checked) => setLocalSettings(prev => ({ ...prev, notifications: checked }))}
-              />
-            </div>
 
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <Label>Backup Automático</Label>
-                <p className="text-sm text-muted-foreground">
-                  Backup automático dos dados localmente
-                </p>
-              </div>
-              <Switch
-                checked={localSettings.autoBackup}
-                onCheckedChange={(checked) => setLocalSettings(prev => ({ ...prev, autoBackup: checked }))}
-              />
-            </div>
+              <Button onClick={handleSaveSettings} className="w-full">
+                Salvar Configurações
+              </Button>
+            </CardContent>
+          </Card>
 
-          </CardContent>
-        </Card>
-
-        {/* Data Management */}
-        <Card className="financial-card">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Database className="h-5 w-5" />
-              Gerenciamento de Dados
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="space-y-3">
-              <h4 className="font-medium">Backup e Restauração</h4>
-              <div className="grid grid-cols-1 gap-3">
-                <Button onClick={handleExportData} variant="outline" className="gap-2">
-                  <Download className="h-4 w-4" />
-                  Exportar Backup JSON
-                </Button>
-                
-                <Button onClick={handleExportToExcel} variant="outline" className="gap-2">
-                  <FileText className="h-4 w-4" />
-                  Exportar Backup Excel
-                </Button>
-                
-                <div className="relative">
-                  <Button 
-                    variant="outline" 
-                    className="gap-2 w-full" 
-                    disabled={isImporting}
-                    asChild
-                  >
-                    <label className={`cursor-pointer ${isImporting ? 'opacity-50' : ''}`}>
-                      <Upload className="h-4 w-4" />
-                      {isImporting ? "Importando..." : "Importar Dados"}
-                      <input
-                        type="file"
-                        accept=".json,application/json"
-                        onChange={handleImportData}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                        disabled={isImporting}
-                        aria-label="Selecionar arquivo de backup para importar"
-                      />
-                    </label>
-                  </Button>
+          {/* Notifications */}
+          <Card className="financial-card lg:col-span-2">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Bell className="h-5 w-5" />
+                Notificações e Automação
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between p-4 rounded-lg border bg-card">
+                <div className="space-y-1 flex-1">
+                  <Label className="text-base">Notificações do Sistema</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Receber lembretes e alertas importantes
+                  </p>
                 </div>
-                
-                <p className="text-xs text-muted-foreground">
-                  JSON: Formato completo para restauração. Excel: Para visualização e análise.
-                </p>
+                <Switch
+                  checked={localSettings.notifications}
+                  onCheckedChange={(checked) => setLocalSettings(prev => ({ ...prev, notifications: checked }))}
+                />
               </div>
-            </div>
 
-            <Separator />
+              <div className="flex items-center justify-between p-4 rounded-lg border bg-card">
+                <div className="space-y-1 flex-1">
+                  <Label className="text-base">Backup Automático</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Backup automático dos dados localmente
+                  </p>
+                </div>
+                <Switch
+                  checked={localSettings.autoBackup}
+                  onCheckedChange={(checked) => setLocalSettings(prev => ({ ...prev, autoBackup: checked }))}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
 
-            <div className="space-y-3">
-              <h4 className="font-medium text-destructive">Zona de Perigo</h4>
+      <Separator className="my-8" />
+
+      {/* Seção: Gerenciamento de Dados */}
+      <div>
+        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <Database className="h-5 w-5" />
+          Gerenciamento de Dados
+        </h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Backup Manual */}
+          <Card className="financial-card">
+            <CardHeader>
+              <CardTitle className="text-base">Backup Manual</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  Faça backup dos seus dados manualmente a qualquer momento
+                </p>
+                <div className="grid grid-cols-1 gap-3">
+                  <Button onClick={handleExportData} variant="outline" className="gap-2 justify-start">
+                    <Download className="h-4 w-4" />
+                    Exportar Backup JSON
+                  </Button>
+                  
+                  <Button onClick={handleExportToExcel} variant="outline" className="gap-2 justify-start">
+                    <FileText className="h-4 w-4" />
+                    Exportar Backup Excel
+                  </Button>
+                  
+                  <div className="relative">
+                    <Button 
+                      variant="outline" 
+                      className="gap-2 w-full justify-start" 
+                      disabled={isImporting}
+                      asChild
+                    >
+                      <label className={`cursor-pointer ${isImporting ? 'opacity-50' : ''}`}>
+                        <Upload className="h-4 w-4" />
+                        {isImporting ? "Importando..." : "Importar Dados"}
+                        <input
+                          type="file"
+                          accept=".json,application/json"
+                          onChange={handleImportData}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                          disabled={isImporting}
+                          aria-label="Selecionar arquivo de backup para importar"
+                        />
+                      </label>
+                    </Button>
+                  </div>
+                  
+                  <p className="text-xs text-muted-foreground mt-2">
+                    JSON: Formato completo para restauração. Excel: Para visualização e análise.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Zona de Perigo */}
+          <Card className="financial-card border-destructive/50">
+            <CardHeader>
+              <CardTitle className="text-base text-destructive flex items-center gap-2">
+                <Trash2 className="h-5 w-5" />
+                Zona de Perigo
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
               <p className="text-sm text-muted-foreground">
                 Para apagar todos os dados, digite "APAGAR TUDO" no campo abaixo e clique no botão.
               </p>
-              <Input
-                type="text"
-                value={clearDataConfirmation}
-                onChange={(e) => setClearDataConfirmation(e.target.value)}
-                placeholder='Digite "APAGAR TUDO"'
-                className="border-destructive"
-              />
-              <Button 
-                onClick={handleClearData} 
-                variant="destructive" 
-                className="gap-2 w-full"
-                disabled={clearDataConfirmation !== "APAGAR TUDO"}
-              >
-                <Trash2 className="h-4 w-4" />
-                Apagar Todos os Dados Permanentemente
-              </Button>
-              <p className="text-sm text-muted-foreground">
-                Esta ação irá remover permanentemente todas as suas contas, transações e configurações.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+              <div className="space-y-3">
+                <Input
+                  type="text"
+                  value={clearDataConfirmation}
+                  onChange={(e) => setClearDataConfirmation(e.target.value)}
+                  placeholder='Digite "APAGAR TUDO"'
+                  className="border-destructive"
+                />
+                <Button 
+                  onClick={handleClearData} 
+                  variant="destructive" 
+                  className="gap-2 w-full"
+                  disabled={clearDataConfirmation !== "APAGAR TUDO"}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Apagar Todos os Dados Permanentemente
+                </Button>
+                <p className="text-sm text-muted-foreground">
+                  Esta ação irá remover permanentemente todas as suas contas, transações e configurações.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
 
-        {/* Scheduled Backups */}
-        <Card className="financial-card lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5" />
-              Backups Agendados
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <Separator className="my-8" />
+
+      {/* Backups Agendados */}
+      <div>
+        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <Clock className="h-5 w-5" />
+          Backups Agendados
+        </h2>
+        <Card className="financial-card">
+          <CardContent className="pt-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Configuração de Agendamento */}
               <div className="space-y-4">
                 <div>
@@ -545,13 +568,14 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    <div className="p-4 bg-muted rounded-lg space-y-2">
+                    <div className="p-4 bg-muted rounded-lg space-y-3">
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium">Status</span>
-                        <span className={`text-sm ${schedule.is_active ? 'text-success' : 'text-muted-foreground'}`}>
+                        <span className={`text-sm font-medium ${schedule.is_active ? 'text-success' : 'text-muted-foreground'}`}>
                           {schedule.is_active ? 'Ativo' : 'Inativo'}
                         </span>
                       </div>
+                      <Separator />
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium">Frequência</span>
                         <span className="text-sm">
@@ -561,24 +585,30 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
                         </span>
                       </div>
                       {schedule.last_backup_at && (
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium">Último backup</span>
-                          <span className="text-sm">
-                            {format(new Date(schedule.last_backup_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
-                          </span>
-                        </div>
+                        <>
+                          <Separator />
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium">Último backup</span>
+                            <span className="text-sm">
+                              {format(new Date(schedule.last_backup_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                            </span>
+                          </div>
+                        </>
                       )}
                       {schedule.next_backup_at && (
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium">Próximo backup</span>
-                          <span className="text-sm">
-                            {format(new Date(schedule.next_backup_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
-                          </span>
-                        </div>
+                        <>
+                          <Separator />
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium">Próximo backup</span>
+                            <span className="text-sm">
+                              {format(new Date(schedule.next_backup_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                            </span>
+                          </div>
+                        </>
                       )}
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-2 gap-3">
                       <Button 
                         onClick={() => saveSchedule({ 
                           frequency: schedule.frequency, 
@@ -611,23 +641,23 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
                 </div>
 
                 {historyLoading ? (
-                  <div className="text-sm text-muted-foreground">Carregando...</div>
+                  <div className="text-sm text-muted-foreground p-4 text-center">Carregando...</div>
                 ) : !history || history.length === 0 ? (
-                  <div className="text-sm text-muted-foreground">
+                  <div className="text-sm text-muted-foreground p-4 text-center bg-muted rounded-lg">
                     Nenhum backup gerado ainda
                   </div>
                 ) : (
-                  <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                  <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2">
                     {history.map((backup) => (
                       <div 
                         key={backup.id}
-                        className="p-3 bg-muted rounded-lg hover:bg-muted/80 transition-colors"
+                        className="p-3 bg-muted rounded-lg hover:bg-muted/80 transition-colors border"
                       >
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-sm font-medium">
                             {format(new Date(backup.created_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
                           </span>
-                          <span className={`text-xs px-2 py-1 rounded ${
+                          <span className={`text-xs px-2 py-1 rounded font-medium ${
                             backup.backup_type === 'scheduled' 
                               ? 'bg-primary/10 text-primary' 
                               : 'bg-muted-foreground/10'
@@ -656,49 +686,73 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
             </div>
           </CardContent>
         </Card>
+      </div>
 
-        {/* About */}
+      <Separator className="my-8" />
+
+      {/* About */}
+      <div>
+        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <FileText className="h-5 w-5" />
+          Sobre o Aplicativo
+        </h2>
         <Card className="financial-card">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              Sobre o Aplicativo
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div>
-              <h4 className="font-medium">PlaniFlow</h4>
-              <p className="text-sm text-muted-foreground">Versão 1.0.0</p>
-            </div>
-            
-            <div className="space-y-2">
-              <p className="text-sm">
-                Aplicativo completo para gestão financeira pessoal, desenvolvido para 
-                ajudar você a controlar suas finanças de forma simples e eficiente.
-              </p>
-              
-              <div className="space-y-1">
-                <p className="text-sm font-medium">Funcionalidades:</p>
-                <ul className="text-sm text-muted-foreground space-y-1 ml-4">
-                  <li>• Gestão de contas bancárias e cartões</li>
-                  <li>• Controle de receitas e despesas</li>
-                  <li>• Transferências entre contas</li>
-                  <li>• Relatórios e análises detalhadas</li>
-                  <li>• Backup e restauração de dados</li>
-                  <li>• Interface responsiva para todos os dispositivos</li>
-                </ul>
+          <CardContent className="pt-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="space-y-4">
+                <div>
+                  <h4 className="text-xl font-bold">PlaniFlow</h4>
+                  <p className="text-sm text-muted-foreground">Versão 1.0.0</p>
+                </div>
+                
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Aplicativo completo para gestão financeira pessoal, desenvolvido para 
+                  ajudar você a controlar suas finanças de forma simples e eficiente.
+                </p>
               </div>
-            </div>
 
-            <div className="p-4 bg-muted rounded-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <Shield className="h-4 w-4 text-success" />
-                <span className="text-sm font-medium">Privacidade</span>
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm font-semibold mb-3">Funcionalidades:</p>
+                  <div className="grid grid-cols-1 gap-2">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                      Gestão de contas bancárias e cartões
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                      Controle de receitas e despesas
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                      Transferências entre contas
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                      Relatórios e análises detalhadas
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                      Backup e restauração de dados
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                      Interface responsiva para todos os dispositivos
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-4 bg-muted rounded-lg border">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Shield className="h-4 w-4 text-success" />
+                    <span className="text-sm font-semibold">Privacidade e Segurança</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Todos os seus dados são armazenados no Supabase com segurança e criptografia. 
+                    Você pode acessar seus dados de qualquer dispositivo com sua conta.
+                  </p>
+                </div>
               </div>
-              <p className="text-sm text-muted-foreground">
-                Todos os seus dados são armazenados no Supabase com segurança e criptografia. 
-                Você pode acessar seus dados de qualquer dispositivo com sua conta.
-              </p>
             </div>
           </CardContent>
         </Card>
