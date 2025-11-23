@@ -11,6 +11,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import BybitPage from "./pages/BybitPage";
 import { queryClient } from './lib/queryClient';
 
 const App = () => (
@@ -38,9 +39,8 @@ const App = () => (
                     path="/bybit"
                     element={
                       <ProtectedRoute>
-                        {/* O Index.tsx agora controla a renderização da página Bybit através do Layout */}
-                        {/* Para manter a navegação, podemos renderizar o Index com a página correta */}
-                        <Index />
+                    {/* Bybit integration page */}
+                    <BybitPage />
                       </ProtectedRoute>
                     }
                   />

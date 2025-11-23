@@ -31,7 +31,7 @@ import { useAccounts } from "@/hooks/queries/useAccounts";
 import { ImportAccountsModal } from "@/components/ImportAccountsModal";
 import { useSettings } from "@/context/SettingsContext";
 
-import { Account } from '@/types';
+import { Account, ImportAccountData } from '@/types';
 
 interface AccountsPageProps {
   onAddAccount: () => void;
@@ -39,7 +39,7 @@ interface AccountsPageProps {
   onDeleteAccount: (accountId: string) => void;
   onPayCreditCard?: (account: Account) => void;
   onTransfer?: () => void;
-  onImportAccounts?: (accounts: Omit<Account, 'id'>[], accountsToReplace: string[]) => void;
+  onImportAccounts?: (accounts: ImportAccountData[], accountsToReplace: string[]) => void;
   initialFilterType?: "all" | "checking" | "savings" | "credit" | "investment";
 }
 
@@ -152,7 +152,7 @@ export function AccountsPage({
     }
   };
 
-  const handleImportAccounts = (accountsToAdd: Omit<Account, 'id'>[], accountsToReplaceIds: string[]) => {
+  const handleImportAccounts = (accountsToAdd: ImportAccountData[], accountsToReplaceIds: string[]) => {
     if (onImportAccounts) {
       onImportAccounts(accountsToAdd, accountsToReplaceIds);
     }

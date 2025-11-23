@@ -330,3 +330,54 @@ export const markAsPaidSchema = z.object({
 });
 
 export type MarkAsPaidFormData = z.infer<typeof markAsPaidSchema>;
+
+// ============= Import Account Schema =============
+
+export const importAccountSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, { message: "O nome é obrigatório" })
+    .max(100, { message: "O nome deve ter no máximo 100 caracteres" }),
+  
+  type: z.enum(["checking", "savings", "credit", "investment"], {
+    required_error: "Selecione o tipo da conta",
+    invalid_type_error: "Tipo de conta inválido",
+  }),
+  
+  balance: z.number({ invalid_type_error: "O saldo deve ser um número" }).optional(),
+  
+  color: z.string().regex(/^#[0-9A-F]{6}$/i, { message: "Cor inválida" }).optional(),
+  
+  limit_amount: z
+    .number({ invalid_type_error: "O limite deve ser um número" })
+    .positive({ message: "O limite deve ser maior que zero" })
+    .optional(),
+  
+  due_date: z
+    .number({ invalid_type_error: "Data de vencimento inválida" })
+    .int({ message: "Data de vencimento deve ser um número inteiro" })
+    .min(1, { message: "A data de vencimento deve estar entre 1 e 31" })
+    .max(31, { message: "A data de vencimento deve estar entre 1 e 31" })
+    .optional(),
+  
+  closing_date: z
+    .number({ invalid_type_error: "Data de fechamento inválida" })
+    .int({ message: "Data de fechamento deve ser um número inteiro" })
+    .min(1, { message: "A data de fechamento deve estar entre 1 e 31" })
+    .max(31, { message: "A data de fechamento deve estar entre 1 e 31" })
+    .optional(),
+}).refine((data) => {
+  // Validação: se é cartão de crédito, limite e datas são obrigatórios
+  if (data.type === "credit") {
+    return data.limit_amount !== undefined && 
+           data.due_date !== undefined && 
+           data.closing_date !== undefined;
+  }
+  return true;
+}, {
+  message: "Cartões de crédito requerem limite, data de vencimento e data de fechamento",
+  path: ["type"],
+});
+
+export type ImportAccountFormData = z.infer<typeof importAccountSchema>;
