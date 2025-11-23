@@ -21,13 +21,7 @@ import { useToast } from "@/hooks/use-toast";
 import { logger } from "@/lib/logger";
 import { Account, PREDEFINED_COLORS, ACCOUNT_TYPE_LABELS } from "@/types";
 import { ColorPicker } from "@/components/forms/ColorPicker";
-
-interface EditAccountModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onEditAccount: (account: Account) => Promise<void>;
-  account: Account | null;
-}
+import { EditAccountModalProps } from "@/types/formProps";
 
 export function EditAccountModal({
   open,

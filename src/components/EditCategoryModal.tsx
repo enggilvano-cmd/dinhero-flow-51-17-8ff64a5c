@@ -7,13 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { Category, PREDEFINED_COLORS } from "@/types";
 import { ColorPicker } from "@/components/forms/ColorPicker";
-
-interface EditCategoryModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onEditCategory: (category: Category) => void;
-  category: Category | null;
-}
+import { EditCategoryModalProps } from "@/types/formProps";
 
 export function EditCategoryModal({ open, onOpenChange, onEditCategory, category }: EditCategoryModalProps) {
   const [formData, setFormData] = useState({

@@ -27,15 +27,8 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 
-import { Account, Transaction, ACCOUNT_TYPE_LABELS } from '@/types';
-
-interface MarkAsPaidModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  transaction: Transaction | null;
-  accounts: Account[];
-  onConfirm: (transactionId: string, date: Date, amount: number, accountId: string) => void;
-}
+import { ACCOUNT_TYPE_LABELS } from '@/types';
+import { MarkAsPaidModalProps } from '@/types/formProps';
 
 export function MarkAsPaidModal({
   open,
