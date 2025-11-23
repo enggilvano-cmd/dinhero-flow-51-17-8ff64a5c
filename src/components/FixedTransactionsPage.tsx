@@ -198,16 +198,17 @@ export function FixedTransactionsPage() {
           nextDate.setDate(0);
         }
 
-        transactionsToGenerate.push({
-          description: transaction.description,
-          amount: transaction.amount,
-          date: nextDate.toISOString().split('T')[0],
-          type: transaction.type,
-          category_id: transaction.category_id,
-          account_id: transaction.account_id,
-          status: "pending" as const,
-          user_id: user.id,
-        });
+      transactionsToGenerate.push({
+        description: transaction.description,
+        amount: transaction.amount,
+        date: nextDate.toISOString().split('T')[0],
+        type: transaction.type,
+        category_id: transaction.category_id,
+        account_id: transaction.account_id,
+        status: "pending" as const,
+        user_id: user.id,
+        is_fixed: true,
+      });
       }
 
       // Inserir todas as transações de uma vez
