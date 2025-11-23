@@ -413,6 +413,53 @@ export function useAddTransactionForm({
   };
 
   const handleSingleTransaction = async () => {
+    // Se for transação recorrente, usar edge function atômico
+    if (formData.isRecurring) {
+      const { data, error } = await supabase.functions.invoke('atomic-create-recurring', {
+        body: {
+          description: formData.description,
+          amount: Math.abs(formData.amount),
+          date: formData.date,
+          type: formData.type,
+          category_id: formData.category_id,
+          account_id: formData.account_id,
+          status: formData.status,
+          recurrence_type: formData.recurrenceType,
+          recurrence_end_date: formData.recurrenceEndDate || undefined,
+        },
+      });
+
+      if (error) {
+        logger.error('Error creating recurring transaction:', error);
+        throw new Error(error.message || 'Erro ao criar transação recorrente');
+      }
+
+      if (!data?.success) {
+        throw new Error(data?.error || 'Erro ao criar transação recorrente');
+      }
+
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
+      ]);
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: queryKeys.transactionsBase }),
+        queryClient.refetchQueries({ queryKey: queryKeys.accounts }),
+      ]);
+
+      toast({
+        title: "Transação Recorrente Criada",
+        description: `${data.created_count} transações foram geradas com sucesso`,
+        variant: "default",
+      });
+
+      if (onSuccess) {
+        onSuccess();
+      }
+      return;
+    }
+
+    // Transação simples
     const transactionPayload = {
       description: formData.description,
       amount: Math.abs(formData.amount),
@@ -423,11 +470,7 @@ export function useAddTransactionForm({
       status: formData.status,
       invoiceMonth: formData.invoiceMonth || undefined,
       invoiceMonthOverridden: Boolean(formData.invoiceMonth),
-      is_recurring: formData.isRecurring || false,
-      recurrence_type: formData.isRecurring ? formData.recurrenceType : undefined,
-      recurrence_end_date: formData.isRecurring && formData.recurrenceEndDate 
-        ? formData.recurrenceEndDate 
-        : undefined,
+      is_recurring: false,
     };
 
     await onAddTransaction(transactionPayload);
