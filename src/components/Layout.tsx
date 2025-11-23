@@ -225,7 +225,7 @@ function AppSidebar({ currentPage, onPageChange }: { currentPage: string; onPage
                 <Button 
                   variant="ghost" 
                   className={cn(
-                    "transition-all duration-200 hover:bg-muted/50",
+                    "transition-all duration-200 hover:bg-muted/50 hover:text-foreground",
                     isMobile
                       ? "w-full h-12 rounded-2xl justify-start gap-3"
                       : isCollapsed 
@@ -244,7 +244,7 @@ function AppSidebar({ currentPage, onPageChange }: { currentPage: string; onPage
                   {(!isCollapsed || isMobile) && (
                     <div className="flex-1 text-left">
                       <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium truncate">
+                        <p className="text-sm font-medium truncate text-foreground">
                           {getFirstName(profile.full_name) || 'Usuário'}
                         </p>
                         <span className="text-xs text-muted-foreground">
