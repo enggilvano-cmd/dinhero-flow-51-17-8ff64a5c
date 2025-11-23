@@ -314,24 +314,6 @@ export function RecurringTransactionsPage() {
         </CardContent>
       </Card>
 
-      {/* Info Card */}
-      <Card className="bg-primary/5 border-primary/20">
-        <CardContent className="p-4">
-          <div className="flex items-start gap-3 mb-3">
-            <div className="p-2 bg-primary/10 rounded-lg flex-shrink-0">
-              <Calendar className="h-5 w-5 text-primary" />
-            </div>
-            <div className="flex-1">
-              <h3 className="text-base font-semibold">Geração Automática</h3>
-            </div>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            As transações recorrentes configuradas serão geradas automaticamente todos os dias às 00:01, 
-            respeitando a frequência e data final definidas.
-          </p>
-        </CardContent>
-      </Card>
-
       {filteredTransactions.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
