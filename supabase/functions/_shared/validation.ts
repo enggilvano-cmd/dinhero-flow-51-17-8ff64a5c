@@ -29,6 +29,18 @@ export const TransactionInputSchema = z.object({
   invoice_month_overridden: z.boolean().optional(),
 });
 
+export const RecurringTransactionInputSchema = z.object({
+  description: z.string().trim().min(1, 'Description is required').max(200, 'Description must be less than 200 characters'),
+  amount: z.number().positive('Amount must be positive').max(1_000_000_000, 'Amount exceeds maximum allowed value'),
+  date: dateSchema,
+  type: z.enum(['income', 'expense'], { errorMap: () => ({ message: 'Type must be either income or expense' }) }),
+  category_id: uuidSchema,
+  account_id: uuidSchema,
+  status: z.enum(['pending', 'completed'], { errorMap: () => ({ message: 'Status must be either pending or completed' }) }),
+  recurrence_type: z.enum(['daily', 'weekly', 'monthly', 'yearly'], { errorMap: () => ({ message: 'Recurrence type must be daily, weekly, monthly, or yearly' }) }),
+  recurrence_end_date: dateSchema.optional(),
+});
+
 export const EditTransactionInputSchema = z.object({
   transaction_id: uuidSchema,
   updates: z.object({

@@ -30,6 +30,9 @@ verify_jwt = true
 [functions.atomic-pay-bill]
 verify_jwt = true
 
+[functions.atomic-create-recurring]
+verify_jwt = true
+
 [functions.generate-test-data]
 verify_jwt = true
 
