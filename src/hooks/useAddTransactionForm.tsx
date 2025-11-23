@@ -331,102 +331,57 @@ export function useAddTransactionForm({
     });
   };
 
-  const handleFixedTransaction = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Usuário não autenticado");
+  const handleFixedTransaction = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('atomic-create-fixed', {
+        body: {
+          description: formData.description,
+          amount: formData.amount,
+          date: formData.date,
+          type: formData.type,
+          category_id: formData.category_id,
+          account_id: formData.account_id,
+          status: formData.status,
+        },
+      });
 
-    const transactionsToGenerate = [];
-    const [year, month, day] = formData.date.split('-').map(Number);
-    const currentYear = year;
-    const currentMonth = month - 1;
-    const dayOfMonth = day;
-    const nextYear = currentYear + 1;
-    const monthsLeftInCurrentYear = 12 - currentMonth;
-
-    for (let i = 0; i < monthsLeftInCurrentYear; i++) {
-      const nextDate = new Date(currentYear, currentMonth + i, dayOfMonth);
-      const targetMonth = nextDate.getMonth();
-      nextDate.setDate(dayOfMonth);
-      
-      if (nextDate.getMonth() !== targetMonth) {
-        const lastDay = new Date(currentYear, currentMonth + i + 1, 0).getDate();
-        nextDate.setDate(lastDay);
+      if (error) {
+        logger.error('Failed to create fixed transaction:', error);
+        toast({
+          title: 'Erro',
+          description: error.message || 'Erro ao criar transação fixa',
+          variant: 'destructive',
+        });
+        return;
       }
 
-      transactionsToGenerate.push({
-        description: formData.description,
-        amount: Math.abs(formData.amount),
-        date: nextDate.toISOString().split('T')[0],
-        type: formData.type as "income" | "expense" | "transfer",
-        category_id: formData.category_id,
-        account_id: formData.account_id,
-        status: "pending" as const,
-        user_id: user.id,
+      if (!data.success) {
+        toast({
+          title: 'Erro',
+          description: data.error || 'Erro ao criar transação fixa',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      toast({
+        title: 'Sucesso',
+        description: `Transação fixa criada com ${data.created_count} ocorrências`,
+      });
+
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['accounts'] });
+      onSuccess?.();
+      onClose();
+    } catch (error) {
+      logger.error('Unexpected error creating fixed transaction:', error);
+      toast({
+        title: 'Erro',
+        description: 'Erro inesperado ao criar transação fixa',
+        variant: 'destructive',
       });
     }
-
-    for (let i = 0; i < 12; i++) {
-      const nextDate = new Date(nextYear, i, dayOfMonth);
-      const targetMonth = nextDate.getMonth();
-      nextDate.setDate(dayOfMonth);
-      
-      if (nextDate.getMonth() !== targetMonth) {
-        const lastDay = new Date(nextYear, i + 1, 0).getDate();
-        nextDate.setDate(lastDay);
-      }
-
-      transactionsToGenerate.push({
-        description: formData.description,
-        amount: Math.abs(formData.amount),
-        date: nextDate.toISOString().split('T')[0],
-        type: formData.type as "income" | "expense" | "transfer",
-        category_id: formData.category_id,
-        account_id: formData.account_id,
-        status: "pending" as const,
-        user_id: user.id,
-      });
-    }
-
-    const { error: insertError, data: insertedTransactions } = await supabase
-      .from("transactions")
-      .insert(transactionsToGenerate)
-      .select();
-
-    if (insertError) throw insertError;
-
-    const recurringTransaction = insertedTransactions[0];
-    const childTransactionIds = insertedTransactions.slice(1).map(t => t.id);
-    
-    if (childTransactionIds.length > 0) {
-      const { error: updateError } = await supabase
-        .from("transactions")
-        .update({ parent_transaction_id: recurringTransaction.id })
-        .in("id", childTransactionIds);
-
-      if (updateError) {
-        logger.error("Erro ao vincular transações filhas:", updateError);
-      }
-    }
-
-    await Promise.all([
-      queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase }),
-      queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
-    ]);
-    await Promise.all([
-      queryClient.refetchQueries({ queryKey: queryKeys.transactionsBase }),
-      queryClient.refetchQueries({ queryKey: queryKeys.accounts }),
-    ]);
-
-    toast({
-      title: "Transação Fixa Adicionada",
-      description: `${transactionsToGenerate.length} transações foram geradas (até o final de ${nextYear})`,
-      variant: "default",
-    });
-
-    if (onSuccess) {
-      onSuccess();
-    }
-  };
+  }, [formData, onClose, onSuccess, queryClient]);
 
   const handleSingleTransaction = async () => {
     // Se for transação recorrente, usar edge function atômico

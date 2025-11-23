@@ -678,6 +678,24 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      atomic_create_fixed_transaction: {
+        Args: {
+          p_account_id: string
+          p_amount: number
+          p_category_id: string
+          p_date: string
+          p_description: string
+          p_status: Database["public"]["Enums"]["transaction_status"]
+          p_type: Database["public"]["Enums"]["transaction_type"]
+          p_user_id: string
+        }
+        Returns: {
+          created_count: number
+          error_message: string
+          parent_id: string
+          success: boolean
+        }[]
+      }
       atomic_create_recurring_transaction: {
         Args: {
           p_account_id: string
