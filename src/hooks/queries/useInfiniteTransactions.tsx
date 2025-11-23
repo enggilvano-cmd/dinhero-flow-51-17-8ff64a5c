@@ -191,13 +191,13 @@ export function useInfiniteTransactions(params: UseInfiniteTransactionsParams = 
     getNextPageParam: (lastPage) => lastPage.nextCursor,
     initialPageParam: 0,
     enabled: !!user && enabled,
-    // CRITICAL: staleTime 0 para refetch imediato após mutações
-    staleTime: 0,
+    // Otimização: staleTime de 30s evita refetches desnecessários ao navegar
+    staleTime: 30 * 1000, // 30 segundos
     gcTime: 2.5 * 60 * 1000,
     // Keep previous data while fetching new data
     placeholderData: (previousData) => previousData,
-    // CRITICAL: Always refetch on mount to ensure fresh data
-    refetchOnMount: 'always',
+    // Refetch only when data is stale (não forçar sempre)
+    refetchOnMount: true, // Default: refetch se stale
     refetchOnWindowFocus: true,
   });
 
@@ -253,11 +253,11 @@ export function useInfiniteTransactions(params: UseInfiniteTransactionsParams = 
     getNextPageParam: () => undefined,
     initialPageParam: 0,
     enabled: !!user && enabled,
-    // CRITICAL: staleTime 0 para refetch imediato após mutações
-    staleTime: 0,
+    // Otimização: staleTime de 30s evita refetches desnecessários de count
+    staleTime: 30 * 1000, // 30 segundos
     gcTime: 2.5 * 60 * 1000,
-    // CRITICAL: Always refetch on mount to ensure fresh count
-    refetchOnMount: 'always',
+    // Refetch only when data is stale
+    refetchOnMount: true, // Default: refetch se stale
     refetchOnWindowFocus: true,
   });
 

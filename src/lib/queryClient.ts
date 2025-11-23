@@ -4,13 +4,20 @@ import { QueryClient } from '@tanstack/react-query';
  * Centralized React Query client configuration with intelligent caching
  * 
  * Cache Strategy:
- * - Short-lived data (30s): Transações, counts, dados que mudam frequentemente
- * - Medium-lived data (2min): Contas, categorias
- * - Long-lived data (5min): Configurações, perfil
+ * - Short-lived data (30s): Transações, contas - dados que mudam com mutações
+ * - Medium-lived data (2min): Dados agregados, estatísticas
+ * - Long-lived data (5min): Categorias, configurações
+ * - Static data (15min): Perfil, dados raramente alterados
  * 
  * GC Strategy:
  * - Keep data 5x longer than staleTime to allow background refetching
  * - Unused data is garbage collected to free memory
+ * 
+ * Optimization (Issue #10):
+ * - Removido refetchOnMount: 'always' que causava refetches desnecessários
+ * - Aumentado staleTime para evitar refetch ao navegar entre páginas
+ * - Mantido refetchOnWindowFocus para sincronização quando voltar à janela
+ * - Invalidações explícitas após mutações garantem dados atualizados
  */
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -22,10 +29,10 @@ export const queryClient = new QueryClient({
       // Retry failed requests 3 times with exponential backoff
       retry: 3,
       retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-      // Refetch on window focus if data is stale
+      // Refetch on window focus if data is stale (não se fresh)
       refetchOnWindowFocus: true,
-      // Refetch on mount to ensure fresh data after mutations
-      refetchOnMount: true,
+      // Refetch on mount only if data is stale (otimização Issue #10)
+      refetchOnMount: true, // true = only if stale, 'always' = sempre
       // Refetch stale data in background
       refetchOnReconnect: true,
       // Enable structural sharing for better performance
