@@ -655,13 +655,6 @@ export default function AnalyticsPage({
   return (
     <div ref={contentRef} className="spacing-responsive-lg fade-in pb-6 sm:pb-8">{/*  Header */}
       <div className="flex flex-col gap-3">
-        <div className="min-w-0 w-full">
-          <h1 className="text-system-h1 leading-tight">Análises</h1>
-          <p className="text-sm text-muted-foreground leading-tight">
-            Visualize relatórios e análises financeiras detalhadas
-          </p>
-        </div>
-
         <div className="grid grid-cols-1 gap-2 w-full md:grid-cols-1 lg:flex lg:flex-nowrap lg:gap-2 lg:w-auto lg:ml-auto">
           <Button
             variant="outline"

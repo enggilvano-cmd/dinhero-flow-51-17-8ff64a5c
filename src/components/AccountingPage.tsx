@@ -7,12 +7,6 @@ import { BookOpen, BookText, Calendar } from "lucide-react";
 export function AccountingPage() {
   return (
     <div className="space-y-6 fade-in">
-      <div>
-        <h1 className="text-xl sm:text-2xl font-bold leading-tight">Contabilidade</h1>
-        <p className="text-sm text-muted-foreground leading-tight">
-          Relatórios contábeis, livro razão e fechamento de períodos
-        </p>
-      </div>
 
       <Tabs defaultValue="reports" className="w-full">
         <TabsList className="grid w-full grid-cols-3 gap-2 h-auto p-1">
