@@ -28,7 +28,7 @@ class Logger {
   /**
    * Log de informação geral (apenas desenvolvimento)
    */
-  public info(message: string, ...args: any[]): void {
+  public info(message: string, ...args: unknown[]): void {
     if (!this.enabled) return;
     console.log(`ℹ️ [INFO] ${message}`, ...args);
   }
@@ -36,7 +36,7 @@ class Logger {
   /**
    * Log de aviso (desenvolvimento + Sentry em produção)
    */
-  public warn(message: string, ...args: any[]): void {
+  public warn(message: string, ...args: unknown[]): void {
     if (this.enabled) {
       console.warn(`⚠️ [WARN] ${message}`, ...args);
     }
@@ -53,7 +53,7 @@ class Logger {
   /**
    * Log de erro (desenvolvimento + Sentry em produção)
    */
-  public error(message: string, ...args: any[]): void {
+  public error(message: string, ...args: unknown[]): void {
     if (this.enabled) {
       console.error(`❌ [ERROR] ${message}`, ...args);
     }
@@ -73,7 +73,7 @@ class Logger {
   /**
    * Log de debug (detalhes técnicos - apenas desenvolvimento)
    */
-  public debug(message: string, ...args: any[]): void {
+  public debug(message: string, ...args: unknown[]): void {
     if (!this.enabled) return;
     console.debug(`🔍 [DEBUG] ${message}`, ...args);
   }
@@ -81,7 +81,7 @@ class Logger {
   /**
    * Log de sucesso (operações bem-sucedidas - apenas desenvolvimento)
    */
-  public success(message: string, ...args: any[]): void {
+  public success(message: string, ...args: unknown[]): void {
     if (!this.enabled) return;
     console.log(`✅ [SUCCESS] ${message}`, ...args);
   }

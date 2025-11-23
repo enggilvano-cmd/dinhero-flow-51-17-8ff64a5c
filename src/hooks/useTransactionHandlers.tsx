@@ -12,7 +12,7 @@ import {
   ImportTransactionData 
 } from '@/types';
 import { logger } from '@/lib/logger';
-import { queryKeys } from '@/lib/queryClient';
+import { queryKeys, refetchWithDelay } from '@/lib/queryClient';
 import { EditScope } from '@/components/TransactionScopeDialog';
 import { useAccounts } from './queries/useAccounts';
 
@@ -100,10 +100,7 @@ export function useTransactionHandlers() {
       ]);
       
       // Refetch após 10ms para atualização imediata
-      setTimeout(() => {
-        queryClient.refetchQueries({ queryKey: queryKeys.transactionsBase });
-        queryClient.refetchQueries({ queryKey: queryKeys.accounts });
-      }, 10);
+      refetchWithDelay(queryClient, [queryKeys.transactionsBase, queryKeys.accounts]);
     } catch (error) {
       logger.error('Error adding transaction:', error);
       if (error instanceof Error) {
@@ -226,10 +223,7 @@ export function useTransactionHandlers() {
       ]);
       
       // Refetch após 10ms para atualização imediata
-      setTimeout(() => {
-        queryClient.refetchQueries({ queryKey: queryKeys.transactionsBase });
-        queryClient.refetchQueries({ queryKey: queryKeys.accounts });
-      }, 10);
+      refetchWithDelay(queryClient, [queryKeys.transactionsBase, queryKeys.accounts]);
     } catch (error) {
       logger.error('Error adding installment transactions:', error);
       throw error;
@@ -289,10 +283,7 @@ export function useTransactionHandlers() {
       ]);
       
       // Refetch após 10ms para atualização imediata
-      setTimeout(() => {
-        queryClient.refetchQueries({ queryKey: queryKeys.transactionsBase });
-        queryClient.refetchQueries({ queryKey: queryKeys.accounts });
-      }, 10);
+      refetchWithDelay(queryClient, [queryKeys.transactionsBase, queryKeys.accounts]);
     } catch (error) {
       logger.error('Error updating transaction:', error);
       if (error instanceof Error) {
@@ -338,10 +329,7 @@ export function useTransactionHandlers() {
       ]);
       
       // Refetch após 10ms para atualização imediata
-      setTimeout(() => {
-        queryClient.refetchQueries({ queryKey: queryKeys.transactionsBase });
-        queryClient.refetchQueries({ queryKey: queryKeys.accounts });
-      }, 10);
+      refetchWithDelay(queryClient, [queryKeys.transactionsBase, queryKeys.accounts]);
 
       toast({
         title: 'Sucesso',
@@ -397,10 +385,7 @@ export function useTransactionHandlers() {
       ]);
       
       // Refetch após 10ms para atualização imediata
-      setTimeout(() => {
-        queryClient.refetchQueries({ queryKey: queryKeys.transactionsBase });
-        queryClient.refetchQueries({ queryKey: queryKeys.accounts });
-      }, 10);
+      refetchWithDelay(queryClient, [queryKeys.transactionsBase, queryKeys.accounts]);
     } catch (error) {
       logger.error('Error processing transfer:', error);
       if (error instanceof Error) {
@@ -517,10 +502,7 @@ export function useTransactionHandlers() {
       ]);
       
       // Refetch após 10ms para atualização imediata
-      setTimeout(() => {
-        queryClient.refetchQueries({ queryKey: queryKeys.transactionsBase });
-        queryClient.refetchQueries({ queryKey: queryKeys.accounts });
-      }, 10);
+      refetchWithDelay(queryClient, [queryKeys.transactionsBase, queryKeys.accounts]);
       
       toast({
         title: 'Importação concluída',
@@ -580,10 +562,7 @@ export function useTransactionHandlers() {
       ]);
       
       // Refetch após 10ms para atualização imediata
-      setTimeout(() => {
-        queryClient.refetchQueries({ queryKey: queryKeys.transactionsBase });
-        queryClient.refetchQueries({ queryKey: queryKeys.accounts });
-      }, 10);
+      refetchWithDelay(queryClient, [queryKeys.transactionsBase, queryKeys.accounts]);
 
       return {
         creditAccount: { ...creditAccount, balance: data.credit_balance?.[0]?.new_balance || creditAccount.balance },
@@ -626,10 +605,7 @@ export function useTransactionHandlers() {
       ]);
       
       // Refetch após 10ms para atualização imediata
-      setTimeout(() => {
-        queryClient.refetchQueries({ queryKey: queryKeys.transactionsBase });
-        queryClient.refetchQueries({ queryKey: queryKeys.accounts });
-      }, 10);
+      refetchWithDelay(queryClient, [queryKeys.transactionsBase, queryKeys.accounts]);
 
       toast({ title: 'Pagamento estornado com sucesso!' });
     } catch (error) {
