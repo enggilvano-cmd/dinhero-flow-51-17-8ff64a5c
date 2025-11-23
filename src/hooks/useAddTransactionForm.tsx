@@ -198,16 +198,32 @@ export function useAddTransactionForm({
 
     // Validação de saldo/limite usando função assíncrona centralizada
     if (type === 'expense') {
+      // Para transações recorrentes/fixas, validar múltiplas ocorrências
+      let amountToValidate = numericAmount;
+      
+      if (formData.isRecurring || formData.isFixed) {
+        // Calcular quantas transações serão criadas no próximo mês
+        const occurrencesPerMonth = formData.isRecurring 
+          ? (formData.recurrenceType === 'daily' ? 30 : 
+             formData.recurrenceType === 'weekly' ? 4 : 
+             formData.recurrenceType === 'monthly' ? 1 : 1)
+          : 12; // Fixas geram 12 meses
+
+        amountToValidate = numericAmount * Math.min(occurrencesPerMonth, 12);
+      }
+
       const validationResult = await validateCreditLimitForAdd(
         selectedAccount,
-        numericAmount,
+        amountToValidate,
         type
       );
 
       if (!validationResult.isValid) {
+        const transactionTypeLabel = formData.isRecurring ? 'recorrentes' : formData.isFixed ? 'fixas' : '';
         toast({
           title: validationResult.message,
-          description: validationResult.errorMessage || 'Saldo ou limite insuficiente',
+          description: validationResult.errorMessage || 
+            `Saldo ou limite insuficiente para criar ${transactionTypeLabel} transações`,
           variant: "destructive",
         });
         return;

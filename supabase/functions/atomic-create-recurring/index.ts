@@ -1,22 +1,11 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { rateLimiters } from '../_shared/rate-limiter.ts';
+import { RecurringTransactionInputSchema, validateWithZod, validationErrorResponse } from '../_shared/validation.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-interface RecurringTransactionInput {
-  description: string;
-  amount: number;
-  date: string;
-  type: 'income' | 'expense';
-  category_id: string;
-  account_id: string;
-  status: 'pending' | 'completed';
-  recurrence_type: 'daily' | 'weekly' | 'monthly' | 'yearly';
-  recurrence_end_date?: string;
-}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -58,23 +47,31 @@ Deno.serve(async (req) => {
       );
     }
 
-    const body: RecurringTransactionInput = await req.json();
+    const body = await req.json();
 
+    // Validar input com Zod
+    const validationResult = validateWithZod(RecurringTransactionInputSchema, body);
+    if (!validationResult.success) {
+      console.error('[atomic-create-recurring] ERROR: Validation failed:', validationResult.errors);
+      return validationErrorResponse(validationResult.errors, corsHeaders);
+    }
+
+    const validatedData = validationResult.data;
     console.log('[atomic-create-recurring] INFO: Creating recurring transaction for user:', user.id);
 
     // Call atomic SQL function
     const { data: result, error: functionError } = await supabaseClient
       .rpc('atomic_create_recurring_transaction', {
         p_user_id: user.id,
-        p_description: body.description,
-        p_amount: Math.abs(body.amount),
-        p_date: body.date,
-        p_type: body.type,
-        p_category_id: body.category_id,
-        p_account_id: body.account_id,
-        p_status: body.status,
-        p_recurrence_type: body.recurrence_type,
-        p_recurrence_end_date: body.recurrence_end_date || null,
+        p_description: validatedData.description,
+        p_amount: Math.abs(validatedData.amount),
+        p_date: validatedData.date,
+        p_type: validatedData.type,
+        p_category_id: validatedData.category_id,
+        p_account_id: validatedData.account_id,
+        p_status: validatedData.status,
+        p_recurrence_type: validatedData.recurrence_type,
+        p_recurrence_end_date: validatedData.recurrence_end_date || null,
       });
 
     if (functionError) {
