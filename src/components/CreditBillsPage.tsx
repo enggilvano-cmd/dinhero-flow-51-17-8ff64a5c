@@ -258,15 +258,6 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
 
   return (
     <div className="spacing-responsive-lg fade-in pb-6 sm:pb-8">
-      {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <div>
-          <h1 className="text-system-h1 leading-tight">Faturas de Cartão</h1>
-          <p className="text-sm text-muted-foreground leading-tight">
-            Gerencie as faturas dos seus cartões de crédito
-          </p>
-        </div>
-      </div>
 
       {/* CARDS DE TOTAIS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
