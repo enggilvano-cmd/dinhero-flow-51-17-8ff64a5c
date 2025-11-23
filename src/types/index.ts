@@ -156,8 +156,8 @@ export interface ImportTransactionData {
 export interface ImportAccountData {
   name: string;
   type: "checking" | "savings" | "credit" | "investment";
-  balance: number;
-  color: string;
+  balance?: number;
+  color?: string;
   limit_amount?: number;
   due_date?: number;
   closing_date?: number;

@@ -14,6 +14,7 @@ import { BankReconciliationPage } from "@/components/BankReconciliationPage";
 import { AccountingPage } from "@/components/AccountingPage";
 import { UserProfile } from "@/components/UserProfile";
 import { SettingsPage } from "@/components/SettingsPage";
+import BybitPage from "@/pages/BybitPage";
 import { useSettings } from "@/context/SettingsContext";
 import { AddAccountModal } from "@/components/AddAccountModal";
 import { AddTransactionModal } from "@/components/AddTransactionModal";
@@ -460,6 +461,8 @@ const PlaniFlowApp = () => {
           onUpdateSettings={updateSettings}
           onClearAllData={handleClearAllData}
         />;
+      case "bybit":
+        return <BybitPage />;
       default:
         return renderDashboard();
     }

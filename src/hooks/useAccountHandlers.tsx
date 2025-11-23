@@ -6,6 +6,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { Account, ImportAccountData } from '@/types';
 import { logger } from '@/lib/logger';
 import { queryKeys } from '@/lib/queryClient';
+import { importAccountSchema } from '@/lib/validationSchemas';
+import { z } from 'zod';
 
 export function useAccountHandlers() {
   const { user } = useAuth();
@@ -23,11 +25,21 @@ export function useAccountHandlers() {
       if (error) throw error;
       
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+      
+      toast({
+        title: 'Sucesso',
+        description: 'Conta atualizada com sucesso',
+      });
     } catch (error) {
       logger.error('Error updating account:', error);
+      toast({
+        title: 'Erro',
+        description: error instanceof Error ? error.message : 'Erro ao atualizar conta',
+        variant: 'destructive',
+      });
       throw error;
     }
-  }, [user, queryClient]);
+  }, [user, queryClient, toast]);
 
   const handleDeleteAccount = useCallback(async (accountId: string) => {
     if (!user) return;
@@ -100,7 +112,32 @@ export function useAccountHandlers() {
   ) => {
     if (!user) return;
     try {
-      // 1. Deletar contas que serão substituídas
+      // 1. Validar cada conta usando Zod schema
+      const validatedAccounts: ImportAccountData[] = [];
+      const validationErrors: string[] = [];
+
+      for (let i = 0; i < accountsData.length; i++) {
+        const result = importAccountSchema.safeParse(accountsData[i]);
+        if (!result.success) {
+          validationErrors.push(
+            `Linha ${i + 1}: ${result.error.errors.map((e: z.ZodIssue) => e.message).join(', ')}`
+          );
+        } else {
+          validatedAccounts.push(result.data);
+        }
+      }
+
+      if (validationErrors.length > 0) {
+        toast({
+          title: 'Erro de validação',
+          description: validationErrors.slice(0, 3).join('; ') + 
+                      (validationErrors.length > 3 ? `... e mais ${validationErrors.length - 3} erros` : ''),
+          variant: 'destructive',
+        });
+        throw new Error('Dados inválidos na importação');
+      }
+
+      // 2. Deletar contas que serão substituídas
       if (accountsToReplace.length > 0) {
         const { error: deleteError } = await supabase
           .from('accounts')
@@ -111,12 +148,12 @@ export function useAccountHandlers() {
         if (deleteError) throw deleteError;
       }
 
-      // 2. Inserir novas contas
-      const accountsToAdd = accountsData.map(acc => ({
+      // 3. Inserir novas contas validadas
+      const accountsToAdd = validatedAccounts.map(acc => ({
         name: acc.name,
         type: acc.type,
         balance: acc.balance || 0,
-        color: acc.color,
+        color: acc.color || '#6b7280',
         limit_amount: acc.limit_amount,
         due_date: acc.due_date,
         closing_date: acc.closing_date,
@@ -136,11 +173,13 @@ export function useAccountHandlers() {
       });
     } catch (error) {
       logger.error('Error importing accounts:', error);
-      toast({
-        title: 'Erro',
-        description: 'Erro ao importar contas.',
-        variant: 'destructive'
-      });
+      if (!(error instanceof Error && error.message === 'Dados inválidos na importação')) {
+        toast({
+          title: 'Erro',
+          description: 'Erro ao importar contas.',
+          variant: 'destructive'
+        });
+      }
       throw error;
     }
   }, [user, toast, queryClient]);
