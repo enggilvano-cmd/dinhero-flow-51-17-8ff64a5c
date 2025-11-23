@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { useSettings } from "@/context/SettingsContext";
 import { logger } from "@/lib/logger";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   CreditCard,
@@ -9,6 +10,8 @@ import {
   TrendingUp,
   DollarSign,
   Search,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { useTransactions } from "@/hooks/queries/useTransactions";
 import { useAccounts } from "@/hooks/queries/useAccounts";
@@ -18,6 +21,7 @@ import { CreditCardBillCard } from "@/components/CreditCardBillCard";
 import { CreditBillDetailsModal } from "@/components/CreditBillDetailsModal";
 import { cn } from "@/lib/utils";
 import { format, addMonths, isPast } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { CreditBillFilterDialog } from "@/components/creditbills/CreditBillFilterDialog";
 import { CreditBillFilterChips } from "@/components/creditbills/CreditBillFilterChips";
 
@@ -394,9 +398,6 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
                 onBillStatusChange={(value) => setFilterBillStatus(value as any)}
                 filterPaymentStatus={filterPaymentStatus}
                 onPaymentStatusChange={(value) => setFilterPaymentStatus(value as any)}
-                selectedMonthOffset={selectedMonthOffset}
-                onMonthOffsetChange={setSelectedMonthOffset}
-                selectedInvoiceMonthDate={selectedInvoiceMonthDate}
                 creditAccounts={creditAccounts}
                 activeFiltersCount={filterChips.length}
               />
@@ -407,15 +408,41 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
               />
             </div>
 
-            {/* Search */}
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar cartões..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
+            {/* Search and Period Navigation */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              {/* Search */}
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar cartões..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+
+              {/* Period Navigation */}
+              <div className="flex items-center gap-2 px-3 border border-input rounded-md bg-background min-w-[220px]">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedMonthOffset(selectedMonthOffset - 1)}
+                  className="h-8 w-8 p-0 flex-shrink-0"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <span className="flex-1 text-center text-sm font-medium">
+                  {format(selectedInvoiceMonthDate, "MMM/yyyy", { locale: ptBR })}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedMonthOffset(selectedMonthOffset + 1)}
+                  className="h-8 w-8 p-0 flex-shrink-0"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
         </CardContent>
