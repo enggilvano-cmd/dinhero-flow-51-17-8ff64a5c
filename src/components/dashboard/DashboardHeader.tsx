@@ -16,12 +16,6 @@ export function DashboardHeader({
 }: DashboardHeaderProps) {
   return (
     <div className="flex flex-col gap-3">
-      <div className="min-w-0 w-full">
-        <h1 className="text-system-h1 leading-tight">Dashboard Financeiro</h1>
-        <p className="text-sm text-muted-foreground leading-tight">
-          Visão geral das suas finanças
-        </p>
-      </div>
       <div className="grid grid-cols-2 gap-2 w-full md:grid-cols-4 lg:flex lg:flex-nowrap lg:gap-2 lg:w-auto lg:ml-auto">
         <Button
           onClick={onTransfer}

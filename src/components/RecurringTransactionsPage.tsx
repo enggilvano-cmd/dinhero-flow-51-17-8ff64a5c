@@ -222,13 +222,6 @@ export function RecurringTransactionsPage() {
 
   return (
     <div className="spacing-responsive-lg fade-in pb-6 sm:pb-8">
-      {/* Header */}
-      <div className="flex flex-col gap-3">
-        <div className="min-w-0 w-full">
-          <h1 className="text-system-h1 leading-tight">Transações Recorrentes</h1>
-          <p className="text-sm text-muted-foreground leading-tight">Gerencie suas transações recorrentes</p>
-        </div>
-      </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
