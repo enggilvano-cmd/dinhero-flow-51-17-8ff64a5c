@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useSettings } from '@/context/SettingsContext';
-import { Account, Transaction, Category } from '@/types';
+import type { Account, Transaction, Category, AccountFilterType, TransactionFilterType, StatusFilterType, DateFilterType } from '@/types';
 import { useDashboardFilters } from '@/hooks/useDashboardFilters';
 import { useDashboardCalculations } from '@/hooks/useDashboardCalculations';
 import { DashboardHeader } from './dashboard/DashboardHeader';
@@ -22,10 +22,10 @@ interface DashboardProps {
   onAddCreditExpense?: () => void;
   onNavigateToAccounts?: (filterType?: 'credit') => void;
   onNavigateToTransactions?: (
-    filterType?: 'income' | 'expense',
-    filterStatus?: 'all' | 'pending' | 'completed',
-    dateFilter?: 'all' | 'current_month' | 'custom' | 'month_picker',
-    filterAccountType?: 'all' | 'checking' | 'savings' | 'credit',
+    filterType?: TransactionFilterType,
+    filterStatus?: StatusFilterType,
+    dateFilter?: DateFilterType,
+    filterAccountType?: AccountFilterType,
     selectedMonth?: Date,
     customStartDate?: Date,
     customEndDate?: Date

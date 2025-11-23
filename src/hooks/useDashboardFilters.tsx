@@ -1,9 +1,7 @@
 import { useState, useCallback } from 'react';
 import { addMonths, subMonths, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
-import { Transaction } from '@/types';
+import type { Transaction, DateFilterType } from '@/types';
 import { createDateFromString } from '@/lib/dateUtils';
-
-export type DateFilterType = 'all' | 'current_month' | 'month_picker' | 'custom';
 
 export function useDashboardFilters() {
   const [dateFilter, setDateFilter] = useState<DateFilterType>('current_month');

@@ -17,7 +17,7 @@ import { CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
-import { DateFilterType } from '@/hooks/useDashboardFilters';
+import type { DateFilterType } from '@/types';
 
 interface FilterCardProps {
   dateFilter: DateFilterType;
