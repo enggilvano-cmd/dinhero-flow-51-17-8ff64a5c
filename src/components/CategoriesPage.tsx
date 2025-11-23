@@ -15,6 +15,7 @@ import { EditCategoryModal } from "@/components/EditCategoryModal";
 import { ImportCategoriesModal } from "@/components/ImportCategoriesModal";
 import { getUserId, withErrorHandling } from "@/lib/supabase-utils";
 import { Category } from "@/types";
+import { queryClient, queryKeys } from "@/lib/queryClient";
 
 interface CategoriesPageProps {}
 
@@ -79,6 +80,8 @@ export function CategoriesPage({}: CategoriesPageProps) {
 
     if (data) {
       setCategories(prev => [...prev, data]);
+      // Invalidate categories cache so other components see the new category
+      await queryClient.invalidateQueries({ queryKey: queryKeys.categories });
       toast({
         title: "Categoria Adicionada",
         description: "Categoria criada com sucesso",
@@ -107,6 +110,9 @@ export function CategoriesPage({}: CategoriesPageProps) {
         cat.id === updatedCategory.id ? { ...cat, ...updatedCategory } : cat
       ));
       setEditingCategory(null);
+      
+      // Invalidate categories cache so other components see the update
+      await queryClient.invalidateQueries({ queryKey: queryKeys.categories });
       
       toast({
         title: "Categoria Atualizada",
@@ -153,6 +159,9 @@ export function CategoriesPage({}: CategoriesPageProps) {
 
     if (data) {
       setCategories(prev => prev.filter(cat => cat.id !== categoryId));
+      
+      // Invalidate categories cache so other components see the deletion
+      await queryClient.invalidateQueries({ queryKey: queryKeys.categories });
       
       toast({
         title: "Categoria Excluída",
@@ -206,6 +215,9 @@ export function CategoriesPage({}: CategoriesPageProps) {
         const filtered = prev.filter(cat => !data.categoriesToReplaceIds.includes(cat.id));
         return [...filtered, ...(data.data || [])];
       });
+
+      // Invalidate categories cache so other components see the imported categories
+      await queryClient.invalidateQueries({ queryKey: queryKeys.categories });
 
       toast({
         title: "Sucesso",
