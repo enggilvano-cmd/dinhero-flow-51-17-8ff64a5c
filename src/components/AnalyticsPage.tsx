@@ -388,7 +388,7 @@ export default function AnalyticsPage({
     });
 
     return sortedMonths;
-  }, [filteredTransactions]);
+  }, [filteredTransactions, transactions]);
 
   const totalsByType = useMemo(() => {
     return filteredTransactions.reduce(

@@ -38,7 +38,7 @@ export function CurrencyInput({ value, onValueChange, allowNegative = false, ...
     // Converte a string de dígitos para um número.
     const centsValue = parseInt(numericString, 10);
     onValueChange(isNegative ? -centsValue : centsValue);
-  }, [onValueChange, isNegative]);
+  }, [onValueChange, isNegative, setDisplayValue]);
 
   const toggleSign = useCallback(() => {
     if (!allowNegative) return;
