@@ -663,14 +663,14 @@ export function AddTransactionModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="text-headline">
             {initialType === "income" 
               ? "Adicionar Receita"
               : initialType === "expense" 
               ? "Adicionar Despesa"
               : "Adicionar Transação"}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-body">
             {initialType === "income" 
               ? "Registre uma nova receita"
               : initialType === "expense" 
@@ -681,7 +681,7 @@ export function AddTransactionModal({
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="description">Descrição</Label>
+            <Label htmlFor="description" className="text-caption">Descrição</Label>
             <Input
               id="description"
               placeholder="Ex: Compra no mercado, salário, etc."
@@ -691,13 +691,13 @@ export function AddTransactionModal({
               }
             />
             {validationErrors.description && (
-              <p className="text-sm text-destructive">{validationErrors.description}</p>
+              <p className="text-body text-destructive">{validationErrors.description}</p>
             )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="type">Tipo</Label>
+              <Label htmlFor="type" className="text-caption">Tipo</Label>
               <Select
                 value={formData.type}
                 onValueChange={(value) =>
@@ -718,12 +718,12 @@ export function AddTransactionModal({
                 </SelectContent>
               </Select>
               {validationErrors.type && (
-                <p className="text-sm text-destructive">{validationErrors.type}</p>
+                <p className="text-body text-destructive">{validationErrors.type}</p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="amount">Valor</Label>
+              <Label htmlFor="amount" className="text-caption">Valor</Label>
               {/* 5. SUBSTITUIR O INPUT PELO CURRENCYINPUT */}
               <CurrencyInput
                 id="amount"
@@ -750,7 +750,7 @@ export function AddTransactionModal({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="category_id">Categoria</Label>
+              <Label htmlFor="category_id" className="text-caption">Categoria</Label>
               <Select
                 value={formData.category_id}
                 onValueChange={(value) =>
@@ -777,12 +777,12 @@ export function AddTransactionModal({
                 </SelectContent>
               </Select>
               {validationErrors.category_id && (
-                <p className="text-sm text-destructive">{validationErrors.category_id}</p>
+                <p className="text-body text-destructive">{validationErrors.category_id}</p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="date">Data</Label>
+              <Label htmlFor="date" className="text-caption">Data</Label>
               <Input
                 id="date"
                 type="date"
@@ -793,14 +793,14 @@ export function AddTransactionModal({
                 className="[color-scheme:light] dark:[color-scheme:dark]"
               />
               {validationErrors.date && (
-                <p className="text-sm text-destructive">{validationErrors.date}</p>
+                <p className="text-body text-destructive">{validationErrors.date}</p>
               )}
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="account_id">Conta</Label>
+              <Label htmlFor="account_id" className="text-caption">Conta</Label>
               <Select
                 value={formData.account_id}
                 onValueChange={(value) =>
@@ -823,7 +823,7 @@ export function AddTransactionModal({
                           />
                           <span>{account.name}</span>
                         </div>
-                        <span className="ml-2 text-sm text-muted-foreground">
+                        <span className="ml-2 text-caption text-muted-foreground">
                           {ACCOUNT_TYPE_LABELS[account.type]}
                         </span>
                       </div>
@@ -832,12 +832,12 @@ export function AddTransactionModal({
                 </SelectContent>
               </Select>
               {validationErrors.account_id && (
-                <p className="text-sm text-destructive">{validationErrors.account_id}</p>
+                <p className="text-body text-destructive">{validationErrors.account_id}</p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
+              <Label htmlFor="status" className="text-caption">Status</Label>
               <Select
                 value={formData.status}
                 onValueChange={(value) =>
@@ -862,7 +862,7 @@ export function AddTransactionModal({
           {formData.account_id &&
            accounts.find(acc => acc.id === formData.account_id)?.type === "credit" && (
             <div className="space-y-2 border-t pt-4">
-              <Label htmlFor="invoiceMonth">Mês da Fatura</Label>
+              <Label htmlFor="invoiceMonth" className="text-caption">Mês da Fatura</Label>
               <Select
                 value={formData.invoiceMonth}
                 onValueChange={(value) =>
@@ -890,7 +890,7 @@ export function AddTransactionModal({
                   })()}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-caption text-muted-foreground">
                 Selecione para qual fatura esse gasto será lançado
               </p>
             </div>
@@ -901,11 +901,11 @@ export function AddTransactionModal({
             <div className="flex items-start justify-between gap-4">
               <div className="space-y-1 flex-1">
                 <div className="flex items-center gap-2">
-                  <Label htmlFor="installment" className="text-base font-semibold cursor-pointer">
+                  <Label htmlFor="installment" className="text-headline cursor-pointer">
                     Parcelamento
                   </Label>
                 </div>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-body text-muted-foreground">
                   {formData.account_id &&
                   filteredAccounts.find((acc) => acc.id === formData.account_id)
                     ?.type === "credit" ? "Divida o valor em várias parcelas no cartão de crédito"
@@ -929,7 +929,7 @@ export function AddTransactionModal({
             {formData.isInstallment && (
               <div className="space-y-4 pt-2 animate-fade-in">
                 <div className="space-y-2">
-                  <Label htmlFor="installments">Número de Parcelas</Label>
+                  <Label htmlFor="installments" className="text-caption">Número de Parcelas</Label>
                   <Select
                     value={formData.installments}
                     onValueChange={(value) => {
@@ -963,7 +963,7 @@ export function AddTransactionModal({
                   
                   {formData.installments === "custom" && (
                     <div className="space-y-2 pt-2 animate-fade-in">
-                      <Label htmlFor="customInstallments">Número personalizado de parcelas</Label>
+                      <Label htmlFor="customInstallments" className="text-caption">Número personalizado de parcelas</Label>
                       <Input
                         id="customInstallments"
                         type="number"
@@ -974,7 +974,7 @@ export function AddTransactionModal({
                         onChange={(e) => setCustomInstallments(e.target.value)}
                       />
                       {customInstallments && parseInt(customInstallments) > 0 && formData.amount > 0 && (
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-body text-muted-foreground">
                           {parseInt(customInstallments)}x de{" "}
                           {new Intl.NumberFormat("pt-BR", {
                             style: "currency",
@@ -994,11 +994,11 @@ export function AddTransactionModal({
             <div className="flex items-start justify-between gap-4">
               <div className="space-y-1 flex-1">
                 <div className="flex items-center gap-2">
-                  <Label htmlFor="recurring" className="text-base font-semibold cursor-pointer">
+                  <Label htmlFor="recurring" className="text-headline cursor-pointer">
                     Transação Recorrente
                   </Label>
                 </div>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-body text-muted-foreground">
                   Crie transações que se repetem automaticamente
                 </p>
               </div>
@@ -1019,7 +1019,7 @@ export function AddTransactionModal({
             {formData.isRecurring && (
               <div className="space-y-4 pt-2 animate-fade-in">
                 <div className="space-y-2">
-                  <Label htmlFor="recurrenceType">Frequência</Label>
+                  <Label htmlFor="recurrenceType" className="text-caption">Frequência</Label>
                   <Select
                     value={formData.recurrenceType}
                     onValueChange={(value: "daily" | "weekly" | "monthly" | "yearly") =>
@@ -1039,7 +1039,7 @@ export function AddTransactionModal({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="recurrenceEndDate">Data de Término</Label>
+                  <Label htmlFor="recurrenceEndDate" className="text-caption">Data de Término</Label>
                   <Input
                     id="recurrenceEndDate"
                     type="date"
@@ -1049,7 +1049,7 @@ export function AddTransactionModal({
                     }
                     min={getTodayString()}
                   />
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-caption text-muted-foreground">
                     Opcional - deixe em branco para recorrência indefinida
                   </p>
                 </div>
@@ -1062,11 +1062,11 @@ export function AddTransactionModal({
             <div className="flex items-start justify-between gap-4">
               <div className="space-y-1 flex-1">
                 <div className="flex items-center gap-2">
-                  <Label htmlFor="fixed" className="text-base font-semibold cursor-pointer">
+                  <Label htmlFor="fixed" className="text-headline cursor-pointer">
                     Transação Fixa
                   </Label>
                 </div>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-body text-muted-foreground">
                   Receitas ou despesas que se repetem todo mês, sem data de término (ex: salário, aluguel)
                 </p>
               </div>
@@ -1086,7 +1086,7 @@ export function AddTransactionModal({
 
             {formData.isFixed && (
               <div className="space-y-2 pt-2 animate-fade-in">
-                <p className="text-sm text-muted-foreground">
+                <p className="text-body text-muted-foreground">
                   Esta transação será criada automaticamente todo dia {new Date(formData.date).getDate()} de cada mês.
                 </p>
               </div>
@@ -1098,11 +1098,11 @@ export function AddTransactionModal({
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
-              className="flex-1"
+              className="flex-1 text-body"
             >
               Cancelar
             </Button>
-            <Button type="submit" className="flex-1">
+            <Button type="submit" className="flex-1 text-body">
               Adicionar
             </Button>
           </div>

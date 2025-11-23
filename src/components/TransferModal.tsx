@@ -124,8 +124,8 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Transferência entre Contas</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-headline">Transferência entre Contas</DialogTitle>
+          <DialogDescription className="text-body">
             Realize uma transferência entre suas contas
           </DialogDescription>
         </DialogHeader>
@@ -133,7 +133,7 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="fromAccount">Conta de Origem</Label>
+              <Label htmlFor="fromAccount" className="text-caption">Conta de Origem</Label>
               <Select value={formData.fromAccountId} onValueChange={(value) => setFormData(prev => ({ ...prev, fromAccountId: value }))}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione a conta de origem" />
@@ -149,17 +149,17 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
                             className="w-3 h-3 rounded-full flex-shrink-0" 
                             style={{ backgroundColor: account.color || "#6b7280" }}
                           />
-                          <div className="flex flex-col flex-1 min-w-0">
-                            <span className="font-medium truncate">{account.name}</span>
-                            <span className="text-xs text-muted-foreground">
-                              {formatCurrency(account.balance)}
-                              {hasLimit && (
-                                <span className="text-primary ml-1">
-                                  + {formatCurrency(account.limit_amount || 0)} limite
-                                </span>
-                              )}
-                            </span>
-                          </div>
+                            <div className="flex flex-col flex-1 min-w-0">
+                              <span className="font-medium truncate text-body">{account.name}</span>
+                              <span className="text-caption text-muted-foreground">
+                                {formatCurrency(account.balance)}
+                                {hasLimit && (
+                                  <span className="text-primary ml-1">
+                                    + {formatCurrency(account.limit_amount || 0)} limite
+                                  </span>
+                                )}
+                              </span>
+                            </div>
                         </div>
                       </SelectItem>
                     );
@@ -178,7 +178,7 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="toAccount">Conta de Destino</Label>
+              <Label htmlFor="toAccount" className="text-caption">Conta de Destino</Label>
               <Select value={formData.toAccountId} onValueChange={(value) => setFormData(prev => ({ ...prev, toAccountId: value }))}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione a conta de destino" />
@@ -196,8 +196,8 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
                               style={{ backgroundColor: account.color || "#6b7280" }}
                             />
                             <div className="flex flex-col flex-1 min-w-0">
-                              <span className="font-medium truncate">{account.name}</span>
-                              <span className="text-xs text-muted-foreground">
+                              <span className="font-medium truncate text-body">{account.name}</span>
+                              <span className="text-caption text-muted-foreground">
                                 {formatCurrency(account.balance)}
                                 {hasLimit && (
                                   <span className="text-primary ml-1">
@@ -217,7 +217,7 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="amount">Valor</Label>
+              <Label htmlFor="amount" className="text-caption">Valor</Label>
               <CurrencyInput
                 id="amount"
                 value={formData.amountInCents}
@@ -226,7 +226,7 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="date">Data</Label>
+              <Label htmlFor="date" className="text-caption">Data</Label>
               <Input
                 id="date"
                 type="date"
@@ -236,7 +236,7 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
             </div>
           </div>
 
-          <p className="text-xs text-center text-muted-foreground pt-2">
+          <p className="text-caption text-center text-muted-foreground pt-2">
             Não é possível transferir para contas de crédito.
             <br />
             Para pagar uma fatura de cartão, use o botão "Pagar Fatura".
@@ -244,19 +244,19 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
 
           {sourceAccounts.length < 2 && (
             <div className="p-4 bg-muted rounded-lg">
-              <p className="text-sm text-muted-foreground">
+              <p className="text-body text-muted-foreground">
                 <strong>Atenção:</strong> Você precisa ter pelo menos 2 contas (exceto cartão de crédito) para fazer transferências.
               </p>
             </div>
           )}
 
           <div className="flex gap-3 pt-4">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1 text-body">
               Cancelar
             </Button>
             <Button 
               type="submit" 
-              className="flex-1"
+              className="flex-1 text-body"
               disabled={sourceAccounts.length < 2 || isSubmitting}
             >
               {isSubmitting ? "Processando..." : "Realizar Transferência"}

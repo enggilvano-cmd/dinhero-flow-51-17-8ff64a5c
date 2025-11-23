@@ -335,21 +335,21 @@ export function EditTransactionModal({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle className="text-headline">
               Editar Transação
               {isInstallment && (
-                <span className="text-sm font-normal text-muted-foreground block">
+                <span className="text-body font-normal text-muted-foreground block">
                   Parcela {transaction?.current_installment} de {transaction?.installments}
                 </span>
               )}
-              <DialogDescription>
+              <DialogDescription className="text-body">
                 Atualize as informações da transação
               </DialogDescription>
             </DialogTitle>
           </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="description">Descrição</Label>
+            <Label htmlFor="description" className="text-caption">Descrição</Label>
             <Input
               id="description"
               value={formData.description}
@@ -360,7 +360,7 @@ export function EditTransactionModal({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="amount">Valor</Label>
+            <Label htmlFor="amount" className="text-caption">Valor</Label>
             {/* USO CORRETO DO CURRENCY INPUT:
               Ele lida com a formatação e garante que 'amountInCents'
               seja sempre um número positivo.
@@ -382,7 +382,7 @@ export function EditTransactionModal({
           )}
 
           <div className="space-y-2">
-            <Label>Data</Label>
+            <Label className="text-caption">Data</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -412,7 +412,7 @@ export function EditTransactionModal({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="type">Tipo</Label>
+            <Label htmlFor="type" className="text-caption">Tipo</Label>
             <Select
               value={formData.type}
               onValueChange={(value: "income" | "expense") => 
@@ -430,7 +430,7 @@ export function EditTransactionModal({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="category">Categoria</Label>
+            <Label htmlFor="category" className="text-caption">Categoria</Label>
             <Select
               value={formData.category_id}
               onValueChange={(value) => setFormData({ ...formData, category_id: value })}
@@ -455,7 +455,7 @@ export function EditTransactionModal({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="account">Conta</Label>
+            <Label htmlFor="account" className="text-caption">Conta</Label>
             <Select
               value={formData.account_id}
               onValueChange={(value) => setFormData({ ...formData, account_id: value })}
@@ -474,7 +474,7 @@ export function EditTransactionModal({
                         />
                         <span>{account.name}</span>
                       </div>
-                      <span className="ml-2 text-sm text-muted-foreground">
+                      <span className="ml-2 text-caption text-muted-foreground">
                         {ACCOUNT_TYPE_LABELS[account.type]}
                       </span>
                     </div>
@@ -485,7 +485,7 @@ export function EditTransactionModal({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="status">Status</Label>
+            <Label htmlFor="status" className="text-caption">Status</Label>
             <Select
               value={formData.status}
               onValueChange={(value: "pending" | "completed") => setFormData({ ...formData, status: value })}
@@ -505,7 +505,7 @@ export function EditTransactionModal({
           {formData.account_id &&
            accounts.find(acc => acc.id === formData.account_id)?.type === "credit" && (
             <div className="space-y-2 border-t pt-4">
-              <Label htmlFor="invoiceMonth">Mês da Fatura (opcional)</Label>
+              <Label htmlFor="invoiceMonth" className="text-caption">Mês da Fatura (opcional)</Label>
               <Select
                 value={formData.invoiceMonth}
                 onValueChange={(value) =>
@@ -533,17 +533,17 @@ export function EditTransactionModal({
                   })()}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-caption text-muted-foreground">
                 Deixe em branco para usar o mês calculado automaticamente
               </p>
             </div>
           )}
 
           <div className="flex gap-3 pt-4">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1 text-body">
               Cancelar
             </Button>
-            <Button type="submit" className="flex-1">
+            <Button type="submit" className="flex-1 text-body">
               Salvar Alterações
             </Button>
           </div>

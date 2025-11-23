@@ -77,12 +77,12 @@ export function MarkAsPaidModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Marcar como Pago</DialogTitle>
+          <DialogTitle className="text-headline">Marcar como Pago</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           {/* Data */}
           <div className="grid gap-2">
-            <Label htmlFor="date">Data</Label>
+            <Label htmlFor="date" className="text-caption">Data</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -110,7 +110,7 @@ export function MarkAsPaidModal({
 
           {/* Valor */}
           <div className="grid gap-2">
-            <Label htmlFor="amount">Valor</Label>
+            <Label htmlFor="amount" className="text-caption">Valor</Label>
             <Input
               id="amount"
               type="text"
@@ -122,7 +122,7 @@ export function MarkAsPaidModal({
 
           {/* Conta */}
           <div className="grid gap-2">
-            <Label htmlFor="account">Conta</Label>
+            <Label htmlFor="account" className="text-caption">Conta</Label>
             <Select value={accountId} onValueChange={setAccountId}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione uma conta" />
@@ -138,7 +138,7 @@ export function MarkAsPaidModal({
                         />
                         <span>{account.name}</span>
                       </div>
-                      <span className="ml-2 text-sm text-muted-foreground">
+                      <span className="ml-2 text-caption text-muted-foreground">
                         {ACCOUNT_TYPE_LABELS[account.type]}
                       </span>
                     </div>

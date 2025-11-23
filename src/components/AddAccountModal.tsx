@@ -179,10 +179,10 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[95vw] max-w-md sm:max-w-lg md:max-w-xl">
         <DialogHeader className="pb-4">
-          <DialogTitle className="text-lg sm:text-xl">
+          <DialogTitle className="text-headline">
             Adicionar Conta
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-body">
             Crie uma nova conta para gerenciar suas finanças
           </DialogDescription>
         </DialogHeader>
@@ -190,7 +190,7 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
         <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
           {/* Nome da Conta */}
           <div className="space-y-2">
-            <Label htmlFor="name" className="text-sm font-medium">
+            <Label htmlFor="name" className="text-caption">
               Nome da Conta
             </Label>
             <Input
@@ -206,7 +206,7 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
 
           {/* Tipo de Conta */}
           <div className="space-y-2">
-            <Label htmlFor="type" className="text-sm font-medium">
+            <Label htmlFor="type" className="text-caption">
               Tipo de Conta
             </Label>
             <Select
@@ -237,7 +237,7 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
 
           {/* Limite da Conta */}
           <div className="space-y-2">
-            <Label className="text-sm font-medium">
+            <Label className="text-caption">
               {formData.type === "credit" 
                 ? "Limite do Cartão" 
                 : formData.type === "checking" 
@@ -251,12 +251,12 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
               }
             />
             {formData.type === "checking" && (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-caption text-muted-foreground">
                 Informe o limite de cheque especial disponível na conta
               </p>
             )}
             {formData.type === "credit" && (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-caption text-muted-foreground">
                 Limite total disponível no cartão de crédito
               </p>
             )}
@@ -267,7 +267,7 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 {/* --- CORREÇÃO: Rótulo removido (opcional) --- */}
-                <Label htmlFor="closingDate" className="text-sm font-medium">
+                <Label htmlFor="closingDate" className="text-caption">
                   Data de Fechamento
                 </Label>
                 <Input
@@ -285,14 +285,14 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
                   }
                   className="h-10 sm:h-11"
                 />
-                <p className="text-xs text-muted-foreground">
+                <p className="text-caption text-muted-foreground">
                   Dia do mês em que a fatura fecha
                 </p>
               </div>
 
               <div className="space-y-2">
                 {/* --- CORREÇÃO: Rótulo removido (opcional) --- */}
-                <Label htmlFor="dueDate" className="text-sm font-medium">
+                <Label htmlFor="dueDate" className="text-caption">
                   Data de Vencimento
                 </Label>
                 <Input
@@ -310,7 +310,7 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
                   }
                   className="h-10 sm:h-11"
                 />
-                <p className="text-xs text-muted-foreground">
+                <p className="text-caption text-muted-foreground">
                   Dia do mês em que a fatura vence
                 </p>
               </div>
@@ -330,13 +330,13 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
-              className="flex-1 h-10 sm:h-11"
+              className="flex-1 h-10 sm:h-11 text-body"
             >
               Cancelar
             </Button>
             <Button
               type="submit"
-              className="flex-1 h-10 sm:h-11"
+              className="flex-1 h-10 sm:h-11 text-body"
               disabled={isSubmitting}
             >
               {isSubmitting ? "Adicionando..." : "Adicionar Conta"}
