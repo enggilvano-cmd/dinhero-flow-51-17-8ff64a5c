@@ -41,22 +41,28 @@ async function saveSettingsToDb(settings: AppSettings): Promise<void> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('User not authenticated');
 
+  // Use upsert to handle both insert and update cases
   const { error } = await supabase
     .from('user_settings')
-    .update({
+    .upsert({
+      user_id: user.id,
       currency: settings.currency,
       theme: settings.theme,
       notifications: settings.notifications,
       auto_backup: settings.autoBackup,
       language: settings.language,
       updated_at: new Date().toISOString()
-    })
-    .eq('user_id', user.id);
+    }, { 
+      onConflict: 'user_id',
+      ignoreDuplicates: false // Always update if exists
+    });
 
   if (error) {
-    logger.error('Error updating settings:', error);
+    logger.error('Error saving settings to database:', error);
     throw error;
   }
+  
+  logger.debug('Settings saved to database successfully:', settings);
 }
 
 interface SettingsContextType {
@@ -205,12 +211,13 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     if (user) {
       try {
         await saveSettingsToDb(newSettings);
-        logger.debug('Settings saved to database successfully');
+        logger.success('Settings saved successfully');
       } catch (error) {
-        logger.error('Error saving settings to database:', error);
+        logger.error('Failed to save settings to database:', error);
+        // Settings are still in localStorage, so they won't be lost
       }
     } else {
-      logger.warn('Cannot save settings - user not authenticated');
+      logger.warn('Cannot save to database - user not authenticated, using localStorage only');
     }
   };
 
