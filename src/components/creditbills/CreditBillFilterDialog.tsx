@@ -27,7 +27,7 @@ interface CreditBillFilterDialogProps {
   onBillStatusChange: (value: string) => void;
   filterPaymentStatus: string;
   onPaymentStatusChange: (value: string) => void;
-  creditAccounts: any[];
+  creditAccounts: Array<{ id: string; name: string; color?: string }>;
   activeFiltersCount: number;
 }
 

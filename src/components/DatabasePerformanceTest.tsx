@@ -42,7 +42,7 @@ export function DatabasePerformanceTest() {
 
       // Executar ANALYZE automaticamente
       await runAnalyze();
-    } catch (error: any) {
+    } catch (error) {
       logger.error('Error generating test data:', error);
       toast({
         title: "❌ Erro ao gerar dados",
@@ -133,7 +133,7 @@ export function DatabasePerformanceTest() {
         title: "✅ Testes executados",
         description: "Análise de performance concluída",
       });
-    } catch (error: any) {
+    } catch (error) {
       logger.error('Error running performance tests:', error);
       toast({
         title: "❌ Erro nos testes",
@@ -165,7 +165,7 @@ export function DatabasePerformanceTest() {
         title: "✅ Dados de teste removidos",
         description: "Todas as transações de teste foram excluídas",
       });
-    } catch (error: any) {
+    } catch (error) {
       logger.error('Error clearing test data:', error);
       toast({
         title: "❌ Erro ao limpar dados",

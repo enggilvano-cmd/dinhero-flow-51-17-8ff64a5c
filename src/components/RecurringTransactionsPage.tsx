@@ -292,7 +292,7 @@ export function RecurringTransactionsPage() {
             </div>
             <div>
               <Label htmlFor="filter" className="text-caption">Filtrar por Tipo</Label>
-              <Select value={filterType} onValueChange={(value: any) => setFilterType(value)}>
+              <Select value={filterType} onValueChange={(value: string) => setFilterType(value)}>
                 <SelectTrigger id="filter" className="touch-target mt-2">
                   <SelectValue />
                 </SelectTrigger>

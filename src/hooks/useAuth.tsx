@@ -25,10 +25,10 @@ interface AuthContextType {
   session: Session | null;
   profile: Profile | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
-  signUp: (email: string, password: string, fullName: string, whatsapp?: string) => Promise<{ error: any }>;
-  signOut: () => Promise<{ error: any }>;
-  resetPassword: (email: string) => Promise<{ error: any }>;
+  signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, fullName: string, whatsapp?: string) => Promise<{ error: Error | null }>;
+  signOut: () => Promise<{ error: Error | null }>;
+  resetPassword: (email: string) => Promise<{ error: Error | null }>;
   isAdmin: () => boolean;
   hasRole: (role: 'admin' | 'user' | 'subscriber' | 'trial') => boolean;
   isSubscriptionActive: () => boolean;
@@ -303,14 +303,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       return { error };
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       logger.error('Sign in error:', error);
       toast({
         title: "Erro no login",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
-      return { error };
+      return { error: error instanceof Error ? error : new Error(errorMessage) };
     }
   };
 
@@ -348,14 +349,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       return { error };
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       logger.error('Sign up error:', error);
       toast({
         title: "Erro no cadastro",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
-      return { error };
+      return { error: error instanceof Error ? error : new Error(errorMessage) };
     }
   };
 
@@ -382,14 +384,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       return { error };
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       logger.error('Sign out error:', error);
       toast({
         title: "Erro ao sair",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
-      return { error };
+      return { error: error instanceof Error ? error : new Error(errorMessage) };
     }
   };
 
@@ -419,14 +422,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       return { error };
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       logger.error('Reset password error:', error);
       toast({
         title: "Erro na recuperação",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
-      return { error };
+      return { error: error instanceof Error ? error : new Error(errorMessage) };
     }
   };
 

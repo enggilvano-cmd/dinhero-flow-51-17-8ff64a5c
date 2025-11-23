@@ -93,7 +93,7 @@ export function PeriodClosurePage() {
       setEndDate(undefined);
       setNotes('');
       loadPeriodClosures();
-    } catch (error: any) {
+    } catch (error) {
       logger.error('Error creating closure:', error);
       if (error.message?.includes('duplicate key')) {
         toast.error('Já existe um fechamento para este período');
@@ -220,7 +220,7 @@ export function PeriodClosurePage() {
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Tipo de Fechamento</label>
-              <Select value={closureType} onValueChange={(value: any) => setClosureType(value)}>
+              <Select value={closureType} onValueChange={(value: string) => setClosureType(value)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>

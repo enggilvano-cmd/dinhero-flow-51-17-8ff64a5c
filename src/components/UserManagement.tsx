@@ -179,11 +179,12 @@ export function UserManagement() {
         title: 'Sucesso',
         description: 'Função do usuário atualizada com sucesso.',
       });
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       logger.error('Error updating user role:', error);
       toast({
         title: 'Erro',
-        description: `Não foi possível atualizar a função do usuário: ${error?.message || 'Erro desconhecido'}`,
+        description: `Não foi possível atualizar a função do usuário: ${errorMessage}`,
         variant: 'destructive',
       });
     }
@@ -262,11 +263,12 @@ export function UserManagement() {
         title: 'Sucesso',
         description: 'Usuário removido com sucesso do sistema e autenticação.',
       });
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Não foi possível remover o usuário.';
       logger.error('Error deleting user:', error);
       toast({
         title: 'Erro',
-        description: error.message || 'Não foi possível remover o usuário.',
+        description: errorMessage,
         variant: 'destructive',
       });
     }
@@ -329,10 +331,11 @@ export function UserManagement() {
       });
 
       fetchUsers();
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao atualizar assinatura';
       toast({
         title: 'Erro',
-        description: error.message,
+        description: errorMessage,
         variant: 'destructive',
       });
     }

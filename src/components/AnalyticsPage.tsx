@@ -514,7 +514,7 @@ export default function AnalyticsPage({
           pixelRatio: 2,
           cacheBust: true,
           backgroundColor: "#ffffff",
-          filter: (node: any) => {
+          filter: (node: HTMLElement) => {
             if (node instanceof HTMLCanvasElement && (node.width === 0 || node.height === 0)) {
               return false;
             }
@@ -689,7 +689,7 @@ export default function AnalyticsPage({
               <label htmlFor="filter-type" className="text-caption">Tipo</label>
               <Select
                 value={filterType}
-                onValueChange={(value: any) => setFilterType(value)}
+                onValueChange={(value: string) => setFilterType(value)}
               >
                 <SelectTrigger id="filter-type" className="touch-target mt-2">
                   <SelectValue placeholder="Tipo" />
@@ -749,7 +749,7 @@ export default function AnalyticsPage({
               <label htmlFor="filter-status" className="text-caption">Status</label>
               <Select
                 value={filterStatus}
-                onValueChange={(value: any) => setFilterStatus(value)}
+                onValueChange={(value: string) => setFilterStatus(value)}
               >
                 <SelectTrigger id="filter-status" className="touch-target mt-2">
                   <SelectValue placeholder="Status" />

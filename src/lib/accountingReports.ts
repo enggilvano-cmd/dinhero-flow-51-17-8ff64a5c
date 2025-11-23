@@ -35,9 +35,26 @@ export interface CashFlowReport {
 
 // Gerar DRE (Demonstração do Resultado do Exercício)
 // ATUALIZADO: Agora usa journal_entries ao invés de transactions
+interface JournalEntry {
+  id: string;
+  account_id: string;
+  amount: number;
+  entry_type: 'debit' | 'credit';
+  entry_date: string;
+  description: string;
+}
+
+interface ChartAccount {
+  id: string;
+  code: string;
+  name: string;
+  category: 'asset' | 'liability' | 'equity' | 'revenue' | 'expense';
+  nature: 'debit' | 'credit';
+}
+
 export function generateDRE(
-  journalEntries: any[],
-  chartOfAccounts: any[],
+  journalEntries: JournalEntry[],
+  chartOfAccounts: ChartAccount[],
   _startDate: Date,
   _endDate: Date
 ): DREReport {
@@ -86,8 +103,8 @@ export function generateDRE(
 // Gerar Balanço Patrimonial
 // ATUALIZADO: Agora usa chart_of_accounts e journal_entries
 export function generateBalanceSheet(
-  journalEntries: any[],
-  chartOfAccounts: any[],
+  journalEntries: JournalEntry[],
+  chartOfAccounts: ChartAccount[],
   _referenceDate: Date
 ): BalanceSheetReport {
   // Calcular saldo de cada conta contábil
@@ -162,9 +179,23 @@ export function generateBalanceSheet(
 }
 
 // Gerar Fluxo de Caixa
+interface CashFlowTransaction {
+  id: string;
+  date: string;
+  type: 'income' | 'expense' | 'transfer';
+  amount: number;
+  account_id: string;
+  to_account_id?: string;
+}
+
+interface CashFlowAccount {
+  id: string;
+  type: 'checking' | 'savings' | 'credit' | 'investment';
+}
+
 export function generateCashFlow(
-  transactions: any[],
-  accounts: any[],
+  transactions: CashFlowTransaction[],
+  accounts: CashFlowAccount[],
   startDate: Date,
   endDate: Date
 ): CashFlowReport {
@@ -236,12 +267,14 @@ export function generateCashFlow(
 }
 
 // Exportar relatório para PDF
+type TranslationFunction = (key: string) => string;
+
 export async function exportReportToPDF(
   reportType: "dre" | "balance" | "cashflow",
-  reportData: any,
+  reportData: DREReport | BalanceSheetReport | CashFlowReport,
   startDate: Date,
   endDate: Date,
-  t: any
+  t: TranslationFunction
 ) {
   const { jsPDF } = await loadJsPDF();
   const doc = new jsPDF();
@@ -283,7 +316,7 @@ export async function exportReportToPDF(
   doc.save(filename);
 }
 
-function exportDREtoPDF(doc: any, data: DREReport, startY: number, t: any) {
+function exportDREtoPDF(doc: ReturnType<typeof import('jspdf').jsPDF>, data: DREReport, startY: number, t: TranslationFunction) {
   let y = startY;
 
   // Receitas
@@ -327,7 +360,7 @@ function exportDREtoPDF(doc: any, data: DREReport, startY: number, t: any) {
   doc.text(formatCurrency(data.netResult), 170, y, { align: "right" });
 }
 
-function exportBalanceSheetToPDF(doc: any, data: BalanceSheetReport, startY: number, t: any) {
+function exportBalanceSheetToPDF(doc: ReturnType<typeof import('jspdf').jsPDF>, data: BalanceSheetReport, startY: number, t: TranslationFunction) {
   let y = startY;
 
   // Ativo
@@ -393,7 +426,7 @@ function exportBalanceSheetToPDF(doc: any, data: BalanceSheetReport, startY: num
   doc.text(formatCurrency(data.equity), 180, maxY, { align: "right" });
 }
 
-function exportCashFlowToPDF(doc: any, data: CashFlowReport, startY: number, t: any) {
+function exportCashFlowToPDF(doc: ReturnType<typeof import('jspdf').jsPDF>, data: CashFlowReport, startY: number, t: TranslationFunction) {
   let y = startY;
 
   // Saldo Inicial

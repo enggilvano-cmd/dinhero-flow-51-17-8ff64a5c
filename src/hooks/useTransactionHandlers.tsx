@@ -237,7 +237,7 @@ export function useTransactionHandlers() {
     if (!user) return;
     try {
       // Extrair apenas os campos que foram modificados
-      const updates: any = {};
+      const updates: Partial<TransactionUpdate> = {};
       
       if (updatedTransaction.description !== undefined) {
         updates.description = updatedTransaction.description;

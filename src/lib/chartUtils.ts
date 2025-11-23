@@ -18,7 +18,7 @@ export function formatCurrencyForAxis(value: number, isMobile: boolean): string 
   }).format(value);
 }
 
-export function getPieChartProps(chartConfig: ChartDimensions, data: any[]) {
+export function getPieChartProps(chartConfig: ChartDimensions, data: Array<Record<string, unknown>>) {
   return {
     cx: "50%",
     cy: "50%",

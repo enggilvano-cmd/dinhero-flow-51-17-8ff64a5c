@@ -34,7 +34,7 @@ export function TwoFactorSetup({ onComplete }: TwoFactorSetupProps) {
         setSecret(data.totp.secret);
         setStep('verify');
       }
-    } catch (error: any) {
+    } catch (error) {
       logger.error('Erro ao iniciar 2FA:', error);
       toast({
         title: 'Falha na Configuração',
@@ -77,7 +77,7 @@ export function TwoFactorSetup({ onComplete }: TwoFactorSetupProps) {
       });
 
       onComplete();
-    } catch (error: any) {
+    } catch (error) {
       logger.error('Erro ao verificar código:', error);
       toast({
         title: 'Código Inválido',
