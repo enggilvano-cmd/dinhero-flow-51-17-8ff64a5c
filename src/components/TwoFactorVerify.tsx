@@ -53,7 +53,7 @@ export function TwoFactorVerify({ onVerified, onCancel }: TwoFactorVerifyProps) 
       });
 
       onVerified();
-    } catch (error: any) {
+    } catch (error) {
       logger.error('Erro ao verificar 2FA:', error);
       toast({
         title: 'Código Inválido',
