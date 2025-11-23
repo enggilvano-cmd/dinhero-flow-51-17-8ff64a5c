@@ -59,6 +59,12 @@ const PlaniFlowApp = () => {
   const [transactionsDateTo, setTransactionsDateTo] = useState<string | undefined>(undefined);
   const [transactionsSortBy, setTransactionsSortBy] = useState<"date" | "amount">("date");
   const [transactionsSortOrder, setTransactionsSortOrder] = useState<"asc" | "desc">("desc");
+  
+  // Period filter state (sincronizado com dateFrom/dateTo)
+  const [transactionsPeriodFilter, setTransactionsPeriodFilter] = useState<"all" | "current_month" | "month_picker" | "custom">("all");
+  const [transactionsSelectedMonth, setTransactionsSelectedMonth] = useState<Date>(new Date());
+  const [transactionsCustomStartDate, setTransactionsCustomStartDate] = useState<Date | undefined>(undefined);
+  const [transactionsCustomEndDate, setTransactionsCustomEndDate] = useState<Date | undefined>(undefined);
 
   const [accountFilterType, setAccountFilterType] = useState<
     "all" | "checking" | "savings" | "credit" | "investment"
@@ -317,6 +323,9 @@ const PlaniFlowApp = () => {
           setTransactionsFilterAccountType(filterAccountType);
         }
         
+        // Sincronizar o período filter
+        setTransactionsPeriodFilter(dateFilter || 'all');
+        
         // Apply date filters based on dateFilter type
         if (dateFilter === 'current_month') {
           // Use actual current date, not the selected month parameter
@@ -327,12 +336,15 @@ const PlaniFlowApp = () => {
           setTransactionsDateTo(endOfMonth.toISOString().split('T')[0]);
         } else if (dateFilter === 'month_picker' && selectedMonth) {
           // Use the selected month from dashboard filter
+          setTransactionsSelectedMonth(selectedMonth);
           const startOfMonth = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), 1);
           const endOfMonth = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1, 0);
           setTransactionsDateFrom(startOfMonth.toISOString().split('T')[0]);
           setTransactionsDateTo(endOfMonth.toISOString().split('T')[0]);
         } else if (dateFilter === 'custom' && customStartDate && customEndDate) {
           // Use custom date range
+          setTransactionsCustomStartDate(customStartDate);
+          setTransactionsCustomEndDate(customEndDate);
           setTransactionsDateFrom(customStartDate.toISOString().split('T')[0]);
           setTransactionsDateTo(customEndDate.toISOString().split('T')[0]);
         } else if (dateFilter === 'all') {
@@ -403,6 +415,14 @@ const PlaniFlowApp = () => {
             sortOrder={transactionsSortOrder}
             onSortOrderChange={setTransactionsSortOrder}
             isLoading={loadingTransactions}
+            periodFilter={transactionsPeriodFilter}
+            onPeriodFilterChange={setTransactionsPeriodFilter}
+            selectedMonth={transactionsSelectedMonth}
+            onSelectedMonthChange={setTransactionsSelectedMonth}
+            customStartDate={transactionsCustomStartDate}
+            onCustomStartDateChange={setTransactionsCustomStartDate}
+            customEndDate={transactionsCustomEndDate}
+            onCustomEndDateChange={setTransactionsCustomEndDate}
           />
         );
       case "fixed":
