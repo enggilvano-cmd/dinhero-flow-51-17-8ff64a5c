@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Pencil, Trash2, Plus, TrendingUp, TrendingDown, Calendar, Search } from "lucide-react";
+import { Pencil, Trash2, Plus, TrendingUp, TrendingDown, Calendar, Search, CalendarPlus } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -376,6 +376,111 @@ export function FixedTransactionsPage() {
     }
   };
 
+  const handleGenerateNext12Months = async (transactionId: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Buscar a transação fixa principal
+      const { data: mainTransaction, error: fetchError } = await supabase
+        .from("transactions")
+        .select("*")
+        .eq("id", transactionId)
+        .single();
+
+      if (fetchError || !mainTransaction) {
+        throw new Error("Transação não encontrada");
+      }
+
+      // Buscar a última transação gerada (maior data)
+      const { data: childTransactions, error: childError } = await supabase
+        .from("transactions")
+        .select("date")
+        .eq("parent_transaction_id", transactionId)
+        .order("date", { ascending: false })
+        .limit(1);
+
+      if (childError) throw childError;
+
+      // Determinar a data inicial para os próximos 12 meses
+      let startDate: Date;
+      if (childTransactions && childTransactions.length > 0) {
+        // Se existem transações filhas, começar do mês seguinte à última
+        const lastDate = new Date(childTransactions[0].date);
+        startDate = new Date(lastDate.getFullYear(), lastDate.getMonth() + 1, lastDate.getDate());
+      } else {
+        // Se não existem transações filhas, começar do mês seguinte à principal
+        const mainDate = new Date(mainTransaction.date);
+        startDate = new Date(mainDate.getFullYear(), mainDate.getMonth() + 1, mainDate.getDate());
+      }
+
+      const dayOfMonth = new Date(mainTransaction.date).getDate();
+      const transactionsToGenerate = [];
+
+      // Gerar 12 meses subsequentes
+      for (let i = 0; i < 12; i++) {
+        const nextDate = new Date(
+          startDate.getFullYear(),
+          startDate.getMonth() + i,
+          dayOfMonth
+        );
+
+        // Ajustar para o dia correto do mês
+        const targetMonth = nextDate.getMonth();
+        nextDate.setDate(dayOfMonth);
+
+        // Se o mês mudou, ajustar para o último dia do mês anterior
+        if (nextDate.getMonth() !== targetMonth) {
+          nextDate.setDate(0);
+        }
+
+        transactionsToGenerate.push({
+          description: mainTransaction.description,
+          amount: mainTransaction.amount,
+          date: nextDate.toISOString().split("T")[0],
+          type: mainTransaction.type,
+          category_id: mainTransaction.category_id,
+          account_id: mainTransaction.account_id,
+          status: "pending" as const,
+          user_id: user.id,
+          is_fixed: false,
+          parent_transaction_id: transactionId,
+        });
+      }
+
+      // Inserir as novas transações
+      const { error: insertError } = await supabase
+        .from("transactions")
+        .insert(transactionsToGenerate);
+
+      if (insertError) throw insertError;
+
+      toast({
+        title: "Transações geradas",
+        description: `12 novos meses foram gerados com sucesso.`,
+      });
+
+      // 🔄 Sincronizar listas e dashboard
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
+      ]);
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: queryKeys.transactionsBase }),
+        queryClient.refetchQueries({ queryKey: queryKeys.accounts }),
+      ]);
+
+      loadFixedTransactions();
+    } catch (error) {
+      logger.error("Error generating next 12 months:", error);
+      toast({
+        title: "Erro ao gerar transações",
+        description: "Não foi possível gerar os próximos 12 meses.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const filteredTransactions = useMemo(() => {
     return transactions.filter((transaction) => {
       const matchesSearch = transaction.description
@@ -582,6 +687,14 @@ export function FixedTransactionsPage() {
                     </div>
                   </div>
                   <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleGenerateNext12Months(transaction.id)}
+                      title="Gerar mais 12 meses"
+                    >
+                      <CalendarPlus className="h-4 w-4" />
+                    </Button>
                     <Button
                       variant="outline"
                       size="icon"
