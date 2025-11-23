@@ -26,6 +26,7 @@ import { useAccounts } from "@/hooks/queries/useAccounts";
 import { creditPaymentSchema } from "@/lib/validationSchemas";
 import { z } from "zod";
 import { CreditPaymentModalProps } from "@/types/formProps";
+import { useBalanceValidation } from "@/hooks/useBalanceValidation";
 
 // Helper para formatar moeda (R$)
 const formatBRL = (valueInCents: number) => {
@@ -119,12 +120,19 @@ export function CreditPaymentModal({
 
     const { amountInCents } = formData;
 
+    // ✅ Usar hook centralizado para validação de saldo
     const bankAccount = allAccounts.find(
       (acc) => acc.id === formData.bankAccountId
     );
+    
     if (bankAccount) {
-      const availableBalanceInCents = getAvailableBalance(bankAccount);
-      if (availableBalanceInCents < amountInCents) {
+      const validation = useBalanceValidation({
+        account: bankAccount,
+        amountInCents,
+        transactionType: 'expense',
+      });
+
+      if (!validation.isValid) {
         const limitText = bankAccount.limit_amount
           ? ` (incluindo limite de ${formatBRL(bankAccount.limit_amount)})`
           : "";

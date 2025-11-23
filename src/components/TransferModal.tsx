@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { createDateFromString, getTodayString } from "@/lib/dateUtils";
 import { CurrencyInput } from "./forms/CurrencyInput";
 import { useToast } from "@/hooks/use-toast";
-import { formatCurrency, getAvailableBalance } from "@/lib/formatters";
+import { formatCurrency } from "@/lib/formatters";
 import { ArrowRight } from "lucide-react";
 import { AccountBalanceDetails } from "./AccountBalanceDetails";
 import { useAccounts } from "@/hooks/queries/useAccounts";
@@ -15,6 +15,7 @@ import { logger } from "@/lib/logger";
 import { transferSchema } from "@/lib/validationSchemas";
 import { z } from "zod";
 import { TransferModalProps } from "@/types/formProps";
+import { useBalanceValidation } from "@/hooks/useBalanceValidation";
 
 export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalProps) {
   const { accounts } = useAccounts();
@@ -63,13 +64,16 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
       }
     }
 
-    // Check if source account has sufficient balance or overdraft limit
-    // Frontend validation for UX. The backend should always re-validate this rule
-    // to ensure data integrity and prevent unauthorized transactions.
+    // ✅ Usar hook centralizado para validação de saldo da conta de origem
     const fromAccount = sourceAccounts.find(acc => acc.id === formData.fromAccountId);
     if (fromAccount) {
-      const availableBalanceInCents = getAvailableBalance(fromAccount);
-      if (availableBalanceInCents < formData.amountInCents) {
+      const validation = useBalanceValidation({
+        account: fromAccount,
+        amountInCents: formData.amountInCents,
+        transactionType: 'expense',
+      });
+
+      if (!validation.isValid) {
         const limitText = fromAccount.limit_amount 
           ? ` (incluindo limite de ${formatCurrency(fromAccount.limit_amount)})`
           : '';
