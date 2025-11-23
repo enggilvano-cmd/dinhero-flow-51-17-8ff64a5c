@@ -9,6 +9,7 @@ import { BalanceCards } from './dashboard/BalanceCards';
 import { FinancialEvolutionChart } from './dashboard/FinancialEvolutionChart';
 import { AccountsSummary } from './dashboard/AccountsSummary';
 import { RecentTransactions } from './dashboard/RecentTransactions';
+import { QuickActions } from './dashboard/QuickActions';
 import { CardErrorBoundary } from '@/components/ui/card-error-boundary';
 import { ListErrorBoundary } from '@/components/ui/list-error-boundary';
 
@@ -136,6 +137,16 @@ export function Dashboard({
               onNavigateToTransactions={onNavigateToTransactions}
             />
           </CardErrorBoundary>
+        </div>
+
+        <CardErrorBoundary fallbackMessage="Erro ao carregar ações rápidas">
+          <QuickActions
+            onAddTransaction={onAddTransaction}
+            onTransfer={onTransfer}
+          />
+        </CardErrorBoundary>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
         </div>
 
         <CardErrorBoundary fallbackMessage="Erro ao carregar gráfico">
