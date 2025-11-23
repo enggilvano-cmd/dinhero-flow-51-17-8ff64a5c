@@ -150,7 +150,7 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
                           <span>{account.name}</span>
                         </div>
                         <span className="ml-2 text-sm text-muted-foreground">
-                          {formatCurrency(account.balance)}
+                          {formatCurrency(getAvailableBalance(account))}
                         </span>
                       </div>
                     </SelectItem>
@@ -186,9 +186,9 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
                             />
                             <span>{account.name}</span>
                           </div>
-                          <span className="ml-2 text-sm text-muted-foreground">
-                            {formatCurrency(account.balance)}
-                          </span>
+                           <span className="ml-2 text-sm text-muted-foreground">
+                             {formatCurrency(getAvailableBalance(account))}
+                           </span>
                         </div>
                       </SelectItem>
                     ))}
