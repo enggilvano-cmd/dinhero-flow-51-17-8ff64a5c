@@ -263,31 +263,90 @@ function AppSidebar({ currentPage, onPageChange }: { currentPage: string; onPage
                   )}
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem onClick={() => handlePageChange('profile')}>
-                  <User className="mr-2 h-4 w-4" />
-                  Perfil
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handlePageChange('settings')}>
-                  <Settings className="mr-2 h-4 w-4" />
-                  Configurações
-                </DropdownMenuItem>
+              <DropdownMenuContent align="end" className="w-64 p-2">
+                {/* User Info Header */}
+                <div className="px-3 py-3 mb-2">
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={profile.avatar_url} />
+                      <AvatarFallback className="bg-primary text-primary-foreground text-sm">
+                        {profile.full_name?.charAt(0) || profile.email.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold truncate text-foreground">
+                        {profile.full_name || 'Usuário'}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {profile.email}
+                      </p>
+                    </div>
+                  </div>
+                  {!isAdmin() && timeRemaining && (
+                    <div className="mt-2 px-2 py-1 bg-primary/10 rounded-md">
+                      <p className="text-xs text-primary font-medium">
+                        {timeRemaining}
+                      </p>
+                    </div>
+                  )}
+                </div>
+                
+                <DropdownMenuSeparator className="my-2" />
+                
+                {/* Main Actions */}
+                <div className="space-y-1">
+                  <DropdownMenuItem 
+                    onClick={() => handlePageChange('profile')}
+                    className="px-3 py-2.5 cursor-pointer rounded-md transition-colors hover:bg-muted"
+                  >
+                    <User className="mr-3 h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-medium">Perfil</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => handlePageChange('settings')}
+                    className="px-3 py-2.5 cursor-pointer rounded-md transition-colors hover:bg-muted"
+                  >
+                    <Settings className="mr-3 h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-medium">Configurações</span>
+                  </DropdownMenuItem>
+                </div>
+                
                 {isAdmin() && (
                   <>
-                    <DropdownMenuItem onClick={() => handlePageChange('users')}>
-                      <Users className="mr-2 h-4 w-4" />
-                      Usuários
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handlePageChange('system-settings')}>
-                      <Settings className="mr-2 h-4 w-4" />
-                      Configurações do Sistema
-                    </DropdownMenuItem>
+                    <DropdownMenuSeparator className="my-2" />
+                    <div className="px-2 py-1 mb-1">
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                        Admin
+                      </p>
+                    </div>
+                    <div className="space-y-1">
+                      <DropdownMenuItem 
+                        onClick={() => handlePageChange('users')}
+                        className="px-3 py-2.5 cursor-pointer rounded-md transition-colors hover:bg-muted"
+                      >
+                        <Users className="mr-3 h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm font-medium">Usuários</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => handlePageChange('system-settings')}
+                        className="px-3 py-2.5 cursor-pointer rounded-md transition-colors hover:bg-muted"
+                      >
+                        <Settings className="mr-3 h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm font-medium">Config. Sistema</span>
+                      </DropdownMenuItem>
+                    </div>
                   </>
                 )}
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={signOut} className="text-destructive">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Sair
+                
+                <DropdownMenuSeparator className="my-2" />
+                
+                {/* Logout */}
+                <DropdownMenuItem 
+                  onClick={signOut} 
+                  className="px-3 py-2.5 cursor-pointer rounded-md transition-colors hover:bg-destructive/10 text-destructive focus:text-destructive"
+                >
+                  <LogOut className="mr-3 h-4 w-4" />
+                  <span className="text-sm font-medium">Sair</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
