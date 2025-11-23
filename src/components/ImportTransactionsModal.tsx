@@ -14,6 +14,7 @@ import { loadXLSX } from "@/lib/lazyImports";
 import { parse, isValid } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { createDateFromString } from "@/lib/dateUtils";
+import type { ImportTransactionData } from '@/types';
 
 interface Account {
   id: string;
@@ -23,27 +24,22 @@ interface Account {
   color: string;
 }
 
-interface AppTransaction {
-  id?: string;
+interface Transaction {
+  id: string;
   description: string;
   amount: number;
-  date: Date;
+  date: Date | string;
   type: "income" | "expense" | "transfer";
-  category: string;
-  accountId: string;
+  account_id: string;
   status: "pending" | "completed";
-  installments?: number;
-  currentInstallment?: number;
-  parentTransactionId?: string;
-  createdAt?: Date;
 }
 
 interface ImportTransactionsModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  transactions: AppTransaction[];
+  transactions: Transaction[];
   accounts: Account[];
-  onImportTransactions: (transactions: any[], transactionsToReplace: string[]) => void;
+  onImportTransactions: (transactions: ImportTransactionData[], transactionsToReplace: string[]) => void;
 }
 
 interface ImportedTransaction {
@@ -101,7 +97,7 @@ export function ImportTransactionsModal({
     installments: ['Parcelas', 'Installments', 'Cuotas']
   } as const;
 
-  const pick = (row: any, keys: readonly string[]) => {
+  const pick = (row: Record<string, unknown>, keys: readonly string[]) => {
     // Mapa normalizado de chaves do Excel -> valor
     const keyMap = new Map<string, any>();
     for (const k of Object.keys(row)) {
@@ -154,11 +150,6 @@ export function ImportTransactionsModal({
     return accounts.find(acc => acc.name.toLowerCase().trim() === normalizedName) || null;
   };
 
-  // Suporte a diferentes formas de representar a conta nas transações existentes
-  const getTxAccountId = (tx: any): string | null => {
-    return (tx.account_id ?? tx.accountId ?? tx.account?.id ?? null) as string | null;
-  };
-
   const parseDate = (dateString: string): Date | null => {
     // Tentar diferentes formatos de data
     const formats = [
@@ -185,7 +176,7 @@ export function ImportTransactionsModal({
     return isValid(autoDate) ? autoDate : null;
   };
 
-  const validateAndCheckDuplicate = (row: any): ImportedTransaction => {
+  const validateAndCheckDuplicate = (row: Record<string, unknown>): ImportedTransaction => {
     const errors: string[] = [];
     let isValid = true;
 
@@ -266,14 +257,14 @@ export function ImportTransactionsModal({
       const parsedNorm = normalizeToUTCDate(parsedDate);
       
       const existingTx = transactions.find(tx => {
-        const txDate = createDateFromString(tx.date as any);
+        const txDate = createDateFromString(tx.date);
         const isSameDate = 
           txDate.getUTCFullYear() === parsedNorm.getUTCFullYear() &&
           txDate.getUTCMonth() === parsedNorm.getUTCMonth() &&
           txDate.getUTCDate() === parsedNorm.getUTCDate();
         const isSameAmount = Math.abs(tx.amount) === valorInCents;
         const isSameDescription = (tx.description || '').trim().toLowerCase() === descricao.trim().toLowerCase();
-        const isSameAccount = getTxAccountId(tx) === accountId;
+        const isSameAccount = tx.account_id === accountId;
         return isSameAccount && isSameDate && isSameAmount && isSameDescription;
       });
 
@@ -281,9 +272,9 @@ export function ImportTransactionsModal({
         // Logs de diagnóstico para entender por que não casou
         const sameAccDesc = transactions.filter(tx => {
           const isSameDescription = (tx.description || '').trim().toLowerCase() === descricao.trim().toLowerCase();
-          const isSameAccount = getTxAccountId(tx) === accountId;
+          const isSameAccount = tx.account_id === accountId;
           return isSameAccount && isSameDescription;
-        }).map(tx => ({ id: tx.id, amount: tx.amount, date: (createDateFromString(tx.date as any)).toISOString().slice(0,10) }));
+        }).map(tx => ({ id: tx.id, amount: tx.amount, date: (createDateFromString(tx.date)).toISOString().slice(0,10) }));
         logger.debug('[ImportTx] Sem duplicata. Contexto:', {
           descricao,
           valorInCents,
@@ -307,7 +298,7 @@ export function ImportTransactionsModal({
       conta,
       valor: valor,
       status,
-      parcelas: row.Parcelas || row.parcelas || '',
+      parcelas: (row.Parcelas || row.parcelas || '') as string,
       isValid,
       errors,
       accountId: accountId,
@@ -356,13 +347,13 @@ export function ImportTransactionsModal({
       }
 
       // Validar cada transação
-      const validatedData = rawData.map((row: any) => {
-        return validateAndCheckDuplicate(row);
+      const validatedData = rawData.map((row: unknown) => {
+        return validateAndCheckDuplicate(row as Record<string, unknown>);
       });
 
       setImportedData(validatedData);
 
-      const summary = validatedData.reduce((acc: any, t: any) => {
+      const summary = validatedData.reduce((acc: { new: number; duplicates: number; invalid: number }, t: ImportedTransaction) => {
         if (!t.isValid) acc.invalid++;
         else if (t.isDuplicate) acc.duplicates++;
         else acc.new++;

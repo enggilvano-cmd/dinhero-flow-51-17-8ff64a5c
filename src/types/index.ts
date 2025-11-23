@@ -112,3 +112,57 @@ export const ACCOUNT_TYPE_LABELS = {
   credit: "Cartão de Crédito",
   investment: "Investimento"
 } as const;
+
+// Input types for transaction operations
+export interface TransactionInput {
+  description: string;
+  amount: number;
+  date: Date;
+  type: "income" | "expense" | "transfer";
+  category_id: string;
+  account_id: string;
+  status: "pending" | "completed";
+  invoiceMonth?: string | null;
+}
+
+export interface InstallmentTransactionInput extends TransactionInput {
+  currentInstallment?: number;
+}
+
+export interface TransactionUpdate {
+  id: string;
+  description?: string;
+  amount?: number;
+  date?: Date | string;
+  type?: "income" | "expense" | "transfer";
+  category_id?: string;
+  account_id?: string;
+  status?: "pending" | "completed";
+  invoice_month?: string | null;
+}
+
+export interface ImportTransactionData {
+  description: string;
+  amount: number;
+  date: string;
+  type: "income" | "expense" | "transfer";
+  category?: string;
+  account_id: string;
+  status?: "pending" | "completed";
+}
+
+export interface ImportAccountData {
+  name: string;
+  type: "checking" | "savings" | "credit" | "investment";
+  balance: number;
+  color: string;
+  limit_amount?: number;
+  due_date?: number;
+  closing_date?: number;
+}
+
+export interface ImportCategoryData {
+  name: string;
+  type: "income" | "expense" | "both";
+  color: string;
+}

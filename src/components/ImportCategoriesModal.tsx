@@ -11,6 +11,7 @@ import { Upload, FileSpreadsheet, AlertCircle, MoreVertical, Copy, AlertTriangle
 import { useToast } from "@/hooks/use-toast";
 import { logger } from "@/lib/logger";
 import { loadXLSX } from "@/lib/lazyImports";
+import type { ImportCategoryData } from '@/types';
 
 interface Category {
   id: string;
@@ -23,7 +24,7 @@ interface ImportCategoriesModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   categories: Category[];
-  onImportCategories: (categories: any[], categoriesToReplace: string[]) => void;
+  onImportCategories: (categories: ImportCategoryData[], categoriesToReplace: string[]) => void;
 }
 
 interface ImportedCategory {
@@ -79,7 +80,7 @@ export function ImportCategoriesModal({
   };
   const normalizeKey = (str: string): string => normalizeString(str).replace(/[^a-z0-9]/g, '');
 
-  const pick = (row: any, keys: readonly string[]) => {
+  const pick = (row: Record<string, unknown>, keys: readonly string[]) => {
     // Mapa normalizado de chaves do Excel -> valor
     const keyMap = new Map<string, any>();
     for (const k of Object.keys(row)) {
@@ -110,7 +111,7 @@ export function ImportCategoriesModal({
     return /^#([0-9A-F]{3}){1,2}$/i.test(color);
   };
 
-  const validateAndCheckDuplicate = (row: any): ImportedCategory => {
+  const validateAndCheckDuplicate = (row: Record<string, unknown>): ImportedCategory => {
     const errors: string[] = [];
     let isValid = true;
 
