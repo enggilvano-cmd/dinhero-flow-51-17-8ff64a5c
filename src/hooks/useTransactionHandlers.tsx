@@ -36,7 +36,34 @@ export function useTransactionHandlers() {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        // Check if it's a credit limit error
+        const errorMessage = (error as any)?.message || '';
+        if (errorMessage.includes('Credit limit exceeded')) {
+          // Extract the error message from the edge function response
+          const match = errorMessage.match(/Available: ([\d.-]+).*Limit: ([\d.]+).*Used: ([\d.]+).*Requested: ([\d.]+)/);
+          
+          let friendlyMessage = 'Limite do cartão de crédito excedido. ';
+          if (match) {
+            const available = (parseFloat(match[1]) / 100).toFixed(2);
+            const limit = (parseFloat(match[2]) / 100).toFixed(2);
+            const used = (parseFloat(match[3]) / 100).toFixed(2);
+            const requested = (parseFloat(match[4]) / 100).toFixed(2);
+            
+            friendlyMessage += `Disponível: R$ ${available} | Limite: R$ ${limit} | Usado: R$ ${used} | Solicitado: R$ ${requested}`;
+          } else {
+            friendlyMessage += 'Reduza o valor da transação, aumente o limite do cartão ou faça um pagamento.';
+          }
+          
+          toast({
+            title: 'Limite de crédito excedido',
+            description: friendlyMessage,
+            variant: 'destructive',
+          });
+          return; // Don't throw, just show toast
+        }
+        throw error;
+      }
 
       // Invalidar e forçar refetch imediato
       await Promise.all([
@@ -94,7 +121,35 @@ export function useTransactionHandlers() {
       );
 
       const errors = results.filter((r) => r.error);
-      if (errors.length > 0) throw errors[0].error;
+      if (errors.length > 0) {
+        const firstError = errors[0].error;
+        const errorMessage = (firstError as any)?.message || '';
+        
+        // Check if it's a credit limit error
+        if (errorMessage.includes('Credit limit exceeded')) {
+          const match = errorMessage.match(/Available: ([\d.-]+).*Limit: ([\d.]+).*Used: ([\d.]+).*Requested: ([\d.]+)/);
+          
+          let friendlyMessage = 'Limite do cartão de crédito excedido ao criar parcelas. ';
+          if (match) {
+            const available = (parseFloat(match[1]) / 100).toFixed(2);
+            const limit = (parseFloat(match[2]) / 100).toFixed(2);
+            const used = (parseFloat(match[3]) / 100).toFixed(2);
+            const requested = (parseFloat(match[4]) / 100).toFixed(2);
+            
+            friendlyMessage += `Disponível: R$ ${available} | Limite: R$ ${limit} | Usado: R$ ${used} | Solicitado por parcela: R$ ${requested}`;
+          } else {
+            friendlyMessage += 'Reduza o número de parcelas, o valor ou aumente o limite do cartão.';
+          }
+          
+          toast({
+            title: 'Limite de crédito excedido',
+            description: friendlyMessage,
+            variant: 'destructive',
+          });
+          return; // Don't throw, just show toast
+        }
+        throw firstError;
+      }
 
       const createdIds = results
         .map((r) => (r.data as any)?.transaction?.id as string | undefined)
@@ -385,7 +440,34 @@ export function useTransactionHandlers() {
       );
 
       const errors = results.filter(r => r.error);
-      if (errors.length > 0) throw errors[0].error;
+      if (errors.length > 0) {
+        const firstError = errors[0].error;
+        const errorMessage = (firstError as any)?.message || '';
+        
+        // Check if it's a credit limit error
+        if (errorMessage.includes('Credit limit exceeded')) {
+          const match = errorMessage.match(/Available: ([\d.-]+).*Limit: ([\d.]+).*Used: ([\d.]+).*Requested: ([\d.]+)/);
+          
+          let friendlyMessage = 'Limite do cartão de crédito excedido durante importação. ';
+          if (match) {
+            const available = (parseFloat(match[1]) / 100).toFixed(2);
+            const limit = (parseFloat(match[2]) / 100).toFixed(2);
+            const used = (parseFloat(match[3]) / 100).toFixed(2);
+            
+            friendlyMessage += `Disponível: R$ ${available} | Limite: R$ ${limit} | Usado: R$ ${used}. Ajuste os valores ou aumente o limite do cartão.`;
+          } else {
+            friendlyMessage += 'Verifique os valores das transações e o limite do cartão.';
+          }
+          
+          toast({
+            title: 'Limite de crédito excedido',
+            description: friendlyMessage,
+            variant: 'destructive',
+          });
+          return; // Don't throw, just show toast
+        }
+        throw firstError;
+      }
 
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase }),
