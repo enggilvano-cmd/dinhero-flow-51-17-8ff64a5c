@@ -523,16 +523,16 @@ export function FixedTransactionsPage() {
           </div>
           <div className="space-y-2 text-sm text-muted-foreground">
             <p>
-              • <strong>Geração Automática:</strong> As transações fixas são geradas automaticamente todo dia 1º do mês.
+              • <strong>Geração Inicial:</strong> Ao criar uma transação fixa, são geradas automaticamente todas as ocorrências do mês atual até o final do próximo ano.
             </p>
             <p>
-              • <strong>Sem Data de Término:</strong> As transações fixas não têm data de término e continuam sendo geradas indefinidamente.
+              • <strong>Período de Geração:</strong> As transações são criadas para os meses restantes do ano corrente + 12 meses do próximo ano (até 24 ocorrências).
             </p>
             <p>
-              • <strong>Edição:</strong> Ao editar uma transação fixa, você altera apenas o modelo. As transações já geradas não são modificadas.
+              • <strong>Edição:</strong> Ao editar uma transação fixa, a transação principal e todas as transações pendentes futuras são atualizadas automaticamente.
             </p>
             <p>
-              • <strong>Exclusão:</strong> Ao excluir uma transação fixa, o modelo e todas as transações pendentes são removidos. As transações já concluídas permanecem.
+              • <strong>Exclusão:</strong> Ao excluir uma transação fixa, a transação principal e todas as transações pendentes são removidas. As transações já concluídas permanecem no histórico.
             </p>
           </div>
         </CardContent>
