@@ -113,6 +113,8 @@ export function TransactionsPage({
   onFilterStatusChange,
   filterAccountType,
   onFilterAccountTypeChange,
+  dateFrom,
+  dateTo,
   onDateFromChange,
   onDateToChange,
   sortBy,
@@ -327,24 +329,88 @@ export function TransactionsPage({
     handleDateFilterChange("all");
   };
 
-  const totals = useMemo(() => {
-    return transactions.reduce(
-      (acc, transaction) => {
-        // Skip transfers as they don't affect total income/expenses
-        const isTransfer = transaction.to_account_id != null;
-        if (!isTransfer) {
-          if (transaction.type === "income") {
-            acc.income += transaction.amount;
-          } else if (transaction.type === "expense") {
-            // Despesas vêm negativas do banco, então usar Math.abs para somar positivo
-            acc.expenses += Math.abs(transaction.amount);
+  // Calcular totais de TODAS as transações (não apenas da página atual)
+  // usando useEffect para buscar totais agregados
+  const [aggregatedTotals, setAggregatedTotals] = useState({ income: 0, expenses: 0 });
+
+  useEffect(() => {
+    const fetchAggregatedTotals = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        let query = supabase
+          .from('transactions')
+          .select('type, amount, to_account_id, account_id')
+          .eq('user_id', user.id);
+
+        // Aplicar os mesmos filtros da query principal
+        if (filterType !== 'all') {
+          query = query.eq('type', filterType);
+        }
+        if (filterStatus !== 'all') {
+          query = query.eq('status', filterStatus);
+        }
+        if (filterAccount !== 'all') {
+          query = query.eq('account_id', filterAccount);
+        }
+        if (filterCategory !== 'all') {
+          query = query.eq('category_id', filterCategory);
+        }
+        if (filterAccountType !== 'all') {
+          const accountIds = accounts
+            .filter(a => a.type === filterAccountType)
+            .map(a => a.id);
+          if (accountIds.length > 0) {
+            query = query.in('account_id', accountIds);
           }
         }
-        return acc;
-      },
-      { income: 0, expenses: 0 },
-    );
-  }, [transactions]);
+        if (dateFrom) {
+          query = query.gte('date', dateFrom);
+        }
+        if (dateTo) {
+          query = query.lte('date', dateTo);
+        }
+        if (search) {
+          query = query.ilike('description', `%${search}%`);
+        }
+
+        const { data } = await query;
+        
+        if (data) {
+          const totals = data.reduce(
+            (acc, transaction) => {
+              const isTransfer = transaction.to_account_id != null;
+              if (!isTransfer) {
+                if (transaction.type === "income") {
+                  acc.income += transaction.amount;
+                } else if (transaction.type === "expense") {
+                  acc.expenses += Math.abs(transaction.amount);
+                }
+              }
+              return acc;
+            },
+            { income: 0, expenses: 0 }
+          );
+          setAggregatedTotals(totals);
+        }
+      } catch (error) {
+        logger.error("Error fetching aggregated totals:", error);
+      }
+    };
+
+    fetchAggregatedTotals();
+  }, [
+    filterType,
+    filterStatus,
+    filterAccount,
+    filterCategory,
+    filterAccountType,
+    dateFrom,
+    dateTo,
+    search,
+    accounts,
+  ]);
 
   const exportToExcel = async () => {
     try {
@@ -470,7 +536,7 @@ export function TransactionsPage({
                     Receitas
                   </p>
                   <div className="text-responsive-xl font-bold balance-positive leading-tight">
-                    {formatCurrency(totals.income)}
+                    {formatCurrency(aggregatedTotals.income)}
                   </div>
                 </div>
               </div>
@@ -488,7 +554,7 @@ export function TransactionsPage({
                     Despesas
                   </p>
                   <div className="text-responsive-xl font-bold balance-negative leading-tight">
-                    {formatCurrency(totals.expenses)}
+                    {formatCurrency(aggregatedTotals.expenses)}
                   </div>
                 </div>
               </div>
@@ -507,12 +573,12 @@ export function TransactionsPage({
                   </p>
                   <div
                     className={`text-responsive-xl font-bold leading-tight ${
-                      totals.income - totals.expenses >= 0
+                      aggregatedTotals.income - aggregatedTotals.expenses >= 0
                         ? "balance-positive"
                         : "balance-negative"
                     }`}
                   >
-                    {formatCurrency(totals.income - totals.expenses)}
+                    {formatCurrency(aggregatedTotals.income - aggregatedTotals.expenses)}
                   </div>
                 </div>
               </div>
