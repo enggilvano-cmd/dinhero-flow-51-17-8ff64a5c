@@ -1,8 +1,7 @@
 import { useMemo } from 'react';
-import { Account, Transaction } from '@/types';
+import type { Account, Transaction, DateFilterType } from '@/types';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { DateFilterType } from './useDashboardFilters';
 
 export function useDashboardCalculations(
   accounts: Account[],

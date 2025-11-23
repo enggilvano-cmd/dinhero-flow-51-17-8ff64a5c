@@ -1,5 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { DollarSign, TrendingUp, TrendingDown, CreditCard, Clock } from 'lucide-react';
+import type { NavigationParams, AccountFilterType, TransactionFilterType, StatusFilterType, DateFilterType } from '@/types';
 
 interface BalanceCardsProps {
   formatCurrency: (value: number) => string;
@@ -13,13 +14,13 @@ interface BalanceCardsProps {
   pendingIncomeCount: number;
   pendingExpensesCount: number;
   getPeriodLabel: () => string;
-  getNavigationParams: () => any;
+  getNavigationParams: () => NavigationParams;
   onNavigateToAccounts?: (filterType?: 'credit') => void;
   onNavigateToTransactions?: (
-    filterType?: 'income' | 'expense',
-    filterStatus?: 'all' | 'pending' | 'completed',
-    dateFilter?: any,
-    filterAccountType?: any,
+    filterType?: TransactionFilterType,
+    filterStatus?: StatusFilterType,
+    dateFilter?: DateFilterType,
+    filterAccountType?: AccountFilterType,
     selectedMonth?: Date,
     customStartDate?: Date,
     customEndDate?: Date

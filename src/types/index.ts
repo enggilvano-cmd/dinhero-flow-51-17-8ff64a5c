@@ -166,3 +166,17 @@ export interface ImportCategoryData {
   type: "income" | "expense" | "both";
   color: string;
 }
+
+// Navigation parameters type for dashboard
+export type DateFilterType = 'all' | 'current_month' | 'month_picker' | 'custom';
+
+export interface NavigationParams {
+  dateFilter: DateFilterType;
+  selectedMonth?: Date;
+  customStartDate?: Date;
+  customEndDate?: Date;
+}
+
+export type AccountFilterType = 'all' | 'checking' | 'savings' | 'credit' | 'investment';
+export type TransactionFilterType = 'all' | 'income' | 'expense' | 'transfer';
+export type StatusFilterType = 'all' | 'pending' | 'completed';

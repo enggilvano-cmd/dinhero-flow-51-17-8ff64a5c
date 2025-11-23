@@ -6,7 +6,7 @@ import { TrendingUp, BarChart3 } from 'lucide-react';
 import { useChartResponsive } from '@/hooks/useChartResponsive';
 import { useSettings } from '@/context/SettingsContext';
 import { useDashboardChartData, ChartScaleType } from '@/hooks/useDashboardChartData';
-import { Account, Transaction } from '@/types';
+import type { Account, Transaction, DateFilterType } from '@/types';
 import { cn } from '@/lib/utils';
 import {
   ChartContainer,
@@ -17,7 +17,6 @@ import {
 } from '@/components/ui/chart';
 import { formatCurrencyForAxis, getBarChartAxisProps } from '@/lib/chartUtils';
 import { Bar, Line, ComposedChart, XAxis, YAxis, ResponsiveContainer } from 'recharts';
-import { DateFilterType } from '@/hooks/useDashboardFilters';
 
 interface FinancialEvolutionChartProps {
   transactions: Transaction[];
