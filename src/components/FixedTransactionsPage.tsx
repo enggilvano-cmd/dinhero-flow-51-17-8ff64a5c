@@ -297,6 +297,9 @@ export function FixedTransactionsPage() {
     if (!transactionToEdit) return;
 
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
       const updates = {
         description: transactionToEdit.description,
         amount: transactionToEdit.amount,
@@ -311,7 +314,8 @@ export function FixedTransactionsPage() {
         const { error } = await supabase
           .from("transactions")
           .update(updates)
-          .eq("id", transactionToEdit.id);
+          .eq("id", transactionToEdit.id)
+          .eq("user_id", user.id);
         if (error) throw error;
 
         toast({
@@ -323,39 +327,49 @@ export function FixedTransactionsPage() {
         const { error: mainError } = await supabase
           .from("transactions")
           .update(updates)
-          .eq("id", transactionToEdit.id);
+          .eq("id", transactionToEdit.id)
+          .eq("user_id", user.id);
         if (mainError) throw mainError;
 
         // Editar todas as transações pendentes geradas
-        const { error: childrenError } = await supabase
+        const { error: childrenError, data: updatedChildren } = await supabase
           .from("transactions")
           .update(updates)
           .eq("parent_transaction_id", transactionToEdit.id)
-          .eq("status", "pending");
+          .eq("status", "pending")
+          .eq("user_id", user.id)
+          .select();
         if (childrenError) throw childrenError;
+
+        logger.info(`Updated ${updatedChildren?.length || 0} pending child transactions`);
 
         toast({
           title: "Transações atualizadas",
-          description: "A transação principal e todas as pendentes foram atualizadas.",
+          description: `A transação principal e ${updatedChildren?.length || 0} transação(ões) pendente(s) foram atualizadas.`,
         });
       } else if (scope === "all") {
         // Editar a transação principal
         const { error: mainError } = await supabase
           .from("transactions")
           .update(updates)
-          .eq("id", transactionToEdit.id);
+          .eq("id", transactionToEdit.id)
+          .eq("user_id", user.id);
         if (mainError) throw mainError;
 
         // Editar TODAS as transações geradas (pendentes e concluídas)
-        const { error: childrenError } = await supabase
+        const { error: childrenError, data: updatedChildren } = await supabase
           .from("transactions")
           .update(updates)
-          .eq("parent_transaction_id", transactionToEdit.id);
+          .eq("parent_transaction_id", transactionToEdit.id)
+          .eq("user_id", user.id)
+          .select();
         if (childrenError) throw childrenError;
+
+        logger.info(`Updated ${updatedChildren?.length || 0} child transactions`);
 
         toast({
           title: "Transações atualizadas",
-          description: "A transação principal e todas as geradas foram atualizadas.",
+          description: `A transação principal e ${updatedChildren?.length || 0} transação(ões) geradas foram atualizadas.`,
         });
       }
 
@@ -412,12 +426,16 @@ export function FixedTransactionsPage() {
     if (!transactionToDelete) return;
 
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
       if (scope === "current") {
         // Deletar apenas a transação principal
         const { error } = await supabase
           .from("transactions")
           .delete()
-          .eq("id", transactionToDelete);
+          .eq("id", transactionToDelete)
+          .eq("user_id", user.id);
         if (error) throw error;
 
         toast({
@@ -425,43 +443,69 @@ export function FixedTransactionsPage() {
           description: "A transação principal foi removida com sucesso.",
         });
       } else if (scope === "current-and-remaining") {
-        // Deletar todas as transações pendentes geradas
-        const { error: childrenError } = await supabase
+        // Primeiro, deletar todas as transações PENDENTES filhas
+        const { error: childrenError, data: deletedChildren } = await supabase
           .from("transactions")
           .delete()
           .eq("parent_transaction_id", transactionToDelete)
-          .eq("status", "pending");
-        if (childrenError) throw childrenError;
+          .eq("status", "pending")
+          .eq("user_id", user.id)
+          .select();
+        
+        if (childrenError) {
+          logger.error("Error deleting children:", childrenError);
+          throw childrenError;
+        }
 
-        // Deletar a transação principal
-        const { error } = await supabase
+        logger.info(`Deleted ${deletedChildren?.length || 0} pending child transactions`);
+
+        // Depois, deletar a transação principal
+        const { error: mainError } = await supabase
           .from("transactions")
           .delete()
-          .eq("id", transactionToDelete);
-        if (error) throw error;
+          .eq("id", transactionToDelete)
+          .eq("user_id", user.id);
+        
+        if (mainError) {
+          logger.error("Error deleting main transaction:", mainError);
+          throw mainError;
+        }
 
         toast({
           title: "Transações removidas",
-          description: "A transação principal e todas as pendentes foram removidas.",
+          description: `A transação principal e ${deletedChildren?.length || 0} transação(ões) pendente(s) foram removidas.`,
         });
       } else if (scope === "all") {
-        // Deletar TODAS as transações geradas (pendentes e concluídas)
-        const { error: childrenError } = await supabase
+        // Primeiro, deletar TODAS as transações filhas (pendentes E concluídas)
+        const { error: childrenError, data: deletedChildren } = await supabase
           .from("transactions")
           .delete()
-          .eq("parent_transaction_id", transactionToDelete);
-        if (childrenError) throw childrenError;
+          .eq("parent_transaction_id", transactionToDelete)
+          .eq("user_id", user.id)
+          .select();
+        
+        if (childrenError) {
+          logger.error("Error deleting all children:", childrenError);
+          throw childrenError;
+        }
 
-        // Deletar a transação principal
-        const { error } = await supabase
+        logger.info(`Deleted ${deletedChildren?.length || 0} child transactions`);
+
+        // Depois, deletar a transação principal
+        const { error: mainError } = await supabase
           .from("transactions")
           .delete()
-          .eq("id", transactionToDelete);
-        if (error) throw error;
+          .eq("id", transactionToDelete)
+          .eq("user_id", user.id);
+        
+        if (mainError) {
+          logger.error("Error deleting main transaction:", mainError);
+          throw mainError;
+        }
 
         toast({
           title: "Transações removidas",
-          description: "A transação principal e todas as geradas foram removidas.",
+          description: `A transação principal e ${deletedChildren?.length || 0} transação(ões) geradas foram removidas.`,
         });
       }
 
