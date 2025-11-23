@@ -165,52 +165,6 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
     }
   };
 
-  const handleExportToExcel = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
-
-      // Export all user data
-      const [accounts, transactions, categories] = await Promise.all([
-        supabase
-          .from('accounts')
-          .select('*')
-          .eq('user_id', user.id),
-        supabase
-          .from('transactions')
-          .select('*')
-          .eq('user_id', user.id),
-        supabase
-          .from('categories')
-          .select('*')
-          .eq('user_id', user.id)
-      ]);
-
-      if (!accounts.data || !transactions.data || !categories.data) {
-        toast({
-          title: 'Nenhum dado para exportar',
-          description: 'Não há dados disponíveis para exportação',
-          variant: "destructive"
-        });
-        return;
-      }
-
-      const { exportAllDataToExcel } = await import('@/lib/exportUtils');
-      await exportAllDataToExcel(accounts.data, categories.data, transactions.data);
-      
-      toast({
-        title: 'Backup Excel criado',
-        description: 'Todos os dados foram exportados para Excel com sucesso',
-      });
-    } catch (error) {
-      logger.error('Export to Excel error:', error);
-      toast({
-        title: 'Erro no backup',
-        description: 'Erro ao criar backup em Excel',
-        variant: "destructive"
-      });
-    }
-  };
 
   const handleImportData = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -445,11 +399,6 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
                     Exportar Backup JSON
                   </Button>
                   
-                  <Button onClick={handleExportToExcel} variant="outline" className="gap-2 justify-start">
-                    <FileText className="h-4 w-4" />
-                    Exportar Backup Excel
-                  </Button>
-                  
                   <div className="relative">
                     <Button 
                       variant="outline" 
@@ -473,7 +422,7 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
                   </div>
                   
                   <p className="text-xs text-muted-foreground mt-2">
-                    JSON: Formato completo para restauração. Excel: Para visualização e análise.
+                    Formato JSON completo para backup e restauração de todos os seus dados.
                   </p>
                 </div>
               </div>
