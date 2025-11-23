@@ -333,7 +333,7 @@ export function AccountingReportsPage() {
       <div className="space-y-6">
         <Card>
           <CardContent className="p-12 text-center">
-            <p className="text-muted-foreground">Carregando relatórios contábeis...</p>
+            <p className="text-body text-muted-foreground">Carregando relatórios contábeis...</p>
           </CardContent>
         </Card>
       </div>
@@ -346,16 +346,16 @@ export function AccountingReportsPage() {
       <div className="space-y-6">
         <Card className="border-primary">
           <CardHeader>
-            <CardTitle>Plano de Contas Não Inicializado</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-title">Plano de Contas Não Inicializado</CardTitle>
+            <CardDescription className="text-body">
               Para utilizar os relatórios contábeis, é necessário inicializar o Plano de Contas.
               Isso criará a estrutura contábil padrão (Ativo, Passivo, Receitas, Despesas, etc.).
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="p-4 bg-muted rounded-lg">
-              <h4 className="font-semibold mb-2">O que será criado:</h4>
-              <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+              <h4 className="text-headline font-semibold mb-2">O que será criado:</h4>
+              <ul className="list-disc list-inside space-y-1 text-caption text-muted-foreground">
                 <li>Contas de Ativo (Caixa, Bancos, Investimentos)</li>
                 <li>Contas de Passivo (Fornecedores, Empréstimos)</li>
                 <li>Contas de Receita (Vendas, Serviços)</li>
@@ -382,7 +382,7 @@ export function AccountingReportsPage() {
       {journalEntries.length === 0 && (
         <Card className="border-warning">
           <CardHeader>
-            <CardTitle className="flex items-center justify-between">
+            <CardTitle className="text-title flex items-center justify-between">
               <span>Dados Contábeis Vazios</span>
               <Button 
                 onClick={migrateExistingTransactions} 
@@ -393,7 +393,7 @@ export function AccountingReportsPage() {
                 {migrating ? "Migrando..." : "Migrar Transações Antigas"}
               </Button>
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-body">
               Parece que você tem transações no sistema, mas ainda não há lançamentos contábeis. 
               Clique no botão para criar os lançamentos automaticamente a partir das transações existentes.
             </CardDescription>
@@ -404,12 +404,12 @@ export function AccountingReportsPage() {
       {/* Filtros de Período */}
       <Card>
         <CardHeader>
-          <CardTitle>Filtros de Período</CardTitle>
+          <CardTitle className="text-headline">Filtros de Período</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-wrap gap-4">
             <div className="flex-1 min-w-[200px]">
-              <label className="text-sm font-medium mb-2 block">Tipo de Período</label>
+              <label className="text-caption font-medium mb-2 block">Tipo de Período</label>
               <Select value={periodType} onValueChange={handlePeriodTypeChange}>
                 <SelectTrigger>
                   <SelectValue />
@@ -425,7 +425,7 @@ export function AccountingReportsPage() {
             {periodType === "custom" && (
               <>
                 <div className="flex-1 min-w-[200px]">
-                  <label className="text-sm font-medium mb-2 block">Data Inicial</label>
+                  <label className="text-caption font-medium mb-2 block">Data Inicial</label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button variant="outline" className="w-full justify-start">
@@ -445,7 +445,7 @@ export function AccountingReportsPage() {
                 </div>
 
                 <div className="flex-1 min-w-[200px]">
-                  <label className="text-sm font-medium mb-2 block">Data Final</label>
+                  <label className="text-caption font-medium mb-2 block">Data Final</label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button variant="outline" className="w-full justify-start">
@@ -472,15 +472,15 @@ export function AccountingReportsPage() {
       {/* Abas de Relatórios */}
       <Tabs defaultValue="dre" className="space-y-4">
         <TabsList className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 h-auto p-2">
-          <TabsTrigger value="dre" className="flex items-center gap-1.5 px-2 py-2.5 text-xs sm:text-sm h-auto">
+          <TabsTrigger value="dre" className="flex items-center gap-1.5 px-2 py-2.5 text-caption h-auto">
             <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
             <span className="truncate">DRE</span>
           </TabsTrigger>
-          <TabsTrigger value="balance" className="flex items-center gap-1.5 px-2 py-2.5 text-xs sm:text-sm h-auto">
+          <TabsTrigger value="balance" className="flex items-center gap-1.5 px-2 py-2.5 text-caption h-auto">
             <Scale className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
             <span className="truncate">Balanço</span>
           </TabsTrigger>
-          <TabsTrigger value="cashflow" className="flex items-center gap-1.5 px-2 py-2.5 text-xs sm:text-sm h-auto">
+          <TabsTrigger value="cashflow" className="flex items-center gap-1.5 px-2 py-2.5 text-caption h-auto">
             <Waves className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
             <span className="truncate">Fluxo</span>
           </TabsTrigger>

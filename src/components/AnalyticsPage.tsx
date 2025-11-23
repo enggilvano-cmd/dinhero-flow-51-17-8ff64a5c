@@ -883,10 +883,10 @@ export default function AnalyticsPage({
                 <TrendingUp className="h-5 w-5 text-success" />
               </div>
               <div className="col-start-2">
-                <p className="text-sm font-semibold">Receitas</p>
-                <p className="text-xs text-muted-foreground">Período filtrado</p>
+                <p className="text-caption font-semibold">Receitas</p>
+                <p className="text-caption text-muted-foreground">Período filtrado</p>
               </div>
-              <div className="col-start-2 text-responsive-xl font-bold balance-positive leading-tight truncate max-w-full">
+              <div className="col-start-2 balance-text balance-positive leading-tight truncate max-w-full">
                 {formatCurrency(totalsByType.income)}
               </div>
             </div>
@@ -900,10 +900,10 @@ export default function AnalyticsPage({
                 <TrendingDown className="h-5 w-5 text-destructive" />
               </div>
               <div className="col-start-2">
-                <p className="text-sm font-semibold">Despesas</p>
-                <p className="text-xs text-muted-foreground">Período filtrado</p>
+                <p className="text-caption font-semibold">Despesas</p>
+                <p className="text-caption text-muted-foreground">Período filtrado</p>
               </div>
-              <div className="col-start-2 text-responsive-xl font-bold balance-negative leading-tight truncate max-w-full">
+              <div className="col-start-2 balance-text balance-negative leading-tight truncate max-w-full">
                 {formatCurrency(totalsByType.expenses)}
               </div>
             </div>
@@ -917,10 +917,10 @@ export default function AnalyticsPage({
                 <BarChart3 className="h-5 w-5 text-primary" />
               </div>
               <div className="col-start-2">
-                <p className="text-sm font-semibold">Saldo Líquido</p>
-                <p className="text-xs text-muted-foreground">Período filtrado</p>
+                <p className="text-caption font-semibold">Saldo Líquido</p>
+                <p className="text-caption text-muted-foreground">Período filtrado</p>
               </div>
-              <div className={`col-start-2 text-responsive-xl font-bold leading-tight truncate max-w-full ${
+              <div className={`col-start-2 balance-text leading-tight truncate max-w-full ${
                 totalsByType.income - totalsByType.expenses >= 0 ? "balance-positive" : "balance-negative"
               }`}>
                 {formatCurrency(totalsByType.income - totalsByType.expenses)}
@@ -936,7 +936,7 @@ export default function AnalyticsPage({
         <Card className="financial-card">
           {/* 2. BOTÕES DE ALTERNÂNCIA ATUALIZADOS COM CORES */}
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3 pt-3 sm:px-4 sm:pt-4">
-            <CardTitle className="flex items-center gap-2 text-sm sm:text-base font-medium">
+            <CardTitle className="text-headline flex items-center gap-2">
               <PieChart className="h-4 w-4 sm:h-5 sm:w-5" />
               {categoryChartType === "income" ? "Receitas" : "Despesas"} por Categoria
             </CardTitle>
@@ -948,7 +948,7 @@ export default function AnalyticsPage({
                   categoryChartType === "expense" ? "destructive" : "ghost"
                 }
                 onClick={() => setCategoryChartType("expense")}
-                className="h-6 px-2 text-xs sm:h-7 sm:px-3"
+                className="h-6 px-2 text-caption sm:h-7 sm:px-3"
               >
                 Despesas
               </Button>
@@ -957,7 +957,7 @@ export default function AnalyticsPage({
                 variant={categoryChartType === "income" ? "default" : "ghost"}
                 onClick={() => setCategoryChartType("income")}
                 className={cn(
-                  "h-6 px-2 text-xs sm:h-7 sm:px-3",
+                  "h-6 px-2 text-caption sm:h-7 sm:px-3",
                   categoryChartType === "income" &&
                     "bg-success text-success-foreground hover:bg-success/90"
                 )}
@@ -1008,7 +1008,7 @@ export default function AnalyticsPage({
               </RechartsPieChart>
             </ChartContainer>
             {categoryData.length === 0 && (
-              <div className="text-center text-muted-foreground py-8">
+              <div className="text-body text-center text-muted-foreground py-8">
                 Nenhuma transação encontrada para o período selecionado
               </div>
             )}
@@ -1018,7 +1018,7 @@ export default function AnalyticsPage({
         {/* Account Balances */}
         <Card className="financial-card">
           <CardHeader className="px-3 pt-3 pb-2 sm:px-4 sm:pt-4">
-            <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+            <CardTitle className="text-headline flex items-center gap-2">
               <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5" />
               Saldos por Conta
             </CardTitle>
@@ -1061,7 +1061,7 @@ export default function AnalyticsPage({
         {/* Monthly Trend */}
         <Card className="financial-card">
           <CardHeader className="px-3 pt-3 pb-2 sm:px-4 sm:pt-4">
-            <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+            <CardTitle className="text-headline flex items-center gap-2">
               <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5" />
               Evolução Mensal - Receitas vs Despesas
             </CardTitle>
@@ -1180,7 +1180,7 @@ export default function AnalyticsPage({
 
             {/* Indicadores visuais no mobile */}
             {isMobile && monthlyData.length > 0 && (
-              <div className="grid grid-cols-3 gap-2 mt-3 text-xs">
+              <div className="grid grid-cols-3 gap-2 mt-3 text-caption">
                 <div className="flex items-center gap-1 justify-center">
                   <div className="w-3 h-3 rounded bg-success flex-shrink-0"></div>
                   <span className="text-muted-foreground truncate">Receitas</span>
@@ -1202,7 +1202,7 @@ export default function AnalyticsPage({
       {/* Category Details Table */}
       <Card className="financial-card">
         <CardHeader>
-          <CardTitle className="text-sm sm:text-base">
+          <CardTitle className="text-headline">
             <span className="block sm:hidden">
               Detalhes -{" "}
               {categoryChartType === "income" ? "Receitas" : "Despesas"}
@@ -1215,9 +1215,9 @@ export default function AnalyticsPage({
         </CardHeader>
         <CardContent>
           {categoryData.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
+            <div className="text-body text-center py-8 text-muted-foreground">
               <PieChart className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p className="text-sm">
+              <p className="text-body">
                 Nenhuma transação no período selecionado
               </p>
             </div>
@@ -1226,16 +1226,16 @@ export default function AnalyticsPage({
               <table className="w-full min-w-max sm:min-w-0">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left py-2 text-xs sm:text-sm">
+                    <th className="text-left py-2 text-caption">
                       Categoria
                     </th>
-                    <th className="text-right py-2 text-xs sm:text-sm">
+                    <th className="text-right py-2 text-caption">
                       Valor
                     </th>
-                    <th className="text-right py-2 text-xs sm:text-sm hidden sm:table-cell">
+                    <th className="text-right py-2 text-caption hidden sm:table-cell">
                       %
                     </th>
-                    <th className="text-right py-2 text-xs sm:text-sm hidden md:table-cell">
+                    <th className="text-right py-2 text-caption hidden md:table-cell">
                       Qtd.
                     </th>
                   </tr>
@@ -1249,23 +1249,23 @@ export default function AnalyticsPage({
                             className="w-3 h-3 sm:w-4 sm:h-4 rounded-full flex-shrink-0"
                             style={{ backgroundColor: item.fill }}
                           />
-                          <span className="text-xs sm:text-sm truncate max-w-[120px] sm:max-w-none">
+                          <span className="text-body truncate max-w-[120px] sm:max-w-none">
                             {item.category}
                           </span>
                         </div>
                       </td>
-                      <td className="text-right py-2 sm:py-3 font-medium text-xs sm:text-sm">
+                      <td className="text-right py-2 sm:py-3 font-medium text-body">
                         <div className="flex flex-col sm:block">
                           <span>{formatCurrency(item.amount)}</span>
-                          <span className="text-xs text-muted-foreground sm:hidden">
+                          <span className="text-caption text-muted-foreground sm:hidden">
                             {item.percentage.toFixed(1)}% • {item.transactions}x
                           </span>
                         </div>
                       </td>
-                      <td className="text-right py-2 sm:py-3 text-xs sm:text-sm hidden sm:table-cell">
+                      <td className="text-right py-2 sm:py-3 text-body hidden sm:table-cell">
                         {item.percentage.toFixed(1)}%
                       </td>
-                      <td className="text-right py-2 sm:py-3 text-xs sm:text-sm hidden md:table-cell">
+                      <td className="text-right py-2 sm:py-3 text-body hidden md:table-cell">
                         {item.transactions}
                       </td>
                     </tr>
