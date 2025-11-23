@@ -702,8 +702,9 @@ export type Database = {
         Args: {
           p_amount: number
           p_date: string
-          p_description: string
           p_from_account_id: string
+          p_incoming_description: string
+          p_outgoing_description: string
           p_status: Database["public"]["Enums"]["transaction_status"]
           p_to_account_id: string
           p_user_id: string
