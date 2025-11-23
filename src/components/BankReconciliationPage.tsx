@@ -188,11 +188,11 @@ export function BankReconciliationPage({
       render: (transaction: Transaction) => (
         <div className="flex flex-col">
           <span className="font-medium">{transaction.description}</span>
-          {transaction.reconciled && (transaction as unknown as Record<string, unknown>).reconciled_at && (
+          {(transaction.reconciled && (transaction as unknown as Record<string, unknown>).reconciled_at) ? (
             <span className="text-xs text-muted-foreground">
               Reconciliado em: {format(new Date((transaction as unknown as Record<string, unknown>).reconciled_at as string), "dd/MM/yyyy HH:mm")}
             </span>
-          ) as React.ReactNode}
+          ) : null}
         </div>
       ),
     },
