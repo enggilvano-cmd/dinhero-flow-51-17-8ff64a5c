@@ -11,14 +11,10 @@ import { formatCurrency, getAvailableBalance } from "@/lib/formatters";
 import { ArrowRight } from "lucide-react";
 import { AccountBalanceDetails } from "./AccountBalanceDetails";
 import { useAccounts } from "@/hooks/queries/useAccounts";
-import { Account } from "@/types";
 import { logger } from "@/lib/logger";
-
-interface TransferModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onTransfer: (fromAccountId: string, toAccountId: string, amountInCents: number, date: Date) => Promise<{ fromAccount: Account, toAccount: Account }>;
-}
+import { transferSchema } from "@/lib/validationSchemas";
+import { z } from "zod";
+import { TransferModalProps } from "@/types/formProps";
 
 export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalProps) {
   const { accounts } = useAccounts();
@@ -42,22 +38,29 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.fromAccountId || !formData.toAccountId || formData.amountInCents <= 0) {
-      toast({
-        title: "Erro",
-        description: "Preencha todos os campos obrigatórios",
-        variant: "destructive"
-      });
-      return;
-    }
+    
+    // Validação com Zod
+    try {
+      const validationData = {
+        description: "Transferência",
+        amount: formData.amountInCents,
+        date: formData.date,
+        from_account_id: formData.fromAccountId,
+        to_account_id: formData.toAccountId,
+      };
 
-    if (formData.fromAccountId === formData.toAccountId) {
-      toast({
-        title: "Erro",
-        description: "Não é possível transferir para a mesma conta",
-        variant: "destructive"
-      });
-      return;
+      transferSchema.parse(validationData);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const firstError = error.errors[0];
+        toast({
+          title: "Erro de validação",
+          description: firstError.message,
+          variant: "destructive",
+        });
+        logger.error("Validation errors:", error.errors);
+        return;
+      }
     }
 
     // Check if source account has sufficient balance or overdraft limit

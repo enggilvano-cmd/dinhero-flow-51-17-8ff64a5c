@@ -275,6 +275,40 @@ export const transferSchema = z.object({
 
 export type TransferFormData = z.infer<typeof transferSchema>;
 
+// ============= Credit Payment Schema =============
+
+export const creditPaymentSchema = z.object({
+  creditCardAccountId: z
+    .string()
+    .uuid({ message: "Cartão de crédito inválido" })
+    .min(1, { message: "Selecione um cartão de crédito" }),
+  
+  debitAccountId: z
+    .string()
+    .uuid({ message: "Conta de débito inválida" })
+    .min(1, { message: "Selecione a conta de pagamento" }),
+  
+  amount: z
+    .number({ invalid_type_error: "O valor deve ser um número" })
+    .positive({ message: "O valor deve ser maior que zero" })
+    .max(MAX_TRANSACTION_AMOUNT, { 
+      message: `O valor não pode ser maior que ${(MAX_TRANSACTION_AMOUNT / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}` 
+    }),
+  
+  paymentDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, { message: "Data inválida. Use o formato AAAA-MM-DD" })
+    .refine((dateStr) => {
+      const date = new Date(dateStr + "T00:00:00");
+      return !isNaN(date.getTime());
+    }, { message: "Data inválida" }),
+}).refine((data) => data.creditCardAccountId !== data.debitAccountId, {
+  message: "O cartão de crédito não pode ser igual à conta de pagamento",
+  path: ["debitAccountId"],
+});
+
+export type CreditPaymentFormData = z.infer<typeof creditPaymentSchema>;
+
 // ============= Mark as Paid Schema =============
 
 export const markAsPaidSchema = z.object({

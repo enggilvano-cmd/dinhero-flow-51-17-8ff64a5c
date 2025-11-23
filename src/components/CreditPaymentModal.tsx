@@ -17,13 +17,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Account } from "@/types";
 import { logger } from "@/lib/logger";
 import { getTodayString } from "@/lib/dateUtils";
 import { getAvailableBalance } from "@/lib/formatters";
 import { AccountBalanceDetails } from "./AccountBalanceDetails";
 import { CurrencyInput } from "./forms/CurrencyInput";
 import { useAccounts } from "@/hooks/queries/useAccounts";
+import { creditPaymentSchema } from "@/lib/validationSchemas";
+import { z } from "zod";
+import { CreditPaymentModalProps } from "@/types/formProps";
 
 // Helper para formatar moeda (R$)
 const formatBRL = (valueInCents: number) => {
@@ -33,26 +35,6 @@ const formatBRL = (valueInCents: number) => {
     currency: "BRL",
   }).format(valueInCents / 100); 
 };
-
-
-interface CreditPaymentModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onPayment: (params: {
-    creditCardAccountId: string;
-    debitAccountId: string;
-    amount: number;
-    paymentDate: string;
-  }) => Promise<{
-    updatedCreditAccount: Account;
-    updatedDebitAccount: Account;
-  }>;
-  creditAccount: Account | null;
-  invoiceValueInCents: number; 
-  nextInvoiceValueInCents: number;
-  // BUGFIX: Receber a dívida total calculada
-  totalDebtInCents: number;
-}
 
 export function CreditPaymentModal({
   open,
@@ -109,13 +91,30 @@ export function CreditPaymentModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!creditAccount || !formData.bankAccountId || formData.amountInCents <= 0) {
-      toast({
-        title: "Erro",
-        description: "Preencha todos os campos obrigatórios",
-        variant: "destructive",
-      });
-      return;
+    
+    if (!creditAccount) return;
+    
+    // Validação com Zod
+    try {
+      const validationData = {
+        creditCardAccountId: creditAccount.id,
+        debitAccountId: formData.bankAccountId,
+        amount: formData.amountInCents,
+        paymentDate: formData.date,
+      };
+
+      creditPaymentSchema.parse(validationData);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const firstError = error.errors[0];
+        toast({
+          title: "Erro de validação",
+          description: firstError.message,
+          variant: "destructive",
+        });
+        logger.error("Validation errors:", error.errors);
+        return;
+      }
     }
 
     const { amountInCents } = formData;
