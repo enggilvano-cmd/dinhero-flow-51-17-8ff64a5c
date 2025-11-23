@@ -149,7 +149,7 @@ export function BankReconciliationPage({
         categories.find((c) => c.id === t.category_id)?.name || "",
         formatCurrency(t.amount),
         t.reconciled ? "Sim" : "Não",
-        (t as Record<string, unknown>).reconciled_at ? format(new Date((t as Record<string, unknown>).reconciled_at as string), "dd/MM/yyyy HH:mm") : "",
+        (t as unknown as Record<string, unknown>).reconciled_at ? format(new Date((t as unknown as Record<string, unknown>).reconciled_at as string), "dd/MM/yyyy HH:mm") : "",
       ]),
     ]
       .map((row) => row.join(","))
@@ -188,9 +188,9 @@ export function BankReconciliationPage({
       render: (transaction: Transaction) => (
         <div className="flex flex-col">
           <span className="font-medium">{transaction.description}</span>
-          {transaction.reconciled && (transaction as Record<string, unknown>).reconciled_at && (
+          {transaction.reconciled && (transaction as unknown as Record<string, unknown>).reconciled_at && (
             <span className="text-xs text-muted-foreground">
-              Reconciliado em: {format(new Date((transaction as Record<string, unknown>).reconciled_at as string), "dd/MM/yyyy HH:mm")}
+              Reconciliado em: {format(new Date((transaction as unknown as Record<string, unknown>).reconciled_at as string), "dd/MM/yyyy HH:mm")}
             </span>
           )}
         </div>

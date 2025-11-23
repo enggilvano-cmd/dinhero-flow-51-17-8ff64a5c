@@ -166,10 +166,11 @@ export function DatabasePerformanceTest() {
         description: "Todas as transações de teste foram excluídas",
       });
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       logger.error('Error clearing test data:', error);
       toast({
         title: "❌ Erro ao limpar dados",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     }

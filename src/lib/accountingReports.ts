@@ -316,7 +316,7 @@ export async function exportReportToPDF(
   doc.save(filename);
 }
 
-function exportDREtoPDF(doc: ReturnType<typeof import('jspdf').jsPDF>, data: DREReport, startY: number, t: TranslationFunction) {
+function exportDREtoPDF(doc: InstanceType<typeof import('jspdf').jsPDF>, data: DREReport, startY: number, t: TranslationFunction) {
   let y = startY;
 
   // Receitas
@@ -360,7 +360,7 @@ function exportDREtoPDF(doc: ReturnType<typeof import('jspdf').jsPDF>, data: DRE
   doc.text(formatCurrency(data.netResult), 170, y, { align: "right" });
 }
 
-function exportBalanceSheetToPDF(doc: ReturnType<typeof import('jspdf').jsPDF>, data: BalanceSheetReport, startY: number, t: TranslationFunction) {
+function exportBalanceSheetToPDF(doc: InstanceType<typeof import('jspdf').jsPDF>, data: BalanceSheetReport, startY: number, t: TranslationFunction) {
   let y = startY;
 
   // Ativo
@@ -426,7 +426,7 @@ function exportBalanceSheetToPDF(doc: ReturnType<typeof import('jspdf').jsPDF>, 
   doc.text(formatCurrency(data.equity), 180, maxY, { align: "right" });
 }
 
-function exportCashFlowToPDF(doc: ReturnType<typeof import('jspdf').jsPDF>, data: CashFlowReport, startY: number, t: TranslationFunction) {
+function exportCashFlowToPDF(doc: InstanceType<typeof import('jspdf').jsPDF>, data: CashFlowReport, startY: number, t: TranslationFunction) {
   let y = startY;
 
   // Saldo Inicial
