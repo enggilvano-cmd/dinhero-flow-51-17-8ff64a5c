@@ -18,6 +18,7 @@ import { TransactionScopeDialog, EditScope } from "./TransactionScopeDialog";
 import { CurrencyInput } from "@/components/forms/CurrencyInput";
 import { supabase } from "@/integrations/supabase/client";
 import { CreditLimitIndicator } from "@/components/forms/CreditLimitIndicator";
+import { AvailableBalanceIndicator } from "@/components/forms/AvailableBalanceIndicator";
 
 interface EditTransactionModalProps {
   open: boolean;
@@ -346,6 +347,15 @@ export function EditTransactionModal({
               onValueChange={(value) => setFormData({ ...formData, amountInCents: value })}
             />
           </div>
+
+          {/* Indicador de saldo disponível em tempo real */}
+          {formData.account_id && formData.type && (
+            <AvailableBalanceIndicator
+              account={accounts.find(acc => acc.id === formData.account_id)}
+              transactionType={formData.type}
+              amountInCents={formData.amountInCents}
+            />
+          )}
 
           <div className="space-y-2">
             <Label>Data</Label>

@@ -34,6 +34,7 @@ import { z } from "zod";
 import { queryKeys } from "@/lib/queryClient";
 import { ACCOUNT_TYPE_LABELS } from "@/types";
 import { CreditLimitIndicator } from "@/components/forms/CreditLimitIndicator";
+import { AvailableBalanceIndicator } from "@/components/forms/AvailableBalanceIndicator";
 
 interface Transaction {
   id?: string;
@@ -738,6 +739,15 @@ export function AddTransactionModal({
               )}
             </div>
           </div>
+
+          {/* Indicador de saldo disponível em tempo real */}
+          {formData.account_id && formData.type && (
+            <AvailableBalanceIndicator
+              account={accounts.find(acc => acc.id === formData.account_id)}
+              transactionType={formData.type as "income" | "expense"}
+              amountInCents={formData.amount}
+            />
+          )}
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
