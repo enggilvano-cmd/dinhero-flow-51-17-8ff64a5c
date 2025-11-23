@@ -1222,8 +1222,8 @@ export default function AnalyticsPage({
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
+            <div className="overflow-x-auto -mx-2 px-2 sm:mx-0 sm:px-0">
+              <table className="w-full min-w-max sm:min-w-0">
                 <thead>
                   <tr className="border-b">
                     <th className="text-left py-2 text-xs sm:text-sm">

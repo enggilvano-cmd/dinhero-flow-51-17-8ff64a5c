@@ -461,28 +461,35 @@ export function AccountingReportsPage() {
 
       {/* Abas de Relatórios */}
       <Tabs defaultValue="dre" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5">
-          <TabsTrigger value="dre" className="flex items-center gap-2">
-            <TrendingUp className="h-4 w-4" />
-            <span className="hidden sm:inline">DRE</span>
-          </TabsTrigger>
-          <TabsTrigger value="balance" className="flex items-center gap-2">
-            <Scale className="h-4 w-4" />
-            <span className="hidden sm:inline">Balanço</span>
-          </TabsTrigger>
-          <TabsTrigger value="cashflow" className="flex items-center gap-2">
-            <Waves className="h-4 w-4" />
-            <span className="hidden sm:inline">Fluxo de Caixa</span>
-          </TabsTrigger>
-          <TabsTrigger value="trial-balance" className="flex items-center gap-2">
-            <Wallet className="h-4 w-4" />
-            <span className="hidden sm:inline">Balancete</span>
-          </TabsTrigger>
-          <TabsTrigger value="journal" className="flex items-center gap-2">
-            <BookOpen className="h-4 w-4" />
-            <span className="hidden sm:inline">Livro Diário</span>
-          </TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto -mx-2 px-2 sm:mx-0 sm:px-0">
+          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5 min-w-max lg:min-w-0">
+            <TabsTrigger value="dre" className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4" />
+              <span className="hidden sm:inline">DRE</span>
+              <span className="sm:hidden">DRE</span>
+            </TabsTrigger>
+            <TabsTrigger value="balance" className="flex items-center gap-2">
+              <Scale className="h-4 w-4" />
+              <span className="hidden sm:inline">Balanço</span>
+              <span className="sm:hidden">Balanço</span>
+            </TabsTrigger>
+            <TabsTrigger value="cashflow" className="flex items-center gap-2">
+              <Waves className="h-4 w-4" />
+              <span className="hidden sm:inline">Fluxo de Caixa</span>
+              <span className="sm:hidden">Fluxo</span>
+            </TabsTrigger>
+            <TabsTrigger value="trial-balance" className="flex items-center gap-2">
+              <Wallet className="h-4 w-4" />
+              <span className="hidden sm:inline">Balancete</span>
+              <span className="sm:hidden">Balanc.</span>
+            </TabsTrigger>
+            <TabsTrigger value="journal" className="flex items-center gap-2">
+              <BookOpen className="h-4 w-4" />
+              <span className="hidden sm:inline">Livro Diário</span>
+              <span className="sm:hidden">Diário</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         {/* DRE */}
         <TabsContent value="dre">

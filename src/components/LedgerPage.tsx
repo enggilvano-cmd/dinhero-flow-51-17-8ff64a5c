@@ -392,67 +392,69 @@ export function LedgerPage() {
               Nenhum lançamento encontrado no período selecionado
             </p>
           ) : (
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Data</TableHead>
-                    <TableHead>Histórico</TableHead>
-                    <TableHead className="text-right">Débito</TableHead>
-                    <TableHead className="text-right">Crédito</TableHead>
-                    <TableHead className="text-right">Saldo</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {/* Saldo Inicial */}
-                  <TableRow className="bg-muted/50">
-                    <TableCell colSpan={2} className="font-medium">
-                      Saldo Anterior
-                    </TableCell>
-                    <TableCell className="text-right">-</TableCell>
-                    <TableCell className="text-right">-</TableCell>
-                    <TableCell className="text-right font-mono font-semibold">
-                      {formatCurrency(0)} {/* Atualizar com openingBalance real */}
-                    </TableCell>
-                  </TableRow>
-
-                  {/* Lançamentos */}
-                  {ledgerEntries.map((entry, index) => (
-                    <TableRow key={index}>
-                      <TableCell className="whitespace-nowrap">
-                        {format(new Date(entry.date), "dd/MM/yyyy")}
+            <div className="overflow-x-auto -mx-2 px-2 sm:mx-0 sm:px-0">
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Data</TableHead>
+                      <TableHead>Histórico</TableHead>
+                      <TableHead className="text-right">Débito</TableHead>
+                      <TableHead className="text-right">Crédito</TableHead>
+                      <TableHead className="text-right">Saldo</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {/* Saldo Inicial */}
+                    <TableRow className="bg-muted/50">
+                      <TableCell colSpan={2} className="font-medium">
+                        Saldo Anterior
                       </TableCell>
-                      <TableCell className="max-w-md">{entry.description}</TableCell>
-                      <TableCell className="text-right font-mono">
-                        {entry.debit > 0 ? formatCurrency(entry.debit) : "-"}
-                      </TableCell>
-                      <TableCell className="text-right font-mono">
-                        {entry.credit > 0 ? formatCurrency(entry.credit) : "-"}
-                      </TableCell>
-                      <TableCell className={cn(
-                        "text-right font-mono font-semibold",
-                        entry.balance >= 0 ? "text-green-600" : "text-red-600"
-                      )}>
-                        {formatCurrency(Math.abs(entry.balance))}
+                      <TableCell className="text-right">-</TableCell>
+                      <TableCell className="text-right">-</TableCell>
+                      <TableCell className="text-right font-mono font-semibold">
+                        {formatCurrency(0)} {/* Atualizar com openingBalance real */}
                       </TableCell>
                     </TableRow>
-                  ))}
 
-                  {/* Totais */}
-                  <TableRow className="font-bold bg-muted/50">
-                    <TableCell colSpan={2}>Total do Período</TableCell>
-                    <TableCell className="text-right font-mono">
-                      {formatCurrency(totals.debit)}
-                    </TableCell>
-                    <TableCell className="text-right font-mono">
-                      {formatCurrency(totals.credit)}
-                    </TableCell>
-                    <TableCell className="text-right font-mono">
-                      {formatCurrency(Math.abs(totals.debit - totals.credit))}
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
+                    {/* Lançamentos */}
+                    {ledgerEntries.map((entry, index) => (
+                      <TableRow key={index}>
+                        <TableCell className="whitespace-nowrap">
+                          {format(new Date(entry.date), "dd/MM/yyyy")}
+                        </TableCell>
+                        <TableCell className="max-w-md">{entry.description}</TableCell>
+                        <TableCell className="text-right font-mono">
+                          {entry.debit > 0 ? formatCurrency(entry.debit) : "-"}
+                        </TableCell>
+                        <TableCell className="text-right font-mono">
+                          {entry.credit > 0 ? formatCurrency(entry.credit) : "-"}
+                        </TableCell>
+                        <TableCell className={cn(
+                          "text-right font-mono font-semibold",
+                          entry.balance >= 0 ? "text-green-600" : "text-red-600"
+                        )}>
+                          {formatCurrency(Math.abs(entry.balance))}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+
+                    {/* Totais */}
+                    <TableRow className="font-bold bg-muted/50">
+                      <TableCell colSpan={2}>Total do Período</TableCell>
+                      <TableCell className="text-right font-mono">
+                        {formatCurrency(totals.debit)}
+                      </TableCell>
+                      <TableCell className="text-right font-mono">
+                        {formatCurrency(totals.credit)}
+                      </TableCell>
+                      <TableCell className="text-right font-mono">
+                        {formatCurrency(Math.abs(totals.debit - totals.credit))}
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </div>
             </div>
           )}
         </CardContent>

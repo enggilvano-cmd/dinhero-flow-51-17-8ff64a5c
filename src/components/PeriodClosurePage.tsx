@@ -264,7 +264,7 @@ export function PeriodClosurePage() {
               Nenhum período fechado ainda
             </p>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto -mx-2 px-2 sm:mx-0 sm:px-0">
               <Table>
                 <TableHeader>
                   <TableRow>

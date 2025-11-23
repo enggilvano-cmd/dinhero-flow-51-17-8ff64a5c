@@ -164,13 +164,28 @@
 @layer base {
   * {
     @apply border-border;
+    box-sizing: border-box;
+  }
+
+  html {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
+  #root {
+    overflow-x: hidden;
+    max-width: 100vw;
   }
 
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background text-foreground font-sans antialiased;
     overflow-x: hidden;
+    max-width: 100vw;
+    font-feature-settings: "kern" 1, "liga" 1;
+    text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overscroll-behavior: none;
   }
 
   /* Prevent zoom on input focus (iOS Safari) */
@@ -644,10 +659,42 @@
     @apply w-full overflow-x-auto -mx-2 px-2 sm:mx-0 sm:px-0;
   }
 
+  /* Prevent overflow and ensure responsive containers */
+  .page-container {
+    @apply w-full max-w-full overflow-x-hidden;
+  }
+
+  /* Responsive grid with no overflow */
+  .responsive-grid {
+    @apply grid gap-3 sm:gap-4;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  }
+
+  /* Responsive flex container */
+  .responsive-flex {
+    @apply flex flex-wrap gap-2 sm:gap-3;
+  }
+
+  /* Prevent text overflow */
+  .text-safe {
+    @apply break-words overflow-wrap-anywhere;
+  }
+
+  /* Ensure all content stays within bounds */
+  .content-safe {
+    @apply max-w-full overflow-x-hidden;
+  }
+
   /* Breakpoint-specific utilities */
   @media (max-width: 640px) {
     .compact-mobile {
       @apply text-sm px-2 py-1;
+    }
+    
+    /* Prevent any horizontal overflow on mobile */
+    body {
+      overflow-x: hidden;
+      max-width: 100vw;
     }
   }
 
