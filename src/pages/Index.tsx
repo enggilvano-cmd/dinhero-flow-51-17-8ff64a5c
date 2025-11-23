@@ -37,6 +37,7 @@ import { useAccountHandlers } from "@/hooks/useAccountHandlers";
 import { useTransactionHandlers } from "@/hooks/useTransactionHandlers";
 import { TransactionScopeDialog, EditScope } from "@/components/TransactionScopeDialog";
 import { MarkAsPaidModal } from "@/components/MarkAsPaidModal";
+import { FormErrorBoundary } from "@/components/ui/form-error-boundary";
 
 const PlaniFlowApp = () => {
   const { user, loading: authLoading, isAdmin } = useAuth();
@@ -480,53 +481,64 @@ const PlaniFlowApp = () => {
 
       {renderCurrentPage()}
 
-      {/* Modals */}
-      <AddAccountModal
-        open={addAccountModalOpen}
-        onOpenChange={setAddAccountModalOpen}
-      />
+      {/* Modals com Error Boundaries */}
+      <FormErrorBoundary fallbackMessage="Erro ao abrir formulário de conta">
+        <AddAccountModal
+          open={addAccountModalOpen}
+          onOpenChange={setAddAccountModalOpen}
+        />
+      </FormErrorBoundary>
 
-      <AddTransactionModal
-        open={addTransactionModalOpen}
-        onOpenChange={setAddTransactionModalOpen}
-        onAddTransaction={handleAddTransaction}
-        onAddInstallmentTransactions={handleAddInstallmentTransactions}
-        accounts={accounts}
-        initialType={transactionInitialType}
-        initialAccountType={transactionInitialAccountType}
-        lockType={transactionLockType}
-      />
+      <FormErrorBoundary fallbackMessage="Erro ao abrir formulário de transação">
+        <AddTransactionModal
+          open={addTransactionModalOpen}
+          onOpenChange={setAddTransactionModalOpen}
+          onAddTransaction={handleAddTransaction}
+          onAddInstallmentTransactions={handleAddInstallmentTransactions}
+          accounts={accounts}
+          initialType={transactionInitialType}
+          initialAccountType={transactionInitialAccountType}
+          lockType={transactionLockType}
+        />
+      </FormErrorBoundary>
 
-      <EditAccountModal
-        open={editAccountModalOpen}
-        onOpenChange={setEditAccountModalOpen}
-        account={editingAccount}
-        onEditAccount={handleEditAccount}
-      />
+      <FormErrorBoundary fallbackMessage="Erro ao abrir edição de conta">
+        <EditAccountModal
+          open={editAccountModalOpen}
+          onOpenChange={setEditAccountModalOpen}
+          account={editingAccount}
+          onEditAccount={handleEditAccount}
+        />
+      </FormErrorBoundary>
 
-      <EditTransactionModal
-        open={editTransactionModalOpen}
-        onOpenChange={setEditTransactionModalOpen}
-        transaction={editingTransaction}
-        onEditTransaction={handleEditTransaction}
-        accounts={accounts}
-      />
+      <FormErrorBoundary fallbackMessage="Erro ao abrir edição de transação">
+        <EditTransactionModal
+          open={editTransactionModalOpen}
+          onOpenChange={setEditTransactionModalOpen}
+          transaction={editingTransaction}
+          onEditTransaction={handleEditTransaction}
+          accounts={accounts}
+        />
+      </FormErrorBoundary>
 
-      <TransferModal
-        open={transferModalOpen}
-        onOpenChange={setTransferModalOpen}
-        onTransfer={async (fromAccountId, toAccountId, amountInCents, date) => {
-          await handleTransfer(fromAccountId, toAccountId, amountInCents, date);
-          const fromAccount = accounts.find(acc => acc.id === fromAccountId)!;
-          const toAccount = accounts.find(acc => acc.id === toAccountId)!;
-          return { fromAccount, toAccount };
-        }}
-      />
+      <FormErrorBoundary fallbackMessage="Erro ao abrir transferência">
+        <TransferModal
+          open={transferModalOpen}
+          onOpenChange={setTransferModalOpen}
+          onTransfer={async (fromAccountId, toAccountId, amountInCents, date) => {
+            await handleTransfer(fromAccountId, toAccountId, amountInCents, date);
+            const fromAccount = accounts.find(acc => acc.id === fromAccountId)!;
+            const toAccount = accounts.find(acc => acc.id === toAccountId)!;
+            return { fromAccount, toAccount };
+          }}
+        />
+      </FormErrorBoundary>
 
-      <CreditPaymentModal
-        open={creditPaymentModalOpen}
-        onOpenChange={setCreditPaymentModalOpen}
-        onPayment={async (params) => {
+      <FormErrorBoundary fallbackMessage="Erro ao abrir pagamento de fatura">
+        <CreditPaymentModal
+          open={creditPaymentModalOpen}
+          onOpenChange={setCreditPaymentModalOpen}
+          onPayment={async (params) => {
           const result = await handleCreditPayment(params);
           return { updatedCreditAccount: result.creditAccount, updatedDebitAccount: result.bankAccount };
         }}
@@ -534,15 +546,18 @@ const PlaniFlowApp = () => {
         invoiceValueInCents={currentInvoiceValue}
         nextInvoiceValueInCents={nextInvoiceValue}
         totalDebtInCents={payingTotalDebt}
-      />
+        />
+      </FormErrorBoundary>
 
-      <MarkAsPaidModal
-        open={markAsPaidModalOpen}
-        onOpenChange={setMarkAsPaidModalOpen}
-        transaction={markingAsPaidTransaction}
-        accounts={accounts}
-        onConfirm={handleMarkAsPaidConfirm}
-      />
+      <FormErrorBoundary fallbackMessage="Erro ao abrir confirmação">
+        <MarkAsPaidModal
+          open={markAsPaidModalOpen}
+          onOpenChange={setMarkAsPaidModalOpen}
+          transaction={markingAsPaidTransaction}
+          accounts={accounts}
+          onConfirm={handleMarkAsPaidConfirm}
+        />
+      </FormErrorBoundary>
 
       <TransactionScopeDialog
         open={markAsPaidScopeDialogOpen}

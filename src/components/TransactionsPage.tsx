@@ -40,6 +40,7 @@ import { PaginationControls } from "@/components/ui/pagination-controls";
 import { TransactionFilterChips } from "@/components/transactions/TransactionFilterChips";
 import { TransactionFilterDialog } from "@/components/transactions/TransactionFilterDialog";
 import type { Transaction, Account, Category, ImportTransactionData } from '@/types';
+import { ListErrorBoundary } from '@/components/ui/list-error-boundary';
 
 interface TransactionsPageProps {
   transactions: Transaction[];
@@ -641,15 +642,17 @@ export function TransactionsPage({
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 sm:p-6">
-            <TransactionList
-              transactions={transactions}
-              accounts={accounts}
-              categories={categories}
-              currency={settings.currency}
-              onEdit={onEditTransaction}
-              onDelete={handleDeleteWithScope}
-              onMarkAsPaid={onMarkAsPaid}
-            />
+            <ListErrorBoundary fallbackMessage="Erro ao carregar lista de transações">
+              <TransactionList
+                transactions={transactions}
+                accounts={accounts}
+                categories={categories}
+                currency={settings.currency}
+                onEdit={onEditTransaction}
+                onDelete={handleDeleteWithScope}
+                onMarkAsPaid={onMarkAsPaid}
+              />
+            </ListErrorBoundary>
           </CardContent>
         </Card>
       )}
