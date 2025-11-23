@@ -65,15 +65,17 @@ export function useTransactionHandlers() {
         throw error;
       }
 
-      // Invalidar e forçar refetch imediato
+      // Invalidar queries
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase }),
         queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
       ]);
-      await Promise.all([
-        queryClient.refetchQueries({ queryKey: queryKeys.transactionsBase }),
-        queryClient.refetchQueries({ queryKey: queryKeys.accounts }),
-      ]);
+      
+      // Refetch após 10ms para atualização imediata
+      setTimeout(() => {
+        queryClient.refetchQueries({ queryKey: queryKeys.transactionsBase });
+        queryClient.refetchQueries({ queryKey: queryKeys.accounts });
+      }, 10);
     } catch (error) {
       logger.error('Error adding transaction:', error);
       if (error instanceof Error) {
@@ -185,14 +187,17 @@ export function useTransactionHandlers() {
         throw updateErrors[0].error;
       }
 
+      // Invalidar queries
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase }),
         queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
       ]);
-      await Promise.all([
-        queryClient.refetchQueries({ queryKey: queryKeys.transactionsBase }),
-        queryClient.refetchQueries({ queryKey: queryKeys.accounts }),
-      ]);
+      
+      // Refetch após 10ms para atualização imediata
+      setTimeout(() => {
+        queryClient.refetchQueries({ queryKey: queryKeys.transactionsBase });
+        queryClient.refetchQueries({ queryKey: queryKeys.accounts });
+      }, 10);
     } catch (error) {
       logger.error('Error adding installment transactions:', error);
       throw error;
