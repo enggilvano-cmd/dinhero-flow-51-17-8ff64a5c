@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/lib/formatters";
 import { cn } from "@/lib/utils";
+import { logger } from "@/lib/logger";
 
 interface JournalEntry {
   id: string;
@@ -93,7 +94,7 @@ export function AccountingReportsPage() {
       setNeedsInitialization(false);
       await loadData();
     } catch (error) {
-      console.error("Erro ao inicializar plano de contas:", error);
+      logger.error("Erro ao inicializar plano de contas:", error);
       toast({
         title: "Erro na inicialização",
         description: "Não foi possível inicializar o plano de contas.",
@@ -146,7 +147,7 @@ export function AccountingReportsPage() {
       const result = data?.[0];
       
       if (result?.error_count > 0) {
-        console.error("Erros na migração:", result.error_details);
+        logger.error("Erros na migração:", result.error_details);
         toast({
           title: "Migração Parcial",
           description: `${result?.processed_count || 0} transações migradas. ${result?.error_count || 0} falharam. Verifique os detalhes no console.`,
@@ -161,7 +162,7 @@ export function AccountingReportsPage() {
 
       await loadData();
     } catch (error) {
-      console.error("Erro ao migrar transações:", error);
+      logger.error("Erro ao migrar transações:", error);
       const errorMessage = error instanceof Error ? error.message : "Não foi possível migrar as transações existentes.";
       toast({
         title: "Erro na migração",
@@ -215,7 +216,7 @@ export function AccountingReportsPage() {
 
       setJournalEntries((entries || []) as JournalEntry[]);
     } catch (error) {
-      console.error("Erro ao carregar dados contábeis:", error);
+      logger.error("Erro ao carregar dados contábeis:", error);
       toast({
         title: "Erro ao carregar dados",
         description: "Não foi possível carregar os relatórios contábeis.",

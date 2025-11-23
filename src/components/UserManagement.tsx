@@ -215,7 +215,7 @@ export function UserManagement() {
         description: isActive ? 'Usuário ativado com sucesso.' : 'Usuário desativado com sucesso.',
       });
     } catch (error) {
-      console.error('Error updating user status:', error);
+      logger.error('Error updating user status:', error);
       toast({
         title: 'Erro',
         description: 'Não foi possível atualizar o status do usuário.',
@@ -226,7 +226,7 @@ export function UserManagement() {
 
   const deleteUser = async (userId: string) => {
     try {
-      console.log('Deleting user:', userId);
+      logger.info('Deleting user:', userId);
       
       // Call edge function to delete user (will also delete from auth.users)
       const { data: sessionData } = await supabase.auth.getSession();
@@ -250,11 +250,11 @@ export function UserManagement() {
       const result = await response.json();
 
       if (!response.ok) {
-        console.error('Error from edge function:', result);
+        logger.error('Error from edge function:', result);
         throw new Error(result.error || 'Failed to delete user');
       }
 
-      console.log('User deleted successfully:', result);
+      logger.success('User deleted successfully:', result);
 
       setUsers(prev => prev.filter(user => user.user_id !== userId));
 
@@ -263,7 +263,7 @@ export function UserManagement() {
         description: 'Usuário removido com sucesso do sistema e autenticação.',
       });
     } catch (error: any) {
-      console.error('Error deleting user:', error);
+      logger.error('Error deleting user:', error);
       toast({
         title: 'Erro',
         description: error.message || 'Não foi possível remover o usuário.',

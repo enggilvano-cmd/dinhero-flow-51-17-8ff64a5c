@@ -245,7 +245,6 @@ export function CreditPaymentModal({
             <Select
               value={formData.bankAccountId}
               onValueChange={(value) => {
-                console.log('Selected account:', value);
                 setFormData((prev) => ({ ...prev, bankAccountId: value }));
               }}
             >

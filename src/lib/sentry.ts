@@ -7,7 +7,7 @@ export const initSentry = () => {
   
   // Only initialize if DSN is provided and not in development
   if (!dsn || import.meta.env.DEV) {
-    console.log('Sentry not initialized:', import.meta.env.DEV ? 'Development mode' : 'No DSN provided');
+    // Sentry not initialized in development or without DSN
     return;
   }
 

@@ -3,6 +3,7 @@ import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import * as Sentry from '@sentry/react';
+import { logger } from '@/lib/logger';
 
 interface Props {
   children: ReactNode;
@@ -42,7 +43,7 @@ export class GranularErrorBoundary extends Component<Props, State> {
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     const { onError, context } = this.props;
     
-    console.error(`[ErrorBoundary${context ? ` - ${context}` : ''}]:`, error, errorInfo);
+    logger.error(`ErrorBoundary${context ? ` - ${context}` : ''}:`, error, errorInfo);
     
     this.setState({
       error,
@@ -167,7 +168,7 @@ export class TransactionErrorBoundary extends Component<Omit<Props, 'context'>, 
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('[TransactionErrorBoundary]:', error, errorInfo);
+    logger.error('TransactionErrorBoundary:', error, errorInfo);
     
     this.setState({
       error,
@@ -245,7 +246,7 @@ export class DashboardErrorBoundary extends Component<Omit<Props, 'context'>, St
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('[DashboardErrorBoundary]:', error, errorInfo);
+    logger.error('DashboardErrorBoundary:', error, errorInfo);
     
     this.setState({
       error,
@@ -317,7 +318,7 @@ export class AnalyticsErrorBoundary extends Component<Omit<Props, 'context'>, St
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('[AnalyticsErrorBoundary]:', error, errorInfo);
+    logger.error('AnalyticsErrorBoundary:', error, errorInfo);
     
     this.setState({
       error,

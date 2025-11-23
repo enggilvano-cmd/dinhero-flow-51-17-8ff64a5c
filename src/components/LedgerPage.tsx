@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/lib/formatters";
 import { cn } from "@/lib/utils";
+import { logger } from "@/lib/logger";
 
 interface JournalEntry {
   id: string;
@@ -85,7 +86,7 @@ export function LedgerPage() {
       setNeedsInitialization(false);
       await loadChartOfAccounts();
     } catch (error) {
-      console.error("Erro ao inicializar plano de contas:", error);
+      logger.error("Erro ao inicializar plano de contas:", error);
       toast({
         title: "Erro na inicialização",
         description: "Não foi possível inicializar o plano de contas.",
@@ -122,7 +123,7 @@ export function LedgerPage() {
         setSelectedAccountId(data[0].id);
       }
     } catch (error) {
-      console.error("Erro ao carregar plano de contas:", error);
+      logger.error("Erro ao carregar plano de contas:", error);
       toast({
         title: "Erro ao carregar dados",
         description: "Não foi possível carregar o plano de contas.",
@@ -148,7 +149,7 @@ export function LedgerPage() {
       if (error) throw error;
       setJournalEntries((data || []) as JournalEntry[]);
     } catch (error) {
-      console.error("Erro ao carregar lançamentos:", error);
+      logger.error("Erro ao carregar lançamentos:", error);
       toast({
         title: "Erro ao carregar dados",
         description: "Não foi possível carregar os lançamentos.",

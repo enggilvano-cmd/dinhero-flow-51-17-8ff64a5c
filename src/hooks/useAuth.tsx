@@ -270,7 +270,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       return { error };
     } catch (error: any) {
-      console.error('Sign in error:', error);
+      logger.error('Sign in error:', error);
       toast({
         title: "Erro no login",
         description: error.message,
@@ -282,7 +282,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUp = async (email: string, password: string, fullName: string, whatsapp?: string) => {
     try {
-      console.log('Attempting to sign up user:', email);
+      logger.info('Attempting to sign up user:', email);
       
       const redirectUrl = `${window.location.origin}/`;
       
@@ -315,7 +315,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       return { error };
     } catch (error: any) {
-      console.error('Sign up error:', error);
+      logger.error('Sign up error:', error);
       toast({
         title: "Erro no cadastro",
         description: error.message,
@@ -386,7 +386,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       return { error };
     } catch (error: any) {
-      console.error('Reset password error:', error);
+      logger.error('Reset password error:', error);
       toast({
         title: "Erro na recuperação",
         description: error.message,
