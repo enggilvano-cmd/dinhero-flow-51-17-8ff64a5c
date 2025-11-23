@@ -733,8 +733,89 @@ export function TransactionsPage({
         onImportTransactions={onImportTransactions}
       />
 
-      {pendingDeleteTransaction && pendingDeleteTransaction.is_fixed && (
+      {pendingDeleteTransaction && (pendingDeleteTransaction.is_fixed || pendingDeleteTransaction.parent_transaction_id) && (
         <FixedTransactionScopeDialog
+          open={scopeDialogOpen}
+          onOpenChange={setScopeDialogOpen}
+          onScopeSelected={(scope: FixedScope) => {
+            if (pendingDeleteTransaction) {
+              // Converter FixedScope para EditScope
+              const editScope: EditScope =
+                scope === "current"
+                  ? "current"
+                  : scope === "current-and-remaining"
+                    ? "current-and-remaining"
+                    : "all";
+              onDeleteTransaction(pendingDeleteTransaction.id, editScope);
+              setPendingDeleteTransaction(null);
+            }
+          }}
+          mode="delete"
+          hasCompleted={false}
+          pendingCount={0}
+        />
+      )}
+
+      {pendingDeleteTransaction && !pendingDeleteTransaction.is_fixed && !pendingDeleteTransaction.parent_transaction_id && (
+        <TransactionScopeDialog
+          open={scopeDialogOpen}
+          onOpenChange={setScopeDialogOpen}
+          onScopeSelected={(scope) => {
+            if (pendingDeleteTransaction) {
+              onDeleteTransaction(pendingDeleteTransaction.id, scope);
+              setPendingDeleteTransaction(null);
+            }
+          }}
+          currentInstallment={pendingDeleteTransaction.current_installment || 1}
+          totalInstallments={pendingDeleteTransaction.installments || 1}
+          isRecurring={Boolean(pendingDeleteTransaction.is_recurring)}
+          mode="delete"
+        />
+      )}
+    </div>
+  );
+}
+
+          onOpenChange={setScopeDialogOpen}
+          onScopeSelected={(scope: FixedScope) => {
+            if (pendingDeleteTransaction) {
+              // Converter FixedScope para EditScope
+              const editScope: EditScope =
+                scope === "current"
+                  ? "current"
+                  : scope === "current-and-remaining"
+                    ? "current-and-remaining"
+                    : "all";
+              onDeleteTransaction(pendingDeleteTransaction.id, editScope);
+              setPendingDeleteTransaction(null);
+            }
+          }}
+          mode="delete"
+          hasCompleted={false}
+          pendingCount={0}
+        />
+      )}
+      
+      {pendingDeleteTransaction && !pendingDeleteTransaction.is_fixed && !pendingDeleteTransaction.parent_transaction_id && (
+        <TransactionScopeDialog
+          open={scopeDialogOpen}
+          onOpenChange={setScopeDialogOpen}
+          onScopeSelected={(scope) => {
+            if (pendingDeleteTransaction) {
+              onDeleteTransaction(pendingDeleteTransaction.id, scope);
+              setPendingDeleteTransaction(null);
+            }
+          }}
+          currentInstallment={pendingDeleteTransaction.current_installment || 1}
+          totalInstallments={pendingDeleteTransaction.installments || 1}
+          isRecurring={Boolean(pendingDeleteTransaction.is_recurring)}
+          mode="delete"
+        />
+      )}
+    </div>
+  );
+}
+
           open={scopeDialogOpen}
           onOpenChange={setScopeDialogOpen}
           onScopeSelected={(scope: FixedScope) => {
