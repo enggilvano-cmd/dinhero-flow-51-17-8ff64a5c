@@ -6,7 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Account, Transaction } from '@/types';
 import { logger } from '@/lib/logger';
 import { queryKeys } from '@/lib/queryClient';
-import { EditScope } from '@/components/InstallmentEditScopeDialog';
+import { EditScope } from '@/components/TransactionScopeDialog';
 import { useAccounts } from './queries/useAccounts';
 
 export function useTransactionHandlers() {

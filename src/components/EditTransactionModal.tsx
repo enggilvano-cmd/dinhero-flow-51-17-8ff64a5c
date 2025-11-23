@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 import { Transaction, Account, ACCOUNT_TYPE_LABELS } from "@/types";
 import { useCategories } from "@/hooks/useCategories";
 import { createDateFromString } from "@/lib/dateUtils";
-import { InstallmentEditScopeDialog, EditScope } from "./InstallmentEditScopeDialog";
+import { TransactionScopeDialog, EditScope } from "./TransactionScopeDialog";
 import { CurrencyInput } from "@/components/forms/CurrencyInput";
 import { supabase } from "@/integrations/supabase/client";
 import { CreditLimitIndicator } from "@/components/forms/CreditLimitIndicator";
@@ -477,12 +477,14 @@ export function EditTransactionModal({
       </DialogContent>
     </Dialog>
 
-    <InstallmentEditScopeDialog
+    <TransactionScopeDialog
       open={scopeDialogOpen}
       onOpenChange={setScopeDialogOpen}
       onScopeSelected={processEdit}
       currentInstallment={transaction?.current_installment || 1}
       totalInstallments={transaction?.installments || 1}
+      isRecurring={Boolean(transaction?.is_recurring || transaction?.is_fixed)}
+      mode="edit"
     />
   </>
   );

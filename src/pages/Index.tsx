@@ -34,7 +34,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryClient";
 import { useAccountHandlers } from "@/hooks/useAccountHandlers";
 import { useTransactionHandlers } from "@/hooks/useTransactionHandlers";
-import { InstallmentEditScopeDialog, EditScope } from "@/components/InstallmentEditScopeDialog";
+import { TransactionScopeDialog, EditScope } from "@/components/TransactionScopeDialog";
 import { MarkAsPaidModal } from "@/components/MarkAsPaidModal";
 
 const PlaniFlowApp = () => {
@@ -541,7 +541,7 @@ const PlaniFlowApp = () => {
         onConfirm={handleMarkAsPaidConfirm}
       />
 
-      <InstallmentEditScopeDialog
+      <TransactionScopeDialog
         open={markAsPaidScopeDialogOpen}
         onOpenChange={setMarkAsPaidScopeDialogOpen}
         onScopeSelected={(scope: EditScope) => {
@@ -551,6 +551,7 @@ const PlaniFlowApp = () => {
         }}
         currentInstallment={markingAsPaidTransaction?.current_installment || 1}
         totalInstallments={markingAsPaidTransaction?.installments || 1}
+        isRecurring={Boolean(markingAsPaidTransaction?.is_recurring || markingAsPaidTransaction?.is_fixed)}
         mode="edit"
       />
     </Layout>
