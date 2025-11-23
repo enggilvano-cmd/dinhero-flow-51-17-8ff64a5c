@@ -65,7 +65,7 @@ export function AddCategoryModal({ open, onOpenChange, onAddCategory }: AddCateg
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Adicionar Categoria</DialogTitle>
           <DialogDescription>
