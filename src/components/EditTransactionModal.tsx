@@ -17,7 +17,6 @@ import { createDateFromString } from "@/lib/dateUtils";
 import { TransactionScopeDialog, EditScope } from "./TransactionScopeDialog";
 import { CurrencyInput } from "@/components/forms/CurrencyInput";
 import { supabase } from "@/integrations/supabase/client";
-import { CreditLimitIndicator } from "@/components/forms/CreditLimitIndicator";
 import { AvailableBalanceIndicator } from "@/components/forms/AvailableBalanceIndicator";
 
 interface EditTransactionModalProps {
@@ -476,18 +475,6 @@ export function EditTransactionModal({
             </Select>
           </div>
 
-          {/* Credit Limit Indicator for Credit Cards */}
-          {formData.account_id && 
-           formData.type === 'expense' &&
-           accounts.find(acc => acc.id === formData.account_id)?.type === "credit" && (
-            <CreditLimitIndicator
-              accountId={formData.account_id}
-              accountBalance={accounts.find(acc => acc.id === formData.account_id)?.balance || 0}
-              accountLimit={accounts.find(acc => acc.id === formData.account_id)?.limit_amount || 0}
-              transactionAmount={formData.amountInCents}
-              transactionType={formData.type}
-            />
-          )}
 
           {/* Invoice Month Selection for Credit Cards */}
           {formData.account_id &&
