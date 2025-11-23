@@ -192,10 +192,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     logger.debug('Setting up auth state listener...');
     
+    // Flag para rastrear se o componente ainda está montado
+    let isMounted = true;
+    
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         logger.debug('Auth state changed:', event, session?.user?.id);
+        
+        // Verificar se ainda está montado antes de atualizar estado
+        if (!isMounted) return;
         
         setSession(session);
         setUser(session?.user ?? null);
@@ -205,14 +211,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           (async () => {
             try {
               await fetchProfile(session.user.id);
+              
+              // Verificar novamente antes de continuar
+              if (!isMounted) return;
+              
               await syncProfileEmail(session.user.id, session.user.email);
+              
+              if (!isMounted) return;
               
               if (event === 'SIGNED_IN') {
                 await logActivity('signed_in', 'auth');
+                
+                if (!isMounted) return;
+                
                 await initializeUserData();
               }
             } catch (error) {
-              logger.error('Error in auth state change handler:', error);
+              // Apenas logar se ainda montado
+              if (isMounted) {
+                logger.error('Error in auth state change handler:', error);
+              }
             }
           })();
         } else {
@@ -220,7 +238,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setSentryUser(null); // Clear Sentry user context on sign out
         }
         
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     );
 
@@ -228,20 +248,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       logger.debug('Initial session check:', session?.user?.id);
       
+      if (!isMounted) return;
+      
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
         try {
           await fetchProfile(session.user.id);
+          
+          if (!isMounted) return;
+          
           await syncProfileEmail(session.user.id, session.user.email);
         } catch (error) {
-          logger.error('Error in initial session setup:', error);
+          if (isMounted) {
+            logger.error('Error in initial session setup:', error);
+          }
         }
       }
-      setLoading(false);
+      
+      if (isMounted) {
+        setLoading(false);
+      }
     });
 
-    return () => subscription.unsubscribe();
+    // Cleanup function
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {

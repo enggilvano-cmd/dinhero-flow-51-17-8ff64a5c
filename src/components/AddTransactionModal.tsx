@@ -392,10 +392,11 @@ export function AddTransactionModal({
               monthsAdded: i
             });
 
-            // Para contas comuns, a primeira parcela usa o status do formulário se for hoje ou passado
-            // As demais parcelas são pendentes
+            // Para contas comuns, cada parcela tem seu status baseado na sua própria data
+            // Se a data da parcela for hoje ou no passado, usa o status do formulário
+            // Senão, é "pending"
             const installmentStatus: "completed" | "pending" =
-              i === 0 && installmentDateStr <= todayStr ? status : "pending";
+              installmentDateStr <= todayStr ? status : "pending";
 
             const transaction = {
               description: description,
@@ -651,15 +652,15 @@ export function AddTransactionModal({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="type" className="text-caption">Tipo</Label>
-              <Select
-                value={formData.type}
-                onValueChange={(value) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    type: value as any,
-                    category_id: "",
-                  }))
-                }
+            <Select
+              value={formData.type}
+              onValueChange={(value: "income" | "expense" | "transfer") =>
+                setFormData((prev) => ({
+                  ...prev,
+                  type: value,
+                  category_id: "",
+                }))
+              }
                 disabled={lockType}
               >
                 <SelectTrigger disabled={lockType}>
