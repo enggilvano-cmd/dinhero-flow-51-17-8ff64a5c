@@ -113,10 +113,20 @@ export function AccountingReportsPage() {
       if (error) throw error;
 
       const result = data?.[0];
-      toast({
-        title: "Migração Concluída",
-        description: `${result?.processed_count || 0} transações migradas. ${result?.error_count || 0} erros.`,
-      });
+      
+      if (result?.error_count > 0) {
+        console.error("Erros na migração:", result.error_details);
+        toast({
+          title: "Migração Parcial",
+          description: `${result?.processed_count || 0} transações migradas com sucesso. ${result?.error_count || 0} transações falharam. Verifique o console para detalhes.`,
+          variant: "default",
+        });
+      } else {
+        toast({
+          title: "Migração Concluída",
+          description: `${result?.processed_count || 0} transações migradas com sucesso!`,
+        });
+      }
 
       await loadData();
     } catch (error) {
