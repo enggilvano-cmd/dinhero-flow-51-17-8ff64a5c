@@ -16,6 +16,7 @@ import { useCategories } from "@/hooks/useCategories";
 import { createDateFromString } from "@/lib/dateUtils";
 import { InstallmentEditScopeDialog, EditScope } from "./InstallmentEditScopeDialog";
 import { CurrencyInput } from "@/components/forms/CurrencyInput";
+import { supabase } from "@/integrations/supabase/client";
 
 interface EditTransactionModalProps {
   open: boolean;
@@ -104,7 +105,7 @@ export function EditTransactionModal({
     processEdit("current");
   };
 
-  const processEdit = (editScope: EditScope) => {
+  const processEdit = async (editScope: EditScope) => {
     if (!transaction) return;
 
     // Detectar apenas os campos que foram modificados
@@ -155,6 +156,74 @@ export function EditTransactionModal({
       });
       onOpenChange(false);
       return;
+    }
+
+    // ✅ Validação preventiva de limite de crédito ao editar
+    const selectedAccount = accounts.find(acc => acc.id === (updates.account_id || transaction.account_id));
+    const newAmount = updates.amount ?? Math.abs(transaction.amount);
+    const newType = updates.type ?? transaction.type;
+    const oldAmount = Math.abs(transaction.amount);
+    const oldType = transaction.type;
+
+    if (selectedAccount?.type === 'credit' && newType === 'expense') {
+      try {
+        // Calcular a diferença de impacto no limite
+        let amountDifference = 0;
+        
+        if (oldType === 'expense') {
+          // Estava como despesa, calcular diferença
+          amountDifference = newAmount - oldAmount;
+        } else {
+          // Mudou de income para expense, impacto total
+          amountDifference = newAmount + oldAmount;
+        }
+
+        // Só validar se está aumentando o uso do limite
+        if (amountDifference > 0) {
+          // Buscar transações pendentes deste cartão (excluindo a atual)
+          const { data: pendingTransactions, error: pendingError } = await supabase
+            .from('transactions')
+            .select('amount')
+            .eq('account_id', selectedAccount.id)
+            .eq('type', 'expense')
+            .eq('status', 'pending')
+            .neq('id', transaction.id); // Excluir a transação atual
+
+          if (pendingError) throw pendingError;
+
+          // Calcular valores
+          const limit = selectedAccount.limit_amount || 0;
+          const currentDebt = Math.abs(Math.min(selectedAccount.balance, 0));
+          const pendingExpenses = pendingTransactions?.reduce((sum: number, t: any) => sum + Math.abs(t.amount), 0) || 0;
+          
+          // Remover o valor antigo da transação se ela era completed e expense
+          let adjustedDebt = currentDebt;
+          if (transaction.status === 'completed' && oldType === 'expense') {
+            adjustedDebt = Math.max(0, adjustedDebt - oldAmount);
+          }
+          
+          const totalUsed = adjustedDebt + pendingExpenses;
+          const available = limit - totalUsed;
+
+          // Verificar se a diferença excede o limite
+          if (amountDifference > available) {
+            const availableFormatted = (available / 100).toFixed(2);
+            const limitFormatted = (limit / 100).toFixed(2);
+            const usedFormatted = (totalUsed / 100).toFixed(2);
+            const differenceFormatted = (amountDifference / 100).toFixed(2);
+
+            toast({
+              title: "Limite de crédito excedido",
+              description: `Disponível: R$ ${availableFormatted} | Limite: R$ ${limitFormatted} | Usado: R$ ${usedFormatted} | Aumento solicitado: R$ ${differenceFormatted}. Reduza o valor ou aumente o limite do cartão.`,
+              variant: "destructive",
+            });
+            return;
+          }
+        }
+      } catch (error) {
+        console.error('Error validating credit limit:', error);
+        // Continue mesmo se a validação falhar (deixar o backend validar)
+      }
     }
 
     const updatedTransaction: Transaction = {
