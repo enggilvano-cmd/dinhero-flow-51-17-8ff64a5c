@@ -4,7 +4,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { formatCurrency } from "@/lib/formatters";
 import { TransactionActions } from "./TransactionActions";
-import { EditScope } from "../InstallmentEditScopeDialog";
+import { EditScope } from "../TransactionScopeDialog";
 
 interface TransactionListProps {
   transactions: any[];

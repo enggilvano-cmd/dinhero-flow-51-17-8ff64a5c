@@ -45,7 +45,7 @@ import {
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { ImportTransactionsModal } from "./ImportTransactionsModal";
-import { EditScope, InstallmentEditScopeDialog } from "./InstallmentEditScopeDialog";
+import { EditScope, TransactionScopeDialog } from "./TransactionScopeDialog";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 
 interface TransactionsPageProps {
@@ -257,11 +257,12 @@ export function TransactionsPage({
     const transaction = transactions.find(t => t.id === transactionId);
     
     if (!scope && transaction) {
-      // Verificar se é parcela ou transação fixa
+      // Verificar se é parcela, transação fixa ou recorrente
       const isInstallment = Boolean(transaction.installments && transaction.installments > 1);
-      const isFixed = Boolean(transaction.is_fixed || transaction.parent_transaction_id);
+      const isRecurring = Boolean(transaction.is_recurring || transaction.is_fixed);
+      const hasParent = Boolean(transaction.parent_transaction_id);
       
-      if (isInstallment || isFixed) {
+      if (isInstallment || isRecurring || hasParent) {
         // Abrir diálogo de escopo
         setPendingDeleteTransaction(transaction);
         setScopeDialogOpen(true);
@@ -269,7 +270,7 @@ export function TransactionsPage({
       }
     }
     
-    // Deletar diretamente se não for parcela/fixa ou se já tiver scope
+    // Deletar diretamente se não for parcela/fixa/recorrente ou se já tiver scope
     onDeleteTransaction(transactionId, scope);
   };
 
@@ -738,7 +739,7 @@ export function TransactionsPage({
       />
 
       {pendingDeleteTransaction && (
-        <InstallmentEditScopeDialog
+        <TransactionScopeDialog
           open={scopeDialogOpen}
           onOpenChange={setScopeDialogOpen}
           onScopeSelected={(scope) => {
@@ -749,6 +750,7 @@ export function TransactionsPage({
           }}
           currentInstallment={pendingDeleteTransaction.current_installment || 1}
           totalInstallments={pendingDeleteTransaction.installments || 1}
+          isRecurring={Boolean(pendingDeleteTransaction.is_recurring || pendingDeleteTransaction.is_fixed)}
           mode="delete"
         />
       )}
