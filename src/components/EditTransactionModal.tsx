@@ -302,12 +302,13 @@ export function EditTransactionModal({
       }
     }
 
-    const updatedTransaction: Transaction = {
-      ...transaction,
+    // Passar apenas os campos modificados + ID da transação
+    const transactionUpdate = {
+      id: transaction.id,
       ...updates,
     };
 
-    onEditTransaction(updatedTransaction, editScope);
+    onEditTransaction(transactionUpdate as Transaction, editScope);
     
     const scopeDescription = editScope === "current" ? "Transação atual atualizada com sucesso" : 
                              editScope === "all" ? "Todas as parcelas atualizadas com sucesso" :
