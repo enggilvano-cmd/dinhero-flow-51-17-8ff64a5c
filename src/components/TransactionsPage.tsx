@@ -46,6 +46,7 @@ import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { ImportTransactionsModal } from "./ImportTransactionsModal";
 import { EditScope, TransactionScopeDialog } from "./TransactionScopeDialog";
+import { FixedTransactionScopeDialog, FixedScope } from "./FixedTransactionScopeDialog";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 
 interface TransactionsPageProps {
@@ -732,7 +733,27 @@ export function TransactionsPage({
         onImportTransactions={onImportTransactions}
       />
 
-      {pendingDeleteTransaction && (
+      {pendingDeleteTransaction && pendingDeleteTransaction.is_fixed && (
+        <FixedTransactionScopeDialog
+          open={scopeDialogOpen}
+          onOpenChange={setScopeDialogOpen}
+          onScopeSelected={(scope: FixedScope) => {
+            if (pendingDeleteTransaction) {
+              // Converter FixedScope para EditScope
+              const editScope: EditScope = scope === "current" ? "current" : 
+                                           scope === "current-and-remaining" ? "current-and-remaining" : 
+                                           "all";
+              onDeleteTransaction(pendingDeleteTransaction.id, editScope);
+              setPendingDeleteTransaction(null);
+            }
+          }}
+          mode="delete"
+          hasCompleted={false}
+          pendingCount={0}
+        />
+      )}
+      
+      {pendingDeleteTransaction && !pendingDeleteTransaction.is_fixed && (
         <TransactionScopeDialog
           open={scopeDialogOpen}
           onOpenChange={setScopeDialogOpen}
@@ -744,7 +765,7 @@ export function TransactionsPage({
           }}
           currentInstallment={pendingDeleteTransaction.current_installment || 1}
           totalInstallments={pendingDeleteTransaction.installments || 1}
-          isRecurring={Boolean(pendingDeleteTransaction.is_recurring || pendingDeleteTransaction.is_fixed)}
+          isRecurring={Boolean(pendingDeleteTransaction.is_recurring)}
           mode="delete"
         />
       )}
