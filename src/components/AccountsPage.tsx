@@ -53,7 +53,7 @@ export function AccountsPage({
   initialFilterType = "all",
 }: AccountsPageProps) {
   const { accounts } = useAccounts();
-  const { formatCurrency: formatCurrencyFromSettings } = useSettings();
+  const { formatCurrency } = useSettings();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<
@@ -61,13 +61,6 @@ export function AccountsPage({
   >(initialFilterType);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const { toast } = useToast();
-
-  const formatCurrency = (value: number) => {
-    return formatCurrencyFromSettings(value);
-  };
-
-  const formatCents = (valueInCents: number) =>
-    formatCurrency(valueInCents / 100);
 
   const getAccountIcon = (type: string) => {
     switch (type) {
@@ -224,7 +217,7 @@ export function AccountsPage({
                   <div className={`balance-text ${
                     totalBalance >= 0 ? "balance-positive" : "balance-negative"
                   }`}>
-                    {formatCents(totalBalance)}
+                    {formatCurrency(totalBalance)}
                   </div>
                 </div>
               </div>
@@ -242,7 +235,7 @@ export function AccountsPage({
                 <div className="min-w-0 flex-1">
                   <p className="text-caption font-medium">Dívida Total</p>
                   <div className="balance-text balance-negative">
-                    {formatCents(creditUsed)}
+                    {formatCurrency(creditUsed)}
                   </div>
                 </div>
               </div>
@@ -406,7 +399,7 @@ export function AccountsPage({
                                 account.balance < 0 ? "text-destructive" : "text-success"
                               }`}
                             >
-                              {formatCents(Math.abs(account.balance))}
+                              {formatCurrency(Math.abs(account.balance))}
                             </span>
                           </div>
                           {account.limit_amount && account.limit_amount > 0 && (
@@ -416,7 +409,7 @@ export function AccountsPage({
                                   Disponível
                                 </span>
                                 <span className="text-caption font-medium text-primary">
-                                  {formatCents((account.limit_amount || 0) - Math.abs(Math.min(account.balance, 0)))}
+                                  {formatCurrency((account.limit_amount || 0) - Math.abs(Math.min(account.balance, 0)))}
                                 </span>
                               </div>
                               {/* Barra de Progresso */}
@@ -424,7 +417,7 @@ export function AccountsPage({
                                 <div className="flex items-center justify-between">
                                   <span className="text-caption text-muted-foreground">Limite</span>
                                   <span className="text-caption font-medium">
-                                    {formatCents(account.limit_amount)}
+                                    {formatCurrency(account.limit_amount)}
                                   </span>
                                 </div>
                               <div className="flex items-center gap-2">
@@ -458,7 +451,7 @@ export function AccountsPage({
                               account.balance >= 0 ? "balance-positive" : "balance-negative"
                             }`}
                           >
-                            {formatCents(account.balance)}
+                            {formatCurrency(account.balance)}
                           </span>
                         </div>
                         {account.limit_amount && account.limit_amount > 0 && (
@@ -466,7 +459,7 @@ export function AccountsPage({
                             <div className="flex items-center justify-between">
                               <span className="text-xs text-muted-foreground">Limite</span>
                               <span className="text-xs font-medium">
-                                {formatCents(account.limit_amount)}
+                                {formatCurrency(account.limit_amount)}
                               </span>
                             </div>
                             <div className="flex items-center gap-2">
