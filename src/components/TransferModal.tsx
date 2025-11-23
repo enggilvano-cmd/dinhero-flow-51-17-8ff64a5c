@@ -14,7 +14,7 @@ import { useAccounts } from "@/hooks/queries/useAccounts";
 import { logger } from "@/lib/logger";
 import { transferSchema } from "@/lib/validationSchemas";
 import { TransferModalProps } from "@/types/formProps";
-import { useBalanceValidation } from "@/hooks/useBalanceValidation";
+import { useBalanceValidation, validateCreditLimitForAdd } from "@/hooks/useBalanceValidation";
 
 export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalProps) {
   const { accounts } = useAccounts();
@@ -67,16 +67,35 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
     }
 
     // Validar saldo da conta de origem
-    if (fromAccount && !balanceValidation.isValid) {
-      const limitText = fromAccount.limit_amount 
-        ? ` (incluindo limite de ${formatCurrency(fromAccount.limit_amount)})`
-        : '';
-      toast({
-        title: "Saldo Insuficiente",
-        description: `A conta ${fromAccount.name} não possui saldo suficiente${limitText}.`,
-        variant: "destructive"
-      });
-      return;
+    if (fromAccount) {
+      // Para cartões de crédito, usar validação assíncrona que considera pending
+      if (fromAccount.type === 'credit') {
+        const validation = await validateCreditLimitForAdd(
+          fromAccount,
+          formData.amountInCents,
+          'expense'
+        );
+        
+        if (!validation.isValid) {
+          toast({
+            title: "Limite de Crédito Excedido",
+            description: validation.errorMessage || `A conta ${fromAccount.name} não possui limite disponível.`,
+            variant: "destructive"
+          });
+          return;
+        }
+      } else if (!balanceValidation.isValid) {
+        // Para outras contas, usar validação síncrona
+        const limitText = fromAccount.limit_amount 
+          ? ` (incluindo limite de ${formatCurrency(fromAccount.limit_amount)})`
+          : '';
+        toast({
+          title: "Saldo Insuficiente",
+          description: `A conta ${fromAccount.name} não possui saldo suficiente${limitText}.`,
+          variant: "destructive"
+        });
+        return;
+      }
     }
 
     setIsSubmitting(true);

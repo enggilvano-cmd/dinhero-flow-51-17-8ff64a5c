@@ -326,9 +326,8 @@ export function TransactionsPage({
     handleDateFilterChange("all");
   };
 
-  // Calcular totais de TODAS as transações (não apenas da página atual)
-  // usando useEffect para buscar totais agregados
-  const [aggregatedTotals, setAggregatedTotals] = useState({ income: 0, expenses: 0 });
+  // Calcular totais usando agregação SQL (evita N+1)
+  const [aggregatedTotals, setAggregatedTotals] = useState({ income: 0, expenses: 0, balance: 0 });
 
   useEffect(() => {
     const fetchAggregatedTotals = async () => {
@@ -336,60 +335,26 @@ export function TransactionsPage({
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        let query = supabase
-          .from('transactions')
-          .select('type, amount, to_account_id, account_id')
-          .eq('user_id', user.id);
+        const { data, error } = await supabase.rpc('get_transactions_totals', {
+          p_user_id: user.id,
+          p_type: filterType,
+          p_status: filterStatus,
+          p_account_id: filterAccount,
+          p_category_id: filterCategory,
+          p_account_type: filterAccountType,
+          p_date_from: dateFrom || undefined,
+          p_date_to: dateTo || undefined,
+          p_search: search || undefined,
+        });
 
-        // Aplicar os mesmos filtros da query principal
-        if (filterType !== 'all') {
-          query = query.eq('type', filterType);
-        }
-        if (filterStatus !== 'all') {
-          query = query.eq('status', filterStatus);
-        }
-        if (filterAccount !== 'all') {
-          query = query.eq('account_id', filterAccount);
-        }
-        if (filterCategory !== 'all') {
-          query = query.eq('category_id', filterCategory);
-        }
-        if (filterAccountType !== 'all') {
-          const accountIds = accounts
-            .filter(a => a.type === filterAccountType)
-            .map(a => a.id);
-          if (accountIds.length > 0) {
-            query = query.in('account_id', accountIds);
-          }
-        }
-        if (dateFrom) {
-          query = query.gte('date', dateFrom);
-        }
-        if (dateTo) {
-          query = query.lte('date', dateTo);
-        }
-        if (search) {
-          query = query.ilike('description', `%${search}%`);
-        }
-
-        const { data } = await query;
+        if (error) throw error;
         
-        if (data) {
-          const totals = data.reduce(
-            (acc, transaction) => {
-              const isTransfer = transaction.to_account_id != null;
-              if (!isTransfer) {
-                if (transaction.type === "income") {
-                  acc.income += transaction.amount;
-                } else if (transaction.type === "expense") {
-                  acc.expenses += Math.abs(transaction.amount);
-                }
-              }
-              return acc;
-            },
-            { income: 0, expenses: 0 }
-          );
-          setAggregatedTotals(totals);
+        if (data && data.length > 0) {
+          setAggregatedTotals({
+            income: data[0].total_income,
+            expenses: data[0].total_expenses,
+            balance: data[0].balance,
+          });
         }
       } catch (error) {
         logger.error("Error fetching aggregated totals:", error);
@@ -406,7 +371,6 @@ export function TransactionsPage({
     dateFrom,
     dateTo,
     search,
-    accounts,
   ]);
 
   const exportToExcel = async () => {
@@ -570,12 +534,12 @@ export function TransactionsPage({
                   </p>
                   <div
                     className={`balance-text ${
-                      aggregatedTotals.income - aggregatedTotals.expenses >= 0
+                      aggregatedTotals.balance >= 0
                         ? "balance-positive"
                         : "balance-negative"
                     }`}
                   >
-                    {formatCurrency(aggregatedTotals.income - aggregatedTotals.expenses)}
+                    {formatCurrency(aggregatedTotals.balance)}
                   </div>
                 </div>
               </div>
