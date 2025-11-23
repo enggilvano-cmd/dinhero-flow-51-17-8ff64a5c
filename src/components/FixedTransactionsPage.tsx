@@ -698,7 +698,7 @@ export function FixedTransactionsPage() {
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-caption font-medium text-muted-foreground">Total de Fixas</p>
-                <div className="text-responsive-xl font-bold leading-tight">{stats.totalFixed}</div>
+                <div className="text-title font-bold leading-tight">{stats.totalFixed}</div>
               </div>
             </div>
           </CardContent>
@@ -712,7 +712,7 @@ export function FixedTransactionsPage() {
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-caption font-medium text-muted-foreground">Receitas Mensais</p>
-                <div className="text-responsive-xl font-bold balance-positive leading-tight">
+                <div className="balance-text font-bold balance-positive leading-tight">
                   {formatCurrency(stats.monthlyIncome)}
                 </div>
               </div>
@@ -728,7 +728,7 @@ export function FixedTransactionsPage() {
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-caption font-medium text-muted-foreground">Despesas Mensais</p>
-                <div className="text-responsive-xl font-bold balance-negative leading-tight">
+                <div className="balance-text font-bold balance-negative leading-tight">
                   {formatCurrency(stats.monthlyExpenses)}
                 </div>
               </div>
@@ -790,14 +790,14 @@ export function FixedTransactionsPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <h3 className="font-semibold text-lg">
+                      <h3 className="text-headline font-semibold">
                         {transaction.description}
                       </h3>
                       <Badge variant={transaction.type === "income" ? "default" : "destructive"}>
                         {transaction.type === "income" ? "Receita" : "Despesa"}
                       </Badge>
                     </div>
-                    <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                    <div className="flex flex-wrap gap-4 text-body text-muted-foreground">
                       <span>💰 {formatCurrency(Number(transaction.amount))}</span>
                       {transaction.category && (
                         <span className="flex items-center gap-1">
