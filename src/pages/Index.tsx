@@ -318,19 +318,27 @@ const PlaniFlowApp = () => {
         }
         
         // Apply date filters based on dateFilter type
-        if (dateFilter === 'current_month' && selectedMonth) {
+        if (dateFilter === 'current_month') {
+          // Use actual current date, not the selected month parameter
+          const now = new Date();
+          const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+          const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+          setTransactionsDateFrom(startOfMonth.toISOString().split('T')[0]);
+          setTransactionsDateTo(endOfMonth.toISOString().split('T')[0]);
+        } else if (dateFilter === 'month_picker' && selectedMonth) {
+          // Use the selected month from dashboard filter
           const startOfMonth = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), 1);
           const endOfMonth = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1, 0);
           setTransactionsDateFrom(startOfMonth.toISOString().split('T')[0]);
           setTransactionsDateTo(endOfMonth.toISOString().split('T')[0]);
         } else if (dateFilter === 'custom' && customStartDate && customEndDate) {
+          // Use custom date range
           setTransactionsDateFrom(customStartDate.toISOString().split('T')[0]);
           setTransactionsDateTo(customEndDate.toISOString().split('T')[0]);
-        } else if (dateFilter === 'month_picker' && selectedMonth) {
-          const startOfMonth = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), 1);
-          const endOfMonth = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1, 0);
-          setTransactionsDateFrom(startOfMonth.toISOString().split('T')[0]);
-          setTransactionsDateTo(endOfMonth.toISOString().split('T')[0]);
+        } else if (dateFilter === 'all') {
+          // Clear date filters to show all transactions
+          setTransactionsDateFrom(undefined);
+          setTransactionsDateTo(undefined);
         }
         
         setCurrentPage("transactions");
