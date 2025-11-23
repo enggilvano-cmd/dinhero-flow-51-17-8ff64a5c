@@ -316,7 +316,7 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
                 </p>
                 <Select 
                   value={localSettings.theme} 
-                  onValueChange={(value: string) => setLocalSettings(prev => ({ ...prev, theme: value }))}
+                  onValueChange={(value) => setLocalSettings(prev => ({ ...prev, theme: value as typeof prev.theme }))}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -493,7 +493,7 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
                       <Label>Frequência</Label>
                       <Select 
                         value={scheduleFrequency}
-                        onValueChange={(value: string) => setScheduleFrequency(value)}
+                        onValueChange={(value) => setScheduleFrequency(value as typeof scheduleFrequency)}
                       >
                         <SelectTrigger>
                           <SelectValue />

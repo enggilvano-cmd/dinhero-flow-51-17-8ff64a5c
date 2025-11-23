@@ -304,11 +304,11 @@ export async function exportReportToPDF(
 
   // Conteúdo específico de cada relatório
   if (reportType === "dre") {
-    exportDREtoPDF(doc, reportData, yPos, t);
+    exportDREtoPDF(doc, reportData as DREReport, yPos, t);
   } else if (reportType === "balance") {
-    exportBalanceSheetToPDF(doc, reportData, yPos, t);
+    exportBalanceSheetToPDF(doc, reportData as BalanceSheetReport, yPos, t);
   } else if (reportType === "cashflow") {
-    exportCashFlowToPDF(doc, reportData, yPos, t);
+    exportCashFlowToPDF(doc, reportData as CashFlowReport, yPos, t);
   }
 
   // Salvar

@@ -220,7 +220,7 @@ export function PeriodClosurePage() {
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Tipo de Fechamento</label>
-              <Select value={closureType} onValueChange={(value: string) => setClosureType(value)}>
+              <Select value={closureType} onValueChange={(value) => setClosureType(value as typeof closureType)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>

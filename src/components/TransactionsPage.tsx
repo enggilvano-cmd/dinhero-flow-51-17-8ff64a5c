@@ -641,7 +641,7 @@ export function TransactionsPage({
               <div className="flex gap-2">
                 <Select
                   value={sortBy}
-                  onValueChange={(value: string) => onSortByChange(value)}
+                  onValueChange={(value) => onSortByChange(value as "date" | "amount")}
                 >
                   <SelectTrigger className="w-32">
                     <SelectValue />

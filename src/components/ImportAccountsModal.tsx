@@ -263,10 +263,12 @@ export function ImportAccountsModal({
         [key: string]: unknown;
       }
 
-      const validatedData = rawData.map((row: Record<string, unknown>) => validateAndCheckDuplicate(row));
+      type ImportedAccountWithValidation = ImportedAccount & ValidationResult;
+
+      const validatedData = rawData.map((row: unknown) => validateAndCheckDuplicate(row as Record<string, unknown>)) as ImportedAccountWithValidation[];
       setImportedData(validatedData);
 
-      const summary = validatedData.reduce((acc: { new: number; duplicates: number; invalid: number }, t: ValidationResult) => {
+      const summary = validatedData.reduce((acc: { new: number; duplicates: number; invalid: number }, t: ImportedAccountWithValidation) => {
         if (!t.isValid) acc.invalid++;
         else if (t.isDuplicate) acc.duplicates++;
         else acc.new++;

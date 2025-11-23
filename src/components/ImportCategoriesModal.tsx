@@ -231,10 +231,12 @@ export function ImportCategoriesModal({
         [key: string]: unknown;
       }
 
-      const validatedData = rawData.map((row: Record<string, unknown>) => validateAndCheckDuplicate(row));
+      type ImportedCategoryWithValidation = ImportedCategory & ValidationResult;
+
+      const validatedData = rawData.map((row: unknown) => validateAndCheckDuplicate(row as Record<string, unknown>)) as ImportedCategoryWithValidation[];
       setImportedData(validatedData);
 
-      const summary = validatedData.reduce((acc: { new: number; duplicates: number; invalid: number }, t: ValidationResult) => {
+      const summary = validatedData.reduce((acc: { new: number; duplicates: number; invalid: number }, t: ImportedCategoryWithValidation) => {
         if (!t.isValid) acc.invalid++;
         else if (t.isDuplicate) acc.duplicates++;
         else acc.new++;

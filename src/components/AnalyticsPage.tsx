@@ -689,7 +689,7 @@ export default function AnalyticsPage({
               <label htmlFor="filter-type" className="text-caption">Tipo</label>
               <Select
                 value={filterType}
-                onValueChange={(value: string) => setFilterType(value)}
+                onValueChange={(value) => setFilterType(value as typeof filterType)}
               >
                 <SelectTrigger id="filter-type" className="touch-target mt-2">
                   <SelectValue placeholder="Tipo" />
@@ -749,7 +749,7 @@ export default function AnalyticsPage({
               <label htmlFor="filter-status" className="text-caption">Status</label>
               <Select
                 value={filterStatus}
-                onValueChange={(value: string) => setFilterStatus(value)}
+                onValueChange={(value) => setFilterStatus(value as typeof filterStatus)}
               >
                 <SelectTrigger id="filter-status" className="touch-target mt-2">
                   <SelectValue placeholder="Status" />
