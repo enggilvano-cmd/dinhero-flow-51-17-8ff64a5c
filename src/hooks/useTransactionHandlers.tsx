@@ -419,37 +419,64 @@ export function useTransactionHandlers() {
         );
       }
 
-      // 2. Importar novas transações
-      // ✅ CORREÇÃO: Usar atomic-transaction para cada transação importada
+      // 2. ✅ OTIMIZAÇÃO: Batch lookup de categorias (resolve N+1 queries)
+      // Coletar nomes únicos de categorias necessárias
+      const uniqueCategoryNames = [...new Set(
+        transactionsData
+          .filter(data => data.category)
+          .map(data => data.category!)
+      )];
+
+      // Buscar todas as categorias existentes em uma única query
+      const { data: existingCategories } = await supabase
+        .from('categories')
+        .select('id, name')
+        .eq('user_id', user.id)
+        .in('name', uniqueCategoryNames);
+
+      // Criar mapa de categorias existentes
+      const categoryMap = new Map<string, string>(
+        existingCategories?.map(cat => [cat.name, cat.id]) || []
+      );
+
+      // Identificar categorias que precisam ser criadas
+      const categoriesToCreate = uniqueCategoryNames.filter(
+        name => !categoryMap.has(name)
+      );
+
+      // Criar todas as novas categorias em batch
+      if (categoriesToCreate.length > 0) {
+        const { data: newCategories } = await supabase
+          .from('categories')
+          .insert(
+            categoriesToCreate.map(name => {
+              // Determinar tipo baseado nas transações que usam essa categoria
+              const sampleTransaction = transactionsData.find(
+                data => data.category === name
+              );
+              const categoryType: 'income' | 'expense' | 'both' = 
+                sampleTransaction?.type === 'income' ? 'income' : 'expense';
+              
+              return {
+                name,
+                user_id: user.id,
+                type: categoryType,
+              };
+            })
+          )
+          .select('id, name');
+
+        // Adicionar novas categorias ao mapa
+        newCategories?.forEach(cat => {
+          categoryMap.set(cat.name, cat.id);
+        });
+      }
+
+      // 3. Importar transações usando o mapa de categorias (sem queries adicionais)
       const results = await Promise.all(
         transactionsData.map(async (data) => {
-          let category_id = null;
-          if (data.category) {
-            const { data: existingCategory } = await supabase
-              .from('categories')
-              .select('id')
-              .eq('user_id', user.id)
-              .eq('name', data.category)
-              .maybeSingle();
-            if (existingCategory) {
-              category_id = existingCategory.id;
-            } else {
-              const { data: newCategory } = await supabase
-                .from('categories')
-                .insert({
-                  name: data.category,
-                  user_id: user.id,
-                  type: data.type === 'income' ? 'income' : 'expense',
-                })
-                .select('id')
-                .single();
-              if (newCategory) {
-                category_id = newCategory.id;
-              }
-            }
-          }
+          const category_id = data.category ? categoryMap.get(data.category) || null : null;
 
-          // ✅ Usar função atômica para garantir integridade
           return supabase.functions.invoke('atomic-transaction', {
             body: {
               transaction: {
