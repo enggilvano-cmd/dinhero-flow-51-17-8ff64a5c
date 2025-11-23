@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StatCardsSkeletonGrid } from "@/components/transactions/StatCardSkeleton";
 import { TransactionTableSkeleton } from "@/components/transactions/TransactionTableSkeleton";
+import { TransactionHeader } from "@/components/transactions/TransactionHeader";
 import {
   Select,
   SelectContent,
@@ -47,6 +48,7 @@ interface TransactionsPageProps {
   accounts: Account[];
   categories: Category[];
   onAddTransaction: () => void;
+  onTransfer: () => void;
   onEditTransaction: (transaction: Transaction) => void;
   onDeleteTransaction: (transactionId: string, scope?: EditScope) => void;
   onImportTransactions: (transactions: ImportTransactionData[], transactionsToReplace: string[]) => void;
@@ -93,6 +95,7 @@ export function TransactionsPage({
   accounts,
   categories,
   onAddTransaction,
+  onTransfer,
   onEditTransaction,
   onDeleteTransaction,
   onImportTransactions,
@@ -140,9 +143,9 @@ export function TransactionsPage({
   const [hasCompletedTransactions, setHasCompletedTransactions] = useState(false);
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
   
-  // Local search state with debounce
+  // Local search state with debounce (300ms para inputs de texto)
   const [localSearch, setLocalSearch] = useState(search);
-  const debouncedSearch = useDebounce(localSearch, 500);
+  const debouncedSearch = useDebounce(localSearch, 300);
 
   // Update parent search when debounced value changes
   useEffect(() => {
@@ -434,7 +437,12 @@ export function TransactionsPage({
 
   return (
     <div className="spacing-responsive-lg fade-in pb-6 sm:pb-8">
-      {/* Header */}
+      <TransactionHeader
+        onAddTransaction={onAddTransaction}
+        onTransfer={onTransfer}
+      />
+
+      {/* Header Actions */}
       <div className="flex flex-col gap-3">
         <div className="grid grid-cols-2 gap-2 w-full md:grid-cols-3 lg:flex lg:flex-nowrap lg:gap-2 lg:w-auto lg:ml-auto">
           <Button
