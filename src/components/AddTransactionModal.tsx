@@ -288,6 +288,51 @@ export function AddTransactionModal({
       return;
     }
 
+    // ✅ Validação preventiva de limite de crédito
+    if (selectedAccount.type === 'credit' && type === 'expense') {
+      try {
+        // Buscar transações pendentes deste cartão
+        const { data: pendingTransactions, error: pendingError } = await supabase
+          .from('transactions')
+          .select('amount')
+          .eq('account_id', account_id)
+          .eq('type', 'expense')
+          .eq('status', 'pending');
+
+        if (pendingError) throw pendingError;
+
+        // Calcular valores
+        const limit = selectedAccount.limit_amount || 0;
+        const currentDebt = Math.abs(Math.min(selectedAccount.balance, 0)); // Dívida atual (completed)
+        const pendingExpenses = pendingTransactions?.reduce((sum, t) => sum + Math.abs(t.amount), 0) || 0;
+        const totalUsed = currentDebt + pendingExpenses;
+        const available = limit - totalUsed;
+
+        // Calcular o valor total que será gasto
+        const totalRequestedAmount = isInstallment 
+          ? numericAmount // Valor total parcelado
+          : numericAmount; // Valor único
+
+        // Verificar se excede o limite
+        if (totalRequestedAmount > available) {
+          const availableFormatted = (available / 100).toFixed(2);
+          const limitFormatted = (limit / 100).toFixed(2);
+          const usedFormatted = (totalUsed / 100).toFixed(2);
+          const requestedFormatted = (totalRequestedAmount / 100).toFixed(2);
+
+          toast({
+            title: "Limite de crédito excedido",
+            description: `Disponível: R$ ${availableFormatted} | Limite: R$ ${limitFormatted} | Usado: R$ ${usedFormatted} | Solicitado: R$ ${requestedFormatted}. Reduza o valor ou aumente o limite do cartão.`,
+            variant: "destructive",
+          });
+          return;
+        }
+      } catch (error) {
+        logger.error('Error validating credit limit:', error);
+        // Continue mesmo se a validação falhar (deixar o backend validar)
+      }
+    }
+
     try {
       if (isInstallment) {
         // --- LÓGICA DE PARCELAMENTO UNIFICADA ---
