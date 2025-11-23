@@ -9,6 +9,8 @@ import { BalanceCards } from './dashboard/BalanceCards';
 import { FinancialEvolutionChart } from './dashboard/FinancialEvolutionChart';
 import { AccountsSummary } from './dashboard/AccountsSummary';
 import { RecentTransactions } from './dashboard/RecentTransactions';
+import { CardErrorBoundary } from '@/components/ui/card-error-boundary';
+import { ListErrorBoundary } from '@/components/ui/list-error-boundary';
 
 interface DashboardProps {
   accounts: Account[];
@@ -116,58 +118,68 @@ export function Dashboard({
             goToNextMonth={goToNextMonth}
           />
 
-          <BalanceCards
-            formatCurrency={formatCurrency}
-            totalBalance={totalBalance}
-            periodIncome={periodIncome}
-            periodExpenses={periodExpenses}
-            creditAvailable={creditAvailable}
-            creditCardExpenses={creditCardExpenses}
-            pendingIncome={pendingIncome}
-            pendingExpenses={pendingExpenses}
-            pendingIncomeCount={pendingIncomeCount}
-            pendingExpensesCount={pendingExpensesCount}
-            getPeriodLabel={getPeriodLabel}
-            getNavigationParams={getNavigationParams}
-            onNavigateToAccounts={onNavigateToAccounts}
-            onNavigateToTransactions={onNavigateToTransactions}
-          />
+          <CardErrorBoundary fallbackMessage="Erro ao carregar saldos">
+            <BalanceCards
+              formatCurrency={formatCurrency}
+              totalBalance={totalBalance}
+              periodIncome={periodIncome}
+              periodExpenses={periodExpenses}
+              creditAvailable={creditAvailable}
+              creditCardExpenses={creditCardExpenses}
+              pendingIncome={pendingIncome}
+              pendingExpenses={pendingExpenses}
+              pendingIncomeCount={pendingIncomeCount}
+              pendingExpensesCount={pendingExpensesCount}
+              getPeriodLabel={getPeriodLabel}
+              getNavigationParams={getNavigationParams}
+              onNavigateToAccounts={onNavigateToAccounts}
+              onNavigateToTransactions={onNavigateToTransactions}
+            />
+          </CardErrorBoundary>
         </div>
 
-        <FinancialEvolutionChart
-          transactions={transactions}
-          accounts={accounts}
-          dateFilter={dateFilter}
-          selectedMonth={selectedMonth}
-          customStartDate={customStartDate}
-          customEndDate={customEndDate}
-        />
+        <CardErrorBoundary fallbackMessage="Erro ao carregar gráfico">
+          <FinancialEvolutionChart
+            transactions={transactions}
+            accounts={accounts}
+            dateFilter={dateFilter}
+            selectedMonth={selectedMonth}
+            customStartDate={customStartDate}
+            customEndDate={customEndDate}
+          />
+        </CardErrorBoundary>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
-          <AccountsSummary
-            accounts={accounts}
-            accountTypes={['checking', 'savings', 'investment']}
-            title="Suas Contas"
-            emptyMessage="Nenhuma conta cadastrada"
-            onNavigateToAccounts={onNavigateToAccounts}
-            onAddAccount={onAddAccount}
-          />
+          <CardErrorBoundary fallbackMessage="Erro ao carregar contas">
+            <AccountsSummary
+              accounts={accounts}
+              accountTypes={['checking', 'savings', 'investment']}
+              title="Suas Contas"
+              emptyMessage="Nenhuma conta cadastrada"
+              onNavigateToAccounts={onNavigateToAccounts}
+              onAddAccount={onAddAccount}
+            />
+          </CardErrorBoundary>
 
-          <AccountsSummary
-            accounts={accounts}
-            accountTypes={['credit']}
-            title="Seus Cartões"
-            emptyMessage="Nenhum cartão cadastrado"
-            onNavigateToAccounts={() => onNavigateToAccounts?.('credit')}
-            onAddAccount={onAddAccount}
-          />
+          <CardErrorBoundary fallbackMessage="Erro ao carregar cartões">
+            <AccountsSummary
+              accounts={accounts}
+              accountTypes={['credit']}
+              title="Seus Cartões"
+              emptyMessage="Nenhum cartão cadastrado"
+              onNavigateToAccounts={() => onNavigateToAccounts?.('credit')}
+              onAddAccount={onAddAccount}
+            />
+          </CardErrorBoundary>
 
-          <RecentTransactions
-            transactions={filteredTransactions}
-            maxItems={Math.max(accounts.length, 3)}
-            onNavigateToTransactions={onNavigateToTransactions}
-            onAddTransaction={onAddTransaction}
-          />
+          <ListErrorBoundary fallbackMessage="Erro ao carregar transações recentes">
+            <RecentTransactions
+              transactions={filteredTransactions}
+              maxItems={Math.max(accounts.length, 3)}
+              onNavigateToTransactions={onNavigateToTransactions}
+              onAddTransaction={onAddTransaction}
+            />
+          </ListErrorBoundary>
         </div>
       </div>
     </div>

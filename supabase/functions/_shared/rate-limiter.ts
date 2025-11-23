@@ -110,23 +110,9 @@ export class RateLimiter {
   }
 }
 
-// Configurações pré-definidas
-export const rateLimiters = {
-  // Rate limiter estrito para operações sensíveis
-  strict: new RateLimiter({
-    windowMs: 15 * 60 * 1000, // 15 minutos
-    maxRequests: 10,
-  }),
-  
-  // Rate limiter moderado para operações normais
-  moderate: new RateLimiter({
-    windowMs: 15 * 60 * 1000, // 15 minutos
-    maxRequests: 100,
-  }),
-  
-  // Rate limiter leniente para leituras
-  lenient: new RateLimiter({
-    windowMs: 60 * 1000, // 1 minuto
-    maxRequests: 60,
-  }),
-};
+// Usar rate limiter baseado em Upstash Redis (distribuído, funciona em serverless)
+// Fallback graceful para in-memory se Redis não configurado
+import { upstashRateLimiters } from './upstash-rate-limiter.ts';
+
+// Exportar configurações
+export const rateLimiters = upstashRateLimiters;

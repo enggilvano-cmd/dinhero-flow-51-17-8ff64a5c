@@ -367,6 +367,117 @@ export async function validateCreditLimitForAdd(
 }
 
 /**
+ * Validação unificada para edição de transações
+ * Funciona para todos os tipos de conta (credit, checking, savings, investment)
+ */
+export async function validateBalanceForEdit(
+  account: Account,
+  newAmount: number,
+  oldAmount: number,
+  newType: 'income' | 'expense',
+  oldType: 'income' | 'expense',
+  transactionId: string,
+  transactionStatus: 'pending' | 'completed'
+): Promise<BalanceValidationResult> {
+  // Para cartões de crédito, usar validação assíncrona com pending
+  if (account.type === 'credit') {
+    return validateCreditLimitForEdit(
+      account,
+      newAmount,
+      oldAmount,
+      newType,
+      oldType,
+      transactionId,
+      transactionStatus
+    );
+  }
+
+  // Para contas normais, validação síncrona de saldo
+  try {
+    // Calcular a diferença de impacto no saldo
+    let amountDifference = 0;
+    
+    if (oldType === 'expense' && newType === 'expense') {
+      amountDifference = newAmount - oldAmount;
+    } else if (oldType === 'income' && newType === 'expense') {
+      amountDifference = newAmount + oldAmount;
+    } else if (oldType === 'expense' && newType === 'income') {
+      amountDifference = -(oldAmount + newAmount);
+    }
+
+    // Só validar se está aumentando o uso do saldo
+    if (amountDifference <= 0) {
+      return {
+        isValid: true,
+        status: 'success',
+        message: 'Saldo suficiente',
+        details: {
+          currentBalance: account.balance,
+          limit: account.limit_amount || 0,
+          available: account.balance + (account.limit_amount || 0),
+          balanceAfter: account.balance - amountDifference,
+        },
+      };
+    }
+
+    const currentBalance = account.balance;
+    const limit = account.limit_amount || 0;
+    
+    // Adicionar o valor antigo de volta se era completed expense
+    let adjustedBalance = currentBalance;
+    if (transactionStatus === 'completed' && oldType === 'expense') {
+      adjustedBalance = adjustedBalance + oldAmount;
+    }
+    
+    const available = adjustedBalance + limit;
+
+    // Verificar se tem saldo suficiente
+    if (amountDifference > available) {
+      return {
+        isValid: false,
+        status: 'danger',
+        message: 'Saldo insuficiente',
+        details: {
+          currentBalance,
+          limit,
+          available,
+          balanceAfter: currentBalance - amountDifference,
+        },
+        errorMessage: limit > 0
+          ? `Saldo insuficiente. Disponível: ${formatCurrency(available)} (Saldo: ${formatCurrency(adjustedBalance)} + Limite: ${formatCurrency(limit)}) | Aumento solicitado: ${formatCurrency(amountDifference)}`
+          : `Saldo insuficiente. Disponível: ${formatCurrency(adjustedBalance)} | Aumento solicitado: ${formatCurrency(amountDifference)}`,
+      };
+    }
+
+    return {
+      isValid: true,
+      status: 'success',
+      message: 'Saldo suficiente',
+      details: {
+        currentBalance,
+        limit,
+        available,
+        balanceAfter: currentBalance - amountDifference,
+      },
+    };
+  } catch (error) {
+    logger.error('Error validating balance for edit:', error);
+    return {
+      isValid: false,
+      status: 'danger',
+      message: 'Erro ao validar saldo',
+      details: {
+        currentBalance: account.balance,
+        limit: account.limit_amount || 0,
+        available: account.balance + (account.limit_amount || 0),
+        balanceAfter: account.balance,
+      },
+      errorMessage: 'Erro ao verificar saldo disponível. Por favor, tente novamente.',
+    };
+  }
+}
+
+/**
  * Validação assíncrona para edição de transações em cartão de crédito
  * Considera transações pendentes e exclui a transação sendo editada
  */

@@ -23,7 +23,7 @@ import { logger } from "@/lib/logger";
 import { editTransactionSchema } from "@/lib/validationSchemas";
 import { z } from "zod";
 import { EditTransactionModalProps } from "@/types/formProps";
-import { validateCreditLimitForEdit } from "@/hooks/useBalanceValidation";
+import { validateBalanceForEdit } from "@/hooks/useBalanceValidation";
 
 export function EditTransactionModal({
   open,
@@ -197,81 +197,38 @@ export function EditTransactionModal({
     const oldType = transaction.type;
 
     if (selectedAccount && newType === 'expense') {
-      if (selectedAccount.type === 'credit') {
-        // Validação de limite de crédito com hook centralizado
-        try {
-          // Garantir que oldType não é 'transfer'
-          if (oldType !== 'transfer') {
-            const validation = await validateCreditLimitForEdit(
-              selectedAccount,
-              newAmount,
-              oldAmount,
-              newType,
-              oldType,
-              transaction.id,
-              transaction.status
-            );
+      // ✅ Usar validação centralizada unificada para todos os tipos de conta
+      try {
+        // Garantir que oldType não é 'transfer'
+        if (oldType !== 'transfer') {
+          const validation = await validateBalanceForEdit(
+            selectedAccount,
+            newAmount,
+            oldAmount,
+            newType,
+            oldType,
+            transaction.id,
+            transaction.status
+          );
 
-            if (!validation.isValid) {
-              toast({
-                title: "Limite de crédito excedido",
-                description: validation.errorMessage || validation.message,
-                variant: "destructive",
-              });
-              return;
-            }
+          if (!validation.isValid) {
+            toast({
+              title: selectedAccount.type === 'credit' ? "Limite de crédito excedido" : "Saldo insuficiente",
+              description: validation.errorMessage || validation.message,
+              variant: "destructive",
+            });
+            return;
           }
-        } catch (error) {
-          logger.error('Error validating credit limit:', error);
-          // Continue mesmo se a validação falhar (deixar o backend validar)
         }
-      } else {
-        // Validação de saldo para contas normais usando hook centralizado
-        try {
-          // Calcular a diferença de impacto no saldo
-          let amountDifference = 0;
-          
-          if (oldType === 'expense') {
-            amountDifference = newAmount - oldAmount;
-          } else if (oldType === 'income') {
-            amountDifference = newAmount + oldAmount;
-          }
-
-          // Só validar se está aumentando o uso do saldo
-          if (amountDifference > 0) {
-            const currentBalance = selectedAccount.balance;
-            
-            // Adicionar o valor antigo de volta se era completed expense
-            let adjustedBalance = currentBalance;
-            if (transaction.status === 'completed' && oldType === 'expense') {
-              adjustedBalance = adjustedBalance + oldAmount;
-            }
-            
-            const availableWithLimit = adjustedBalance + (selectedAccount.limit_amount || 0);
-
-            // Verificar se tem saldo suficiente
-            if (amountDifference > availableWithLimit) {
-              const balanceFormatted = (adjustedBalance / 100).toFixed(2);
-              const limitFormatted = ((selectedAccount.limit_amount || 0) / 100).toFixed(2);
-              const availableFormatted = (availableWithLimit / 100).toFixed(2);
-              const differenceFormatted = (amountDifference / 100).toFixed(2);
-
-              const message = selectedAccount.limit_amount 
-                ? `Saldo insuficiente. Disponível: R$ ${availableFormatted} (Saldo: R$ ${balanceFormatted} + Limite: R$ ${limitFormatted}) | Aumento solicitado: R$ ${differenceFormatted}`
-                : `Saldo insuficiente. Disponível: R$ ${balanceFormatted} | Aumento solicitado: R$ ${differenceFormatted}`;
-
-              toast({
-                title: "Saldo insuficiente",
-                description: message,
-                variant: "destructive",
-              });
-              return;
-            }
-          }
-        } catch (error) {
-          logger.error('Error validating balance:', error);
-          // Continue mesmo se a validação falhar
-        }
+      } catch (error) {
+        logger.error('Error validating balance/credit limit:', error);
+        // Retornar erro para não permitir transação inválida em caso de falha
+        toast({
+          title: "Erro ao validar",
+          description: "Não foi possível validar o saldo. Por favor, tente novamente.",
+          variant: "destructive",
+        });
+        return;
       }
     }
 
