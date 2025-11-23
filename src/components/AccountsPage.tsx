@@ -173,7 +173,7 @@ export function AccountsPage({
           <Button
             onClick={exportToExcel}
             variant="outline"
-            className="gap-1.5 apple-interaction h-9 text-xs sm:text-sm px-3"
+            className="gap-1.5 apple-interaction h-9 text-body px-3"
             disabled={accounts.length === 0}
           >
             <FileDown className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
@@ -182,7 +182,7 @@ export function AccountsPage({
           <Button
             onClick={() => setImportModalOpen(true)}
             variant="outline"
-            className="gap-1.5 apple-interaction h-9 text-xs sm:text-sm px-3"
+            className="gap-1.5 apple-interaction h-9 text-body px-3"
           >
             <Upload className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
             <span className="truncate">Importar</span>
@@ -191,7 +191,7 @@ export function AccountsPage({
             <Button
               onClick={onTransfer}
               variant="outline"
-              className="gap-1.5 apple-interaction h-9 text-xs sm:text-sm px-2 sm:px-3"
+              className="gap-1.5 apple-interaction h-9 text-body px-2 sm:px-3"
             >
               <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
               <span className="truncate whitespace-nowrap">
@@ -200,7 +200,7 @@ export function AccountsPage({
               </span>
             </Button>
           )}
-          <Button onClick={onAddAccount} className="gap-1.5 apple-interaction h-9 text-xs sm:text-sm px-2 sm:px-3">
+          <Button onClick={onAddAccount} className="gap-1.5 apple-interaction h-9 text-body px-2 sm:px-3">
             <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
             <span className="truncate whitespace-nowrap">
               <span className="hidden sm:inline">Adicionar Conta</span>
@@ -221,7 +221,7 @@ export function AccountsPage({
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-caption font-medium">Saldo Total</p>
-                  <div className={`text-responsive-xl font-bold leading-tight ${
+                  <div className={`balance-text ${
                     totalBalance >= 0 ? "balance-positive" : "balance-negative"
                   }`}>
                     {formatCents(totalBalance)}
@@ -241,7 +241,7 @@ export function AccountsPage({
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-caption font-medium">Dívida Total</p>
-                  <div className="text-responsive-xl font-bold balance-negative leading-tight">
+                  <div className="balance-text balance-negative">
                     {formatCents(creditUsed)}
                   </div>
                 </div>
@@ -259,7 +259,7 @@ export function AccountsPage({
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-caption font-medium">Total de Contas</p>
-                  <div className="text-responsive-xl font-bold leading-tight">
+                  <div className="balance-text">
                     {filteredAccounts.length}
                   </div>
                 </div>
@@ -347,12 +347,12 @@ export function AccountsPage({
 
                     {/* Nome e Badge */}
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-sm sm:text-base font-semibold truncate mb-1">
+                      <h3 className="text-body-large font-semibold truncate mb-1">
                         {account.name}
                       </h3>
                       <Badge
                         variant={getAccountTypeBadge(account.type)}
-                        className="gap-1 text-xs h-5 px-2 inline-flex"
+                        className="gap-1 text-caption h-5 px-2 inline-flex"
                       >
                         {getAccountTypeLabel(account.type)}
                       </Badge>
@@ -396,37 +396,37 @@ export function AccountsPage({
                   {/* Informações de Saldo */}
                   <div className="pt-2 border-t border-border/50 space-y-2">
                     {account.type === "credit" ? (
-                      <div className="space-y-1.5">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs text-muted-foreground">
-                            {account.balance < 0 ? "Dívida" : "Crédito"}
-                          </span>
-                          <span
-                            className={`text-sm font-bold ${
-                              account.balance < 0 ? "text-destructive" : "text-success"
-                            }`}
-                          >
-                            {formatCents(Math.abs(account.balance))}
-                          </span>
-                        </div>
-                        {account.limit_amount && account.limit_amount > 0 && (
-                          <>
-                            <div className="flex items-center justify-between">
-                              <span className="text-xs text-muted-foreground">
-                                Disponível
-                              </span>
-                              <span className="text-xs font-medium text-primary">
-                                {formatCents((account.limit_amount || 0) - Math.abs(Math.min(account.balance, 0)))}
-                              </span>
-                            </div>
-                            {/* Barra de Progresso */}
-                            <div className="space-y-1">
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between">
+                            <span className="text-caption text-muted-foreground">
+                              {account.balance < 0 ? "Dívida" : "Crédito"}
+                            </span>
+                            <span
+                              className={`text-body font-bold ${
+                                account.balance < 0 ? "text-destructive" : "text-success"
+                              }`}
+                            >
+                              {formatCents(Math.abs(account.balance))}
+                            </span>
+                          </div>
+                          {account.limit_amount && account.limit_amount > 0 && (
+                            <>
                               <div className="flex items-center justify-between">
-                                <span className="text-xs text-muted-foreground">Limite</span>
-                                <span className="text-xs font-medium">
-                                  {formatCents(account.limit_amount)}
+                                <span className="text-caption text-muted-foreground">
+                                  Disponível
+                                </span>
+                                <span className="text-caption font-medium text-primary">
+                                  {formatCents((account.limit_amount || 0) - Math.abs(Math.min(account.balance, 0)))}
                                 </span>
                               </div>
+                              {/* Barra de Progresso */}
+                              <div className="space-y-1">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-caption text-muted-foreground">Limite</span>
+                                  <span className="text-caption font-medium">
+                                    {formatCents(account.limit_amount)}
+                                  </span>
+                                </div>
                               <div className="flex items-center gap-2">
                                 <div className="flex-1 bg-muted rounded-full h-2">
                                   <div

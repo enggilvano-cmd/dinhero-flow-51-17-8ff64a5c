@@ -57,17 +57,17 @@ export function BalanceCards({
               <DollarSign className="h-3.5 w-3.5 text-primary" />
             </div>
           </div>
-          <p className="text-xs font-medium text-muted-foreground mb-1">
+          <p className="text-caption text-muted-foreground mb-1">
             Saldo Total
           </p>
           <div
-            className={`text-base sm:text-lg font-bold leading-tight ${
+            className={`balance-text ${
               totalBalance >= 0 ? 'balance-positive' : 'balance-negative'
             }`}
           >
             {formatCurrency(totalBalance / 100)}
           </div>
-          <p className="text-xs text-muted-foreground mt-1 opacity-70">
+          <p className="text-caption text-muted-foreground mt-1 opacity-70">
             Corrente • Poupança
           </p>
         </CardContent>
@@ -97,13 +97,13 @@ export function BalanceCards({
               <TrendingUp className="h-3.5 w-3.5 text-success" />
             </div>
           </div>
-          <p className="text-xs font-medium text-muted-foreground mb-1">
+          <p className="text-caption text-muted-foreground mb-1">
             Receitas do Mês
           </p>
-          <div className="text-base sm:text-lg font-bold balance-positive leading-tight">
+          <div className="balance-text balance-positive">
             {formatCurrency(periodIncome / 100)}
           </div>
-          <p className="text-xs text-muted-foreground mt-1 opacity-70">
+          <p className="text-caption text-muted-foreground mt-1 opacity-70">
             {getPeriodLabel()}
           </p>
         </CardContent>
@@ -133,13 +133,13 @@ export function BalanceCards({
               <TrendingDown className="h-3.5 w-3.5 text-destructive" />
             </div>
           </div>
-          <p className="text-xs font-medium text-muted-foreground mb-1">
+          <p className="text-caption text-muted-foreground mb-1">
             Despesas do Mês
           </p>
-          <div className="text-base sm:text-lg font-bold balance-negative leading-tight">
+          <div className="balance-text balance-negative">
             {formatCurrency(periodExpenses / 100)}
           </div>
-          <p className="text-xs text-muted-foreground mt-1 opacity-70">
+          <p className="text-caption text-muted-foreground mt-1 opacity-70">
             {getPeriodLabel()}
           </p>
         </CardContent>
@@ -158,13 +158,13 @@ export function BalanceCards({
               <CreditCard className="h-3.5 w-3.5 text-primary" />
             </div>
           </div>
-          <p className="text-xs font-medium text-muted-foreground mb-1">
+          <p className="text-caption text-muted-foreground mb-1">
             Crédito Disponível
           </p>
-          <div className="text-base sm:text-lg font-bold text-primary leading-tight">
+          <div className="balance-text text-primary">
             {formatCurrency(creditAvailable / 100)}
           </div>
-          <p className="text-xs text-muted-foreground mt-1 opacity-70">
+          <p className="text-caption text-muted-foreground mt-1 opacity-70">
             Limite do Cartão
           </p>
         </CardContent>
@@ -194,13 +194,13 @@ export function BalanceCards({
               <CreditCard className="h-3.5 w-3.5 text-warning" />
             </div>
           </div>
-          <p className="text-xs font-medium text-muted-foreground mb-1">
+          <p className="text-caption text-muted-foreground mb-1">
             Despesas no Cartão
           </p>
-          <div className="text-base sm:text-lg font-bold text-warning leading-tight">
+          <div className="balance-text text-warning">
             {formatCurrency(creditCardExpenses / 100)}
           </div>
-          <p className="text-xs text-muted-foreground mt-1 opacity-70">
+          <p className="text-caption text-muted-foreground mt-1 opacity-70">
             {getPeriodLabel()}
           </p>
         </CardContent>
@@ -231,17 +231,17 @@ export function BalanceCards({
             </div>
             {pendingIncomeCount > 0 && (
               <div className="flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-success text-success-foreground">
-                <span className="text-xs font-semibold">{pendingIncomeCount}</span>
+                <span className="text-caption font-semibold">{pendingIncomeCount}</span>
               </div>
             )}
           </div>
-          <p className="text-xs font-medium text-muted-foreground mb-1">
+          <p className="text-caption text-muted-foreground mb-1">
             Receitas Pendentes
           </p>
-          <div className="text-base sm:text-lg font-bold text-success leading-tight">
+          <div className="balance-text text-success">
             {formatCurrency(pendingIncome / 100)}
           </div>
-          <p className="text-xs text-muted-foreground mt-1 opacity-70">
+          <p className="text-caption text-muted-foreground mt-1 opacity-70">
             {getPeriodLabel()}
           </p>
         </CardContent>
@@ -272,17 +272,17 @@ export function BalanceCards({
             </div>
             {pendingExpensesCount > 0 && (
               <div className="flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-destructive text-destructive-foreground">
-                <span className="text-xs font-semibold">{pendingExpensesCount}</span>
+                <span className="text-caption font-semibold">{pendingExpensesCount}</span>
               </div>
             )}
           </div>
-          <p className="text-xs font-medium text-muted-foreground mb-1">
+          <p className="text-caption text-muted-foreground mb-1">
             Despesas Pendentes
           </p>
-          <div className="text-base sm:text-lg font-bold text-destructive leading-tight">
+          <div className="balance-text text-destructive">
             {formatCurrency(pendingExpenses / 100)}
           </div>
-          <p className="text-xs text-muted-foreground mt-1 opacity-70">
+          <p className="text-caption text-muted-foreground mt-1 opacity-70">
             {getPeriodLabel()}
           </p>
         </CardContent>

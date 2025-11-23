@@ -302,7 +302,7 @@ export function CategoriesPage({}: CategoriesPageProps) {
           <Button 
             variant="outline" 
             onClick={exportToExcel}
-            className="gap-1.5 apple-interaction h-9 text-xs sm:text-sm px-3"
+            className="gap-1.5 apple-interaction h-9 text-body px-3"
             disabled={categories.length === 0}
           >
             <FileDown className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
@@ -311,12 +311,12 @@ export function CategoriesPage({}: CategoriesPageProps) {
           <Button 
             variant="outline" 
             onClick={() => setImportModalOpen(true)}
-            className="gap-1.5 apple-interaction h-9 text-xs sm:text-sm px-3"
+            className="gap-1.5 apple-interaction h-9 text-body px-3"
           >
             <Upload className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
             <span className="truncate">Importar</span>
           </Button>
-          <Button onClick={() => setAddModalOpen(true)} className="gap-1.5 apple-interaction h-9 text-xs sm:text-sm col-span-2 md:col-span-1 px-2 sm:px-3">
+          <Button onClick={() => setAddModalOpen(true)} className="gap-1.5 apple-interaction h-9 text-body col-span-2 md:col-span-1 px-2 sm:px-3">
             <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
             <span className="truncate whitespace-nowrap">
               <span className="hidden sm:inline">Adicionar Categoria</span>
@@ -337,7 +337,7 @@ export function CategoriesPage({}: CategoriesPageProps) {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-caption font-medium">Total</p>
-                  <div className="text-responsive-xl font-bold leading-tight">{categories.length}</div>
+                  <div className="balance-text">{categories.length}</div>
                 </div>
               </div>
             </div>
@@ -353,7 +353,7 @@ export function CategoriesPage({}: CategoriesPageProps) {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-caption font-medium">Receitas</p>
-                  <div className="text-responsive-xl font-bold balance-positive leading-tight">
+                  <div className="balance-text balance-positive">
                     {categories.filter(c => c.type === "income" || c.type === "both").length}
                   </div>
                 </div>
@@ -371,7 +371,7 @@ export function CategoriesPage({}: CategoriesPageProps) {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-caption font-medium">Despesas</p>
-                  <div className="text-responsive-xl font-bold balance-negative leading-tight">
+                  <div className="balance-text balance-negative">
                     {categories.filter(c => c.type === "expense" || c.type === "both").length}
                   </div>
                 </div>
@@ -389,7 +389,7 @@ export function CategoriesPage({}: CategoriesPageProps) {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-caption font-medium">Ambos</p>
-                  <div className="text-responsive-xl font-bold text-primary leading-tight">
+                  <div className="balance-text text-primary">
                     {categories.filter(c => c.type === "both").length}
                   </div>
                 </div>
