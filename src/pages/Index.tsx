@@ -46,7 +46,7 @@ const PlaniFlowApp = () => {
 
   // Pagination state
   const [transactionsPage, setTransactionsPage] = useState(0);
-  const [transactionsPageSize, setTransactionsPageSize] = useState(50);
+  const [transactionsPageSize, setTransactionsPageSize] = useState<number | null>(50);
 
   // Transaction filters state
   const [transactionsSearch, setTransactionsSearch] = useState("");

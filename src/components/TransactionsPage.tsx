@@ -60,9 +60,9 @@ interface TransactionsPageProps {
   totalCount: number;
   pageCount: number;
   currentPage: number;
-  pageSize: number;
+  pageSize: number | null;
   onPageChange: (page: number) => void;
-  onPageSizeChange: (pageSize: number) => void;
+  onPageSizeChange: (pageSize: number | null) => void;
   search: string;
   onSearchChange: (search: string) => void;
   filterType: "all" | "income" | "expense" | "transfer";
