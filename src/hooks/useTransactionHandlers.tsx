@@ -165,17 +165,24 @@ export function useTransactionHandlers() {
 
       const parentId = createdIds[0];
 
-      const { error: metaError } = await supabase
-        .from('transactions')
-        .update({
-          installments: totalInstallments,
-          parent_transaction_id: parentId,
-        })
-        .in('id', createdIds);
+      // Atualizar cada transação com seu número de parcela específico
+      const updatePromises = createdIds.map((id, index) => 
+        supabase
+          .from('transactions')
+          .update({
+            installments: totalInstallments,
+            current_installment: index + 1,
+            parent_transaction_id: parentId,
+          })
+          .eq('id', id)
+      );
 
-      if (metaError) {
-        logger.error('Error updating installment metadata:', metaError);
-        throw metaError;
+      const updateResults = await Promise.all(updatePromises);
+      const updateErrors = updateResults.filter(r => r.error);
+      
+      if (updateErrors.length > 0) {
+        logger.error('Error updating installment metadata:', updateErrors[0].error);
+        throw updateErrors[0].error;
       }
 
       await Promise.all([
