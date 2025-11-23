@@ -32,3 +32,6 @@ verify_jwt = true
 
 [functions.generate-test-data]
 verify_jwt = true
+
+[functions.renew-fixed-transactions]
+verify_jwt = false
