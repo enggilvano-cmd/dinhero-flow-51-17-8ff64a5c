@@ -226,16 +226,16 @@ export function RecurringTransactionsPage() {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         <Card className="financial-card">
-          <CardContent className="p-4">
+          <CardContent className="p-3">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
                 <Repeat className="h-5 w-5 text-primary" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm font-medium text-muted-foreground">
+                <p className="text-caption font-medium text-muted-foreground">
                   Total de Recorrentes
                 </p>
-                <div className="text-base sm:text-lg lg:text-xl font-bold leading-tight">
+                <div className="text-responsive-xl font-bold leading-tight">
                   {stats.total}
                 </div>
               </div>
@@ -244,16 +244,16 @@ export function RecurringTransactionsPage() {
         </Card>
 
         <Card className="financial-card">
-          <CardContent className="p-4">
+          <CardContent className="p-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center flex-shrink-0">
-                <TrendingUp className="h-5 w-5 text-green-500" />
+              <div className="w-10 h-10 rounded-xl bg-success/10 flex items-center justify-center flex-shrink-0">
+                <TrendingUp className="h-5 w-5 text-success" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm font-medium text-muted-foreground">
+                <p className="text-caption font-medium text-muted-foreground">
                   Receitas Mensais
                 </p>
-                <div className="text-base sm:text-lg lg:text-xl font-bold balance-positive leading-tight">
+                <div className="text-responsive-xl font-bold balance-positive leading-tight">
                   {formatCents(stats.monthlyIncome)}
                 </div>
               </div>
@@ -262,16 +262,16 @@ export function RecurringTransactionsPage() {
         </Card>
 
         <Card className="financial-card sm:col-span-2 lg:col-span-1">
-          <CardContent className="p-4">
+          <CardContent className="p-3">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center flex-shrink-0">
                 <TrendingDown className="h-5 w-5 text-destructive" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm font-medium text-muted-foreground">
+                <p className="text-caption font-medium text-muted-foreground">
                   Despesas Mensais
                 </p>
-                <div className="text-base sm:text-lg lg:text-xl font-bold balance-negative leading-tight">
+                <div className="text-responsive-xl font-bold balance-negative leading-tight">
                   {formatCents(stats.monthlyExpenses)}
                 </div>
               </div>
@@ -314,21 +314,17 @@ export function RecurringTransactionsPage() {
         </CardContent>
       </Card>
 
+      {/* Info Card */}
       <Card className="bg-primary/5 border-primary/20">
-        <CardHeader>
-          <div className="flex items-start gap-3">
-            <div className="p-2 bg-primary/10 rounded-lg">
+        <CardContent className="p-4">
+          <div className="flex items-start gap-3 mb-3">
+            <div className="p-2 bg-primary/10 rounded-lg flex-shrink-0">
               <Calendar className="h-5 w-5 text-primary" />
             </div>
             <div className="flex-1">
-              <CardTitle className="text-lg">Geração Automática</CardTitle>
-              <CardDescription className="mt-1">
-                A geração automática de transações está ativada
-              </CardDescription>
+              <h3 className="text-base font-semibold">Geração Automática</h3>
             </div>
           </div>
-        </CardHeader>
-        <CardContent>
           <p className="text-sm text-muted-foreground">
             As transações recorrentes configuradas serão geradas automaticamente todos os dias às 00:01, 
             respeitando a frequência e data final definidas.
