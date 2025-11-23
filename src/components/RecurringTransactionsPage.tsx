@@ -107,25 +107,74 @@ export function RecurringTransactionsPage() {
     }
   };
 
-  const handleEdit = async (updatedTransaction: RecurringTransaction) => {
+  const handleEdit = async (updatedTransaction: RecurringTransaction, scope?: EditScope) => {
     try {
-      const { error } = await supabase
-        .from('transactions')
-        .update({
-          description: updatedTransaction.description,
-          amount: updatedTransaction.amount,
-          type: updatedTransaction.type,
-          category_id: updatedTransaction.category_id,
-          account_id: updatedTransaction.account_id,
-          recurrence_type: updatedTransaction.recurrence_type,
-          recurrence_end_date: updatedTransaction.recurrence_end_date,
-        })
-        .eq('id', updatedTransaction.id);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-      if (error) throw error;
+      // Extrair apenas os campos que foram passados (excluindo id e date)
+      const { id, date, parent_transaction_id, ...updates } = updatedTransaction;
+
+      let description = "";
+
+      if (!scope || scope === "current") {
+        // Editar apenas a transação atual
+        const { error } = await supabase
+          .from('transactions')
+          .update(updates)
+          .eq('id', id);
+        if (error) throw error;
+        description = "Transação recorrente atualizada com sucesso";
+      } else if (scope === "current-and-remaining") {
+        // Editar esta e todas as transações futuras desta série
+        if (parent_transaction_id) {
+          // Tem parent, buscar irmãs
+          const { error } = await supabase
+            .from('transactions')
+            .update(updates)
+            .eq('parent_transaction_id', parent_transaction_id)
+            .gte('date', date);
+          if (error) throw error;
+        } else {
+          // É a parent, buscar filhas
+          const { error: mainError } = await supabase
+            .from('transactions')
+            .update(updates)
+            .eq('id', id);
+          if (mainError) throw mainError;
+
+          const { error: childrenError } = await supabase
+            .from('transactions')
+            .update(updates)
+            .eq('parent_transaction_id', id)
+            .gte('date', date);
+          if (childrenError) throw childrenError;
+        }
+        description = "Transação recorrente e futuras atualizadas com sucesso";
+      } else if (scope === "all") {
+        // Editar toda a série
+        const parentId = parent_transaction_id || id;
+        const { error: mainError } = await supabase
+          .from('transactions')
+          .update(updates)
+          .eq('id', parentId);
+        if (mainError) throw mainError;
+
+        const { error: childrenError } = await supabase
+          .from('transactions')
+          .update(updates)
+          .eq('parent_transaction_id', parentId);
+        if (childrenError) throw childrenError;
+        description = "Todas as transações recorrentes da série atualizadas com sucesso";
+      }
+
+      toast({
+        title: "Sucesso",
+        description,
+      });
 
       setTransactions(prev => prev.map(t => 
-        t.id === updatedTransaction.id ? { ...t, ...updatedTransaction } : t
+        t.id === id ? { ...t, ...updatedTransaction } : t
       ));
       
       loadRecurringTransactions();

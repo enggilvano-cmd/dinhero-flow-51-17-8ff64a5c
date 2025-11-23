@@ -20,6 +20,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useCategories } from "@/hooks/useCategories";
 import { CurrencyInput } from "@/components/forms/CurrencyInput";
 import { ACCOUNT_TYPE_LABELS } from "@/types";
+import { TransactionScopeDialog, EditScope } from "./TransactionScopeDialog";
 
 interface FixedTransaction {
   id: string;
@@ -43,7 +44,7 @@ interface Account {
 interface EditFixedTransactionModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onEditTransaction: (transaction: FixedTransaction) => void;
+  onEditTransaction: (transaction: FixedTransaction, scope?: EditScope) => void;
   transaction: FixedTransaction;
   accounts: Account[];
 }
@@ -63,19 +64,23 @@ export function EditFixedTransactionModal({
     category_id: "",
     account_id: "",
   });
+  const [originalData, setOriginalData] = useState(formData);
+  const [scopeDialogOpen, setScopeDialogOpen] = useState(false);
   const { toast } = useToast();
   const { categories } = useCategories();
 
   useEffect(() => {
     if (open && transaction) {
-      setFormData({
+      const initialData = {
         description: transaction.description,
         amount: Number(transaction.amount),
         date: transaction.date,
         type: transaction.type,
         category_id: transaction.category_id || "",
         account_id: transaction.account_id,
-      });
+      };
+      setFormData(initialData);
+      setOriginalData(initialData);
     }
   }, [open, transaction]);
 
@@ -116,19 +121,72 @@ export function EditFixedTransactionModal({
       return;
     }
 
-    onEditTransaction({
+    // Verificar se há mudanças
+    const hasChanges = 
+      formData.description.trim() !== originalData.description.trim() ||
+      formData.amount !== originalData.amount ||
+      formData.type !== originalData.type ||
+      formData.category_id !== originalData.category_id ||
+      formData.account_id !== originalData.account_id;
+
+    if (!hasChanges) {
+      toast({
+        title: "Aviso",
+        description: "Nenhuma alteração foi detectada",
+        variant: "default",
+      });
+      onOpenChange(false);
+      return;
+    }
+
+    // Abrir diálogo de escopo para transações fixas
+    setScopeDialogOpen(true);
+  };
+
+  const processEdit = (scope: EditScope) => {
+    // Detectar apenas os campos que foram modificados
+    const updates: Partial<FixedTransaction> = {
       id: transaction.id,
-      description: formData.description,
-      amount: formData.amount,
-      date: formData.date,
-      type: formData.type,
-      category_id: formData.category_id || null,
-      account_id: formData.account_id,
       is_fixed: true,
+    };
+    
+    if (formData.description.trim() !== originalData.description.trim()) {
+      updates.description = formData.description.trim();
+    }
+    
+    if (formData.amount !== originalData.amount) {
+      updates.amount = formData.amount;
+    }
+    
+    if (formData.type !== originalData.type) {
+      updates.type = formData.type;
+    }
+    
+    if (formData.category_id !== originalData.category_id) {
+      updates.category_id = formData.category_id || null;
+    }
+    
+    if (formData.account_id !== originalData.account_id) {
+      updates.account_id = formData.account_id;
+    }
+
+    onEditTransaction(updates as FixedTransaction, scope);
+    
+    const scopeDescription = scope === "current" ? "Transação fixa atualizada com sucesso" : 
+                             scope === "all" ? "Todas as ocorrências atualizadas com sucesso" :
+                             "Ocorrências selecionadas atualizadas com sucesso";
+    
+    toast({
+      title: "Sucesso",
+      description: scopeDescription,
     });
+
+    onOpenChange(false);
+    setScopeDialogOpen(false);
   };
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
@@ -269,5 +327,14 @@ export function EditFixedTransactionModal({
         </form>
       </DialogContent>
     </Dialog>
+
+    <TransactionScopeDialog
+      open={scopeDialogOpen}
+      onOpenChange={setScopeDialogOpen}
+      onScopeSelected={processEdit}
+      isRecurring={true}
+      mode="edit"
+    />
+    </>
   );
 }
