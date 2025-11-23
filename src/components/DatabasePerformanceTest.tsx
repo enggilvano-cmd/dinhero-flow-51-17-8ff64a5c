@@ -9,6 +9,7 @@ import { Loader2, Database, TrendingUp, Clock, CheckCircle, AlertCircle } from "
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
+import { logger } from "@/lib/logger";
 
 export function DatabasePerformanceTest() {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -42,7 +43,7 @@ export function DatabasePerformanceTest() {
       // Executar ANALYZE automaticamente
       await runAnalyze();
     } catch (error: any) {
-      console.error('Error generating test data:', error);
+      logger.error('Error generating test data:', error);
       toast({
         title: "❌ Erro ao gerar dados",
         description: error.message,
@@ -61,7 +62,7 @@ export function DatabasePerformanceTest() {
         description: "Execute 'ANALYZE transactions;' no SQL Editor para atualizar estatísticas",
       });
     } catch (error) {
-      console.error('Error running ANALYZE:', error);
+      logger.error('Error running ANALYZE:', error);
     } finally {
       setIsAnalyzing(false);
     }
@@ -133,7 +134,7 @@ export function DatabasePerformanceTest() {
         description: "Análise de performance concluída",
       });
     } catch (error: any) {
-      console.error('Error running performance tests:', error);
+      logger.error('Error running performance tests:', error);
       toast({
         title: "❌ Erro nos testes",
         description: error.message,
@@ -165,7 +166,7 @@ export function DatabasePerformanceTest() {
         description: "Todas as transações de teste foram excluídas",
       });
     } catch (error: any) {
-      console.error('Error clearing test data:', error);
+      logger.error('Error clearing test data:', error);
       toast({
         title: "❌ Erro ao limpar dados",
         description: error.message,

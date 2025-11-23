@@ -19,6 +19,7 @@ import { FixedTransactionScopeDialog, FixedScope } from "./FixedTransactionScope
 import { CurrencyInput } from "@/components/forms/CurrencyInput";
 import { supabase } from "@/integrations/supabase/client";
 import { AvailableBalanceIndicator } from "@/components/forms/AvailableBalanceIndicator";
+import { logger } from "@/lib/logger";
 
 interface EditTransactionModalProps {
   open: boolean;
@@ -117,7 +118,7 @@ export function EditTransactionModal({
         setPendingTransactionsCount(pendingCount);
         setHasCompletedTransactions(hasCompleted);
       } catch (error) {
-        console.error("Error fetching child transactions:", error);
+        logger.error("Error fetching child transactions:", error);
         setPendingTransactionsCount(0);
         setHasCompletedTransactions(false);
       }
@@ -247,7 +248,7 @@ export function EditTransactionModal({
             }
           }
         } catch (error) {
-          console.error('Error validating credit limit:', error);
+          logger.error('Error validating credit limit:', error);
           // Continue mesmo se a validação falhar (deixar o backend validar)
         }
       } else {
@@ -296,7 +297,7 @@ export function EditTransactionModal({
             }
           }
         } catch (error) {
-          console.error('Error validating balance:', error);
+          logger.error('Error validating balance:', error);
           // Continue mesmo se a validação falhar
         }
       }

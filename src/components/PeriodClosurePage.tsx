@@ -12,6 +12,8 @@ import { Lock, Unlock, CalendarIcon, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { logger } from '@/lib/logger';
+
 interface PeriodClosure {
   id: string;
   period_start: string;
@@ -49,7 +51,7 @@ export function PeriodClosurePage() {
       if (error) throw error;
       setPeriodClosures((data as PeriodClosure[]) || []);
     } catch (error) {
-      console.error('Error loading period closures:', error);
+      logger.error('Error loading period closures:', error);
       toast.error('Erro ao carregar fechamentos de período');
     } finally {
       setLoading(false);
@@ -92,7 +94,7 @@ export function PeriodClosurePage() {
       setNotes('');
       loadPeriodClosures();
     } catch (error: any) {
-      console.error('Error creating closure:', error);
+      logger.error('Error creating closure:', error);
       if (error.message?.includes('duplicate key')) {
         toast.error('Já existe um fechamento para este período');
       } else {
@@ -122,7 +124,7 @@ export function PeriodClosurePage() {
       toast.success(closure.is_locked ? 'Período desbloqueado' : 'Período bloqueado');
       loadPeriodClosures();
     } catch (error) {
-      console.error('Error toggling lock:', error);
+      logger.error('Error toggling lock:', error);
       toast.error('Erro ao alterar status do período');
     }
   }
@@ -141,7 +143,7 @@ export function PeriodClosurePage() {
       toast.success('Fechamento excluído com sucesso');
       loadPeriodClosures();
     } catch (error) {
-      console.error('Error deleting closure:', error);
+      logger.error('Error deleting closure:', error);
       toast.error('Erro ao excluir fechamento');
     }
   }

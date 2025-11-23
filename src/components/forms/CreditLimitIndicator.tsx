@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatCurrency } from "@/lib/formatters";
 import { CreditCard, TrendingUp, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { logger } from "@/lib/logger";
 
 interface CreditLimitIndicatorProps {
   accountId: string;
@@ -42,7 +43,7 @@ export function CreditLimitIndicator({
         const total = data?.reduce((sum, t) => sum + Math.abs(t.amount), 0) || 0;
         setPendingExpenses(total);
       } catch (error) {
-        console.error('Error fetching pending expenses:', error);
+        logger.error('Error fetching pending expenses:', error);
         setPendingExpenses(0);
       } finally {
         setLoading(false);
