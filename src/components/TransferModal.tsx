@@ -144,23 +144,21 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
                     
                     return (
                       <SelectItem key={account.id} value={account.id}>
-                        <div className="flex justify-between items-center w-full">
-                          <div className="flex items-center gap-2">
-                            <div 
-                              className="w-3 h-3 rounded-full" 
-                              style={{ backgroundColor: account.color || "#6b7280" }}
-                            />
-                            <span>{account.name}</span>
-                          </div>
-                          <div className="ml-2 text-sm flex items-center gap-1">
-                            <span className="text-muted-foreground">
+                        <div className="flex items-center gap-2 w-full">
+                          <div 
+                            className="w-3 h-3 rounded-full flex-shrink-0" 
+                            style={{ backgroundColor: account.color || "#6b7280" }}
+                          />
+                          <div className="flex flex-col flex-1 min-w-0">
+                            <span className="font-medium truncate">{account.name}</span>
+                            <span className="text-xs text-muted-foreground">
                               {formatCurrency(account.balance)}
+                              {hasLimit && (
+                                <span className="text-primary ml-1">
+                                  + {formatCurrency(account.limit_amount || 0)} limite
+                                </span>
+                              )}
                             </span>
-                            {hasLimit && (
-                              <span className="text-primary">
-                                + {formatCurrency(account.limit_amount || 0)} limite
-                              </span>
-                            )}
                           </div>
                         </div>
                       </SelectItem>
@@ -192,23 +190,21 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
                       
                       return (
                         <SelectItem key={account.id} value={account.id}>
-                          <div className="flex justify-between items-center w-full">
-                            <div className="flex items-center gap-2">
-                              <div 
-                                className="w-3 h-3 rounded-full" 
-                                style={{ backgroundColor: account.color || "#6b7280" }}
-                              />
-                              <span>{account.name}</span>
-                            </div>
-                            <div className="ml-2 text-sm flex items-center gap-1">
-                              <span className="text-muted-foreground">
+                          <div className="flex items-center gap-2 w-full">
+                            <div 
+                              className="w-3 h-3 rounded-full flex-shrink-0" 
+                              style={{ backgroundColor: account.color || "#6b7280" }}
+                            />
+                            <div className="flex flex-col flex-1 min-w-0">
+                              <span className="font-medium truncate">{account.name}</span>
+                              <span className="text-xs text-muted-foreground">
                                 {formatCurrency(account.balance)}
+                                {hasLimit && (
+                                  <span className="text-primary ml-1">
+                                    + {formatCurrency(account.limit_amount || 0)} limite
+                                  </span>
+                                )}
                               </span>
-                              {hasLimit && (
-                                <span className="text-primary">
-                                  + {formatCurrency(account.limit_amount || 0)} limite
-                                </span>
-                              )}
                             </div>
                           </div>
                         </SelectItem>
