@@ -35,6 +35,8 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { TransactionList } from "@/components/transactions/TransactionList";
+import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/lib/logger";
 import {
   format,
   startOfMonth,
@@ -143,6 +145,8 @@ export function TransactionsPage({
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [scopeDialogOpen, setScopeDialogOpen] = useState(false);
   const [pendingDeleteTransaction, setPendingDeleteTransaction] = useState<any>(null);
+  const [pendingTransactionsCount, setPendingTransactionsCount] = useState(0);
+  const [hasCompletedTransactions, setHasCompletedTransactions] = useState(false);
   
   // Local search state with debounce
   const [localSearch, setLocalSearch] = useState(search);
@@ -254,7 +258,7 @@ export function TransactionsPage({
     }
   };
 
-  const handleDeleteWithScope = (transactionId: string, scope?: EditScope) => {
+  const handleDeleteWithScope = async (transactionId: string, scope?: EditScope) => {
     const transaction = transactions.find(t => t.id === transactionId);
     
     if (!scope && transaction) {
@@ -264,6 +268,25 @@ export function TransactionsPage({
       const hasParent = Boolean(transaction.parent_transaction_id);
       
       if (isInstallment || isRecurring || hasParent) {
+        // Buscar informações sobre transações geradas (filhas)
+        try {
+          const parentId = transaction.parent_transaction_id || transaction.id;
+          const { data: childTransactions } = await supabase
+            .from("transactions")
+            .select("id, status")
+            .eq("parent_transaction_id", parentId);
+
+          const pendingCount = childTransactions?.filter(t => t.status === "pending").length || 0;
+          const hasCompleted = childTransactions?.some(t => t.status === "completed") || false;
+
+          setPendingTransactionsCount(pendingCount);
+          setHasCompletedTransactions(hasCompleted);
+        } catch (error) {
+          logger.error("Error fetching child transactions:", error);
+          setPendingTransactionsCount(0);
+          setHasCompletedTransactions(false);
+        }
+        
         // Abrir diálogo de escopo
         setPendingDeleteTransaction(transaction);
         setScopeDialogOpen(true);
@@ -751,8 +774,8 @@ export function TransactionsPage({
             }
           }}
           mode="delete"
-          hasCompleted={false}
-          pendingCount={0}
+          hasCompleted={hasCompletedTransactions}
+          pendingCount={pendingTransactionsCount}
         />
       )}
 

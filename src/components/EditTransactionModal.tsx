@@ -15,6 +15,7 @@ import { Transaction, Account, ACCOUNT_TYPE_LABELS } from "@/types";
 import { useCategories } from "@/hooks/useCategories";
 import { createDateFromString } from "@/lib/dateUtils";
 import { TransactionScopeDialog, EditScope } from "./TransactionScopeDialog";
+import { FixedTransactionScopeDialog, FixedScope } from "./FixedTransactionScopeDialog";
 import { CurrencyInput } from "@/components/forms/CurrencyInput";
 import { supabase } from "@/integrations/supabase/client";
 import { AvailableBalanceIndicator } from "@/components/forms/AvailableBalanceIndicator";
@@ -46,6 +47,8 @@ export function EditTransactionModal({
   });
   const [originalData, setOriginalData] = useState(formData);
   const [scopeDialogOpen, setScopeDialogOpen] = useState(false);
+  const [pendingTransactionsCount, setPendingTransactionsCount] = useState(0);
+  const [hasCompletedTransactions, setHasCompletedTransactions] = useState(false);
   const { toast } = useToast();
   const { categories } = useCategories();
 
@@ -73,7 +76,7 @@ export function EditTransactionModal({
     }
   }, [open, transaction, accounts]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!transaction) return;
@@ -96,9 +99,29 @@ export function EditTransactionModal({
       return;
     }
 
-    const isInstallment = Boolean(transaction.parent_transaction_id || (transaction.installments && transaction.installments > 1));
+    const isInstallment = Boolean(transaction.installments && transaction.installments > 1);
+    const isFixed = Boolean(transaction.is_fixed || transaction.parent_transaction_id);
     
-    if (isInstallment) {
+    if (isInstallment || isFixed) {
+      // Buscar informações sobre transações geradas (filhas)
+      try {
+        const parentId = transaction.parent_transaction_id || transaction.id;
+        const { data: childTransactions } = await supabase
+          .from("transactions")
+          .select("id, status")
+          .eq("parent_transaction_id", parentId);
+
+        const pendingCount = childTransactions?.filter(t => t.status === "pending").length || 0;
+        const hasCompleted = childTransactions?.some(t => t.status === "completed") || false;
+
+        setPendingTransactionsCount(pendingCount);
+        setHasCompletedTransactions(hasCompleted);
+      } catch (error) {
+        console.error("Error fetching child transactions:", error);
+        setPendingTransactionsCount(0);
+        setHasCompletedTransactions(false);
+      }
+      
       setScopeDialogOpen(true);
       return;
     }
@@ -303,7 +326,8 @@ export function EditTransactionModal({
     cat.type === formData.type || cat.type === "both"
   );
 
-  const isInstallment = Boolean(transaction?.parent_transaction_id || (transaction?.installments && transaction.installments > 1));
+  const isInstallment = Boolean(transaction?.installments && transaction.installments > 1);
+  const isFixed = Boolean(transaction?.is_fixed || transaction?.parent_transaction_id);
 
   return (
     <>
@@ -526,15 +550,37 @@ export function EditTransactionModal({
       </DialogContent>
     </Dialog>
 
-    <TransactionScopeDialog
-      open={scopeDialogOpen}
-      onOpenChange={setScopeDialogOpen}
-      onScopeSelected={processEdit}
-      currentInstallment={transaction?.current_installment || 1}
-      totalInstallments={transaction?.installments || 1}
-      isRecurring={Boolean(transaction?.is_recurring || transaction?.is_fixed)}
-      mode="edit"
-    />
+    {isFixed && (
+      <FixedTransactionScopeDialog
+        open={scopeDialogOpen}
+        onOpenChange={setScopeDialogOpen}
+        onScopeSelected={(scope: FixedScope) => {
+          // Converter FixedScope para EditScope
+          const editScope: EditScope =
+            scope === "current"
+              ? "current"
+              : scope === "current-and-remaining"
+                ? "current-and-remaining"
+                : "all";
+          processEdit(editScope);
+        }}
+        mode="edit"
+        hasCompleted={hasCompletedTransactions}
+        pendingCount={pendingTransactionsCount}
+      />
+    )}
+
+    {!isFixed && isInstallment && (
+      <TransactionScopeDialog
+        open={scopeDialogOpen}
+        onOpenChange={setScopeDialogOpen}
+        onScopeSelected={processEdit}
+        currentInstallment={transaction?.current_installment || 1}
+        totalInstallments={transaction?.installments || 1}
+        isRecurring={Boolean(transaction?.is_recurring)}
+        mode="edit"
+      />
+    )}
   </>
   );
 }
