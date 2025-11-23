@@ -32,6 +32,7 @@ interface FixedTransaction {
   category_id: string | null;
   account_id: string;
   is_fixed: boolean;
+  parent_transaction_id?: string | null;
   category?: { name: string; color: string } | null;
   account?: { name: string } | null;
 }
@@ -79,11 +80,12 @@ export function FixedTransactionsPage() {
           category_id,
           account_id,
           is_fixed,
+          parent_transaction_id,
           category:categories(name, color),
           account:accounts!transactions_account_id_fkey(name)
         `)
         .eq("user_id", user.id)
-        .eq("is_fixed", true)
+        .or("is_fixed.eq.true,parent_transaction_id.not.is.null")
         .neq("type", "transfer")
         .order("date", { ascending: false });
 
@@ -268,13 +270,16 @@ export function FixedTransactionsPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Extrair apenas os campos que foram passados (excluindo id e is_fixed)
-      const { id, is_fixed, ...updates } = transaction;
+      // Extrair apenas os campos que foram passados (excluindo id, is_fixed e parent_transaction_id)
+      const { id, is_fixed, parent_transaction_id, ...updates } = transaction;
+
+      // Determinar o ID da transação principal (parent)
+      const parentId = parent_transaction_id || id;
 
       let description = "";
 
       if (!scope || scope === "current") {
-        // Editar apenas a transação principal
+        // Editar apenas a transação atual
         const { error } = await supabase
           .from("transactions")
           .update(updates)
@@ -282,32 +287,45 @@ export function FixedTransactionsPage() {
         if (error) throw error;
         description = "Transação fixa atualizada com sucesso";
       } else if (scope === "current-and-remaining") {
-        // Editar a transação principal e apenas as pendentes
-        const { error: mainError } = await supabase
+        // Buscar a data da transação atual
+        const { data: currentTx } = await supabase
+          .from("transactions")
+          .select("date")
+          .eq("id", id)
+          .single();
+
+        if (!currentTx) throw new Error("Transação não encontrada");
+
+        // Editar esta transação
+        const { error: currentError } = await supabase
           .from("transactions")
           .update(updates)
           .eq("id", id);
-        if (mainError) throw mainError;
+        if (currentError) throw currentError;
 
-        const { error: childrenError } = await supabase
+        // Editar transações futuras (com data >= data atual)
+        const { error: futureError } = await supabase
           .from("transactions")
           .update(updates)
-          .eq("parent_transaction_id", id)
-          .eq("status", "pending");
-        if (childrenError) throw childrenError;
-        description = "Transação fixa e todas as pendentes atualizadas com sucesso";
+          .eq("parent_transaction_id", parentId)
+          .gte("date", currentTx.date)
+          .neq("id", id);
+        if (futureError) throw futureError;
+
+        description = "Transação fixa e todas as futuras atualizadas com sucesso";
       } else if (scope === "all") {
-        // Editar a transação principal e TODAS as filhas (incluindo completed)
+        // Editar a transação principal
         const { error: mainError } = await supabase
           .from("transactions")
           .update(updates)
-          .eq("id", id);
+          .eq("id", parentId);
         if (mainError) throw mainError;
 
+        // Editar TODAS as filhas
         const { error: childrenError } = await supabase
           .from("transactions")
           .update(updates)
-          .eq("parent_transaction_id", id);
+          .eq("parent_transaction_id", parentId);
         if (childrenError) throw childrenError;
         description = "Transação fixa e todas as ocorrências atualizadas com sucesso";
       }
@@ -352,10 +370,13 @@ export function FixedTransactionsPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
+      // Determinar o ID da transação principal (parent)
+      const parentId = pendingDeleteTransaction.parent_transaction_id || pendingDeleteTransaction.id;
+
       let description = "";
 
       if (scope === "current") {
-        // Deletar apenas a transação principal (não as filhas)
+        // Deletar apenas a transação atual
         const { error } = await supabase
           .from("transactions")
           .delete()
@@ -363,32 +384,30 @@ export function FixedTransactionsPage() {
         if (error) throw error;
         description = "Transação fixa removida com sucesso";
       } else if (scope === "current-and-remaining") {
-        // Deletar a transação principal e apenas as pendentes
-        const { error: childrenError } = await supabase
+        // Buscar a data da transação atual
+        const { data: currentTx } = await supabase
           .from("transactions")
-          .delete()
-          .eq("parent_transaction_id", pendingDeleteTransaction.id)
-          .eq("status", "pending");
-        if (childrenError) throw childrenError;
+          .select("date")
+          .eq("id", pendingDeleteTransaction.id)
+          .single();
 
+        if (!currentTx) throw new Error("Transação não encontrada");
+
+        // Deletar esta transação e transações futuras (com data >= data atual)
         const { error } = await supabase
           .from("transactions")
           .delete()
-          .eq("id", pendingDeleteTransaction.id);
+          .or(`id.eq.${pendingDeleteTransaction.id},and(parent_transaction_id.eq.${parentId},date.gte.${currentTx.date})`)
+          .eq("user_id", user.id);
         if (error) throw error;
-        description = "Transação fixa e todas as pendentes removidas com sucesso";
+        description = "Transação fixa e todas as futuras removidas com sucesso";
       } else if (scope === "all") {
-        // Deletar a transação principal e TODAS as filhas (incluindo completed)
-        const { error: childrenError } = await supabase
-          .from("transactions")
-          .delete()
-          .eq("parent_transaction_id", pendingDeleteTransaction.id);
-        if (childrenError) throw childrenError;
-
+        // Deletar a transação principal e TODAS as filhas
         const { error } = await supabase
           .from("transactions")
           .delete()
-          .eq("id", pendingDeleteTransaction.id);
+          .or(`id.eq.${parentId},parent_transaction_id.eq.${parentId}`)
+          .eq("user_id", user.id);
         if (error) throw error;
         description = "Transação fixa e todas as ocorrências removidas com sucesso";
       }
