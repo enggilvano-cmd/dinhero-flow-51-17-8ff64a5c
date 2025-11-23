@@ -2,24 +2,13 @@ import { useState, useMemo } from "react";
 import { useSettings } from "@/context/SettingsContext";
 import { logger } from "@/lib/logger";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   CreditCard,
   CalendarDays,
   TrendingUp,
   DollarSign,
   Search,
-  ChevronLeft,
-  ChevronRight,
 } from "lucide-react";
 import { useTransactions } from "@/hooks/queries/useTransactions";
 import { useAccounts } from "@/hooks/queries/useAccounts";
@@ -29,7 +18,8 @@ import { CreditCardBillCard } from "@/components/CreditCardBillCard";
 import { CreditBillDetailsModal } from "@/components/CreditBillDetailsModal";
 import { cn } from "@/lib/utils";
 import { format, addMonths, isPast } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { CreditBillFilterDialog } from "@/components/creditbills/CreditBillFilterDialog";
+import { CreditBillFilterChips } from "@/components/creditbills/CreditBillFilterChips";
 
 // This will be replaced with a method inside the component
 
@@ -74,6 +64,7 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
   const [selectedMonthOffset, setSelectedMonthOffset] = useState(0); // 0 = mês atual (pré-selecionado)
   const [filterBillStatus, setFilterBillStatus] = useState<"all" | "open" | "closed">("all");
   const [filterPaymentStatus, setFilterPaymentStatus] = useState<"all" | "paid" | "pending">("all");
+  const [filterDialogOpen, setFilterDialogOpen] = useState(false);
   const [selectedBillForDetails, setSelectedBillForDetails] = useState<{
     account: Account;
     transactions: AppTransaction[];
@@ -101,6 +92,66 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
   const selectedMonthDate = useMemo(() => {
     return addMonths(new Date(), selectedMonthOffset);
   }, [selectedMonthOffset]);
+
+  // Generate filter chips
+  const filterChips = useMemo(() => {
+    const chips = [];
+
+    // Account filter
+    if (selectedAccountId !== "all") {
+      const account = creditAccounts.find((a) => a.id === selectedAccountId);
+      if (account) {
+        chips.push({
+          id: "account",
+          label: `Cartão: ${account.name}`,
+          value: selectedAccountId,
+          color: account.color,
+          onRemove: () => setSelectedAccountId("all"),
+        });
+      }
+    }
+
+    // Bill status filter
+    if (filterBillStatus !== "all") {
+      const billStatusLabels = {
+        open: "Aberta",
+        closed: "Fechada",
+      };
+      chips.push({
+        id: "billStatus",
+        label: `Status: ${billStatusLabels[filterBillStatus as keyof typeof billStatusLabels]}`,
+        value: filterBillStatus,
+        onRemove: () => setFilterBillStatus("all"),
+      });
+    }
+
+    // Payment status filter
+    if (filterPaymentStatus !== "all") {
+      const paymentStatusLabels = {
+        paid: "Pago",
+        pending: "Pendente",
+      };
+      chips.push({
+        id: "paymentStatus",
+        label: `Pagamento: ${paymentStatusLabels[filterPaymentStatus as keyof typeof paymentStatusLabels]}`,
+        value: filterPaymentStatus,
+        onRemove: () => setFilterPaymentStatus("all"),
+      });
+    }
+
+    return chips;
+  }, [
+    selectedAccountId,
+    filterBillStatus,
+    filterPaymentStatus,
+    creditAccounts,
+  ]);
+
+  const clearAllFilters = () => {
+    setSelectedAccountId("all");
+    setFilterBillStatus("all");
+    setFilterPaymentStatus("all");
+  };
 
   // Memo para calcular os detalhes da fatura do mês selecionado (alinhado ao mês exibido)
   const allBillDetails = useMemo(() => {
@@ -327,106 +378,44 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
         </Card>
       </div>
 
-      {/* SEÇÃO DE FILTROS */}
+      {/* SEÇÃO DE FILTROS - ESTILO CHIPS */}
       <Card>
-        <CardContent className="p-2 sm:p-3">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-            {/* Cartão */}
-            <div className="lg:col-span-1">
-              <Label htmlFor="filterCard" className="text-caption">Cartão de Crédito</Label>
-              <Select value={selectedAccountId} onValueChange={setSelectedAccountId}>
-                <SelectTrigger className="touch-target mt-2" id="filterCard">
-                  <SelectValue placeholder="Selecione uma conta" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  {creditAccounts.map((account) => (
-                    <SelectItem key={account.id} value={account.id}>
-                      <div className="flex items-center gap-2">
-                        <div
-                          className="w-2 h-2 sm:w-3 sm:h-3 rounded-full flex-shrink-0"
-                          style={{
-                            backgroundColor: account.color || "#6b7280",
-                          }}
-                        />
-                        <span className="truncate">{account.name}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+        <CardContent className="p-4 space-y-4">
+          {/* Top bar: Filter button, chips, and search */}
+          <div className="flex flex-col gap-4">
+            {/* Filter button and active chips */}
+            <div className="flex flex-wrap items-center gap-3">
+              <CreditBillFilterDialog
+                open={filterDialogOpen}
+                onOpenChange={setFilterDialogOpen}
+                selectedAccountId={selectedAccountId}
+                onAccountChange={setSelectedAccountId}
+                filterBillStatus={filterBillStatus}
+                onBillStatusChange={(value) => setFilterBillStatus(value as any)}
+                filterPaymentStatus={filterPaymentStatus}
+                onPaymentStatusChange={(value) => setFilterPaymentStatus(value as any)}
+                selectedMonthOffset={selectedMonthOffset}
+                onMonthOffsetChange={setSelectedMonthOffset}
+                selectedInvoiceMonthDate={selectedInvoiceMonthDate}
+                creditAccounts={creditAccounts}
+                activeFiltersCount={filterChips.length}
+              />
+              
+              <CreditBillFilterChips
+                chips={filterChips}
+                onClearAll={clearAllFilters}
+              />
             </div>
 
-            {/* Status da Fatura (Aberta/Fechada) */}
-            <div className="lg:col-span-1">
-              <Label htmlFor="filterBillStatus" className="text-caption">Status da Fatura</Label>
-              <Select value={filterBillStatus} onValueChange={(value: any) => setFilterBillStatus(value)}>
-                <SelectTrigger className="touch-target mt-2" id="filterBillStatus">
-                  <SelectValue placeholder="Status da Fatura" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="open">Aberta</SelectItem>
-                  <SelectItem value="closed">Fechada</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Status de Pagamento */}
-            <div className="sm:col-span-2 lg:col-span-1">
-              <Label htmlFor="filterPaymentStatus" className="text-caption">Pagamento</Label>
-              <Select value={filterPaymentStatus} onValueChange={(value: any) => setFilterPaymentStatus(value)}>
-                <SelectTrigger className="touch-target mt-2" id="filterPaymentStatus">
-                  <SelectValue placeholder="Pagamento" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="paid">Pago</SelectItem>
-                  <SelectItem value="pending">Pendente</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-
-            {/* Busca */}
-            <div className="lg:col-span-1">
-              <Label htmlFor="search" className="text-caption">Buscar</Label>
-              <div className="relative mt-2">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="search"
-                  placeholder="Buscar..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 touch-target"
-                />
-              </div>
-            </div>
-
-            {/* Navegação de Mês */}
-            <div className="lg:col-span-1">
-              <Label className="text-caption">Período</Label>
-              <div className="flex items-center gap-1 px-3 border border-input rounded-md bg-background touch-target mt-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSelectedMonthOffset(selectedMonthOffset - 1)}
-                  className="h-6 w-6 p-0 flex-shrink-0"
-                >
-                  <ChevronLeft className="h-3 w-3" />
-                </Button>
-                <span className="flex-1 text-center text-system-body">
-                  {format(selectedInvoiceMonthDate, "MMMM 'de' yyyy", { locale: ptBR })}
-                </span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSelectedMonthOffset(selectedMonthOffset + 1)}
-                  className="h-6 w-6 p-0 flex-shrink-0"
-                >
-                  <ChevronRight className="h-3 w-3" />
-                </Button>
-              </div>
+            {/* Search */}
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar cartões..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
             </div>
           </div>
         </CardContent>
