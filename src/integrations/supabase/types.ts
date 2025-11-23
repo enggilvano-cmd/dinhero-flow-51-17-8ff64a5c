@@ -799,6 +799,7 @@ export type Database = {
         Args: never
         Returns: {
           error_count: number
+          error_details: Json
           processed_count: number
         }[]
       }
