@@ -9,34 +9,29 @@ export function AccountingPage() {
     <div className="spacing-responsive-lg fade-in pb-6 sm:pb-8">
 
       <Tabs defaultValue="reports" className="w-full">
-        <div className="overflow-x-auto -mx-2 px-2 sm:mx-0 sm:px-0">
-          <TabsList className="grid w-full grid-cols-3 gap-2 h-auto p-1 min-w-max sm:min-w-0">
-            <TabsTrigger 
-              value="reports" 
-              className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-            >
-              <BookOpen className="h-4 w-4" />
-              <span className="hidden sm:inline">Relatórios</span>
-              <span className="sm:hidden">Rel.</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="ledger" 
-              className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-            >
-              <BookText className="h-4 w-4" />
-              <span className="hidden sm:inline">Livro Razão</span>
-              <span className="sm:hidden">Razão</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="closure" 
-              className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-            >
-              <Calendar className="h-4 w-4" />
-              <span className="hidden sm:inline">Fechamento</span>
-              <span className="sm:hidden">Fech.</span>
-            </TabsTrigger>
-          </TabsList>
-        </div>
+        <TabsList className="grid grid-cols-2 sm:grid-cols-3 gap-2 h-auto p-2">
+          <TabsTrigger 
+            value="reports" 
+            className="gap-1.5 px-2 py-2.5 text-xs sm:text-sm h-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+          >
+            <BookOpen className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+            <span className="truncate">Relatórios</span>
+          </TabsTrigger>
+          <TabsTrigger 
+            value="ledger" 
+            className="gap-1.5 px-2 py-2.5 text-xs sm:text-sm h-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+          >
+            <BookText className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+            <span className="truncate">Livro Razão</span>
+          </TabsTrigger>
+          <TabsTrigger 
+            value="closure" 
+            className="gap-1.5 px-2 py-2.5 text-xs sm:text-sm h-auto col-span-2 sm:col-span-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+          >
+            <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+            <span className="truncate">Fechamento</span>
+          </TabsTrigger>
+        </TabsList>
 
         <TabsContent value="reports" className="mt-6">
           <AccountingReportsPage />

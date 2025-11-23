@@ -461,30 +461,28 @@ export function AccountingReportsPage() {
 
       {/* Abas de Relatórios */}
       <Tabs defaultValue="dre" className="space-y-4">
-        <div className="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0 pb-2">
-          <TabsList className="inline-flex w-auto gap-1.5 p-1 h-auto">
-            <TabsTrigger value="dre" className="flex items-center gap-1.5 flex-shrink-0 px-3 py-2 text-xs sm:text-sm">
-              <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
-              <span>DRE</span>
-            </TabsTrigger>
-            <TabsTrigger value="balance" className="flex items-center gap-1.5 flex-shrink-0 px-3 py-2 text-xs sm:text-sm">
-              <Scale className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
-              <span>Balanço</span>
-            </TabsTrigger>
-            <TabsTrigger value="cashflow" className="flex items-center gap-1.5 flex-shrink-0 px-3 py-2 text-xs sm:text-sm">
-              <Waves className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
-              <span>Fluxo</span>
-            </TabsTrigger>
-            <TabsTrigger value="trial-balance" className="flex items-center gap-1.5 flex-shrink-0 px-3 py-2 text-xs sm:text-sm">
-              <Wallet className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
-              <span>Balancete</span>
-            </TabsTrigger>
-            <TabsTrigger value="journal" className="flex items-center gap-1.5 flex-shrink-0 px-3 py-2 text-xs sm:text-sm">
-              <BookOpen className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
-              <span>Diário</span>
-            </TabsTrigger>
-          </TabsList>
-        </div>
+        <TabsList className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 h-auto p-2">
+          <TabsTrigger value="dre" className="flex items-center gap-1.5 px-2 py-2.5 text-xs sm:text-sm h-auto">
+            <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+            <span className="truncate">DRE</span>
+          </TabsTrigger>
+          <TabsTrigger value="balance" className="flex items-center gap-1.5 px-2 py-2.5 text-xs sm:text-sm h-auto">
+            <Scale className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+            <span className="truncate">Balanço</span>
+          </TabsTrigger>
+          <TabsTrigger value="cashflow" className="flex items-center gap-1.5 px-2 py-2.5 text-xs sm:text-sm h-auto">
+            <Waves className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+            <span className="truncate">Fluxo</span>
+          </TabsTrigger>
+          <TabsTrigger value="trial-balance" className="flex items-center gap-1.5 px-2 py-2.5 text-xs sm:text-sm h-auto">
+            <Wallet className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+            <span className="truncate">Balancete</span>
+          </TabsTrigger>
+          <TabsTrigger value="journal" className="flex items-center gap-1.5 px-2 py-2.5 text-xs sm:text-sm h-auto">
+            <BookOpen className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+            <span className="truncate">Diário</span>
+          </TabsTrigger>
+        </TabsList>
 
         {/* DRE */}
         <TabsContent value="dre">
