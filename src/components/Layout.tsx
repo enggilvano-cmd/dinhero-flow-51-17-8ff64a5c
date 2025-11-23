@@ -4,7 +4,6 @@ import {
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -97,21 +96,6 @@ function AppSidebar({ currentPage, onPageChange }: { currentPage: string; onPage
         </div>
 
         <SidebarGroup>
-          <SidebarGroupLabel className={cn(
-            "text-xs font-semibold text-muted-foreground uppercase tracking-wider",
-            isMobile 
-              ? "px-4 py-3" 
-              : isCollapsed 
-                ? "px-0 py-1 text-center" 
-                : "px-4 py-1"
-          )}>
-            {!isCollapsed || isMobile ? "MENU PRINCIPAL" : (
-              <div className="w-full flex justify-center">
-                <div className="w-8 h-px bg-border rounded-full"></div>
-              </div>
-            )}
-          </SidebarGroupLabel>
-          
           <SidebarGroupContent className={cn(
             isMobile 
               ? "px-4" 
