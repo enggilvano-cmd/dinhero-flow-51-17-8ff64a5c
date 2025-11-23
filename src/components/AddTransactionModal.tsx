@@ -35,6 +35,7 @@ import { queryKeys } from "@/lib/queryClient";
 import { ACCOUNT_TYPE_LABELS } from "@/types";
 import { AvailableBalanceIndicator } from "@/components/forms/AvailableBalanceIndicator";
 import { AddTransactionModalProps } from "@/types/formProps";
+import { validateCreditLimitForAdd } from "@/hooks/useBalanceValidation";
 
 export function AddTransactionModal({
   open,
@@ -234,79 +235,21 @@ export function AddTransactionModal({
       return;
     }
 
-    // ✅ Validação de saldo/limite para despesas
+    // ✅ Validação de saldo/limite usando função assíncrona centralizada
     if (type === 'expense') {
-      if (selectedAccount.type === 'credit') {
-        // Validação de limite de crédito
-        try {
-          // Buscar transações pendentes deste cartão
-          const { data: pendingTransactions, error: pendingError } = await supabase
-            .from('transactions')
-            .select('amount')
-            .eq('account_id', account_id)
-            .eq('type', 'expense')
-            .eq('status', 'pending');
+      const validationResult = await validateCreditLimitForAdd(
+        selectedAccount,
+        numericAmount,
+        type
+      );
 
-          if (pendingError) throw pendingError;
-
-          // Calcular valores
-          const limit = selectedAccount.limit_amount || 0;
-          const currentDebt = Math.abs(Math.min(selectedAccount.balance, 0)); // Dívida atual (completed)
-          const pendingExpenses = pendingTransactions?.reduce((sum, t) => sum + Math.abs(t.amount), 0) || 0;
-          const totalUsed = currentDebt + pendingExpenses;
-          const available = limit - totalUsed;
-
-          // Calcular o valor total que será gasto
-          const totalRequestedAmount = isInstallment 
-            ? numericAmount // Valor total parcelado
-            : numericAmount; // Valor único
-
-          // Verificar se excede o limite
-          if (totalRequestedAmount > available) {
-            const availableFormatted = (available / 100).toFixed(2);
-            const limitFormatted = (limit / 100).toFixed(2);
-            const usedFormatted = (totalUsed / 100).toFixed(2);
-            const requestedFormatted = (totalRequestedAmount / 100).toFixed(2);
-
-            toast({
-              title: "Limite de crédito excedido",
-              description: `Disponível: R$ ${availableFormatted} | Limite: R$ ${limitFormatted} | Usado: R$ ${usedFormatted} | Solicitado: R$ ${requestedFormatted}. Reduza o valor ou aumente o limite do cartão.`,
-              variant: "destructive",
-            });
-            return;
-          }
-        } catch (error) {
-          logger.error('Error validating credit limit:', error);
-          // Continue mesmo se a validação falhar (deixar o backend validar)
-        }
-      } else {
-        // Validação de saldo para contas normais (checking, savings, investment)
-        const currentBalance = selectedAccount.balance;
-        const availableWithLimit = currentBalance + (selectedAccount.limit_amount || 0);
-        
-        // Calcular o valor total que será gasto
-        const totalRequestedAmount = isInstallment 
-          ? numericAmount // Valor total parcelado será verificado na primeira parcela
-          : numericAmount;
-
-        // Verificar se tem saldo suficiente
-        if (totalRequestedAmount > availableWithLimit) {
-          const balanceFormatted = (currentBalance / 100).toFixed(2);
-          const limitFormatted = ((selectedAccount.limit_amount || 0) / 100).toFixed(2);
-          const availableFormatted = (availableWithLimit / 100).toFixed(2);
-          const requestedFormatted = (totalRequestedAmount / 100).toFixed(2);
-
-          const message = selectedAccount.limit_amount 
-            ? `Saldo insuficiente. Disponível: R$ ${availableFormatted} (Saldo: R$ ${balanceFormatted} + Limite: R$ ${limitFormatted}) | Solicitado: R$ ${requestedFormatted}`
-            : `Saldo insuficiente. Disponível: R$ ${balanceFormatted} | Solicitado: R$ ${requestedFormatted}`;
-
-          toast({
-            title: "Saldo insuficiente",
-            description: message,
-            variant: "destructive",
-          });
-          return;
-        }
+      if (!validationResult.isValid) {
+        toast({
+          title: validationResult.message,
+          description: validationResult.errorMessage || 'Saldo ou limite insuficiente',
+          variant: "destructive",
+        });
+        return;
       }
     }
 

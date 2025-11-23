@@ -222,6 +222,149 @@ export function useBalanceValidation({
 }
 
 /**
+ * Validação assíncrona para adicionar transações em cartão de crédito
+ * Considera transações pendentes para validação precisa do limite disponível
+ */
+export async function validateCreditLimitForAdd(
+  account: Account,
+  amountInCents: number,
+  transactionType: 'income' | 'expense'
+): Promise<BalanceValidationResult> {
+  try {
+    // Receitas sempre são válidas
+    if (transactionType === 'income') {
+      return {
+        isValid: true,
+        status: 'success',
+        message: 'Pagamento',
+        details: {
+          currentBalance: account.balance,
+          limit: account.limit_amount || 0,
+          available: account.balance + (account.limit_amount || 0),
+          balanceAfter: account.balance + amountInCents,
+        },
+      };
+    }
+
+    // Para contas não-crédito, usar validação síncrona simples
+    if (account.type !== 'credit') {
+      const currentBalance = account.balance;
+      const limit = account.limit_amount || 0;
+      const available = currentBalance + limit;
+      const balanceAfter = currentBalance - amountInCents;
+
+      if (amountInCents > available) {
+        return {
+          isValid: false,
+          status: 'danger',
+          message: 'Saldo insuficiente',
+          details: {
+            currentBalance,
+            limit,
+            available,
+            balanceAfter,
+          },
+          errorMessage: `Disponível: ${formatCurrency(available)} | Saldo: ${formatCurrency(currentBalance)}${limit > 0 ? ` + Limite: ${formatCurrency(limit)}` : ''} | Solicitado: ${formatCurrency(amountInCents)}`,
+        };
+      }
+
+      return {
+        isValid: true,
+        status: 'success',
+        message: 'Saldo suficiente',
+        details: {
+          currentBalance,
+          limit,
+          available,
+          balanceAfter,
+        },
+      };
+    }
+
+    // Para cartões de crédito, buscar transações pendentes
+    const { data: pendingTransactions, error: pendingError } = await supabase
+      .from('transactions')
+      .select('amount')
+      .eq('account_id', account.id)
+      .eq('type', 'expense')
+      .eq('status', 'pending');
+
+    if (pendingError) throw pendingError;
+
+    // Calcular valores
+    const limit = account.limit_amount || 0;
+    const currentDebt = Math.abs(Math.min(account.balance, 0)); // Dívida atual (completed)
+    const pendingExpenses = pendingTransactions?.reduce((sum, t) => sum + Math.abs(t.amount), 0) || 0;
+    const totalUsed = currentDebt + pendingExpenses;
+    const available = limit - totalUsed;
+
+    // Validar se excede o limite
+    if (amountInCents > available) {
+      return {
+        isValid: false,
+        status: 'danger',
+        message: 'Limite de crédito excedido',
+        details: {
+          currentBalance: account.balance,
+          limit,
+          available,
+          balanceAfter: account.balance - amountInCents,
+          used: totalUsed,
+          pending: pendingExpenses,
+        },
+        errorMessage: `Disponível: ${formatCurrency(available)} | Limite: ${formatCurrency(limit)} | Usado: ${formatCurrency(totalUsed)} | Solicitado: ${formatCurrency(amountInCents)}`,
+      };
+    }
+
+    // Warning se próximo ao limite
+    const remaining = available - amountInCents;
+    if (remaining < limit * 0.2 && remaining > 0) {
+      return {
+        isValid: true,
+        status: 'warning',
+        message: 'Próximo ao limite',
+        details: {
+          currentBalance: account.balance,
+          limit,
+          available,
+          balanceAfter: account.balance - amountInCents,
+          used: totalUsed,
+          pending: pendingExpenses,
+        },
+      };
+    }
+
+    return {
+      isValid: true,
+      status: 'success',
+      message: 'Limite disponível',
+      details: {
+        currentBalance: account.balance,
+        limit,
+        available,
+        balanceAfter: account.balance - amountInCents,
+        used: totalUsed,
+        pending: pendingExpenses,
+      },
+    };
+  } catch (error) {
+    console.error('Error validating credit limit:', error);
+    // Em caso de erro, retornar válido e deixar backend validar
+    return {
+      isValid: true,
+      status: 'success',
+      message: 'Validação delegada ao servidor',
+      details: {
+        currentBalance: account.balance,
+        limit: account.limit_amount || 0,
+        available: (account.limit_amount || 0) - Math.abs(Math.min(account.balance, 0)),
+        balanceAfter: account.balance - amountInCents,
+      },
+    };
+  }
+}
+
+/**
  * Validação assíncrona para edição de transações em cartão de crédito
  * Considera transações pendentes e exclui a transação sendo editada
  */
