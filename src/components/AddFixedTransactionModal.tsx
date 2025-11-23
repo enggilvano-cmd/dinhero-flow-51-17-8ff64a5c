@@ -142,8 +142,8 @@ export function AddFixedTransactionModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Nova Transação Fixa</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-headline">Nova Transação Fixa</DialogTitle>
+          <DialogDescription className="text-body">
             Adicione uma receita ou despesa que se repete todo mês, sem data de término.
           </DialogDescription>
         </DialogHeader>
@@ -258,7 +258,7 @@ export function AddFixedTransactionModal({
                 setFormData({ ...formData, date: e.target.value })
               }
             />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-caption text-muted-foreground">
               A transação será gerada automaticamente todo dia {new Date(formData.date).getDate()} de cada mês.
             </p>
           </div>

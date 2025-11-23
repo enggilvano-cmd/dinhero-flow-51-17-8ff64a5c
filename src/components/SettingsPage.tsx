@@ -290,15 +290,15 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
     <div className="space-y-6 fade-in pb-6 sm:pb-8 max-w-[1400px] mx-auto">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold leading-tight mb-2">Configurações</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-display font-bold leading-tight mb-2">Configurações</h1>
+        <p className="text-body text-muted-foreground">
           Gerencie suas preferências e configurações do sistema
         </p>
       </div>
 
       {/* Seção: Preferências */}
       <div>
-        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+        <h2 className="text-headline font-semibold mb-4 flex items-center gap-2">
           <Settings className="h-5 w-5" />
           Preferências
         </h2>
@@ -306,12 +306,12 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
           {/* General Settings */}
           <Card className="financial-card">
             <CardHeader>
-              <CardTitle className="text-base">Aparência</CardTitle>
+              <CardTitle className="text-body-large">Aparência</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="theme">Tema</Label>
-                <p className="text-xs text-muted-foreground mb-2">
+                <p className="text-caption text-muted-foreground mb-2">
                   Escolha a aparência do aplicativo
                 </p>
                 <Select 
@@ -338,7 +338,7 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
           {/* Notifications */}
           <Card className="financial-card lg:col-span-2">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
+              <CardTitle className="flex items-center gap-2 text-body-large">
                 <Bell className="h-5 w-5" />
                 Notificações e Automação
               </CardTitle>
@@ -346,8 +346,8 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between p-4 rounded-lg border bg-card">
                 <div className="space-y-1 flex-1">
-                  <Label className="text-base">Notificações do Sistema</Label>
-                  <p className="text-sm text-muted-foreground">
+                  <Label className="text-body-large">Notificações do Sistema</Label>
+                  <p className="text-body text-muted-foreground">
                     Receber lembretes e alertas importantes
                   </p>
                 </div>
@@ -359,8 +359,8 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
 
               <div className="flex items-center justify-between p-4 rounded-lg border bg-card">
                 <div className="space-y-1 flex-1">
-                  <Label className="text-base">Backup Automático</Label>
-                  <p className="text-sm text-muted-foreground">
+                  <Label className="text-body-large">Backup Automático</Label>
+                  <p className="text-body text-muted-foreground">
                     Backup automático dos dados localmente
                   </p>
                 </div>
@@ -378,7 +378,7 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
 
       {/* Seção: Gerenciamento de Dados */}
       <div>
-        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+        <h2 className="text-headline font-semibold mb-4 flex items-center gap-2">
           <Database className="h-5 w-5" />
           Gerenciamento de Dados
         </h2>
@@ -386,11 +386,11 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
           {/* Backup Manual */}
           <Card className="financial-card">
             <CardHeader>
-              <CardTitle className="text-base">Backup Manual</CardTitle>
+              <CardTitle className="text-body-large">Backup Manual</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-3">
-                <p className="text-sm text-muted-foreground">
+                <p className="text-body text-muted-foreground">
                   Faça backup dos seus dados manualmente a qualquer momento
                 </p>
                 <div className="grid grid-cols-1 gap-3">
@@ -421,7 +421,7 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
                     </Button>
                   </div>
                   
-                  <p className="text-xs text-muted-foreground mt-2">
+                  <p className="text-caption text-muted-foreground mt-2">
                     Formato JSON completo para backup e restauração de todos os seus dados.
                   </p>
                 </div>
@@ -432,13 +432,13 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
           {/* Zona de Perigo */}
           <Card className="financial-card border-destructive/50">
             <CardHeader>
-              <CardTitle className="text-base text-destructive flex items-center gap-2">
+              <CardTitle className="text-body-large text-destructive flex items-center gap-2">
                 <Trash2 className="h-5 w-5" />
                 Zona de Perigo
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">
+              <p className="text-body text-muted-foreground">
                 Para apagar todos os dados, digite "APAGAR TUDO" no campo abaixo e clique no botão.
               </p>
               <div className="space-y-3">
@@ -458,7 +458,7 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
                   <Trash2 className="h-4 w-4" />
                   Apagar Todos os Dados Permanentemente
                 </Button>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-body text-muted-foreground">
                   Esta ação irá remover permanentemente todas as suas contas, transações e configurações.
                 </p>
               </div>
@@ -471,7 +471,7 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
 
       {/* Backups Agendados */}
       <div>
-        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+        <h2 className="text-headline font-semibold mb-4 flex items-center gap-2">
           <Clock className="h-5 w-5" />
           Backups Agendados
         </h2>
@@ -481,8 +481,8 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
               {/* Configuração de Agendamento */}
               <div className="space-y-4">
                 <div>
-                  <h4 className="font-medium mb-2">Configurar Backup Automático</h4>
-                  <p className="text-sm text-muted-foreground mb-4">
+                  <h4 className="text-body-large font-medium mb-2">Configurar Backup Automático</h4>
+                  <p className="text-body text-muted-foreground mb-4">
                     Os backups são salvos na nuvem e podem ser baixados a qualquer momento
                   </p>
                 </div>

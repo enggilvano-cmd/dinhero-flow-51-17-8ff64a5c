@@ -235,7 +235,7 @@ export function RecurringTransactionsPage() {
                 <p className="text-caption font-medium text-muted-foreground">
                   Total de Recorrentes
                 </p>
-                <div className="text-responsive-xl font-bold leading-tight">
+                <div className="text-title font-bold leading-tight">
                   {stats.total}
                 </div>
               </div>
@@ -253,7 +253,7 @@ export function RecurringTransactionsPage() {
                 <p className="text-caption font-medium text-muted-foreground">
                   Receitas Mensais
                 </p>
-                <div className="text-responsive-xl font-bold balance-positive leading-tight">
+                <div className="balance-text font-bold balance-positive leading-tight">
                   {formatCents(stats.monthlyIncome)}
                 </div>
               </div>
@@ -271,7 +271,7 @@ export function RecurringTransactionsPage() {
                 <p className="text-caption font-medium text-muted-foreground">
                   Despesas Mensais
                 </p>
-                <div className="text-responsive-xl font-bold balance-negative leading-tight">
+                <div className="balance-text font-bold balance-negative leading-tight">
                   {formatCents(stats.monthlyExpenses)}
                 </div>
               </div>
@@ -332,7 +332,7 @@ export function RecurringTransactionsPage() {
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <div className="space-y-1 flex-1">
-                    <CardTitle className="text-lg flex items-center gap-2">
+                    <CardTitle className="text-headline flex items-center gap-2">
                       {transaction.description}
                       <Badge variant={transaction.type === "income" ? "default" : "secondary"}>
                         {transaction.type === "income" ? "Receita" : "Despesa"}
@@ -344,7 +344,7 @@ export function RecurringTransactionsPage() {
                     </CardDescription>
                   </div>
                   <div className="text-right">
-                    <div className={`text-xl font-bold ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
+                    <div className={`balance-text font-bold ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
                       {transaction.type === 'income' ? '+' : '-'} {formatCents(Math.abs(transaction.amount))}
                     </div>
                   </div>
@@ -352,7 +352,7 @@ export function RecurringTransactionsPage() {
               </CardHeader>
               <CardContent className="pt-0">
                 <div className="flex items-center justify-between">
-                  <div className="space-y-2 text-sm">
+                  <div className="space-y-2 text-body">
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Calendar className="h-3 w-3" />
                       {format(new Date(transaction.date), "dd/MM/yyyy", { locale: ptBR })}
