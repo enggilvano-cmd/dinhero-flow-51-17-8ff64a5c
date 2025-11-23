@@ -263,36 +263,58 @@ export function FixedTransactionsPage() {
     }
   };
 
-  const handleEdit = async (transaction: FixedTransaction) => {
+  const handleEdit = async (transaction: FixedTransaction, scope?: EditScope) => {
     try {
-      // Na página de Transações Fixas, sempre editar a transação principal e todas as pendentes
-      const updates = {
-        description: transaction.description,
-        amount: transaction.amount,
-        type: transaction.type,
-        category_id: transaction.category_id,
-        account_id: transaction.account_id,
-        date: transaction.date,
-      };
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-      // Editar a transação principal
-      const { error: mainError } = await supabase
-        .from("transactions")
-        .update(updates)
-        .eq("id", transaction.id);
-      if (mainError) throw mainError;
+      // Extrair apenas os campos que foram passados (excluindo id e is_fixed)
+      const { id, is_fixed, ...updates } = transaction;
 
-      // Editar todas as transações pendentes geradas
-      const { error: childrenError } = await supabase
-        .from("transactions")
-        .update(updates)
-        .eq("parent_transaction_id", transaction.id)
-        .eq("status", "pending");
-      if (childrenError) throw childrenError;
+      let description = "";
+
+      if (!scope || scope === "current") {
+        // Editar apenas a transação principal
+        const { error } = await supabase
+          .from("transactions")
+          .update(updates)
+          .eq("id", id);
+        if (error) throw error;
+        description = "Transação fixa atualizada com sucesso";
+      } else if (scope === "current-and-remaining") {
+        // Editar a transação principal e apenas as pendentes
+        const { error: mainError } = await supabase
+          .from("transactions")
+          .update(updates)
+          .eq("id", id);
+        if (mainError) throw mainError;
+
+        const { error: childrenError } = await supabase
+          .from("transactions")
+          .update(updates)
+          .eq("parent_transaction_id", id)
+          .eq("status", "pending");
+        if (childrenError) throw childrenError;
+        description = "Transação fixa e todas as pendentes atualizadas com sucesso";
+      } else if (scope === "all") {
+        // Editar a transação principal e TODAS as filhas (incluindo completed)
+        const { error: mainError } = await supabase
+          .from("transactions")
+          .update(updates)
+          .eq("id", id);
+        if (mainError) throw mainError;
+
+        const { error: childrenError } = await supabase
+          .from("transactions")
+          .update(updates)
+          .eq("parent_transaction_id", id);
+        if (childrenError) throw childrenError;
+        description = "Transação fixa e todas as ocorrências atualizadas com sucesso";
+      }
 
       toast({
         title: "Transação atualizada",
-        description: "A transação fixa e todas as pendentes foram atualizadas com sucesso.",
+        description,
       });
 
       // 🔄 Sincronizar listas e dashboard imediatamente
