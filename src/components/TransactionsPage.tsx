@@ -84,6 +84,14 @@ interface TransactionsPageProps {
   sortOrder: "asc" | "desc";
   onSortOrderChange: (order: "asc" | "desc") => void;
   isLoading?: boolean;
+  periodFilter: "all" | "current_month" | "month_picker" | "custom";
+  onPeriodFilterChange: (value: "all" | "current_month" | "month_picker" | "custom") => void;
+  selectedMonth: Date;
+  onSelectedMonthChange: (date: Date) => void;
+  customStartDate: Date | undefined;
+  onCustomStartDateChange: (date: Date | undefined) => void;
+  customEndDate: Date | undefined;
+  onCustomEndDateChange: (date: Date | undefined) => void;
 }
 
 export function TransactionsPage({
@@ -120,13 +128,15 @@ export function TransactionsPage({
   sortOrder,
   onSortOrderChange,
   isLoading = false,
+  periodFilter,
+  onPeriodFilterChange,
+  selectedMonth,
+  onSelectedMonthChange,
+  customStartDate,
+  onCustomStartDateChange,
+  customEndDate,
+  onCustomEndDateChange,
 }: TransactionsPageProps) {
-  const [dateFilter, setDateFilter] = useState<
-    "all" | "current_month" | "month_picker" | "custom"
-  >("all");
-  const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
-  const [customStartDate, setCustomStartDate] = useState<Date | undefined>(undefined);
-  const [customEndDate, setCustomEndDate] = useState<Date | undefined>(undefined);
   const [startDatePickerOpen, setStartDatePickerOpen] = useState(false);
   const [endDatePickerOpen, setEndDatePickerOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
@@ -171,8 +181,8 @@ export function TransactionsPage({
   }, [accounts, filterAccountType]);
 
   // Handle date filter changes
-  const handleDateFilterChange = (value: string) => {
-    setDateFilter(value as any);
+  const handleDateFilterChange = (value: "all" | "current_month" | "month_picker" | "custom") => {
+    onPeriodFilterChange(value);
     
     if (value === "current_month") {
       const now = new Date();
@@ -186,9 +196,8 @@ export function TransactionsPage({
     }
   };
 
-  const handleMonthChange = (direction: 'prev' | 'next') => {
-    const newMonth = direction === 'prev' ? subMonths(selectedMonth, 1) : addMonths(selectedMonth, 1);
-    setSelectedMonth(newMonth);
+  const handleMonthChange = (newMonth: Date) => {
+    onSelectedMonthChange(newMonth);
     const start = startOfMonth(newMonth);
     const end = endOfMonth(newMonth);
     onDateFromChange(format(start, 'yyyy-MM-dd'));
@@ -196,8 +205,8 @@ export function TransactionsPage({
   };
 
   const handleCustomDateChange = (startDate: Date | undefined, endDate: Date | undefined) => {
-    setCustomStartDate(startDate);
-    setCustomEndDate(endDate);
+    onCustomStartDateChange(startDate);
+    onCustomEndDateChange(endDate);
     if (startDate && endDate) {
       onDateFromChange(format(startDate, 'yyyy-MM-dd'));
       onDateToChange(format(endDate, 'yyyy-MM-dd'));
@@ -515,12 +524,12 @@ export function TransactionsPage({
 
             {/* Período */}
             <div>
-              <Label htmlFor="dateFilter" className="text-caption">Personalizado</Label>
+              <Label htmlFor="periodFilter" className="text-caption">Personalizado</Label>
               <Select
-                value={dateFilter}
+                value={periodFilter}
                 onValueChange={handleDateFilterChange}
               >
-                <SelectTrigger className="touch-target mt-2" id="dateFilter">
+                <SelectTrigger className="touch-target mt-2" id="periodFilter">
                   <SelectValue placeholder="Período" />
                 </SelectTrigger>
                 <SelectContent>
@@ -578,13 +587,13 @@ export function TransactionsPage({
           </div>
 
           {/* Controles de data - mostrar apenas quando necessário */}
-          {dateFilter === "month_picker" && (
+          {periodFilter === "month_picker" && (
             <div className="border-t border-border mt-4 pt-4">
               <div className="flex items-center gap-1 px-3 border border-input rounded-md bg-background max-w-xs mx-auto touch-target">
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => handleMonthChange('prev')}
+                  onClick={() => handleMonthChange(subMonths(selectedMonth, 1))}
                   className="h-6 w-6 p-0 flex-shrink-0"
                 >
                   <ChevronLeft className="h-3 w-3" />
@@ -597,7 +606,7 @@ export function TransactionsPage({
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => handleMonthChange('next')}
+                  onClick={() => handleMonthChange(addMonths(selectedMonth, 1))}
                   className="h-6 w-6 p-0 flex-shrink-0"
                 >
                   <ChevronRight className="h-3 w-3" />
@@ -605,7 +614,7 @@ export function TransactionsPage({
               </div>
             </div>
           )}
-          {dateFilter === "custom" && (
+          {periodFilter === "custom" && (
             <div className="border-t border-border mt-4 pt-4">
               <div className="grid grid-cols-2 gap-2 sm:gap-3 max-w-xs mx-auto">
                 <Popover
