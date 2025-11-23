@@ -379,7 +379,7 @@ export function AddTransactionModal({
               : undefined;
 
             const transaction = {
-              description: `${description} (${i + 1}/${installments})`,
+              description: description,
               // O valor é sempre positivo aqui. O backend aplicará o sinal.
               amount: installmentAmount,
               date: installmentDate,
@@ -422,7 +422,7 @@ export function AddTransactionModal({
               i === 0 && installmentDateStr <= todayStr ? status : "pending";
 
             const transaction = {
-              description: `${description} (${i + 1}/${installments})`,
+              description: description,
               amount: installmentAmount,
               date: installmentDate,
               type: type as "income" | "expense",
