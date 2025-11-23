@@ -15,9 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Filter, ChevronLeft, ChevronRight } from "lucide-react";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { Filter } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface CreditBillFilterDialogProps {
@@ -29,9 +27,6 @@ interface CreditBillFilterDialogProps {
   onBillStatusChange: (value: string) => void;
   filterPaymentStatus: string;
   onPaymentStatusChange: (value: string) => void;
-  selectedMonthOffset: number;
-  onMonthOffsetChange: (offset: number) => void;
-  selectedInvoiceMonthDate: Date;
   creditAccounts: any[];
   activeFiltersCount: number;
 }
@@ -45,9 +40,6 @@ export function CreditBillFilterDialog({
   onBillStatusChange,
   filterPaymentStatus,
   onPaymentStatusChange,
-  selectedMonthOffset,
-  onMonthOffsetChange,
-  selectedInvoiceMonthDate,
   creditAccounts,
   activeFiltersCount,
 }: CreditBillFilterDialogProps) {
@@ -125,34 +117,6 @@ export function CreditBillFilterDialog({
                   <SelectItem value="pending">Pendente</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-          </div>
-
-          {/* Período */}
-          <div>
-            <Label>Período da Fatura</Label>
-            <div className="border rounded-lg p-4 bg-muted/30 mt-2">
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => onMonthOffsetChange(selectedMonthOffset - 1)}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <div className="flex-1 text-center">
-                  <Badge variant="secondary" className="px-4 py-2 text-sm">
-                    {format(selectedInvoiceMonthDate, "MMMM 'de' yyyy", { locale: ptBR })}
-                  </Badge>
-                </div>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => onMonthOffsetChange(selectedMonthOffset + 1)}
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
             </div>
           </div>
         </div>
