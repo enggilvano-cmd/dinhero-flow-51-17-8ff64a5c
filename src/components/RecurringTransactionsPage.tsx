@@ -112,8 +112,11 @@ export function RecurringTransactionsPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Extrair apenas os campos que foram passados (excluindo id e date)
+      // Extrair apenas os campos que foram passados (excluindo id, date e parent_transaction_id)
       const { id, date, parent_transaction_id, ...updates } = updatedTransaction;
+
+      // Determinar o ID da transação principal (parent)
+      const parentId = parent_transaction_id || id;
 
       let description = "";
 
@@ -126,40 +129,41 @@ export function RecurringTransactionsPage() {
         if (error) throw error;
         description = "Transação recorrente atualizada com sucesso";
       } else if (scope === "current-and-remaining") {
-        // Editar esta e todas as transações futuras desta série
-        if (parent_transaction_id) {
-          // Tem parent, buscar irmãs
-          const { error } = await supabase
-            .from('transactions')
-            .update(updates)
-            .eq('parent_transaction_id', parent_transaction_id)
-            .gte('date', date);
-          if (error) throw error;
-        } else {
-          // É a parent, buscar filhas
-          const { error: mainError } = await supabase
-            .from('transactions')
-            .update(updates)
-            .eq('id', id);
-          if (mainError) throw mainError;
+        // Buscar a data da transação atual
+        const { data: currentTx } = await supabase
+          .from('transactions')
+          .select('date')
+          .eq('id', id)
+          .single();
 
-          const { error: childrenError } = await supabase
-            .from('transactions')
-            .update(updates)
-            .eq('parent_transaction_id', id)
-            .gte('date', date);
-          if (childrenError) throw childrenError;
-        }
+        if (!currentTx) throw new Error("Transação não encontrada");
+
+        // Editar esta transação
+        const { error: currentError } = await supabase
+          .from('transactions')
+          .update(updates)
+          .eq('id', id);
+        if (currentError) throw currentError;
+
+        // Editar transações futuras (com data >= data atual)
+        const { error: futureError } = await supabase
+          .from('transactions')
+          .update(updates)
+          .eq('parent_transaction_id', parentId)
+          .gte('date', currentTx.date)
+          .neq('id', id);
+        if (futureError) throw futureError;
+
         description = "Transação recorrente e futuras atualizadas com sucesso";
       } else if (scope === "all") {
         // Editar toda a série
-        const parentId = parent_transaction_id || id;
         const { error: mainError } = await supabase
           .from('transactions')
           .update(updates)
           .eq('id', parentId);
         if (mainError) throw mainError;
 
+        // Editar TODAS as filhas
         const { error: childrenError } = await supabase
           .from('transactions')
           .update(updates)
@@ -201,6 +205,9 @@ export function RecurringTransactionsPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
+      // Determinar o ID da transação principal (parent)
+      const parentId = pendingDeleteTransaction.parent_transaction_id || pendingDeleteTransaction.id;
+
       let description = "";
 
       if (scope === "current") {
@@ -212,18 +219,25 @@ export function RecurringTransactionsPage() {
         if (error) throw error;
         description = "Transação recorrente removida com sucesso";
       } else if (scope === "current-and-remaining") {
-        // Deletar esta e todas as transações futuras desta série
+        // Buscar a data da transação atual
+        const { data: currentTx } = await supabase
+          .from('transactions')
+          .select('date')
+          .eq('id', pendingDeleteTransaction.id)
+          .single();
+
+        if (!currentTx) throw new Error("Transação não encontrada");
+
+        // Deletar esta transação e transações futuras (com data >= data atual)
         const { error } = await supabase
           .from('transactions')
           .delete()
-          .eq('user_id', user.id)
-          .eq('parent_transaction_id', pendingDeleteTransaction.parent_transaction_id || pendingDeleteTransaction.id)
-          .gte('date', pendingDeleteTransaction.date);
+          .or(`id.eq.${pendingDeleteTransaction.id},and(parent_transaction_id.eq.${parentId},date.gte.${currentTx.date})`)
+          .eq('user_id', user.id);
         if (error) throw error;
         description = "Transação recorrente e futuras removidas com sucesso";
       } else if (scope === "all") {
         // Deletar toda a série
-        const parentId = pendingDeleteTransaction.parent_transaction_id || pendingDeleteTransaction.id;
         const { error } = await supabase
           .from('transactions')
           .delete()
