@@ -13,43 +13,32 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Label } from "@/components/ui/label";
 import {
   Plus,
   Search,
   TrendingUp,
   TrendingDown,
-  CalendarIcon,
   Download,
   Upload,
   BarChart3,
   DollarSign,
-  ChevronLeft,
-  ChevronRight,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { TransactionList } from "@/components/transactions/TransactionList";
 import { supabase } from "@/integrations/supabase/client";
 import { logger } from "@/lib/logger";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import {
-  format,
   startOfMonth,
   endOfMonth,
-  addMonths,
-  subMonths,
 } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { cn } from "@/lib/utils";
 import { ImportTransactionsModal } from "./ImportTransactionsModal";
 import { EditScope, TransactionScopeDialog } from "./TransactionScopeDialog";
 import { FixedTransactionScopeDialog, FixedScope } from "./FixedTransactionScopeDialog";
 import { PaginationControls } from "@/components/ui/pagination-controls";
+import { TransactionFilterChips } from "@/components/transactions/TransactionFilterChips";
+import { TransactionFilterDialog } from "@/components/transactions/TransactionFilterDialog";
 
 interface TransactionsPageProps {
   transactions: any[];
@@ -140,13 +129,12 @@ export function TransactionsPage({
   customEndDate,
   onCustomEndDateChange,
 }: TransactionsPageProps) {
-  const [startDatePickerOpen, setStartDatePickerOpen] = useState(false);
-  const [endDatePickerOpen, setEndDatePickerOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [scopeDialogOpen, setScopeDialogOpen] = useState(false);
   const [pendingDeleteTransaction, setPendingDeleteTransaction] = useState<any>(null);
   const [pendingTransactionsCount, setPendingTransactionsCount] = useState(0);
   const [hasCompletedTransactions, setHasCompletedTransactions] = useState(false);
+  const [filterDialogOpen, setFilterDialogOpen] = useState(false);
   
   // Local search state with debounce
   const [localSearch, setLocalSearch] = useState(search);
@@ -209,16 +197,134 @@ export function TransactionsPage({
     onDateToChange(format(end, 'yyyy-MM-dd'));
   };
 
-  const handleCustomDateChange = (startDate: Date | undefined, endDate: Date | undefined) => {
-    onCustomStartDateChange(startDate);
-    onCustomEndDateChange(endDate);
-    if (startDate && endDate) {
-      onDateFromChange(format(startDate, 'yyyy-MM-dd'));
-      onDateToChange(format(endDate, 'yyyy-MM-dd'));
-    } else {
-      onDateFromChange(undefined);
-      onDateToChange(undefined);
+  // Update date range when custom dates change
+  useEffect(() => {
+    if (periodFilter === "custom" && customStartDate && customEndDate) {
+      onDateFromChange(format(customStartDate, 'yyyy-MM-dd'));
+      onDateToChange(format(customEndDate, 'yyyy-MM-dd'));
     }
+  }, [customStartDate, customEndDate, periodFilter]);
+
+  // Generate filter chips
+  const filterChips = useMemo(() => {
+    const chips = [];
+
+    // Type filter
+    if (filterType !== "all") {
+      const typeLabels = {
+        income: "Receita",
+        expense: "Despesa",
+        transfer: "Transferência",
+      };
+      chips.push({
+        id: "type",
+        label: `Tipo: ${typeLabels[filterType as keyof typeof typeLabels]}`,
+        value: filterType,
+        onRemove: () => onFilterTypeChange("all"),
+      });
+    }
+
+    // Status filter
+    if (filterStatus !== "all") {
+      const statusLabels = {
+        completed: "Concluído",
+        pending: "Pendente",
+      };
+      chips.push({
+        id: "status",
+        label: `Status: ${statusLabels[filterStatus as keyof typeof statusLabels]}`,
+        value: filterStatus,
+        onRemove: () => onFilterStatusChange("all"),
+      });
+    }
+
+    // Account type filter
+    if (filterAccountType !== "all") {
+      const accountTypeLabels = {
+        checking: "Conta Corrente",
+        credit: "Cartão de Crédito",
+        investment: "Investimento",
+        savings: "Poupança",
+      };
+      chips.push({
+        id: "accountType",
+        label: `Tipo: ${accountTypeLabels[filterAccountType as keyof typeof accountTypeLabels]}`,
+        value: filterAccountType,
+        onRemove: () => onFilterAccountTypeChange("all"),
+      });
+    }
+
+    // Specific account filter
+    if (filterAccount !== "all") {
+      const account = accounts.find((a) => a.id === filterAccount);
+      if (account) {
+        chips.push({
+          id: "account",
+          label: `Conta: ${account.name}`,
+          value: filterAccount,
+          color: account.color,
+          onRemove: () => onFilterAccountChange("all"),
+        });
+      }
+    }
+
+    // Category filter
+    if (filterCategory !== "all") {
+      const category = categories.find((c) => c.id === filterCategory);
+      if (category) {
+        chips.push({
+          id: "category",
+          label: `Categoria: ${category.name}`,
+          value: filterCategory,
+          color: category.color,
+          onRemove: () => onFilterCategoryChange("all"),
+        });
+      }
+    }
+
+    // Period filter
+    if (periodFilter !== "all") {
+      let periodLabel = "";
+      if (periodFilter === "current_month") {
+        periodLabel = "Mês Atual";
+      } else if (periodFilter === "month_picker") {
+        periodLabel = format(selectedMonth, "MMMM 'de' yyyy", { locale: ptBR });
+      } else if (periodFilter === "custom" && customStartDate && customEndDate) {
+        periodLabel = `${format(customStartDate, "dd/MM/yyyy")} - ${format(customEndDate, "dd/MM/yyyy")}`;
+      }
+      
+      if (periodLabel) {
+        chips.push({
+          id: "period",
+          label: `Período: ${periodLabel}`,
+          value: periodFilter,
+          onRemove: () => handleDateFilterChange("all"),
+        });
+      }
+    }
+
+    return chips;
+  }, [
+    filterType,
+    filterStatus,
+    filterAccountType,
+    filterAccount,
+    filterCategory,
+    periodFilter,
+    selectedMonth,
+    customStartDate,
+    customEndDate,
+    accounts,
+    categories,
+  ]);
+
+  const clearAllFilters = () => {
+    onFilterTypeChange("all");
+    onFilterStatusChange("all");
+    onFilterAccountTypeChange("all");
+    onFilterAccountChange("all");
+    onFilterCategoryChange("all");
+    handleDateFilterChange("all");
   };
 
   const totals = useMemo(() => {
@@ -416,159 +522,65 @@ export function TransactionsPage({
       )}
 
       {/* ================================================================= */}
-      {/* BLOCO DE FILTROS */}
+      {/* BLOCO DE FILTROS - ESTILO CHIPS */}
       <Card>
-        <CardContent className="p-2 sm:p-3">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {/* Tipo */}
-            <div>
-              <Label htmlFor="filterType" className="text-caption">Tipo</Label>
-              <Select
-                value={filterType}
-                onValueChange={(value: any) => onFilterTypeChange(value)}
-              >
-                <SelectTrigger className="touch-target mt-2" id="filterType">
-                  <SelectValue placeholder="Tipo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="income">Receita</SelectItem>
-                  <SelectItem value="expense">Despesa</SelectItem>
-                  <SelectItem value="transfer">Transferência</SelectItem>
-                </SelectContent>
-              </Select>
+        <CardContent className="p-4 space-y-4">
+          {/* Top bar: Filter button, chips, search, and sort */}
+          <div className="flex flex-col gap-4">
+            {/* Filter button and active chips */}
+            <div className="flex flex-wrap items-center gap-3">
+              <TransactionFilterDialog
+                open={filterDialogOpen}
+                onOpenChange={setFilterDialogOpen}
+                filterType={filterType}
+                onFilterTypeChange={(value) => onFilterTypeChange(value as any)}
+                filterStatus={filterStatus}
+                onFilterStatusChange={(value) => onFilterStatusChange(value as any)}
+                filterAccountType={filterAccountType}
+                onFilterAccountTypeChange={onFilterAccountTypeChange}
+                filterAccount={filterAccount}
+                onFilterAccountChange={onFilterAccountChange}
+                filterCategory={filterCategory}
+                onFilterCategoryChange={onFilterCategoryChange}
+                periodFilter={periodFilter}
+                onPeriodFilterChange={(value) => handleDateFilterChange(value as any)}
+                selectedMonth={selectedMonth}
+                onMonthChange={handleMonthChange}
+                customStartDate={customStartDate}
+                onCustomStartDateChange={onCustomStartDateChange}
+                customEndDate={customEndDate}
+                onCustomEndDateChange={onCustomEndDateChange}
+                accounts={accountsByType}
+                categories={categories}
+                activeFiltersCount={filterChips.length}
+              />
+              
+              <TransactionFilterChips
+                chips={filterChips}
+                onClearAll={clearAllFilters}
+              />
             </div>
 
-            {/* Status */}
-            <div>
-              <Label htmlFor="filterStatus" className="text-caption">Status</Label>
-              <Select
-                value={filterStatus}
-                onValueChange={(value: any) => onFilterStatusChange(value)}
-              >
-                <SelectTrigger className="touch-target mt-2" id="filterStatus">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="completed">Concluído</SelectItem>
-                  <SelectItem value="pending">Pendente</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            {/* Search and Sort */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              {/* Search */}
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar transações..."
+                  value={localSearch}
+                  onChange={(e) => setLocalSearch(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
 
-            {/* Tipo de Conta */}
-            <div>
-              <Label htmlFor="filterAccountType" className="text-caption">Tipo de Conta</Label>
-              <Select
-                value={filterAccountType}
-                onValueChange={(value: string) => onFilterAccountTypeChange(value)}
-              >
-                <SelectTrigger
-                  className="touch-target mt-2"
-                  id="filterAccountType"
-                >
-                  <SelectValue placeholder="Tipo de Conta" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="checking">Conta Corrente</SelectItem>
-                  <SelectItem value="credit">Cartão de Crédito</SelectItem>
-                  <SelectItem value="investment">Investimento</SelectItem>
-                  <SelectItem value="savings">Poupança</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Conta Específica */}
-            <div>
-              <Label htmlFor="filterAccount" className="text-caption">Conta</Label>
-              <Select value={filterAccount} onValueChange={onFilterAccountChange}>
-                <SelectTrigger
-                  className="touch-target mt-2"
-                  id="filterAccount"
-                >
-                  <SelectValue placeholder="Conta Específica" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  {accountsByType.map((account) => (
-                    <SelectItem key={account.id} value={account.id}>
-                      <div className="flex items-center gap-2">
-                        <div
-                          className="w-2 h-2 sm:w-3 sm:h-3 rounded-full flex-shrink-0"
-                          style={{
-                            backgroundColor: account.color || "#6b7280",
-                          }}
-                        />
-                        <span className="truncate">{account.name}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Categoria */}
-            <div>
-              <Label htmlFor="filterCategory" className="text-caption">Categoria</Label>
-              <Select
-                value={filterCategory}
-                onValueChange={onFilterCategoryChange}
-              >
-                <SelectTrigger
-                  className="touch-target mt-2"
-                  id="filterCategory"
-                >
-                  <SelectValue placeholder="Categoria" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  {categories.map((category) => (
-                    <SelectItem key={category.id} value={category.id}>
-                      <div className="flex items-center gap-2">
-                        <div
-                          className="w-2 h-2 sm:w-3 sm:h-3 rounded-full flex-shrink-0"
-                          style={{
-                            backgroundColor: category.color || "#6b7280",
-                          }}
-                        />
-                        <span className="truncate">{category.name}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Período */}
-            <div>
-              <Label htmlFor="periodFilter" className="text-caption">Período</Label>
-              <Select
-                value={periodFilter}
-                onValueChange={handleDateFilterChange}
-              >
-                <SelectTrigger className="touch-target mt-2" id="periodFilter">
-                  <SelectValue placeholder="Período" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas</SelectItem>
-                  <SelectItem value="current_month">Mês Atual</SelectItem>
-                  <SelectItem value="month_picker">Seletor de Mês</SelectItem>
-                  <SelectItem value="custom">Personalizado</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Ordenação */}
-            <div>
-              <Label className="text-caption">Filtrar</Label>
-              <div className="flex gap-1 mt-2">
+              {/* Sort */}
+              <div className="flex gap-2">
                 <Select
                   value={sortBy}
                   onValueChange={(value: any) => onSortByChange(value)}
                 >
-                  <SelectTrigger className="flex-1 touch-target">
+                  <SelectTrigger className="w-32">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -579,7 +591,6 @@ export function TransactionsPage({
                 <Button
                   variant="outline"
                   size="icon"
-                  className="touch-target"
                   onClick={() =>
                     onSortOrderChange(sortOrder === "asc" ? "desc" : "asc")
                   }
@@ -588,128 +599,7 @@ export function TransactionsPage({
                 </Button>
               </div>
             </div>
-
-            {/* Busca */}
-            <div className="sm:col-span-2">
-              <Label htmlFor="search" className="text-caption">Buscar</Label>
-              <div className="relative mt-2">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="search"
-                  placeholder="Buscar transações..."
-                  value={localSearch}
-                  onChange={(e) => setLocalSearch(e.target.value)}
-                  className="pl-10 touch-target"
-                />
-              </div>
-            </div>
           </div>
-
-          {/* Controles de data - mostrar apenas quando necessário */}
-          {periodFilter === "month_picker" && (
-            <div className="border-t border-border mt-4 pt-4">
-              <div className="flex items-center gap-1 px-3 border border-input rounded-md bg-background max-w-xs mx-auto touch-target">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleMonthChange(subMonths(selectedMonth, 1))}
-                  className="h-6 w-6 p-0 flex-shrink-0"
-                >
-                  <ChevronLeft className="h-3 w-3" />
-                </Button>
-                <span className="flex-1 text-center text-system-body">
-                  {format(selectedMonth, "MMMM 'de' yyyy", {
-                    locale: ptBR,
-                  })}
-                </span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleMonthChange(addMonths(selectedMonth, 1))}
-                  className="h-6 w-6 p-0 flex-shrink-0"
-                >
-                  <ChevronRight className="h-3 w-3" />
-                </Button>
-              </div>
-            </div>
-          )}
-          {periodFilter === "custom" && (
-            <div className="border-t border-border mt-4 pt-4">
-              <div className="grid grid-cols-2 gap-2 sm:gap-3 max-w-xs mx-auto">
-                <Popover
-                  open={startDatePickerOpen}
-                  onOpenChange={setStartDatePickerOpen}
-                >
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "h-9 justify-start text-left font-normal text-xs sm:text-sm",
-                        !customStartDate && "text-muted-foreground",
-                      )}
-                    >
-                      <CalendarIcon className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
-                      <span className="truncate">
-                        {customStartDate
-                          ? format(customStartDate, "dd/MM/yyyy", {
-                              locale: ptBR,
-                            })
-                          : "Data Inicial"}
-                      </span>
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <CalendarComponent
-                      mode="single"
-                      selected={customStartDate}
-                      onSelect={(date) => {
-                        handleCustomDateChange(date, customEndDate);
-                        setStartDatePickerOpen(false);
-                      }}
-                      initialFocus
-                      className="p-3"
-                    />
-                  </PopoverContent>
-                </Popover>
-
-                <Popover
-                  open={endDatePickerOpen}
-                  onOpenChange={setEndDatePickerOpen}
-                >
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "h-9 justify-start text-left font-normal text-xs sm:text-sm",
-                        !customEndDate && "text-muted-foreground",
-                      )}
-                    >
-                      <CalendarIcon className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
-                      <span className="truncate">
-                        {customEndDate
-                          ? format(customEndDate, "dd/MM/yyyy", {
-                              locale: ptBR,
-                            })
-                          : "Data Final"}
-                      </span>
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <CalendarComponent
-                      mode="single"
-                      selected={customEndDate}
-                      onSelect={(date) => {
-                        handleCustomDateChange(customStartDate, date);
-                        setEndDatePickerOpen(false);
-                      }}
-                      initialFocus
-                      className="p-3"
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-            </div>
-          )}
         </CardContent>
       </Card>
 
