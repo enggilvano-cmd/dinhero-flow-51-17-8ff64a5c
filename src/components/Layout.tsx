@@ -364,7 +364,7 @@ function LayoutContent({ children, currentPage, onPageChange, onNavigate }: Layo
           )}>
           {/* Desktop Logo Header */}
           {!isMobile && (
-            <div className="flex justify-end items-center px-12 pt-3 pb-0 gap-4">
+            <div className="flex justify-end items-center px-12 pt-3 pb-3 gap-4">
               <NotificationBell />
               <div 
                 className="flex items-center gap-3 cursor-pointer transition-all duration-200 hover:scale-105"
@@ -390,8 +390,8 @@ function LayoutContent({ children, currentPage, onPageChange, onNavigate }: Layo
             isMobile 
               ? "px-3 py-4" 
               : open
-                ? "px-12 pt-0 -mt-8 pb-5 md:pl-0 md:pr-6 md:pt-0 md:-mt-8 md:pb-4 lg:pl-16 lg:pr-10 lg:pt-0 lg:-mt-8 lg:pb-12"
-                : "px-12 pt-0 -mt-8 pb-5 md:px-6 md:pt-0 md:-mt-8 md:pb-4 lg:pl-8 lg:pr-10 lg:pt-0 lg:-mt-8 lg:pb-12"
+                ? "px-12 pt-4 pb-5 md:pl-0 md:pr-6 md:pt-4 md:pb-4 lg:pl-16 lg:pr-10 lg:pt-4 lg:pb-12"
+                : "px-12 pt-4 pb-5 md:px-6 md:pt-4 md:pb-4 lg:pl-8 lg:pr-10 lg:pt-4 lg:pb-12"
           )}>
             <div className={cn(
               "mx-auto w-full",
