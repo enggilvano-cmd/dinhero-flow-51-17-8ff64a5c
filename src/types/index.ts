@@ -57,6 +57,8 @@ export interface Transaction {
   recurrence_end_date?: Date | string; // When the recurrence ends
   is_fixed?: boolean;
   reconciled?: boolean;
+  reconciled_at?: string | null;
+  reconciled_by?: string | null;
   created_at?: string;
   updated_at?: string;
   // Relations from JOINs

@@ -106,8 +106,8 @@ const ChartTooltipContent = React.forwardRef<
     active?: boolean
     payload?: any[]
     label?: string
-    labelFormatter?: (label: any, payload: any[]) => React.ReactNode
-    formatter?: (value: any, name: any, item: any, index: number, payload: any) => React.ReactNode
+    labelFormatter?: (label: unknown, payload: unknown[]) => React.ReactNode
+    formatter?: (value: unknown, name: unknown, item: unknown, index: number, payload: unknown) => React.ReactNode
     hideLabel?: boolean
     hideIndicator?: boolean
     indicator?: "line" | "dot" | "dashed"
@@ -153,7 +153,7 @@ const ChartTooltipContent = React.forwardRef<
       if (labelFormatter) {
         return (
           <div className={cn("font-medium", labelClassName)}>
-            {labelFormatter(value, payload)}
+            {labelFormatter(value, payload) as React.ReactNode}
           </div>
         )
       }
@@ -203,7 +203,7 @@ const ChartTooltipContent = React.forwardRef<
                 )}
               >
                 {formatter && item?.value !== undefined && item.name ? (
-                  formatter(item.value, item.name, item, index, item.payload)
+                  formatter(item.value, item.name, item, index, item.payload) as React.ReactNode
                 ) : (
                   <>
                     {itemConfig?.icon ? (
@@ -267,7 +267,7 @@ const ChartLegendContent = React.forwardRef<
   React.ComponentProps<"div"> & {
     hideIcon?: boolean
     nameKey?: string
-    payload?: any[]
+    payload?: Array<Record<string, unknown>>
     verticalAlign?: "top" | "bottom"
   }
 >(
@@ -290,13 +290,13 @@ const ChartLegendContent = React.forwardRef<
           className
         )}
       >
-        {payload.map((item: any) => {
+        {payload.map((item: Record<string, unknown>) => {
           const key = `${nameKey || item.dataKey || "value"}`
           const itemConfig = getPayloadConfigFromPayload(config, item, key)
 
           return (
             <div
-              key={item.value}
+              key={String(item.value)}
               className={cn(
                 "flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:text-muted-foreground"
               )}
@@ -307,7 +307,7 @@ const ChartLegendContent = React.forwardRef<
                 <div
                   className="h-2 w-2 shrink-0 rounded-[2px]"
                   style={{
-                    backgroundColor: item.color,
+                    backgroundColor: String(item.color || ""),
                   }}
                 />
               )}

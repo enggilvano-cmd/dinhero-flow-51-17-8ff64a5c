@@ -34,10 +34,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatCurrency } from "@/lib/formatters";
 import { getUserId, withErrorHandling } from "@/lib/supabase-utils";
 
+import type { Transaction, Account, Category } from "@/types";
+
 interface BankReconciliationPageProps {
-  transactions: any[];
-  accounts: any[];
-  categories: any[];
+  transactions: Transaction[];
+  accounts: Account[];
+  categories: Category[];
 }
 
 export function BankReconciliationPage({
@@ -162,15 +164,19 @@ export function BankReconciliationPage({
   };
 
   // Colunas da tabela
-  const columns = [
+  const columns: Array<{
+    key: string;
+    header: string;
+    render: (transaction: Transaction) => React.ReactNode;
+  }> = [
     {
       key: "reconciled",
       header: "",
-      render: (transaction: any) => (
+      render: (transaction: Transaction) => (
         <Checkbox
           checked={transaction.reconciled || false}
           disabled={updatingIds.has(transaction.id)}
-          onCheckedChange={() => handleToggleReconciled(transaction.id, transaction.reconciled)}
+          onCheckedChange={() => handleToggleReconciled(transaction.id, transaction.reconciled || false)}
           className="ml-2"
         />
       ),
@@ -178,12 +184,12 @@ export function BankReconciliationPage({
     {
       key: "date",
       header: "Data",
-      render: (transaction: any) => format(new Date(transaction.date), "dd/MM/yyyy"),
+      render: (transaction: Transaction) => format(new Date(transaction.date), "dd/MM/yyyy"),
     },
     {
       key: "description",
       header: "Descrição",
-      render: (transaction: any) => (
+      render: (transaction: Transaction) => (
         <div className="flex flex-col">
           <span className="font-medium">{transaction.description}</span>
           {transaction.reconciled && transaction.reconciled_at && (
@@ -197,7 +203,7 @@ export function BankReconciliationPage({
     {
       key: "account",
       header: "Conta",
-      render: (transaction: any) => {
+      render: (transaction: Transaction) => {
         const account = accounts.find((a) => a.id === transaction.account_id);
         return account ? (
           <Badge variant="outline" style={{ borderColor: account.color }}>
@@ -211,7 +217,7 @@ export function BankReconciliationPage({
     {
       key: "category",
       header: "Categoria",
-      render: (transaction: any) => {
+      render: (transaction: Transaction) => {
         const category = categories.find((c) => c.id === transaction.category_id);
         return category ? (
           <Badge variant="secondary" style={{ backgroundColor: `${category.color}20`, color: category.color }}>
@@ -225,7 +231,7 @@ export function BankReconciliationPage({
     {
       key: "amount",
       header: "Valor",
-      render: (transaction: any) => (
+      render: (transaction: Transaction) => (
         <span
           className={cn(
             "font-semibold",
@@ -239,7 +245,7 @@ export function BankReconciliationPage({
     {
       key: "status",
       header: "Status",
-      render: (transaction: any) =>
+      render: (transaction: Transaction) =>
         transaction.reconciled ? (
           <Badge variant="default" className="bg-success/10 text-success hover:bg-success/20">
             <CheckCircle2 className="w-3 h-3 mr-1" />
@@ -350,7 +356,7 @@ export function BankReconciliationPage({
             {/* Filtro de Status */}
             <div className="space-y-2">
               <Label>Status</Label>
-              <Select value={reconciledFilter} onValueChange={(value: any) => setReconciledFilter(value)}>
+              <Select value={reconciledFilter} onValueChange={(value) => setReconciledFilter(value as typeof reconciledFilter)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
