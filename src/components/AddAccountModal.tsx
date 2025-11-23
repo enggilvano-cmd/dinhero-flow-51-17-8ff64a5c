@@ -25,11 +25,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryClient";
-
-interface AddAccountModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}
+import { AddAccountModalProps } from "@/types/formProps";
 
 export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
   const { user } = useAuth();

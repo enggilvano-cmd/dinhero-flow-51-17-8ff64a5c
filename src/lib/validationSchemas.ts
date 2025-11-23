@@ -1,6 +1,152 @@
 import { z } from "zod";
 import { MAX_DESCRIPTION_LENGTH, MAX_TRANSACTION_AMOUNT } from "./constants";
 
+// ============= Account Schemas =============
+
+export const addAccountSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, { message: "O nome é obrigatório" })
+    .max(100, { message: "O nome deve ter no máximo 100 caracteres" }),
+  
+  type: z.enum(["checking", "savings", "credit", "investment"], {
+    required_error: "Selecione o tipo da conta",
+    invalid_type_error: "Tipo de conta inválido",
+  }),
+  
+  limitInCents: z
+    .number({ invalid_type_error: "O limite deve ser um número" })
+    .min(0, { message: "O limite não pode ser negativo" })
+    .max(MAX_TRANSACTION_AMOUNT, { 
+      message: `O limite não pode ser maior que ${(MAX_TRANSACTION_AMOUNT / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}` 
+    })
+    .optional(),
+  
+  dueDate: z
+    .string()
+    .optional()
+    .refine((val) => {
+      if (!val) return true;
+      const num = parseInt(val);
+      return !isNaN(num) && num >= 1 && num <= 31;
+    }, { message: "A data de vencimento deve estar entre 1 e 31" }),
+  
+  closingDate: z
+    .string()
+    .optional()
+    .refine((val) => {
+      if (!val) return true;
+      const num = parseInt(val);
+      return !isNaN(num) && num >= 1 && num <= 31;
+    }, { message: "A data de fechamento deve estar entre 1 e 31" }),
+  
+  color: z.string().regex(/^#[0-9A-F]{6}$/i, { message: "Cor inválida" }),
+}).refine((data) => {
+  // Validação: se é cartão de crédito, limite e datas são obrigatórios
+  if (data.type === "credit") {
+    return data.limitInCents && data.limitInCents > 0 && data.dueDate && data.closingDate;
+  }
+  return true;
+}, {
+  message: "Cartões de crédito requerem limite, data de fechamento e data de vencimento",
+  path: ["type"],
+});
+
+export type AddAccountFormData = z.infer<typeof addAccountSchema>;
+
+export const editAccountSchema = z.object({
+  id: z.string().uuid({ message: "ID da conta inválido" }),
+  name: z
+    .string()
+    .trim()
+    .min(1, { message: "O nome é obrigatório" })
+    .max(100, { message: "O nome deve ter no máximo 100 caracteres" }),
+  
+  type: z.enum(["checking", "savings", "credit", "investment"], {
+    required_error: "Selecione o tipo da conta",
+    invalid_type_error: "Tipo de conta inválido",
+  }),
+  
+  limitInCents: z
+    .number({ invalid_type_error: "O limite deve ser um número" })
+    .min(0, { message: "O limite não pode ser negativo" })
+    .max(MAX_TRANSACTION_AMOUNT, { 
+      message: `O limite não pode ser maior que ${(MAX_TRANSACTION_AMOUNT / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}` 
+    })
+    .optional(),
+  
+  dueDate: z
+    .string()
+    .optional()
+    .refine((val) => {
+      if (!val) return true;
+      const num = parseInt(val);
+      return !isNaN(num) && num >= 1 && num <= 31;
+    }, { message: "A data de vencimento deve estar entre 1 e 31" }),
+  
+  closingDate: z
+    .string()
+    .optional()
+    .refine((val) => {
+      if (!val) return true;
+      const num = parseInt(val);
+      return !isNaN(num) && num >= 1 && num <= 31;
+    }, { message: "A data de fechamento deve estar entre 1 e 31" }),
+  
+  color: z.string().regex(/^#[0-9A-F]{6}$/i, { message: "Cor inválida" }),
+}).refine((data) => {
+  // Validação: se é cartão de crédito, limite e datas são obrigatórios
+  if (data.type === "credit") {
+    return data.limitInCents && data.limitInCents > 0 && data.dueDate && data.closingDate;
+  }
+  return true;
+}, {
+  message: "Cartões de crédito requerem limite, data de fechamento e data de vencimento",
+  path: ["type"],
+});
+
+export type EditAccountFormData = z.infer<typeof editAccountSchema>;
+
+// ============= Category Schemas =============
+
+export const addCategorySchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, { message: "O nome é obrigatório" })
+    .max(50, { message: "O nome deve ter no máximo 50 caracteres" }),
+  
+  type: z.enum(["income", "expense", "both"], {
+    required_error: "Selecione o tipo da categoria",
+    invalid_type_error: "Tipo de categoria inválido",
+  }),
+  
+  color: z.string().regex(/^#[0-9A-F]{6}$/i, { message: "Cor inválida" }),
+});
+
+export type AddCategoryFormData = z.infer<typeof addCategorySchema>;
+
+export const editCategorySchema = z.object({
+  id: z.string().uuid({ message: "ID da categoria inválido" }),
+  name: z
+    .string()
+    .trim()
+    .min(1, { message: "O nome é obrigatório" })
+    .max(50, { message: "O nome deve ter no máximo 50 caracteres" }),
+  
+  type: z.enum(["income", "expense", "both"], {
+    required_error: "Selecione o tipo da categoria",
+    invalid_type_error: "Tipo de categoria inválido",
+  }),
+  
+  color: z.string().regex(/^#[0-9A-F]{6}$/i, { message: "Cor inválida" }),
+});
+
+export type EditCategoryFormData = z.infer<typeof editCategorySchema>;
+
+// ============= Transaction Schemas =============
+
 // Schema para AddTransactionModal
 export const addTransactionSchema = z.object({
   description: z
@@ -128,3 +274,25 @@ export const transferSchema = z.object({
 });
 
 export type TransferFormData = z.infer<typeof transferSchema>;
+
+// ============= Mark as Paid Schema =============
+
+export const markAsPaidSchema = z.object({
+  date: z.date({ required_error: "Selecione uma data" }),
+  
+  amount: z
+    .number({ invalid_type_error: "O valor deve ser um número" })
+    .positive({ message: "O valor deve ser maior que zero" })
+    .max(MAX_TRANSACTION_AMOUNT, { 
+      message: `O valor não pode ser maior que ${(MAX_TRANSACTION_AMOUNT / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}` 
+    }),
+  
+  accountId: z
+    .string()
+    .uuid({ message: "Conta inválida" })
+    .min(1, { message: "Selecione uma conta" }),
+  
+  transactionId: z.string().uuid({ message: "ID da transação inválido" }),
+});
+
+export type MarkAsPaidFormData = z.infer<typeof markAsPaidSchema>;
