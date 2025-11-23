@@ -5,16 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Pencil, Trash2, Plus, TrendingUp, TrendingDown, Calendar, Search, CalendarPlus } from "lucide-react";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -28,6 +18,7 @@ import { formatCurrency } from "@/lib/formatters";
 import { logger } from "@/lib/logger";
 import { AddFixedTransactionModal } from "./AddFixedTransactionModal";
 import { EditFixedTransactionModal } from "./EditFixedTransactionModal";
+import { FixedTransactionScopeDialog, FixedScope } from "./FixedTransactionScopeDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryClient";
@@ -60,11 +51,14 @@ export function FixedTransactionsPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<"all" | "income" | "expense">("all");
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [transactionToEdit, setTransactionToEdit] = useState<FixedTransaction | null>(null);
+  const [scopeDialogOpen, setScopeDialogOpen] = useState(false);
+  const [scopeMode, setScopeMode] = useState<"edit" | "delete">("edit");
+  const [pendingTransactionsCount, setPendingTransactionsCount] = useState(0);
+  const [hasCompletedTransactions, setHasCompletedTransactions] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -272,37 +266,98 @@ export function FixedTransactionsPage() {
     }
   };
 
-  const handleEdit = async (transaction: FixedTransaction) => {
+  const handleEditClick = async (transaction: FixedTransaction) => {
+    setTransactionToEdit(transaction);
+    
+    // Buscar informações sobre transações geradas
     try {
-      // Na página de Transações Fixas, sempre editar a transação principal e todas as pendentes
+      const { data: childTransactions } = await supabase
+        .from("transactions")
+        .select("id, status")
+        .eq("parent_transaction_id", transaction.id);
+
+      const pendingCount = childTransactions?.filter(t => t.status === "pending").length || 0;
+      const hasCompleted = childTransactions?.some(t => t.status === "completed") || false;
+
+      setPendingTransactionsCount(pendingCount);
+      setHasCompletedTransactions(hasCompleted);
+      setScopeMode("edit");
+      setScopeDialogOpen(true);
+    } catch (error) {
+      logger.error("Error fetching child transactions:", error);
+      // Se houver erro, abre o dialog sem informações de contagem
+      setPendingTransactionsCount(0);
+      setHasCompletedTransactions(false);
+      setScopeMode("edit");
+      setScopeDialogOpen(true);
+    }
+  };
+
+  const handleScopeSelectedForEdit = async (scope: FixedScope) => {
+    if (!transactionToEdit) return;
+
+    try {
       const updates = {
-        description: transaction.description,
-        amount: transaction.amount,
-        type: transaction.type,
-        category_id: transaction.category_id,
-        account_id: transaction.account_id,
-        date: transaction.date,
+        description: transactionToEdit.description,
+        amount: transactionToEdit.amount,
+        type: transactionToEdit.type,
+        category_id: transactionToEdit.category_id,
+        account_id: transactionToEdit.account_id,
+        date: transactionToEdit.date,
       };
 
-      // Editar a transação principal
-      const { error: mainError } = await supabase
-        .from("transactions")
-        .update(updates)
-        .eq("id", transaction.id);
-      if (mainError) throw mainError;
+      if (scope === "current") {
+        // Editar apenas a transação principal
+        const { error } = await supabase
+          .from("transactions")
+          .update(updates)
+          .eq("id", transactionToEdit.id);
+        if (error) throw error;
 
-      // Editar todas as transações pendentes geradas
-      const { error: childrenError } = await supabase
-        .from("transactions")
-        .update(updates)
-        .eq("parent_transaction_id", transaction.id)
-        .eq("status", "pending");
-      if (childrenError) throw childrenError;
+        toast({
+          title: "Transação atualizada",
+          description: "A transação principal foi atualizada com sucesso.",
+        });
+      } else if (scope === "current-and-remaining") {
+        // Editar a transação principal
+        const { error: mainError } = await supabase
+          .from("transactions")
+          .update(updates)
+          .eq("id", transactionToEdit.id);
+        if (mainError) throw mainError;
 
-      toast({
-        title: "Transação atualizada",
-        description: "A transação fixa e todas as pendentes foram atualizadas com sucesso.",
-      });
+        // Editar todas as transações pendentes geradas
+        const { error: childrenError } = await supabase
+          .from("transactions")
+          .update(updates)
+          .eq("parent_transaction_id", transactionToEdit.id)
+          .eq("status", "pending");
+        if (childrenError) throw childrenError;
+
+        toast({
+          title: "Transações atualizadas",
+          description: "A transação principal e todas as pendentes foram atualizadas.",
+        });
+      } else if (scope === "all") {
+        // Editar a transação principal
+        const { error: mainError } = await supabase
+          .from("transactions")
+          .update(updates)
+          .eq("id", transactionToEdit.id);
+        if (mainError) throw mainError;
+
+        // Editar TODAS as transações geradas (pendentes e concluídas)
+        const { error: childrenError } = await supabase
+          .from("transactions")
+          .update(updates)
+          .eq("parent_transaction_id", transactionToEdit.id);
+        if (childrenError) throw childrenError;
+
+        toast({
+          title: "Transações atualizadas",
+          description: "A transação principal e todas as geradas foram atualizadas.",
+        });
+      }
 
       // 🔄 Sincronizar listas e dashboard imediatamente
       await Promise.all([
@@ -326,31 +381,89 @@ export function FixedTransactionsPage() {
     }
   };
 
-  const handleDelete = async () => {
+  const handleDeleteClick = async (transactionId: string) => {
+    setTransactionToDelete(transactionId);
+    
+    // Buscar informações sobre transações geradas
+    try {
+      const { data: childTransactions } = await supabase
+        .from("transactions")
+        .select("id, status")
+        .eq("parent_transaction_id", transactionId);
+
+      const pendingCount = childTransactions?.filter(t => t.status === "pending").length || 0;
+      const hasCompleted = childTransactions?.some(t => t.status === "completed") || false;
+
+      setPendingTransactionsCount(pendingCount);
+      setHasCompletedTransactions(hasCompleted);
+      setScopeMode("delete");
+      setScopeDialogOpen(true);
+    } catch (error) {
+      logger.error("Error fetching child transactions:", error);
+      // Se houver erro, abre o dialog sem informações de contagem
+      setPendingTransactionsCount(0);
+      setHasCompletedTransactions(false);
+      setScopeMode("delete");
+      setScopeDialogOpen(true);
+    }
+  };
+
+  const handleScopeSelectedForDelete = async (scope: FixedScope) => {
     if (!transactionToDelete) return;
 
     try {
-      // Na página de Transações Fixas, sempre deletar a transação principal e todas as pendentes
-      
-      // Deletar todas as transações pendentes geradas
-      const { error: childrenError } = await supabase
-        .from("transactions")
-        .delete()
-        .eq("parent_transaction_id", transactionToDelete)
-        .eq("status", "pending");
-      if (childrenError) throw childrenError;
+      if (scope === "current") {
+        // Deletar apenas a transação principal
+        const { error } = await supabase
+          .from("transactions")
+          .delete()
+          .eq("id", transactionToDelete);
+        if (error) throw error;
 
-      // Deletar a transação principal
-      const { error } = await supabase
-        .from("transactions")
-        .delete()
-        .eq("id", transactionToDelete);
-      if (error) throw error;
+        toast({
+          title: "Transação removida",
+          description: "A transação principal foi removida com sucesso.",
+        });
+      } else if (scope === "current-and-remaining") {
+        // Deletar todas as transações pendentes geradas
+        const { error: childrenError } = await supabase
+          .from("transactions")
+          .delete()
+          .eq("parent_transaction_id", transactionToDelete)
+          .eq("status", "pending");
+        if (childrenError) throw childrenError;
 
-      toast({
-        title: "Transação removida",
-        description: "A transação fixa e todas as pendentes foram removidas com sucesso.",
-      });
+        // Deletar a transação principal
+        const { error } = await supabase
+          .from("transactions")
+          .delete()
+          .eq("id", transactionToDelete);
+        if (error) throw error;
+
+        toast({
+          title: "Transações removidas",
+          description: "A transação principal e todas as pendentes foram removidas.",
+        });
+      } else if (scope === "all") {
+        // Deletar TODAS as transações geradas (pendentes e concluídas)
+        const { error: childrenError } = await supabase
+          .from("transactions")
+          .delete()
+          .eq("parent_transaction_id", transactionToDelete);
+        if (childrenError) throw childrenError;
+
+        // Deletar a transação principal
+        const { error } = await supabase
+          .from("transactions")
+          .delete()
+          .eq("id", transactionToDelete);
+        if (error) throw error;
+
+        toast({
+          title: "Transações removidas",
+          description: "A transação principal e todas as geradas foram removidas.",
+        });
+      }
 
       // 🔄 Sincronizar listas e dashboard imediatamente
       await Promise.all([
@@ -371,7 +484,6 @@ export function FixedTransactionsPage() {
         variant: "destructive",
       });
     } finally {
-      setDeleteDialogOpen(false);
       setTransactionToDelete(null);
     }
   };
@@ -698,20 +810,14 @@ export function FixedTransactionsPage() {
                     <Button
                       variant="outline"
                       size="icon"
-                      onClick={() => {
-                        setTransactionToEdit(transaction);
-                        setEditModalOpen(true);
-                      }}
+                      onClick={() => handleEditClick(transaction)}
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
                     <Button
                       variant="outline"
                       size="icon"
-                      onClick={() => {
-                        setTransactionToDelete(transaction.id);
-                        setDeleteDialogOpen(true);
-                      }}
+                      onClick={() => handleDeleteClick(transaction.id)}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -723,24 +829,14 @@ export function FixedTransactionsPage() {
         )}
       </div>
 
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-            <AlertDialogDescription>
-              Tem certeza que deseja excluir esta transação fixa? 
-              Esta ação irá excluir a transação principal e todas as transações pendentes geradas automaticamente.
-              As transações já concluídas não serão afetadas.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={() => handleDelete()}>
-              Excluir
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <FixedTransactionScopeDialog
+        open={scopeDialogOpen}
+        onOpenChange={setScopeDialogOpen}
+        onScopeSelected={scopeMode === "edit" ? handleScopeSelectedForEdit : handleScopeSelectedForDelete}
+        mode={scopeMode}
+        hasCompleted={hasCompletedTransactions}
+        pendingCount={pendingTransactionsCount}
+      />
 
       <AddFixedTransactionModal
         open={addModalOpen}
@@ -752,8 +848,19 @@ export function FixedTransactionsPage() {
       {transactionToEdit && (
         <EditFixedTransactionModal
           open={editModalOpen}
-          onOpenChange={setEditModalOpen}
-          onEditTransaction={(transaction) => handleEdit(transaction)}
+          onOpenChange={(open) => {
+            setEditModalOpen(open);
+            if (!open) setTransactionToEdit(null);
+          }}
+          onEditTransaction={(transaction) => {
+            setTransactionToEdit(transaction);
+            setEditModalOpen(false);
+            // Reabrir o scope dialog para o usuário escolher o escopo
+            setPendingTransactionsCount(0);
+            setHasCompletedTransactions(false);
+            setScopeMode("edit");
+            setScopeDialogOpen(true);
+          }}
           transaction={transactionToEdit}
           accounts={accounts}
         />
