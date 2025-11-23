@@ -20,15 +20,17 @@ interface Profile {
   updated_at: string;
 }
 
+import { AuthError as SupabaseAuthError } from '@supabase/supabase-js';
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   profile: Profile | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
-  signUp: (email: string, password: string, fullName: string, whatsapp?: string) => Promise<{ error: any }>;
-  signOut: () => Promise<{ error: any }>;
-  resetPassword: (email: string) => Promise<{ error: any }>;
+  signIn: (email: string, password: string) => Promise<{ error: SupabaseAuthError | null }>;
+  signUp: (email: string, password: string, fullName: string, whatsapp?: string) => Promise<{ error: SupabaseAuthError | null }>;
+  signOut: () => Promise<{ error: SupabaseAuthError | null }>;
+  resetPassword: (email: string) => Promise<{ error: SupabaseAuthError | null }>;
   isAdmin: () => boolean;
   hasRole: (role: 'admin' | 'user' | 'subscriber' | 'trial') => boolean;
   isSubscriptionActive: () => boolean;
@@ -329,14 +331,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       return { error };
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido ao fazer login';
       logger.error('Sign in error:', error);
       toast({
         title: "Erro no login",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
-      return { error };
+      return { error: error as SupabaseAuthError };
     }
   };
 
@@ -374,14 +377,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       return { error };
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido ao cadastrar';
       logger.error('Sign up error:', error);
       toast({
         title: "Erro no cadastro",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
-      return { error };
+      return { error: error as SupabaseAuthError };
     }
   };
 
@@ -408,14 +412,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       return { error };
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido ao sair';
       logger.error('Sign out error:', error);
       toast({
         title: "Erro ao sair",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
-      return { error };
+      return { error: error as SupabaseAuthError };
     }
   };
 
@@ -445,14 +450,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       return { error };
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido na recuperação';
       logger.error('Reset password error:', error);
       toast({
         title: "Erro na recuperação",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
-      return { error };
+      return { error: error as SupabaseAuthError };
     }
   };
 
