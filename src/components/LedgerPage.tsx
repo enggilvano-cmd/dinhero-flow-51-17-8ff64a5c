@@ -249,7 +249,7 @@ export function LedgerPage() {
       <div className="space-y-6">
         <Card>
           <CardContent className="p-12 text-center">
-            <p className="text-muted-foreground">Carregando livro razão...</p>
+            <p className="text-body text-muted-foreground">Carregando livro razão...</p>
           </CardContent>
         </Card>
       </div>
@@ -262,8 +262,8 @@ export function LedgerPage() {
       <div className="space-y-6">
         <Card className="border-primary">
           <CardHeader>
-            <CardTitle>Plano de Contas Não Inicializado</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-title">Plano de Contas Não Inicializado</CardTitle>
+            <CardDescription className="text-body">
               Para utilizar o Livro Razão, é necessário inicializar o Plano de Contas.
               Isso criará a estrutura contábil padrão.
             </CardDescription>
@@ -285,11 +285,11 @@ export function LedgerPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight mb-2 flex items-center gap-2">
+        <h1 className="text-title font-bold tracking-tight mb-2 flex items-center gap-2">
           <BookOpen className="h-6 w-6" />
           Livro Razão
         </h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-body text-muted-foreground">
           Histórico detalhado de movimentação por conta contábil
         </p>
       </div>
@@ -297,13 +297,13 @@ export function LedgerPage() {
       {/* Filtros */}
       <Card>
         <CardHeader>
-          <CardTitle>Filtros</CardTitle>
+          <CardTitle className="text-headline">Filtros</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-3">
             {/* Seleção de Conta */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">Conta Contábil</label>
+              <label className="text-caption font-medium">Conta Contábil</label>
               <Select value={selectedAccountId} onValueChange={setSelectedAccountId}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione uma conta" />
@@ -320,7 +320,7 @@ export function LedgerPage() {
 
             {/* Data Inicial */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">Data Inicial</label>
+              <label className="text-caption font-medium">Data Inicial</label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="w-full justify-start">
@@ -341,7 +341,7 @@ export function LedgerPage() {
 
             {/* Data Final */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">Data Final</label>
+              <label className="text-caption font-medium">Data Final</label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="w-full justify-start">
@@ -367,7 +367,7 @@ export function LedgerPage() {
       {selectedAccount && (
         <Card>
           <CardHeader>
-            <CardTitle>Conta: {selectedAccount.code} - {selectedAccount.name}</CardTitle>
+            <CardTitle className="text-headline">Conta: {selectedAccount.code} - {selectedAccount.name}</CardTitle>
             <div className="flex items-center gap-2 mt-2">
               <Badge variant="outline">{getCategoryLabel(selectedAccount.category)}</Badge>
               <Badge variant="secondary">
@@ -381,14 +381,14 @@ export function LedgerPage() {
       {/* Livro Razão */}
       <Card>
         <CardHeader>
-          <CardTitle>Lançamentos no Período</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-headline">Lançamentos no Período</CardTitle>
+          <CardDescription className="text-body">
             Histórico com saldo acumulado
           </CardDescription>
         </CardHeader>
         <CardContent>
           {ledgerEntries.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">
+            <p className="text-body text-center text-muted-foreground py-8">
               Nenhum lançamento encontrado no período selecionado
             </p>
           ) : (
