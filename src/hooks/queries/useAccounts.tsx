@@ -28,14 +28,15 @@ export function useAccounts() {
       })) as Account[];
     },
     enabled: !!user,
-    // CRITICAL: staleTime 0 para refetch imediato após mutações
-    staleTime: 0,
-    gcTime: 10 * 60 * 1000,
+    // Otimização: dados de contas são relatively stable após mutações
+    // staleTime moderado evita refetches desnecessários ao navegar entre páginas
+    staleTime: 30 * 1000, // 30 segundos
+    gcTime: 10 * 60 * 1000, // 10 minutos
     // Keep previous data while fetching
     placeholderData: (previousData) => previousData,
-    // CRITICAL: Always refetch on mount and window focus to get latest balances
-    refetchOnMount: 'always',
-    refetchOnWindowFocus: true,
+    // Refetch only when data is stale (não forçar sempre)
+    refetchOnMount: true, // Default behavior: refetch se stale
+    refetchOnWindowFocus: true, // Sincronizar ao voltar para janela
   });
 
   const updateMutation = useMutation({

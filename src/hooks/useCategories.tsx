@@ -27,7 +27,12 @@ export function useCategories() {
       return (data || []) as Category[];
     },
     enabled: !!user,
-    staleTime: 5 * 60 * 1000,
+    // Categorias são dados relativamente estáveis
+    staleTime: 5 * 60 * 1000, // 5 minutos
+    gcTime: 15 * 60 * 1000, // 15 minutos
+    // Refetch only when stale
+    refetchOnMount: true,
+    refetchOnWindowFocus: false, // Categorias não mudam com tanta frequência
   });
 
   return {

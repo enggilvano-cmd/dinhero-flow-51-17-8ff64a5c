@@ -136,12 +136,13 @@ export function useTransactions(params: UseTransactionsParams = {}) {
       return count || 0;
     },
     enabled: !!user && enabled,
-    // CRITICAL: staleTime 0 para refetch imediato após mutações
-    staleTime: 0,
+    // Otimização: staleTime de 30s evita refetches desnecessários
+    staleTime: 30 * 1000, // 30 segundos
     gcTime: 2.5 * 60 * 1000,
     // Keep previous data while fetching new data
     placeholderData: (previousData) => previousData,
-    refetchOnMount: 'always',
+    // Refetch only when data is stale (não forçar sempre)
+    refetchOnMount: true, // Default: refetch se stale
     refetchOnWindowFocus: true,
   });
 
@@ -265,13 +266,13 @@ export function useTransactions(params: UseTransactionsParams = {}) {
       return results;
     },
     enabled: !!user && enabled,
-    // CRITICAL: staleTime 0 para refetch imediato após mutações
-    staleTime: 0,
+    // Otimização: staleTime de 30s evita refetches desnecessários de transações
+    staleTime: 30 * 1000, // 30 segundos
     gcTime: 2.5 * 60 * 1000,
     // Keep previous data while fetching new data (prevents loading states)
     placeholderData: (previousData) => previousData,
-    // CRITICAL: Always refetch on mount to ensure fresh data
-    refetchOnMount: 'always',
+    // Refetch only when data is stale (não forçar sempre)
+    refetchOnMount: true, // Default: refetch se stale
     refetchOnWindowFocus: true,
   });
 
