@@ -543,7 +543,7 @@ export function TransactionsPage({
 
             {/* Período */}
             <div>
-              <Label htmlFor="periodFilter" className="text-caption">Personalizado</Label>
+              <Label htmlFor="periodFilter" className="text-caption">Período</Label>
               <Select
                 value={periodFilter}
                 onValueChange={handleDateFilterChange}
