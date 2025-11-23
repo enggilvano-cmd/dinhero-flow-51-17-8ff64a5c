@@ -309,6 +309,12 @@ export function TransactionsPage({
     customEndDate,
     accounts,
     categories,
+    onFilterTypeChange,
+    onFilterStatusChange,
+    onFilterAccountTypeChange,
+    onFilterAccountChange,
+    onFilterCategoryChange,
+    handleDateFilterChange,
   ]);
 
   const clearAllFilters = () => {

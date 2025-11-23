@@ -149,6 +149,9 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
     filterBillStatus,
     filterPaymentStatus,
     creditAccounts,
+    setSelectedAccountId,
+    setFilterBillStatus,
+    setFilterPaymentStatus,
   ]);
 
   const clearAllFilters = () => {

@@ -164,39 +164,47 @@ export function LedgerPage() {
     return chartOfAccounts.find(acc => acc.id === selectedAccountId);
   }, [chartOfAccounts, selectedAccountId]);
 
-  // Calcular saldo inicial (antes do período selecionado)
-  const openingBalance = useMemo(async () => {
-    if (!selectedAccountId || !selectedAccount) return 0;
+  // State para armazenar saldo inicial
+  const [openingBalance, setOpeningBalance] = useState(0);
 
-    const { data, error } = await supabase
-      .from("journal_entries")
-      .select("entry_type, amount")
-      .eq("account_id", selectedAccountId)
-      .lt("entry_date", format(startDate, "yyyy-MM-dd"));
-
-    if (error) return 0;
-
-    let balance = 0;
-    (data || []).forEach(entry => {
-      if (selectedAccount.nature === "debit") {
-        balance += entry.entry_type === "debit" ? entry.amount : -entry.amount;
-      } else {
-        balance += entry.entry_type === "credit" ? entry.amount : -entry.amount;
+  // Calcular saldo inicial (antes do período selecionado) usando useEffect
+  useEffect(() => {
+    const fetchOpeningBalance = async () => {
+      if (!selectedAccountId || !selectedAccount) {
+        setOpeningBalance(0);
+        return;
       }
-    });
 
-    return balance;
+      const { data, error } = await supabase
+        .from("journal_entries")
+        .select("entry_type, amount")
+        .eq("account_id", selectedAccountId)
+        .lt("entry_date", format(startDate, "yyyy-MM-dd"));
+
+      if (error) {
+        setOpeningBalance(0);
+        return;
+      }
+
+      let balance = 0;
+      (data || []).forEach(entry => {
+        if (selectedAccount.nature === "debit") {
+          balance += entry.entry_type === "debit" ? entry.amount : -entry.amount;
+        } else {
+          balance += entry.entry_type === "credit" ? entry.amount : -entry.amount;
+        }
+      });
+
+      setOpeningBalance(balance);
+    };
+
+    fetchOpeningBalance();
   }, [selectedAccountId, selectedAccount, startDate]);
 
   // Construir livro razão com saldo acumulado
   const ledgerEntries = useMemo(() => {
     const entries: LedgerEntry[] = [];
-    let runningBalance = 0; // Será atualizado com saldo inicial
-
-    // Aguardar saldo inicial
-    Promise.resolve(openingBalance).then(initialBalance => {
-      runningBalance = initialBalance;
-    });
+    let runningBalance = openingBalance;
 
     journalEntries.forEach(entry => {
       const debit = entry.entry_type === "debit" ? entry.amount : 0;
