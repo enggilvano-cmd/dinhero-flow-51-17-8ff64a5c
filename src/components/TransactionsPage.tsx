@@ -39,16 +39,17 @@ import { FixedTransactionScopeDialog, FixedScope } from "./FixedTransactionScope
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { TransactionFilterChips } from "@/components/transactions/TransactionFilterChips";
 import { TransactionFilterDialog } from "@/components/transactions/TransactionFilterDialog";
+import type { Transaction, Account, Category, ImportTransactionData } from '@/types';
 
 interface TransactionsPageProps {
-  transactions: any[];
-  accounts: any[];
-  categories: any[];
+  transactions: Transaction[];
+  accounts: Account[];
+  categories: Category[];
   onAddTransaction: () => void;
-  onEditTransaction: (transaction: any) => void;
+  onEditTransaction: (transaction: Transaction) => void;
   onDeleteTransaction: (transactionId: string, scope?: EditScope) => void;
-  onImportTransactions: (transactions: any[], transactionsToReplace: string[]) => void;
-  onMarkAsPaid?: (transaction: any) => Promise<void>;
+  onImportTransactions: (transactions: ImportTransactionData[], transactionsToReplace: string[]) => void;
+  onMarkAsPaid?: (transaction: Transaction) => Promise<void>;
   totalCount: number;
   pageCount: number;
   currentPage: number;

@@ -11,6 +11,7 @@ import { Upload, FileSpreadsheet, AlertCircle, MoreVertical, Copy, AlertTriangle
 import { useToast } from "@/hooks/use-toast";
 import { loadXLSX } from "@/lib/lazyImports";
 import { formatCurrency } from "@/lib/formatters";
+import type { ImportAccountData } from '@/types';
 
 interface Account {
   id: string;
@@ -27,7 +28,7 @@ interface ImportAccountsModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   accounts: Account[];
-  onImportAccounts: (accounts: any[], accountsToReplace: string[]) => void;
+  onImportAccounts: (accounts: ImportAccountData[], accountsToReplace: string[]) => void;
 }
 
 interface ImportedAccount {
@@ -106,7 +107,7 @@ export function ImportAccountsModal({
     return /^#([0-9A-F]{3}){1,2}$/i.test(color);
   };
 
-  const parseNumber = (value: any): number => {
+  const parseNumber = (value: unknown): number => {
     if (typeof value === 'number') return value;
     if (typeof value === 'string') {
       const cleaned = value.replace(/[^\d,.-]/g, '').replace(',', '.');
@@ -117,7 +118,7 @@ export function ImportAccountsModal({
   };
 
   // Suporte a cabeçalhos exportados em diferentes idiomas
-  const pick = (row: any, keys: readonly string[]) => {
+  const pick = (row: Record<string, unknown>, keys: readonly string[]) => {
     for (const key of keys) {
       const candidates = [key, key.toLowerCase()];
       for (const c of candidates) {
@@ -139,7 +140,7 @@ export function ImportAccountsModal({
     color: ['Cor', 'Color']
   } as const;
 
-  const validateAndCheckDuplicate = (row: any): ImportedAccount => {
+  const validateAndCheckDuplicate = (row: Record<string, unknown>): ImportedAccount => {
     const errors: string[] = [];
     let isValid = true;
 

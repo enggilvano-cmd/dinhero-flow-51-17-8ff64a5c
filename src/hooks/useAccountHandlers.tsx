@@ -3,7 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { Account } from '@/types';
+import { Account, ImportAccountData } from '@/types';
 import { logger } from '@/lib/logger';
 import { queryKeys } from '@/lib/queryClient';
 
@@ -57,15 +57,7 @@ export function useAccountHandlers() {
   }, [user, toast, queryClient]);
 
   const handleImportAccounts = useCallback(async (
-    accountsData: Array<{
-      name: string;
-      type: 'checking' | 'savings' | 'credit' | 'investment';
-      balance?: number;
-      color: string;
-      limit_amount?: number;
-      due_date?: number;
-      closing_date?: number;
-    }>,
+    accountsData: ImportAccountData[],
     accountsToReplace: string[] = []
   ) => {
     if (!user) return;

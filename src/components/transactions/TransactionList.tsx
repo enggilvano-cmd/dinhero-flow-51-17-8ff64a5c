@@ -5,15 +5,16 @@ import { ptBR } from "date-fns/locale";
 import { formatCurrency } from "@/lib/formatters";
 import { TransactionActions } from "./TransactionActions";
 import { EditScope } from "../TransactionScopeDialog";
+import type { Transaction, Account, Category } from "@/types";
 
 interface TransactionListProps {
-  transactions: any[];
-  accounts: any[];
-  categories: any[];
+  transactions: Transaction[];
+  accounts: Account[];
+  categories: Category[];
   currency: string;
-  onEdit: (transaction: any) => void;
+  onEdit: (transaction: Transaction) => void;
   onDelete: (transactionId: string, scope?: EditScope) => void;
-  onMarkAsPaid?: (transaction: any) => void;
+  onMarkAsPaid?: (transaction: Transaction) => void;
 }
 
 export function TransactionList({

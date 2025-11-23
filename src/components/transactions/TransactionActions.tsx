@@ -7,12 +7,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Edit, Trash2, MoreVertical, CheckCircle } from "lucide-react";
 import { EditScope } from "../TransactionScopeDialog";
+import type { Transaction } from "@/types";
 
 interface TransactionActionsProps {
-  transaction: any;
-  onEdit: (transaction: any) => void;
+  transaction: Transaction;
+  onEdit: (transaction: Transaction) => void;
   onDelete: (transactionId: string, scope?: EditScope) => void;
-  onMarkAsPaid?: (transaction: any) => void;
+  onMarkAsPaid?: (transaction: Transaction) => void;
 }
 
 export function TransactionActions({

@@ -14,13 +14,13 @@ import { AddCategoryModal } from "@/components/AddCategoryModal";
 import { EditCategoryModal } from "@/components/EditCategoryModal";
 import { ImportCategoriesModal } from "@/components/ImportCategoriesModal";
 import { getUserId, withErrorHandling } from "@/lib/supabase-utils";
-import { Category } from "@/types";
+import type { Category } from "@/types";
 import { queryClient, queryKeys } from "@/lib/queryClient";
 
 interface CategoriesPageProps {}
 
 export function CategoriesPage({}: CategoriesPageProps) {
-  const [categories, setCategories] = useState<any[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<"all" | "income" | "expense" | "both">("all");
   const [addModalOpen, setAddModalOpen] = useState(false);
@@ -59,7 +59,7 @@ export function CategoriesPage({}: CategoriesPageProps) {
     loadCategories();
   }, []);
 
-  const handleAddCategory = async (categoryData: any) => {
+  const handleAddCategory = async (categoryData: Omit<Category, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
     const { data } = await withErrorHandling(
       async () => {
         const userId = await getUserId();

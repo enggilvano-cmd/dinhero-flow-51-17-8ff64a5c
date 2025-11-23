@@ -3,7 +3,14 @@ import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { Account, Transaction } from '@/types';
+import { 
+  Account, 
+  Transaction, 
+  TransactionInput, 
+  InstallmentTransactionInput, 
+  TransactionUpdate, 
+  ImportTransactionData 
+} from '@/types';
 import { logger } from '@/lib/logger';
 import { queryKeys } from '@/lib/queryClient';
 import { EditScope } from '@/components/TransactionScopeDialog';
@@ -17,7 +24,7 @@ export function useTransactionHandlers() {
   // ✅ Buscar dados diretamente do React Query (fonte única de verdade)
   const { accounts } = useAccounts();
 
-  const handleAddTransaction = useCallback(async (transactionData: any) => {
+  const handleAddTransaction = useCallback(async (transactionData: TransactionInput) => {
     if (!user) return;
     try {
       const { error } = await supabase.functions.invoke('atomic-transaction', {
@@ -89,7 +96,7 @@ export function useTransactionHandlers() {
     }
   }, [user, queryClient, toast]);
 
-  const handleAddInstallmentTransactions = useCallback(async (transactionsData: any[]) => {
+  const handleAddInstallmentTransactions = useCallback(async (transactionsData: InstallmentTransactionInput[]) => {
     if (!user) return;
     try {
       const totalInstallments = transactionsData.length;
@@ -205,7 +212,7 @@ export function useTransactionHandlers() {
   }, [user, queryClient]);
 
   const handleEditTransaction = useCallback(async (
-    updatedTransaction: any,
+    updatedTransaction: TransactionUpdate,
     editScope?: EditScope
   ) => {
     if (!user) return;
@@ -383,7 +390,7 @@ export function useTransactionHandlers() {
   }, [user, accounts, queryClient, toast]);
 
   const handleImportTransactions = useCallback(async (
-    transactionsData: any[],
+    transactionsData: ImportTransactionData[],
     transactionsToReplace: string[] = []
   ) => {
     if (!user) return;
