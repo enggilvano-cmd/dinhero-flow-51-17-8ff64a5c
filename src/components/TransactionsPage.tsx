@@ -282,26 +282,26 @@ export function TransactionsPage({
           <Button
             variant="outline"
             onClick={() => setImportModalOpen(true)}
-            className="gap-2 apple-interaction h-9 text-xs sm:text-sm"
+            className="gap-1.5 apple-interaction h-9 text-xs sm:text-sm px-3"
           >
-            <Upload className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span>Importar</span>
+            <Upload className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+            <span className="truncate">Importar</span>
           </Button>
           <Button
             variant="outline"
             onClick={exportToExcel}
-            className="gap-2 apple-interaction h-9 text-xs sm:text-sm"
+            className="gap-1.5 apple-interaction h-9 text-xs sm:text-sm px-3"
             disabled={transactions.length === 0}
           >
-            <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span>Exportar</span>
+            <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+            <span className="truncate">Exportar</span>
           </Button>
           <Button
             onClick={onAddTransaction}
-            className="gap-2 apple-interaction h-9 text-xs sm:text-sm col-span-2 md:col-span-1"
+            className="gap-1.5 apple-interaction h-9 text-xs sm:text-sm col-span-2 md:col-span-1 px-3"
           >
-            <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span>Adicionar</span>
+            <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+            <span className="truncate">Adicionar</span>
           </Button>
         </div>
       </div>

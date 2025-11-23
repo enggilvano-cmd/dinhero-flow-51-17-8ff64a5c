@@ -407,9 +407,12 @@ export function FixedTransactionsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-end">
-        <Button onClick={() => setAddModalOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Nova Transação Fixa
+        <Button onClick={() => setAddModalOpen(true)} className="gap-1.5 apple-interaction h-9 text-xs sm:text-sm px-2 sm:px-3">
+          <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+          <span className="truncate whitespace-nowrap">
+            <span className="hidden sm:inline">Nova Transação Fixa</span>
+            <span className="sm:hidden">Nova Fixa</span>
+          </span>
         </Button>
       </div>
 

@@ -659,10 +659,10 @@ export default function AnalyticsPage({
           <Button
             variant="outline"
             onClick={handleExportPDF}
-            className="gap-2 apple-interaction h-9 text-xs sm:text-sm"
+            className="gap-1.5 apple-interaction h-9 text-xs sm:text-sm px-3"
           >
-            <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span>Exportar PDF</span>
+            <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+            <span className="truncate whitespace-nowrap">Exportar PDF</span>
           </Button>
         </div>
       </div>

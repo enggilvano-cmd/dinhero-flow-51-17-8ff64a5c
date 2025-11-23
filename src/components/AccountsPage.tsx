@@ -173,33 +173,39 @@ export function AccountsPage({
           <Button
             onClick={exportToExcel}
             variant="outline"
-            className="gap-2 apple-interaction h-9 text-xs sm:text-sm"
+            className="gap-1.5 apple-interaction h-9 text-xs sm:text-sm px-3"
             disabled={accounts.length === 0}
           >
-            <FileDown className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span>Exportar</span>
+            <FileDown className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+            <span className="truncate">Exportar</span>
           </Button>
           <Button
             onClick={() => setImportModalOpen(true)}
             variant="outline"
-            className="gap-2 apple-interaction h-9 text-xs sm:text-sm"
+            className="gap-1.5 apple-interaction h-9 text-xs sm:text-sm px-3"
           >
-            <Upload className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span>Importar</span>
+            <Upload className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+            <span className="truncate">Importar</span>
           </Button>
           {onTransfer && (
             <Button
               onClick={onTransfer}
               variant="outline"
-              className="gap-2 apple-interaction h-9 text-xs sm:text-sm"
+              className="gap-1.5 apple-interaction h-9 text-xs sm:text-sm px-2 sm:px-3"
             >
-              <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              <span>Transferência</span>
+              <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+              <span className="truncate whitespace-nowrap">
+                <span className="hidden sm:inline">Transferência</span>
+                <span className="sm:hidden">Transfer</span>
+              </span>
             </Button>
           )}
-          <Button onClick={onAddAccount} className="gap-2 apple-interaction h-9 text-xs sm:text-sm">
-            <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span>Adicionar Conta</span>
+          <Button onClick={onAddAccount} className="gap-1.5 apple-interaction h-9 text-xs sm:text-sm px-2 sm:px-3">
+            <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+            <span className="truncate whitespace-nowrap">
+              <span className="hidden sm:inline">Adicionar Conta</span>
+              <span className="sm:hidden">Adicionar</span>
+            </span>
           </Button>
         </div>
       </div>
