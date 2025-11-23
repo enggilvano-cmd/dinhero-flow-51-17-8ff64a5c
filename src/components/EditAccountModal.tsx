@@ -106,9 +106,7 @@ export function EditAccountModal({
       name: formData.name.trim(),
       type: formData.type,
       balance: balanceInCents,
-      // Para o tipo Account usamos undefined quando não houver limite,
-      // mas para o banco vamos enviar null explicitamente ao salvar.
-      limit_amount: formData.limitInCents > 0 ? formData.limitInCents : undefined,
+      limit_amount: dbLimitAmount ?? undefined,
       due_date: dueDate,
       closing_date: closingDate,
       color: formData.color,
@@ -116,10 +114,7 @@ export function EditAccountModal({
 
     setIsSubmitting(true);
     try {
-      await onEditAccount({
-        ...updatedAccount,
-        limit_amount: dbLimitAmount as any,
-      });
+      await onEditAccount(updatedAccount);
 
       toast({
         title: "Sucesso",
@@ -176,8 +171,8 @@ export function EditAccountModal({
             </Label>
             <Select
               value={formData.type}
-              onValueChange={(value) => {
-                setFormData((prev) => ({ ...prev, type: value as any }));
+              onValueChange={(value: "checking" | "savings" | "credit" | "investment") => {
+                setFormData((prev) => ({ ...prev, type: value }));
               }}
             >
               <SelectTrigger>

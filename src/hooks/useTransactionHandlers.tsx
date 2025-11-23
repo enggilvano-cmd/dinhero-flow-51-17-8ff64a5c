@@ -16,6 +16,27 @@ import { queryKeys } from '@/lib/queryClient';
 import { EditScope } from '@/components/TransactionScopeDialog';
 import { useAccounts } from './queries/useAccounts';
 
+// Type guard para erros com mensagem
+interface ErrorWithMessage {
+  message: string;
+}
+
+function isErrorWithMessage(error: unknown): error is ErrorWithMessage {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'message' in error &&
+    typeof (error as Record<string, unknown>).message === 'string'
+  );
+}
+
+function getErrorMessage(error: unknown): string {
+  if (isErrorWithMessage(error)) {
+    return error.message;
+  }
+  return 'An unknown error occurred';
+}
+
 export function useTransactionHandlers() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -45,7 +66,7 @@ export function useTransactionHandlers() {
 
       if (error) {
         // Check if it's a credit limit error
-        const errorMessage = (error as any)?.message || '';
+        const errorMessage = getErrorMessage(error);
         if (errorMessage.includes('Credit limit exceeded')) {
           // Extract the error message from the edge function response
           const match = errorMessage.match(/Available: ([\d.-]+).*Limit: ([\d.]+).*Used: ([\d.]+).*Requested: ([\d.]+)/);
@@ -132,7 +153,7 @@ export function useTransactionHandlers() {
       const errors = results.filter((r) => r.error);
       if (errors.length > 0) {
         const firstError = errors[0].error;
-        const errorMessage = (firstError as any)?.message || '';
+        const errorMessage = getErrorMessage(firstError);
         
         // Check if it's a credit limit error
         if (errorMessage.includes('Credit limit exceeded')) {
@@ -161,8 +182,12 @@ export function useTransactionHandlers() {
       }
 
       const createdIds = results
-        .map((r) => (r.data as any)?.transaction?.id as string | undefined)
-        .filter(Boolean) as string[];
+        .map((r) => {
+          const transactionData = r.data as Record<string, unknown> | null;
+          return transactionData?.transaction as { id?: string } | undefined;
+        })
+        .filter((t): t is { id: string } => t !== undefined && typeof t.id === 'string')
+        .map(t => t.id);
 
       if (createdIds.length !== totalInstallments) {
         logger.error('Mismatch between installments created and expected', {
@@ -297,7 +322,7 @@ export function useTransactionHandlers() {
 
       if (error) {
         // Check if error has a message property from the edge function response
-        const errorMessage = (error as any)?.message || 'Erro ao excluir transação';
+        const errorMessage = getErrorMessage(error);
         throw new Error(errorMessage);
       }
 
@@ -459,7 +484,7 @@ export function useTransactionHandlers() {
       const errors = results.filter(r => r.error);
       if (errors.length > 0) {
         const firstError = errors[0].error;
-        const errorMessage = (firstError as any)?.message || '';
+        const errorMessage = getErrorMessage(firstError);
         
         // Check if it's a credit limit error
         if (errorMessage.includes('Credit limit exceeded')) {

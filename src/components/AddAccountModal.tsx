@@ -207,8 +207,8 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
             </Label>
             <Select
               value={formData.type}
-              onValueChange={(value) =>
-                setFormData((prev) => ({ ...prev, type: value as any }))
+              onValueChange={(value: "checking" | "savings" | "credit" | "investment") =>
+                setFormData((prev) => ({ ...prev, type: value }))
               }
             >
               <SelectTrigger className="h-10 sm:h-11">

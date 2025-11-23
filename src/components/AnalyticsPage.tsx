@@ -393,7 +393,7 @@ export default function AnalyticsPage({
   const totalsByType = useMemo(() => {
     return filteredTransactions.reduce(
       (acc, transaction) => {
-        const amount = Math.abs(Number((transaction as any).amount) || 0);
+        const amount = Math.abs(Number(transaction.amount) || 0);
         if (transaction.type === "income") {
           acc.income += amount;
         } else if (transaction.type === "expense") {

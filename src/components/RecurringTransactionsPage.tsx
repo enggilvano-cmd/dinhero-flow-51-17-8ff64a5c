@@ -94,7 +94,7 @@ export function RecurringTransactionsPage() {
 
       if (error) throw error;
 
-      setTransactions(data as any || []);
+      setTransactions((data || []) as RecurringTransaction[]);
     } catch (error) {
       logger.error('Error loading recurring transactions:', error);
       toast({
