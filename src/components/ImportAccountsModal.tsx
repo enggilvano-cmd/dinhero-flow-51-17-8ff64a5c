@@ -294,15 +294,15 @@ export function ImportAccountsModal({
         // Converter valores para centavos
         const balanceInCents = Math.round(a.saldo * 100);
         // Corrigido: aceitar limite 0 como valor válido, não converter para null
-        const limitInCents = (a.limite !== undefined && a.limite !== null) ? Math.round(a.limite * 100) : null;
+        const limitInCents = (a.limite !== undefined && a.limite !== null) ? Math.round(a.limite * 100) : undefined;
 
         return {
           name: a.nome.trim(),
           type: a.parsedType as 'checking' | 'savings' | 'credit' | 'investment',
           balance: balanceInCents,
           limit_amount: limitInCents,
-          closing_date: a.parsedType === 'credit' && a.fechamento > 0 ? a.fechamento : null,
-          due_date: a.parsedType === 'credit' && a.vencimento > 0 ? a.vencimento : null,
+          closing_date: a.parsedType === 'credit' && a.fechamento > 0 ? a.fechamento : undefined,
+          due_date: a.parsedType === 'credit' && a.vencimento > 0 ? a.vencimento : undefined,
           color: a.cor.toUpperCase(),
         };
       });
