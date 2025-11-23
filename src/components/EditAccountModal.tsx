@@ -149,8 +149,8 @@ export function EditAccountModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[95vw] max-w-[425px] p-4 sm:p-6">
         <DialogHeader className="space-y-2 pb-4">
-          <DialogTitle className="text-financial-h3">Editar Conta</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-headline">Editar Conta</DialogTitle>
+          <DialogDescription className="text-body">
             Atualize as informações da conta
           </DialogDescription>
         </DialogHeader>
@@ -159,7 +159,7 @@ export function EditAccountModal({
           <div className="space-y-2">
             <Label
               htmlFor="name"
-              className="text-financial-secondary font-medium"
+              className="text-caption"
             >
               Nome da Conta
             </Label>
@@ -170,14 +170,13 @@ export function EditAccountModal({
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, name: e.target.value }))
               }
-              className="text-financial-input"
             />
           </div>
 
           <div className="space-y-2">
             <Label
               htmlFor="type"
-              className="text-financial-secondary font-medium"
+              className="text-caption"
             >
               Tipo de Conta
             </Label>
@@ -187,7 +186,7 @@ export function EditAccountModal({
                 setFormData((prev) => ({ ...prev, type: value as any }));
               }}
             >
-              <SelectTrigger className="text-financial-input">
+              <SelectTrigger>
                 <SelectValue placeholder="Selecione o tipo de conta" />
               </SelectTrigger>
               <SelectContent>
@@ -210,7 +209,7 @@ export function EditAccountModal({
           <div className="space-y-2">
             <Label
               htmlFor="limit"
-              className="text-financial-secondary font-medium"
+              className="text-caption"
             >
               {formData.type === "credit" 
                 ? "Limite do Cartão" 
@@ -226,12 +225,12 @@ export function EditAccountModal({
               }
             />
             {formData.type === "checking" && (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-caption text-muted-foreground">
                 Informe o limite de cheque especial disponível na conta
               </p>
             )}
             {formData.type === "credit" && (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-caption text-muted-foreground">
                 Limite total disponível no cartão de crédito
               </p>
             )}
@@ -239,7 +238,7 @@ export function EditAccountModal({
 
           {formData.type === "credit" && (
             <div className="space-y-4 sm:space-y-6 p-3 sm:p-4 bg-muted/50 rounded-lg border-l-4 border-primary/30">
-              <h4 className="text-financial-body font-medium text-primary">
+              <h4 className="text-headline text-primary">
                 Configurações do Cartão de Crédito
               </h4>
 
@@ -247,7 +246,7 @@ export function EditAccountModal({
                 <div className="space-y-2">
                   <Label
                     htmlFor="closingDate"
-                    className="text-financial-secondary font-medium"
+                    className="text-caption"
                   >
                     Data de Fechamento
                   </Label>
@@ -266,13 +265,13 @@ export function EditAccountModal({
                     }
                     className="text-financial-input"
                   />
-                  <p className="text-financial-caption">Dia do mês em que a fatura fecha</p>
+                  <p className="text-caption text-muted-foreground">Dia do mês em que a fatura fecha</p>
                 </div>
 
                 <div className="space-y-2">
                   <Label
                     htmlFor="dueDate"
-                    className="text-financial-secondary font-medium"
+                    className="text-caption"
                   >
                     Data de Vencimento
                   </Label>
@@ -289,9 +288,8 @@ export function EditAccountModal({
                         dueDate: e.target.value,
                       }))
                     }
-                    className="text-financial-input"
                   />
-                  <p className="text-financial-caption">Dia do mês em que a fatura vence</p>
+                  <p className="text-caption text-muted-foreground">Dia do mês em que a fatura vence</p>
                 </div>
               </div>
             </div>
@@ -304,13 +302,13 @@ export function EditAccountModal({
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
-              className="flex-1 text-financial-button touch-target"
+              className="flex-1 text-body touch-target"
             >
               Cancelar
             </Button>
             <Button
               type="submit"
-              className="flex-1 text-financial-button bg-primary hover:bg-primary/90 text-primary-foreground touch-target"
+              className="flex-1 text-body bg-primary hover:bg-primary/90 text-primary-foreground touch-target"
               disabled={isSubmitting}
             >
               {isSubmitting ? "Salvando..." : "Salvar Alterações"}

@@ -78,15 +78,15 @@ export function EditCategoryModal({ open, onOpenChange, onEditCategory, category
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Editar Categoria</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-headline">Editar Categoria</DialogTitle>
+          <DialogDescription className="text-body">
             Atualize as informações da categoria
           </DialogDescription>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="name">Nome da Categoria</Label>
+            <Label htmlFor="name" className="text-caption">Nome da Categoria</Label>
             <Input
               id="name"
               placeholder="Ex: Alimentação, Salário, Lazer..."
@@ -97,7 +97,7 @@ export function EditCategoryModal({ open, onOpenChange, onEditCategory, category
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="type">Tipo de Categoria</Label>
+            <Label htmlFor="type" className="text-caption">Tipo de Categoria</Label>
             <Select value={formData.type} onValueChange={(value: Category["type"]) => setFormData(prev => ({ ...prev, type: value }))}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione o tipo" />
@@ -116,10 +116,10 @@ export function EditCategoryModal({ open, onOpenChange, onEditCategory, category
           />
 
           <div className="flex gap-3 pt-4">
-            <Button type="button" variant="outline" onClick={handleCancel} className="flex-1">
+            <Button type="button" variant="outline" onClick={handleCancel} className="flex-1 text-body">
               Cancelar
             </Button>
-            <Button type="submit" className="flex-1">
+            <Button type="submit" className="flex-1 text-body">
               Salvar Alterações
             </Button>
           </div>
