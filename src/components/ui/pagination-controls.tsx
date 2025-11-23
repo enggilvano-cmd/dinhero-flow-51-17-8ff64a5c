@@ -6,9 +6,9 @@ interface PaginationControlsProps {
   currentPage: number;
   pageCount: number;
   totalCount: number;
-  pageSize: number;
+  pageSize: number | null;
   onPageChange: (page: number) => void;
-  onPageSizeChange: (pageSize: number) => void;
+  onPageSizeChange: (pageSize: number | null) => void;
   pageSizeOptions?: number[];
 }
 
@@ -21,8 +21,9 @@ export function PaginationControls({
   onPageSizeChange,
   pageSizeOptions = [25, 50, 100, 200],
 }: PaginationControlsProps) {
-  const startItem = currentPage * pageSize + 1;
-  const endItem = Math.min((currentPage + 1) * pageSize, totalCount);
+  const isShowingAll = pageSize === null;
+  const startItem = isShowingAll ? 1 : currentPage * pageSize + 1;
+  const endItem = isShowingAll ? totalCount : Math.min((currentPage + 1) * pageSize, totalCount);
 
   return (
     <div className="flex items-center justify-between px-2 py-4">
@@ -31,10 +32,10 @@ export function PaginationControls({
           Mostrando {startItem}-{endItem} de {totalCount} registros
         </span>
         <Select
-          value={pageSize.toString()}
-          onValueChange={(value) => onPageSizeChange(Number(value))}
+          value={pageSize === null ? "all" : pageSize.toString()}
+          onValueChange={(value) => onPageSizeChange(value === "all" ? null : Number(value))}
         >
-          <SelectTrigger className="h-8 w-[70px]">
+          <SelectTrigger className="h-8 w-[80px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -43,6 +44,7 @@ export function PaginationControls({
                 {size}
               </SelectItem>
             ))}
+            <SelectItem value="all">Todas</SelectItem>
           </SelectContent>
         </Select>
         <span>por página</span>
@@ -54,7 +56,7 @@ export function PaginationControls({
           size="icon"
           className="h-8 w-8"
           onClick={() => onPageChange(0)}
-          disabled={currentPage === 0}
+          disabled={currentPage === 0 || isShowingAll}
         >
           <ChevronsLeft className="h-4 w-4" />
         </Button>
@@ -63,14 +65,14 @@ export function PaginationControls({
           size="icon"
           className="h-8 w-8"
           onClick={() => onPageChange(currentPage - 1)}
-          disabled={currentPage === 0}
+          disabled={currentPage === 0 || isShowingAll}
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
         
         <div className="flex items-center gap-1">
           <span className="text-sm text-muted-foreground">
-            Página {currentPage + 1} de {Math.max(pageCount, 1)}
+            {isShowingAll ? "Todas as transações" : `Página ${currentPage + 1} de ${Math.max(pageCount, 1)}`}
           </span>
         </div>
 
@@ -79,7 +81,7 @@ export function PaginationControls({
           size="icon"
           className="h-8 w-8"
           onClick={() => onPageChange(currentPage + 1)}
-          disabled={currentPage >= pageCount - 1}
+          disabled={currentPage >= pageCount - 1 || isShowingAll}
         >
           <ChevronRight className="h-4 w-4" />
         </Button>
@@ -88,7 +90,7 @@ export function PaginationControls({
           size="icon"
           className="h-8 w-8"
           onClick={() => onPageChange(pageCount - 1)}
-          disabled={currentPage >= pageCount - 1}
+          disabled={currentPage >= pageCount - 1 || isShowingAll}
         >
           <ChevronsRight className="h-4 w-4" />
         </Button>

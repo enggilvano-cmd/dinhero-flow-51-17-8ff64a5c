@@ -10,7 +10,7 @@ import { z } from 'zod';
 
 interface UseTransactionsParams {
   page?: number;
-  pageSize?: number;
+  pageSize?: number | null; // null = todas as transações
   search?: string;
   type?: 'income' | 'expense' | 'transfer' | 'all';
   accountId?: string;
@@ -151,9 +151,6 @@ export function useTransactions(params: UseTransactionsParams = {}) {
     queryFn: async () => {
       if (!user) return [];
 
-      const from = page * pageSize;
-      const to = from + pageSize - 1;
-
       let query = supabase
         .from('transactions')
         .select(`
@@ -246,8 +243,12 @@ export function useTransactions(params: UseTransactionsParams = {}) {
         query = query.order('amount', { ascending });
       }
 
-      // Apply pagination
-      query = query.range(from, to);
+      // Apply pagination (apenas se pageSize não for null)
+      if (pageSize !== null) {
+        const from = page * pageSize;
+        const to = from + pageSize - 1;
+        query = query.range(from, to);
+      }
 
       const { data, error } = await query;
 
@@ -447,8 +448,8 @@ export function useTransactions(params: UseTransactionsParams = {}) {
     error: query.error || countQuery.error,
     refetch: query.refetch,
     totalCount: countQuery.data || 0,
-    pageCount: Math.ceil((countQuery.data || 0) / pageSize),
-    hasMore: (page + 1) * pageSize < (countQuery.data || 0),
+    pageCount: pageSize === null ? 1 : Math.ceil((countQuery.data || 0) / pageSize),
+    hasMore: pageSize === null ? false : (page + 1) * pageSize < (countQuery.data || 0),
     currentPage: page,
     pageSize,
     addTransaction: addMutation.mutateAsync,
