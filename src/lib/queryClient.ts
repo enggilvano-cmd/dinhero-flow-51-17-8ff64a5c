@@ -89,3 +89,18 @@ export const queryKeys = {
   creditBills: (accountId?: string) => 
     ['creditBills', accountId] as const,
 } as const;
+
+/**
+ * Helper para refetch com delay de 10ms para atualização imediata
+ * Centraliza lógica duplicada em 9 locais do código
+ */
+export function refetchWithDelay(
+  client: QueryClient,
+  queryKeys: ReadonlyArray<readonly unknown[]>
+): void {
+  setTimeout(() => {
+    queryKeys.forEach(key => {
+      client.refetchQueries({ queryKey: key as unknown[] });
+    });
+  }, 10);
+}
