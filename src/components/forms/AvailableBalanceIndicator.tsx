@@ -1,8 +1,8 @@
-import { useMemo } from "react";
 import { Account } from "@/types";
 import { formatCurrency } from "@/lib/formatters";
 import { AlertCircle, CheckCircle, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useBalanceValidation } from "@/hooks/useBalanceValidation";
 
 interface AvailableBalanceIndicatorProps {
   account: Account | undefined;
@@ -17,80 +17,17 @@ export function AvailableBalanceIndicator({
   amountInCents,
   className,
 }: AvailableBalanceIndicatorProps) {
-  const balanceInfo = useMemo(() => {
-    if (!account) return null;
+  // ✅ Usa hook centralizado de validação
+  const validation = useBalanceValidation({
+    account,
+    amountInCents,
+    transactionType,
+  });
 
-    const currentBalance = account.balance;
-    const limit = account.limit_amount || 0;
-    
-    let available = 0;
-    let balanceAfter = currentBalance;
-    let status: "success" | "warning" | "danger" = "success";
-    let message = "";
+  if (!account) return null;
 
-    if (account.type === "credit") {
-      // Para cartão de crédito
-      const currentDebt = Math.abs(Math.min(currentBalance, 0));
-      available = limit - currentDebt;
-      
-      if (transactionType === "expense") {
-        balanceAfter = currentBalance - amountInCents;
-        const newDebt = Math.abs(Math.min(balanceAfter, 0));
-        const remaining = limit - newDebt;
-        
-        if (amountInCents > available) {
-          status = "danger";
-          message = "Limite excedido";
-        } else if (remaining < limit * 0.2) {
-          status = "warning";
-          message = "Próximo ao limite";
-        } else {
-          status = "success";
-          message = "Limite disponível";
-        }
-      } else {
-        balanceAfter = currentBalance + amountInCents;
-        status = "success";
-        message = "Pagamento";
-      }
-    } else {
-      // Para contas normais
-      available = currentBalance + limit;
-      
-      if (transactionType === "expense") {
-        balanceAfter = currentBalance - amountInCents;
-        const remainingAfter = balanceAfter + limit;
-        
-        if (amountInCents > available) {
-          status = "danger";
-          message = "Saldo insuficiente";
-        } else if (remainingAfter < available * 0.2) {
-          status = "warning";
-          message = "Saldo baixo após transação";
-        } else {
-          status = "success";
-          message = "Saldo suficiente";
-        }
-      } else {
-        balanceAfter = currentBalance + amountInCents;
-        status = "success";
-        message = "Receita";
-      }
-    }
-
-    return {
-      currentBalance,
-      available,
-      balanceAfter,
-      limit,
-      status,
-      message,
-    };
-  }, [account, transactionType, amountInCents]);
-
-  if (!account || !balanceInfo) return null;
-
-  const { currentBalance, available, balanceAfter, limit, status, message } = balanceInfo;
+  const { currentBalance, available, balanceAfter, limit } = validation.details;
+  const { status, message } = validation;
 
   const statusConfig = {
     success: {

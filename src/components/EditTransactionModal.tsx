@@ -23,6 +23,7 @@ import { logger } from "@/lib/logger";
 import { editTransactionSchema } from "@/lib/validationSchemas";
 import { z } from "zod";
 import { EditTransactionModalProps } from "@/types/formProps";
+import { validateCreditLimitForEdit } from "@/hooks/useBalanceValidation";
 
 export function EditTransactionModal({
   open,
@@ -188,7 +189,7 @@ export function EditTransactionModal({
       return;
     }
 
-    // ✅ Validação preventiva de limite de crédito e saldo ao editar
+    // ✅ Validação preventiva usando hook centralizado
     const selectedAccount = accounts.find(acc => acc.id === (updates.account_id || transaction.account_id));
     const newAmount = updates.amount ?? Math.abs(transaction.amount);
     const newType = updates.type ?? transaction.type;
@@ -197,56 +198,24 @@ export function EditTransactionModal({
 
     if (selectedAccount && newType === 'expense') {
       if (selectedAccount.type === 'credit') {
-        // Validação de limite de crédito
+        // Validação de limite de crédito com hook centralizado
         try {
-          // Calcular a diferença de impacto no limite
-          let amountDifference = 0;
-          
-          if (oldType === 'expense') {
-            // Estava como despesa, calcular diferença
-            amountDifference = newAmount - oldAmount;
-          } else {
-            // Mudou de income para expense, impacto total
-            amountDifference = newAmount + oldAmount;
-          }
+          // Garantir que oldType não é 'transfer'
+          if (oldType !== 'transfer') {
+            const validation = await validateCreditLimitForEdit(
+              selectedAccount,
+              newAmount,
+              oldAmount,
+              newType,
+              oldType,
+              transaction.id,
+              transaction.status
+            );
 
-          // Só validar se está aumentando o uso do limite
-          if (amountDifference > 0) {
-            // Buscar transações pendentes deste cartão (excluindo a atual)
-            const { data: pendingTransactions, error: pendingError } = await supabase
-              .from('transactions')
-              .select('amount')
-              .eq('account_id', selectedAccount.id)
-              .eq('type', 'expense')
-              .eq('status', 'pending')
-              .neq('id', transaction.id); // Excluir a transação atual
-
-            if (pendingError) throw pendingError;
-
-            // Calcular valores
-            const limit = selectedAccount.limit_amount || 0;
-            const currentDebt = Math.abs(Math.min(selectedAccount.balance, 0));
-            const pendingExpenses = pendingTransactions?.reduce((sum: number, t: { amount: number }) => sum + Math.abs(t.amount), 0) || 0;
-            
-            // Remover o valor antigo da transação se ela era completed e expense
-            let adjustedDebt = currentDebt;
-            if (transaction.status === 'completed' && oldType === 'expense') {
-              adjustedDebt = Math.max(0, adjustedDebt - oldAmount);
-            }
-            
-            const totalUsed = adjustedDebt + pendingExpenses;
-            const available = limit - totalUsed;
-
-            // Verificar se a diferença excede o limite
-            if (amountDifference > available) {
-              const availableFormatted = (available / 100).toFixed(2);
-              const limitFormatted = (limit / 100).toFixed(2);
-              const usedFormatted = (totalUsed / 100).toFixed(2);
-              const differenceFormatted = (amountDifference / 100).toFixed(2);
-
+            if (!validation.isValid) {
               toast({
                 title: "Limite de crédito excedido",
-                description: `Disponível: R$ ${availableFormatted} | Limite: R$ ${limitFormatted} | Usado: R$ ${usedFormatted} | Aumento solicitado: R$ ${differenceFormatted}. Reduza o valor ou aumente o limite do cartão.`,
+                description: validation.errorMessage || validation.message,
                 variant: "destructive",
               });
               return;
@@ -257,16 +226,14 @@ export function EditTransactionModal({
           // Continue mesmo se a validação falhar (deixar o backend validar)
         }
       } else {
-        // Validação de saldo para contas normais (checking, savings, investment)
+        // Validação de saldo para contas normais usando hook centralizado
         try {
           // Calcular a diferença de impacto no saldo
           let amountDifference = 0;
           
           if (oldType === 'expense') {
-            // Estava como despesa, calcular diferença
             amountDifference = newAmount - oldAmount;
-          } else {
-            // Mudou de income para expense, impacto total
+          } else if (oldType === 'income') {
             amountDifference = newAmount + oldAmount;
           }
 
