@@ -101,6 +101,19 @@ Deno.serve(async (req) => {
 
     const transfer = validation.data;
 
+    // Buscar nomes das contas para descrições mais claras
+    const { data: accounts } = await supabaseClient
+      .from('accounts')
+      .select('id, name')
+      .in('id', [transfer.from_account_id, transfer.to_account_id]);
+
+    const fromAccount = accounts?.find(a => a.id === transfer.from_account_id);
+    const toAccount = accounts?.find(a => a.id === transfer.to_account_id);
+
+    // Criar descrições específicas para cada lado da transferência
+    const outgoingDescription = transfer.description || `Transferência para ${toAccount?.name || 'Conta Destino'}`;
+    const incomingDescription = transfer.description ? transfer.description : `Transferência de ${fromAccount?.name || 'Conta Origem'}`;
+
     // Usar função PL/pgSQL atômica
     const { data: result, error: functionError } = await supabaseClient
       .rpc('atomic_create_transfer', {
@@ -108,7 +121,8 @@ Deno.serve(async (req) => {
         p_from_account_id: transfer.from_account_id,
         p_to_account_id: transfer.to_account_id,
         p_amount: transfer.amount,
-        p_description: transfer.description,
+        p_outgoing_description: outgoingDescription,
+        p_incoming_description: incomingDescription,
         p_date: transfer.date,
         p_status: transfer.status,
       });
