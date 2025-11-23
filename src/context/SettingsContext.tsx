@@ -99,13 +99,27 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
   const user = auth?.user;
   const loading = auth?.loading ?? true;
   
-  const [settings, setSettings] = useState<AppSettings>({
-    currency: 'BRL',
-    theme: 'system',
-    notifications: true,
-    autoBackup: false,
-    language: 'pt-BR',
-    userId: ''
+  const [settings, setSettings] = useState<AppSettings>(() => {
+    // Try to load from localStorage first for immediate theme application
+    try {
+      const savedSettings = localStorage.getItem('userSettings');
+      if (savedSettings) {
+        const parsed = JSON.parse(savedSettings);
+        logger.debug('Loaded settings from localStorage:', parsed);
+        return parsed;
+      }
+    } catch (error) {
+      logger.error('Error loading settings from localStorage:', error);
+    }
+    
+    return {
+      currency: 'BRL',
+      theme: 'system',
+      notifications: true,
+      autoBackup: false,
+      language: 'pt-BR',
+      userId: ''
+    };
   });
 
   // Apply theme immediately on mount and settings change
@@ -123,27 +137,34 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     } else {
       root.classList.add(theme);
     }
+    
+    logger.debug('Applied theme:', theme);
   };
 
-  // Apply system theme on mount (before authentication)
+  // Apply theme from initial state (localStorage or default)
   useEffect(() => {
-    const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
-      ? 'dark'
-      : 'light';
-    const root = window.document.documentElement;
-    root.classList.add(systemTheme);
+    applyTheme(settings.theme);
   }, []);
 
   // Load full settings when user is authenticated
   useEffect(() => {
     const loadSettings = async () => {
-      if (!user || loading) return;
+      if (!user || loading) {
+        logger.debug('Skipping settings load - user or auth loading', { user: !!user, loading });
+        return;
+      }
       
       try {
+        logger.debug('Loading settings from database for user:', user.id);
         // Always load settings from Supabase (source of truth)
         const loadedSettings = await getSettings();
         
+        logger.debug('Settings loaded successfully:', loadedSettings);
         setSettings(loadedSettings);
+        
+        // Save to localStorage for next page load
+        localStorage.setItem('userSettings', JSON.stringify(loadedSettings));
+        
         applyTheme(loadedSettings.theme);
       } catch (error) {
         logger.error('Error loading settings:', error);
@@ -172,12 +193,24 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
   }, [settings.theme]);
 
   const updateSettings = async (newSettings: AppSettings) => {
+    logger.debug('Updating settings:', newSettings);
     setSettings(newSettings);
+    
+    // Save to localStorage immediately
+    localStorage.setItem('userSettings', JSON.stringify(newSettings));
+    
     applyTheme(newSettings.theme);
     
     // Save to Supabase if user is authenticated
     if (user) {
-      await saveSettingsToDb(newSettings);
+      try {
+        await saveSettingsToDb(newSettings);
+        logger.debug('Settings saved to database successfully');
+      } catch (error) {
+        logger.error('Error saving settings to database:', error);
+      }
+    } else {
+      logger.warn('Cannot save settings - user not authenticated');
     }
   };
 
