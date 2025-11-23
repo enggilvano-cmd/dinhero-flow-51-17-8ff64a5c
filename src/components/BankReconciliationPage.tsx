@@ -256,9 +256,9 @@ export function BankReconciliationPage({
   return (
     <div className="space-y-6 p-6">
       <div className="flex justify-end">
-        <Button onClick={handleExport} variant="outline">
-          <Download className="w-4 h-4 mr-2" />
-          Exportar
+        <Button onClick={handleExport} variant="outline" className="gap-1.5 apple-interaction h-9 text-xs sm:text-sm px-3">
+          <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+          <span className="truncate">Exportar</span>
         </Button>
       </div>
 

@@ -290,23 +290,26 @@ export function CategoriesPage({}: CategoriesPageProps) {
           <Button 
             variant="outline" 
             onClick={exportToExcel}
-            className="gap-2 apple-interaction h-9 text-xs sm:text-sm"
+            className="gap-1.5 apple-interaction h-9 text-xs sm:text-sm px-3"
             disabled={categories.length === 0}
           >
-            <FileDown className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span>Exportar</span>
+            <FileDown className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+            <span className="truncate">Exportar</span>
           </Button>
           <Button 
             variant="outline" 
             onClick={() => setImportModalOpen(true)}
-            className="gap-2 apple-interaction h-9 text-xs sm:text-sm"
+            className="gap-1.5 apple-interaction h-9 text-xs sm:text-sm px-3"
           >
-            <Upload className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span>Importar</span>
+            <Upload className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+            <span className="truncate">Importar</span>
           </Button>
-          <Button onClick={() => setAddModalOpen(true)} className="gap-2 apple-interaction h-9 text-xs sm:text-sm col-span-2 md:col-span-1">
-            <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span>Adicionar Categoria</span>
+          <Button onClick={() => setAddModalOpen(true)} className="gap-1.5 apple-interaction h-9 text-xs sm:text-sm col-span-2 md:col-span-1 px-2 sm:px-3">
+            <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+            <span className="truncate whitespace-nowrap">
+              <span className="hidden sm:inline">Adicionar Categoria</span>
+              <span className="sm:hidden">Adicionar</span>
+            </span>
           </Button>
         </div>
       </div>
