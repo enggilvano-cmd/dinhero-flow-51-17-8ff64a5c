@@ -34,54 +34,7 @@ import { z } from "zod";
 import { queryKeys } from "@/lib/queryClient";
 import { ACCOUNT_TYPE_LABELS } from "@/types";
 import { AvailableBalanceIndicator } from "@/components/forms/AvailableBalanceIndicator";
-
-interface Transaction {
-  id?: string;
-  description: string;
-  // O amount aqui representa o valor em centavos, como um inteiro.
-  amount: number;
-  date: Date;
-  type: "income" | "expense" | "transfer";
-  category_id: string; // Corrigido para category_id
-  account_id: string; // Corrigido para account_id
-  status: "pending" | "completed";
-  installments?: number; // Metadado para o total de parcelas
-  currentInstallment?: number;
-  parentTransactionId?: string;
-  createdAt?: Date;
-  invoiceMonth?: string;
-  invoiceMonthOverridden?: boolean;
-  is_recurring?: boolean;
-  recurrence_type?: "daily" | "weekly" | "monthly" | "yearly";
-  recurrence_end_date?: string;
-}
-
-interface Account {
-  id: string;
-  name: string;
-  type: "checking" | "savings" | "credit" | "investment";
-  balance: number;
-  color: string;
-  closing_date?: number;
-  due_date?: number;
-  limit_amount?: number;
-}
-
-interface AddTransactionModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  // CORREÇÃO: A tipagem agora permite que todas as propriedades de uma transação,
-  // exceto as geradas pelo DB, sejam passadas. Isso corrige o bug do parcelamento.
-  onAddTransaction: (transaction: Omit<Transaction, "id" | "createdAt">) => void;
-  onAddInstallmentTransactions?: (
-    transactions: Omit<Transaction, "id" | "createdAt">[]
-  ) => void; // Mantém a estrutura completa para parcelas
-  onSuccess?: () => void; // Callback opcional após sucesso
-  accounts: Account[];
-  initialType?: "income" | "expense" | ""; // Tipo inicial pré-selecionado
-  initialAccountType?: "credit" | "checking" | ""; // Tipo de conta inicial
-  lockType?: boolean; // Se true, trava o campo de tipo
-}
+import { AddTransactionModalProps } from "@/types/formProps";
 
 export function AddTransactionModal({
   open,

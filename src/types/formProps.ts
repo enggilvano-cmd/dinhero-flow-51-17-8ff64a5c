@@ -3,7 +3,7 @@
  * Garante type safety e consistência nas interfaces dos modais
  */
 
-import { Account, Category, Transaction } from "./index";
+import { Transaction, Account, Category, TransactionInput, InstallmentTransactionInput } from "./index";
 import {
   AddAccountFormData,
   EditAccountFormData,
@@ -12,6 +12,7 @@ import {
   AddTransactionFormData,
   EditTransactionFormData,
   TransferFormData,
+  CreditPaymentFormData,
   MarkAsPaidFormData,
 } from "@/lib/validationSchemas";
 
@@ -46,30 +47,50 @@ export interface EditCategoryModalProps extends BaseModalProps {
 
 export interface AddTransactionModalProps extends BaseModalProps {
   accounts: Account[];
-  categories: Category[];
+  onAddTransaction: (transaction: TransactionInput) => Promise<void>;
+  onAddInstallmentTransactions?: (
+    transactions: InstallmentTransactionInput[]
+  ) => Promise<void>;
+  onSuccess?: () => void;
+  initialType?: "income" | "expense" | "";
+  initialAccountType?: "credit" | "checking" | "";
+  lockType?: boolean;
 }
 
 export interface EditTransactionModalProps extends BaseModalProps {
   transaction: Transaction | null;
   accounts: Account[];
-  categories: Category[];
   onEditTransaction: (
-    id: string,
-    updates: Partial<Transaction>,
-    scope?: "current" | "current-and-remaining" | "all"
-  ) => Promise<void>;
+    transaction: Transaction,
+    editScope?: "current" | "current-and-remaining" | "all"
+  ) => void;
 }
 
 export interface TransferModalProps extends BaseModalProps {
-  accounts: Account[];
-  onAddTransfer: (transfer: {
-    from_account_id: string;
-    to_account_id: string;
+  onTransfer: (
+    fromAccountId: string,
+    toAccountId: string,
+    amountInCents: number,
+    date: Date
+  ) => Promise<{ fromAccount: Account; toAccount: Account }>;
+}
+
+// ============= Credit Payment Modal Props =============
+
+export interface CreditPaymentModalProps extends BaseModalProps {
+  onPayment: (params: {
+    creditCardAccountId: string;
+    debitAccountId: string;
     amount: number;
-    description: string;
-    date: Date;
-    status: "pending" | "completed";
-  }) => Promise<void>;
+    paymentDate: string;
+  }) => Promise<{
+    updatedCreditAccount: Account;
+    updatedDebitAccount: Account;
+  }>;
+  creditAccount: Account | null;
+  invoiceValueInCents: number;
+  nextInvoiceValueInCents: number;
+  totalDebtInCents: number;
 }
 
 // ============= Mark as Paid Modal Props =============
@@ -95,5 +116,6 @@ export type {
   AddTransactionFormData,
   EditTransactionFormData,
   TransferFormData,
+  CreditPaymentFormData,
   MarkAsPaidFormData,
 };

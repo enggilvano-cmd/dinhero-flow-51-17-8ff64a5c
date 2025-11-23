@@ -11,7 +11,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { Transaction, Account, ACCOUNT_TYPE_LABELS } from "@/types";
+import { Transaction, ACCOUNT_TYPE_LABELS } from "@/types";
 import { useCategories } from "@/hooks/useCategories";
 import { createDateFromString } from "@/lib/dateUtils";
 import { TransactionScopeDialog, EditScope } from "./TransactionScopeDialog";
@@ -20,14 +20,9 @@ import { CurrencyInput } from "@/components/forms/CurrencyInput";
 import { supabase } from "@/integrations/supabase/client";
 import { AvailableBalanceIndicator } from "@/components/forms/AvailableBalanceIndicator";
 import { logger } from "@/lib/logger";
-
-interface EditTransactionModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onEditTransaction: (transaction: Transaction, editScope?: EditScope) => void;
-  transaction: Transaction | null;
-  accounts: Account[];
-}
+import { editTransactionSchema } from "@/lib/validationSchemas";
+import { z } from "zod";
+import { EditTransactionModalProps } from "@/types/formProps";
 
 export function EditTransactionModal({
   open,
@@ -82,22 +77,32 @@ export function EditTransactionModal({
     
     if (!transaction) return;
     
-    if (!formData.description.trim() || formData.amountInCents <= 0 || !formData.account_id) {
-      toast({
-        title: "Erro",
-        description: "Preencha todos os campos obrigatórios",
-        variant: "destructive",
-      });
-      return;
-    }
+    // Validação com Zod
+    try {
+      const validationData = {
+        id: transaction.id,
+        description: formData.description,
+        amount: formData.amountInCents,
+        date: formData.date.toISOString().split('T')[0],
+        type: formData.type,
+        category_id: formData.category_id,
+        account_id: formData.account_id,
+        status: formData.status,
+        invoiceMonth: formData.invoiceMonth,
+      };
 
-    if (!formData.category_id) {
-      toast({
-        title: "Erro",
-        description: "Selecione uma categoria para a transação",
-        variant: "destructive",
-      });
-      return;
+      editTransactionSchema.parse(validationData);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const firstError = error.errors[0];
+        toast({
+          title: "Erro de validação",
+          description: firstError.message,
+          variant: "destructive",
+        });
+        logger.error("Validation errors:", error.errors);
+        return;
+      }
     }
 
     const isInstallment = Boolean(transaction.installments && transaction.installments > 1);
@@ -221,7 +226,7 @@ export function EditTransactionModal({
             // Calcular valores
             const limit = selectedAccount.limit_amount || 0;
             const currentDebt = Math.abs(Math.min(selectedAccount.balance, 0));
-            const pendingExpenses = pendingTransactions?.reduce((sum: number, t: any) => sum + Math.abs(t.amount), 0) || 0;
+            const pendingExpenses = pendingTransactions?.reduce((sum: number, t: { amount: number }) => sum + Math.abs(t.amount), 0) || 0;
             
             // Remover o valor antigo da transação se ela era completed e expense
             let adjustedDebt = currentDebt;
