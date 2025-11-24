@@ -8,59 +8,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Constants
-const MAX_TRANSACTION_AMOUNT = 1_000_000_000; // 1 billion cents
-const MAX_DESCRIPTION_LENGTH = 200;
-const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-interface TransactionInput {
-  description: string;
-  amount: number;
-  date: string;
-  type: 'income' | 'expense';
-  category_id: string;
-  account_id: string;
-  status: 'pending' | 'completed';
-  invoice_month?: string;
-  invoice_month_overridden?: boolean;
-}
-
-// Validação de inputs
-function validateTransactionInput(input: TransactionInput): { valid: boolean; error?: string } {
-  if (!input.description || input.description.trim().length === 0) {
-    return { valid: false, error: 'Description is required and cannot be empty' };
-  }
-  if (input.description.length > MAX_DESCRIPTION_LENGTH) {
-    return { valid: false, error: `Description must be less than ${MAX_DESCRIPTION_LENGTH} characters` };
-  }
-  if (typeof input.amount !== 'number' || input.amount <= 0) {
-    return { valid: false, error: 'Amount must be a positive number' };
-  }
-  if (input.amount > MAX_TRANSACTION_AMOUNT) {
-    return { valid: false, error: 'Amount exceeds maximum allowed value' };
-  }
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(input.date)) {
-    return { valid: false, error: 'Date must be in YYYY-MM-DD format' };
-  }
-  if (!['income', 'expense'].includes(input.type)) {
-    return { valid: false, error: 'Type must be either income or expense' };
-  }
-  if (!['pending', 'completed'].includes(input.status)) {
-    return { valid: false, error: 'Status must be either pending or completed' };
-  }
-  if (!UUID_REGEX.test(input.account_id)) {
-    return { valid: false, error: 'Invalid account_id format' };
-  }
-  if (!UUID_REGEX.test(input.category_id)) {
-    return { valid: false, error: 'Invalid category_id format' };
-  }
-  if (input.invoice_month && !/^\d{4}-\d{2}$/.test(input.invoice_month)) {
-    return { valid: false, error: 'Invoice month must be in YYYY-MM format' };
-  }
-  
-  return { valid: true };
-}
-
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });

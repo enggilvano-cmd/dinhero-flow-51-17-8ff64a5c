@@ -8,46 +8,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-interface TransferInput {
-  from_account_id: string;
-  to_account_id: string;
-  amount: number;
-  date: string;
-  description?: string;
-}
-
-// Validação de inputs
-function validateTransferInput(input: TransferInput): { valid: boolean; error?: string } {
-  // Validar UUIDs
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  if (!uuidRegex.test(input.from_account_id)) {
-    return { valid: false, error: 'Invalid from_account_id format' };
-  }
-  if (!uuidRegex.test(input.to_account_id)) {
-    return { valid: false, error: 'Invalid to_account_id format' };
-  }
-  
-  // Validar amount
-  if (typeof input.amount !== 'number' || input.amount <= 0) {
-    return { valid: false, error: 'Amount must be a positive number' };
-  }
-  if (input.amount > 1000000000) {
-    return { valid: false, error: 'Amount exceeds maximum allowed value' };
-  }
-  
-  // Validar date
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(input.date)) {
-    return { valid: false, error: 'Date must be in YYYY-MM-DD format' };
-  }
-  
-  // Validar description (opcional)
-  if (input.description && input.description.length > 200) {
-    return { valid: false, error: 'Description must be less than 200 characters' };
-  }
-  
-  return { valid: true };
-}
-
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
