@@ -372,7 +372,6 @@ const PlaniFlowApp = () => {
             accounts={accounts}
             categories={categories}
             onAddTransaction={() => setAddTransactionModalOpen(true)}
-            onTransfer={() => setTransferModalOpen(true)}
             onEditTransaction={openEditTransaction}
             onDeleteTransaction={handleDeleteTransaction}
             onImportTransactions={handleImportTransactions}

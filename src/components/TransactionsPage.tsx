@@ -3,7 +3,6 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCardsSkeletonGrid } from "@/components/transactions/StatCardSkeleton";
 import { TransactionTableSkeleton } from "@/components/transactions/TransactionTableSkeleton";
-import { TransactionHeader } from "@/components/transactions/TransactionHeader";
 import { TransactionList } from "@/components/transactions/TransactionList";
 import { TransactionStatsCards } from "@/components/transactions/TransactionStatsCards";
 import { TransactionFiltersBar } from "@/components/transactions/TransactionFiltersBar";
@@ -21,7 +20,6 @@ interface TransactionsPageProps {
   accounts: Account[];
   categories: Category[];
   onAddTransaction: () => void;
-  onTransfer: () => void;
   onEditTransaction: (transaction: Transaction) => void;
   onDeleteTransaction: (transactionId: string, scope?: EditScope) => void;
   onImportTransactions: (transactions: ImportTransactionData[], transactionsToReplace: string[]) => void;
@@ -68,7 +66,6 @@ export function TransactionsPage({
   accounts,
   categories,
   onAddTransaction,
-  onTransfer,
   onEditTransaction,
   onDeleteTransaction,
   onImportTransactions,
@@ -158,11 +155,6 @@ export function TransactionsPage({
 
   return (
     <div className="spacing-responsive-lg fade-in pb-6 sm:pb-8">
-      <TransactionHeader
-        onAddTransaction={onAddTransaction}
-        onTransfer={onTransfer}
-      />
-
       <TransactionPageActions
         onImport={() => setImportModalOpen(true)}
         onExport={exportToExcel}
