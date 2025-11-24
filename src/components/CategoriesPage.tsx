@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -244,11 +244,13 @@ export function CategoriesPage({}: CategoriesPageProps) {
     }
   };
 
-  const filteredCategories = categories.filter(category => {
-    const matchesSearch = category.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = filterType === "all" || category.type === filterType;
-    return matchesSearch && matchesType;
-  });
+  const filteredCategories = useMemo(() => {
+    return categories.filter(category => {
+      const matchesSearch = category.name.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesType = filterType === "all" || category.type === filterType;
+      return matchesSearch && matchesType;
+    });
+  }, [categories, searchTerm, filterType]);
 
   const getTypeIcon = (type: string) => {
     switch (type) {
