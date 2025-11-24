@@ -141,7 +141,11 @@ export function ImportFixedTransactionsModal({
     let isValid = true;
 
     const descricao = extractValue(row, ['Descrição', 'Description', 'descricao', 'description']) as string;
-    const valor = parseFloat(extractValue(row, ['Valor', 'Amount', 'valor', 'amount']) || '0');
+    
+    // Parse valor com suporte ao formato brasileiro (vírgula como decimal)
+    const rawValor = String(extractValue(row, ['Valor', 'Amount', 'valor', 'amount']) || '0');
+    const valor = parseFloat(rawValor.replace(/\./g, '').replace(',', '.'));
+    
     const tipo = extractValue(row, ['Tipo', 'Type', 'tipo', 'type']) as string;
     const conta = extractValue(row, ['Conta', 'Account', 'conta', 'account']) as string;
     const categoria = extractValue(row, ['Categoria', 'Category', 'categoria', 'category']) as string;

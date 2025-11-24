@@ -584,7 +584,7 @@ export function FixedTransactionsPage() {
         Conta: transaction.account?.name || "",
         Categoria: transaction.category?.name || "",
         "Dia do Mês": new Date(transaction.date).getDate(),
-        Data: new Date(transaction.date).toLocaleDateString("pt-BR"),
+        Status: "Pendente",
       }));
 
       const ws = XLSX.utils.json_to_sheet(exportData);
