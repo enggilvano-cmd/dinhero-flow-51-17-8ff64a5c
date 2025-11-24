@@ -74,6 +74,62 @@ export function PeriodClosurePage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Usuário não autenticado');
 
+      // ✅ VALIDAÇÃO CRÍTICA: Verificar journal entries antes de fechar período
+      const { data: validationData, error: validationError } = await supabase.rpc(
+        'validate_period_entries',
+        {
+          p_user_id: user.id,
+          p_start_date: format(startDate, 'yyyy-MM-dd'),
+          p_end_date: format(endDate, 'yyyy-MM-dd'),
+        }
+      );
+
+      if (validationError) {
+        logger.error('Error validating period:', validationError);
+        toast.error('Erro ao validar período contábil');
+        return;
+      }
+
+      const validation = validationData?.[0];
+      
+      if (!validation) {
+        toast.error('Erro ao validar período contábil');
+        return;
+      }
+
+      // Verificar se período é válido
+      if (!validation.is_valid) {
+        const unbalanced = validation.unbalanced_count || 0;
+        const missing = validation.missing_entries_count || 0;
+        const total = validation.total_transactions || 0;
+        
+        let errorMessage = `Período contém inconsistências:\n`;
+        
+        if (missing > 0) {
+          errorMessage += `\n• ${missing} transação(ões) sem lançamentos contábeis`;
+        }
+        
+        if (unbalanced > 0) {
+          errorMessage += `\n• ${unbalanced} lançamento(s) não balanceado(s) (débitos ≠ créditos)`;
+        }
+        
+        errorMessage += `\n\nTotal de transações no período: ${total}`;
+        errorMessage += `\n\nPor favor, corrija as inconsistências antes de fechar o período.`;
+        
+        toast.error('Período Inválido', {
+          description: errorMessage,
+          duration: 8000,
+        });
+
+        // Log detalhes para debug
+        if (validation.error_details && Array.isArray(validation.error_details)) {
+          logger.warn('Period validation errors:', validation.error_details);
+        }
+
+        return;
+      }
+
+      // Período válido, prosseguir com fechamento
       const { error } = await supabase
         .from('period_closures')
         .insert({
@@ -88,7 +144,10 @@ export function PeriodClosurePage() {
 
       if (error) throw error;
 
-      toast.success('Período fechado com sucesso');
+      toast.success('Período Fechado com Sucesso', {
+        description: `${validation.total_transactions} transação(ões) validada(s) e período bloqueado`,
+      });
+      
       setStartDate(undefined);
       setEndDate(undefined);
       setNotes('');
