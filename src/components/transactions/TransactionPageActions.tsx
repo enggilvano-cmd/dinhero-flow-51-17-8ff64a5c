@@ -39,7 +39,7 @@ export function TransactionPageActions({
           className="gap-1.5 apple-interaction h-9 text-body col-span-2 md:col-span-1 px-3"
         >
           <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
-          <span className="truncate">Adicionar</span>
+          <span className="truncate">Adicionar Transação</span>
         </Button>
       </div>
     </div>
