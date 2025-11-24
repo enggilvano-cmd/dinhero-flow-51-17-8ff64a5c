@@ -4,11 +4,52 @@ import { formatCurrency } from "./formatters";
 
 // Interfaces
 export interface DREReport {
-  totalRevenue: number;
-  totalExpenses: number;
-  netResult: number;
-  revenueByCategory: Array<{ category: string; amount: number }>;
-  expensesByCategory: Array<{ category: string; amount: number }>;
+  // Receitas
+  receitaBruta: number;
+  deducoesReceita: number;
+  receitaLiquida: number;
+  
+  // CMV
+  cmv: number;
+  
+  // Lucro Bruto
+  lucroBruto: number;
+  
+  // Despesas Operacionais
+  despesasVendas: number;
+  despesasAdministrativas: number;
+  despesasFinanceiras: number;
+  outrasDespesasOperacionais: number;
+  totalDespesasOperacionais: number;
+  
+  // EBIT (Lucro Operacional)
+  ebit: number;
+  
+  // Receitas/Despesas Não-Operacionais
+  receitasNaoOperacionais: number;
+  despesasNaoOperacionais: number;
+  resultadoNaoOperacional: number;
+  
+  // Lucro antes do IR
+  lucroAntesIR: number;
+  
+  // Impostos
+  provisaoIR: number;
+  
+  // Lucro Líquido
+  lucroLiquido: number;
+  
+  // Detalhamento por conta (para exibição detalhada)
+  receitaBrutaDetalhada: Array<{ code: string; name: string; amount: number }>;
+  deducoesDetalhadas: Array<{ code: string; name: string; amount: number }>;
+  cmvDetalhado: Array<{ code: string; name: string; amount: number }>;
+  despesasVendasDetalhadas: Array<{ code: string; name: string; amount: number }>;
+  despesasAdministrativasDetalhadas: Array<{ code: string; name: string; amount: number }>;
+  despesasFinanceirasDetalhadas: Array<{ code: string; name: string; amount: number }>;
+  outrasDespesasDetalhadas: Array<{ code: string; name: string; amount: number }>;
+  receitasNaoOperacionaisDetalhadas: Array<{ code: string; name: string; amount: number }>;
+  despesasNaoOperacionaisDetalhadas: Array<{ code: string; name: string; amount: number }>;
+  provisaoIRDetalhada: Array<{ code: string; name: string; amount: number }>;
 }
 
 export interface BalanceSheetReport {
@@ -33,53 +74,141 @@ export interface CashFlowReport {
   closingBalance: number;
 }
 
-// Gerar DRE (Demonstração do Resultado do Exercício)
-// ATUALIZADO: Agora usa journal_entries ao invés de transactions
+// Gerar DRE (Demonstração do Resultado do Exercício) - Lei 6.404/76
+// ATUALIZADO: Estrutura vertical com totalizadores intermediários
 export function generateDRE(
   journalEntries: any[],
   chartOfAccounts: any[],
   _startDate: Date,
   _endDate: Date
 ): DREReport {
-  // Receitas (contas de revenue com crédito)
-  const revenueAccounts = chartOfAccounts.filter(acc => acc.category === 'revenue');
-  const revenueByCategory = revenueAccounts.map(account => {
-    const accountEntries = journalEntries.filter(
-      je => je.account_id === account.id && je.entry_type === 'credit'
-    );
-    const amount = accountEntries.reduce((sum, je) => sum + je.amount, 0);
-    return {
-      category: `${account.code} - ${account.name}`,
-      amount
-    };
-  }).filter(item => item.amount > 0);
+  
+  // Helper para calcular saldo de contas por código
+  const calcularSaldoContas = (codigoInicio: string, tipo: 'debit' | 'credit') => {
+    const contas = chartOfAccounts.filter(acc => acc.code.startsWith(codigoInicio));
+    return contas.map(account => {
+      const entries = journalEntries.filter(
+        je => je.account_id === account.id && je.entry_type === tipo
+      );
+      const amount = entries.reduce((sum, je) => sum + je.amount, 0);
+      return {
+        code: account.code,
+        name: account.name,
+        amount
+      };
+    }).filter(item => item.amount > 0);
+  };
 
-  const totalRevenue = revenueByCategory.reduce((sum, item) => sum + item.amount, 0);
+  // 1. RECEITA BRUTA (4.01.xx - créditos)
+  const receitaBrutaDetalhada = calcularSaldoContas('4.01', 'credit');
+  const receitaBruta = receitaBrutaDetalhada.reduce((sum, item) => sum + item.amount, 0);
 
-  // Despesas (contas de expense com débito)
-  const expenseAccounts = chartOfAccounts.filter(acc => acc.category === 'expense');
-  const expensesByCategory = expenseAccounts.map(account => {
-    const accountEntries = journalEntries.filter(
-      je => je.account_id === account.id && je.entry_type === 'debit'
-    );
-    const amount = accountEntries.reduce((sum, je) => sum + je.amount, 0);
-    return {
-      category: `${account.code} - ${account.name}`,
-      amount: amount // Despesas como valores positivos (débitos)
-    };
-  }).filter(item => item.amount > 0);
+  // 2. DEDUÇÕES DA RECEITA (4.02.xx - débitos, pois reduzem receita)
+  const deducoesDetalhadas = calcularSaldoContas('4.02', 'debit');
+  const deducoesReceita = deducoesDetalhadas.reduce((sum, item) => sum + item.amount, 0);
 
-  const totalExpenses = expensesByCategory.reduce((sum, item) => sum + item.amount, 0);
+  // 3. RECEITA LÍQUIDA
+  const receitaLiquida = receitaBruta - deducoesReceita;
 
-  // Resultado Líquido (Receitas - Despesas)
-  const netResult = totalRevenue - totalExpenses;
+  // 4. CMV/CSV (5.02.xx - débitos)
+  const cmvDetalhado = calcularSaldoContas('5.02', 'debit');
+  const cmv = cmvDetalhado.reduce((sum, item) => sum + item.amount, 0);
+
+  // 5. LUCRO BRUTO
+  const lucroBruto = receitaLiquida - cmv;
+
+  // 6. DESPESAS OPERACIONAIS
+  // 6.1 Despesas com Vendas (5.03.xx)
+  const despesasVendasDetalhadas = calcularSaldoContas('5.03', 'debit');
+  const despesasVendas = despesasVendasDetalhadas.reduce((sum, item) => sum + item.amount, 0);
+
+  // 6.2 Despesas Administrativas (5.04.xx)
+  const despesasAdministrativasDetalhadas = calcularSaldoContas('5.04', 'debit');
+  const despesasAdministrativas = despesasAdministrativasDetalhadas.reduce((sum, item) => sum + item.amount, 0);
+
+  // 6.3 Despesas Financeiras (5.05.xx)
+  const despesasFinanceirasDetalhadas = calcularSaldoContas('5.05', 'debit');
+  const despesasFinanceiras = despesasFinanceirasDetalhadas.reduce((sum, item) => sum + item.amount, 0);
+
+  // 6.4 Outras Despesas Operacionais (5.01.xx e 5.99.xx)
+  const outras501 = calcularSaldoContas('5.01', 'debit');
+  const outras599 = calcularSaldoContas('5.99', 'debit');
+  const outrasDespesasDetalhadas = [...outras501, ...outras599];
+  const outrasDespesasOperacionais = outrasDespesasDetalhadas.reduce((sum, item) => sum + item.amount, 0);
+
+  const totalDespesasOperacionais = despesasVendas + despesasAdministrativas + 
+                                    despesasFinanceiras + outrasDespesasOperacionais;
+
+  // 7. EBIT (Lucro Operacional / Earnings Before Interest and Taxes)
+  const ebit = lucroBruto - totalDespesasOperacionais;
+
+  // 8. RECEITAS E DESPESAS NÃO-OPERACIONAIS (6.01.xx)
+  // Receitas não-operacionais (6.01.xx com crédito)
+  const receitasNaoOperacionaisDetalhadas = chartOfAccounts
+    .filter(acc => acc.code.startsWith('6.01') && acc.category === 'revenue')
+    .map(account => {
+      const entries = journalEntries.filter(
+        je => je.account_id === account.id && je.entry_type === 'credit'
+      );
+      const amount = entries.reduce((sum, je) => sum + je.amount, 0);
+      return { code: account.code, name: account.name, amount };
+    })
+    .filter(item => item.amount > 0);
+  const receitasNaoOperacionais = receitasNaoOperacionaisDetalhadas.reduce((sum, item) => sum + item.amount, 0);
+
+  // Despesas não-operacionais (6.01.xx com débito)
+  const despesasNaoOperacionaisDetalhadas = chartOfAccounts
+    .filter(acc => acc.code.startsWith('6.01') && acc.category === 'expense')
+    .map(account => {
+      const entries = journalEntries.filter(
+        je => je.account_id === account.id && je.entry_type === 'debit'
+      );
+      const amount = entries.reduce((sum, je) => sum + je.amount, 0);
+      return { code: account.code, name: account.name, amount };
+    })
+    .filter(item => item.amount > 0);
+  const despesasNaoOperacionais = despesasNaoOperacionaisDetalhadas.reduce((sum, item) => sum + item.amount, 0);
+
+  const resultadoNaoOperacional = receitasNaoOperacionais - despesasNaoOperacionais;
+
+  // 9. LUCRO ANTES DO IR
+  const lucroAntesIR = ebit + resultadoNaoOperacional;
+
+  // 10. PROVISÃO PARA IR E CSLL (7.01.xx)
+  const provisaoIRDetalhada = calcularSaldoContas('7.01', 'debit');
+  const provisaoIR = provisaoIRDetalhada.reduce((sum, item) => sum + item.amount, 0);
+
+  // 11. LUCRO LÍQUIDO DO EXERCÍCIO
+  const lucroLiquido = lucroAntesIR - provisaoIR;
 
   return {
-    totalRevenue,
-    totalExpenses,
-    netResult,
-    revenueByCategory,
-    expensesByCategory,
+    receitaBruta,
+    deducoesReceita,
+    receitaLiquida,
+    cmv,
+    lucroBruto,
+    despesasVendas,
+    despesasAdministrativas,
+    despesasFinanceiras,
+    outrasDespesasOperacionais,
+    totalDespesasOperacionais,
+    ebit,
+    receitasNaoOperacionais,
+    despesasNaoOperacionais,
+    resultadoNaoOperacional,
+    lucroAntesIR,
+    provisaoIR,
+    lucroLiquido,
+    receitaBrutaDetalhada,
+    deducoesDetalhadas,
+    cmvDetalhado,
+    despesasVendasDetalhadas,
+    despesasAdministrativasDetalhadas,
+    despesasFinanceirasDetalhadas,
+    outrasDespesasDetalhadas,
+    receitasNaoOperacionaisDetalhadas,
+    despesasNaoOperacionaisDetalhadas,
+    provisaoIRDetalhada,
   };
 }
 
@@ -317,45 +446,92 @@ export async function exportReportToPDF(
 function exportDREtoPDF(doc: any, data: DREReport, startY: number, t: any) {
   let y = startY;
 
-  // Receitas
-  doc.setFontSize(12);
+  // Receita Bruta
+  doc.setFontSize(11);
   doc.setFont("helvetica", "bold");
-  doc.text(t("reports.revenue"), 20, y);
-  doc.text(formatCurrency(data.totalRevenue), 170, y, { align: "right" });
-  y += 7;
+  doc.text("RECEITA BRUTA", 20, y);
+  doc.text(formatCurrency(data.receitaBruta), 170, y, { align: "right" });
+  y += 6;
 
-  doc.setFontSize(10);
+  // (-) Deduções
   doc.setFont("helvetica", "normal");
-  data.revenueByCategory.forEach((item) => {
-    doc.text(`  ${item.category}`, 25, y);
-    doc.text(formatCurrency(item.amount), 170, y, { align: "right" });
-    y += 5;
-  });
-
+  doc.text("(-) Deduções da Receita", 20, y);
+  doc.text(formatCurrency(data.deducoesReceita), 170, y, { align: "right" });
   y += 5;
 
-  // Despesas
+  // (=) Receita Líquida
+  doc.setFont("helvetica", "bold");
+  doc.text("(=) RECEITA LÍQUIDA", 20, y);
+  doc.text(formatCurrency(data.receitaLiquida), 170, y, { align: "right" });
+  y += 6;
+
+  // (-) CMV
+  doc.setFont("helvetica", "normal");
+  doc.text("(-) CMV/CSV", 20, y);
+  doc.text(formatCurrency(data.cmv), 170, y, { align: "right" });
+  y += 5;
+
+  // (=) Lucro Bruto
   doc.setFontSize(12);
   doc.setFont("helvetica", "bold");
-  doc.text(t("reports.expenses"), 20, y);
-  doc.text(formatCurrency(data.totalExpenses), 170, y, { align: "right" });
-  y += 7;
+  doc.text("(=) LUCRO BRUTO", 20, y);
+  doc.text(formatCurrency(data.lucroBruto), 170, y, { align: "right" });
+  y += 8;
+
+  // Despesas Operacionais
+  doc.setFontSize(11);
+  doc.text("(-) DESPESAS OPERACIONAIS", 20, y);
+  y += 5;
 
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
-  data.expensesByCategory.forEach((item) => {
-    doc.text(`  ${item.category}`, 25, y);
-    doc.text(formatCurrency(item.amount), 170, y, { align: "right" });
+  doc.text("    Despesas com Vendas", 25, y);
+  doc.text(formatCurrency(data.despesasVendas), 170, y, { align: "right" });
+  y += 4;
+  doc.text("    Despesas Administrativas", 25, y);
+  doc.text(formatCurrency(data.despesasAdministrativas), 170, y, { align: "right" });
+  y += 4;
+  doc.text("    Despesas Financeiras", 25, y);
+  doc.text(formatCurrency(data.despesasFinanceiras), 170, y, { align: "right" });
+  y += 4;
+  doc.text("    Outras Despesas", 25, y);
+  doc.text(formatCurrency(data.outrasDespesasOperacionais), 170, y, { align: "right" });
+  y += 6;
+
+  // (=) EBIT
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "bold");
+  doc.text("(=) LUCRO OPERACIONAL (EBIT)", 20, y);
+  doc.text(formatCurrency(data.ebit), 170, y, { align: "right" });
+  y += 8;
+
+  // (+/-) Não-Operacional
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  if (data.resultadoNaoOperacional !== 0) {
+    const sinal = data.resultadoNaoOperacional >= 0 ? "(+)" : "(-)";
+    doc.text(`${sinal} Resultado Não-Operacional`, 20, y);
+    doc.text(formatCurrency(Math.abs(data.resultadoNaoOperacional)), 170, y, { align: "right" });
     y += 5;
-  });
+  }
 
-  y += 10;
+  // (=) Lucro antes IR
+  doc.setFont("helvetica", "bold");
+  doc.text("(=) LUCRO ANTES DO IR/CS", 20, y);
+  doc.text(formatCurrency(data.lucroAntesIR), 170, y, { align: "right" });
+  y += 6;
 
-  // Resultado Líquido
+  // (-) Provisão IR
+  doc.setFont("helvetica", "normal");
+  doc.text("(-) Provisão para IR e CSLL", 20, y);
+  doc.text(formatCurrency(data.provisaoIR), 170, y, { align: "right" });
+  y += 5;
+
+  // (=) Lucro Líquido
   doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
-  doc.text(t("reports.netResult"), 20, y);
-  doc.text(formatCurrency(data.netResult), 170, y, { align: "right" });
+  doc.text("(=) LUCRO LÍQUIDO", 20, y);
+  doc.text(formatCurrency(data.lucroLiquido), 170, y, { align: "right" });
 }
 
 function exportBalanceSheetToPDF(doc: any, data: BalanceSheetReport, startY: number, t: any) {

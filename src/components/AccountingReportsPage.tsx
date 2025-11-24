@@ -299,23 +299,10 @@ export function AccountingReportsPage() {
     );
   }, [trialBalance]);
 
-  // DRE (Demonstração de Resultados)
+  // DRE (Demonstração de Resultados) - Lei 6.404/76
   const incomeStatement = useMemo(() => {
-    const revenues = trialBalance.filter(entry => entry.category === "revenue");
-    const expenses = trialBalance.filter(entry => entry.category === "expense");
-
-    const totalRevenue = revenues.reduce((sum, entry) => sum + Math.abs(entry.balance), 0);
-    const totalExpense = expenses.reduce((sum, entry) => sum + Math.abs(entry.balance), 0);
-    const netIncome = totalRevenue - totalExpense;
-
-    return {
-      revenues: revenues.map(r => ({ ...r, balance: Math.abs(r.balance) })),
-      expenses: expenses.map(e => ({ ...e, balance: Math.abs(e.balance) })),
-      totalRevenue,
-      totalExpense,
-      netIncome,
-    };
-  }, [trialBalance]);
+    return generateDRE(journalEntries, chartOfAccounts, startDate, endDate);
+  }, [journalEntries, chartOfAccounts, startDate, endDate]);
 
   // Balanço Patrimonial
   const balanceSheet = useMemo(() => {
