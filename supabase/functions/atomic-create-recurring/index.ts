@@ -36,16 +36,11 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Rate limiting
-    const rateLimitResponse = rateLimiters.standard.middleware(req, user.id);
+    // Rate limiting - Moderado para criação de recorrentes
+    const rateLimitResponse = await rateLimiters.moderate.middleware(req, user.id);
     if (rateLimitResponse) {
-      return new Response(
-        rateLimitResponse.body,
-        { 
-          status: rateLimitResponse.status, 
-          headers: { ...corsHeaders, ...Object.fromEntries(rateLimitResponse.headers.entries()) } 
-        }
-      );
+      console.warn('[atomic-create-recurring] WARN: Rate limit exceeded for user:', user.id);
+      return rateLimitResponse;
     }
 
     const body = await req.json();

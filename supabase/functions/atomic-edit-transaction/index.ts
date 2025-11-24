@@ -52,16 +52,10 @@ Deno.serve(async (req) => {
     }
 
     // Rate limiting - Strict para edições (mais sensível)
-    const rateLimitResponse = rateLimiters.strict.middleware(req, user.id);
+    const rateLimitResponse = await rateLimiters.strict.middleware(req, user.id);
     if (rateLimitResponse) {
       console.warn('[atomic-edit] WARN: Rate limit exceeded for user:', user.id);
-      return new Response(
-        rateLimitResponse.body,
-        { 
-          status: rateLimitResponse.status, 
-          headers: { ...corsHeaders, ...Object.fromEntries(rateLimitResponse.headers.entries()) } 
-        }
-      );
+      return rateLimitResponse;
     }
 
     const body: EditInput = await req.json();
