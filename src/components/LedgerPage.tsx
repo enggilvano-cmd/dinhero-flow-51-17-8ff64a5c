@@ -470,7 +470,7 @@ export function LedgerPage() {
                         "text-right font-mono font-semibold",
                         openingBalance >= 0 ? "text-success" : "text-destructive"
                       )}>
-                        {formatCurrency(Math.abs(openingBalance))}
+                        {formatCurrency(openingBalance)} {openingBalance >= 0 ? "(D)" : "(C)"}
                       </TableCell>
                     </TableRow>
 
@@ -500,7 +500,7 @@ export function LedgerPage() {
                           "text-right font-mono font-semibold",
                           entry.balance >= 0 ? "text-success" : "text-destructive"
                         )}>
-                          {formatCurrency(Math.abs(entry.balance))}
+                          {formatCurrency(entry.balance)} {entry.balance >= 0 ? "(D)" : "(C)"}
                         </TableCell>
                       </TableRow>
                     ))}
@@ -520,11 +520,11 @@ export function LedgerPage() {
                           ? "text-success" 
                           : "text-destructive"
                       )}>
-                        {formatCurrency(Math.abs(
+                        {formatCurrency(
                           ledgerEntries.length > 0 
                             ? ledgerEntries[ledgerEntries.length - 1].balance 
                             : openingBalance
-                        ))}
+                        )} {(ledgerEntries.length > 0 ? ledgerEntries[ledgerEntries.length - 1].balance : openingBalance) >= 0 ? "(D)" : "(C)"}
                       </TableCell>
                     </TableRow>
                   </TableBody>
