@@ -751,19 +751,19 @@ export function ImportTransactionsModal({
               <CardHeader>
                 <CardTitle>Prévia das Transações ({importedData.length} total)</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="max-h-96 overflow-auto">
+              <CardContent className="p-0 sm:p-6">
+                <div className="max-h-96 overflow-y-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="w-[100px]">Status</TableHead>
-                        <TableHead>Data</TableHead>
-                        <TableHead>Descrição</TableHead>
-                        <TableHead>Categoria</TableHead>
-                        <TableHead>Tipo</TableHead>
-                        <TableHead>Conta</TableHead>
-                        <TableHead>Valor</TableHead>
-                        <TableHead className="w-[180px]">Ação</TableHead>
+                        <TableHead className="min-w-[80px]">Status</TableHead>
+                        <TableHead className="min-w-[90px]">Data</TableHead>
+                        <TableHead className="min-w-[150px]">Descrição</TableHead>
+                        <TableHead className="min-w-[120px] hidden sm:table-cell">Categoria</TableHead>
+                        <TableHead className="min-w-[90px] hidden md:table-cell">Tipo</TableHead>
+                        <TableHead className="min-w-[120px] hidden lg:table-cell">Conta</TableHead>
+                        <TableHead className="min-w-[100px]">Valor</TableHead>
+                        <TableHead className="min-w-[150px]">Ação</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -777,21 +777,21 @@ export function ImportTransactionsModal({
                           >
                             <TableCell>
                               {isExcluded ? (
-                                <Badge variant="outline" className="bg-muted">Excluída</Badge>
+                                <Badge variant="outline" className="bg-muted text-xs">Excluída</Badge>
                               ) : !transaction.isValid ? (
-                                <Badge variant="destructive">Erro</Badge>
+                                <Badge variant="destructive" className="text-xs">Erro</Badge>
                               ) : transaction.isDuplicate ? (
-                                <Badge variant="secondary" className="bg-warning/10 text-warning">Duplicata</Badge>
+                                <Badge variant="secondary" className="bg-warning/10 text-warning text-xs">Duplicata</Badge>
                               ) : (
-                                <Badge variant="default" className="bg-success/10 text-success">Nova</Badge>
+                                <Badge variant="default" className="bg-success/10 text-success text-xs">Nova</Badge>
                               )}
                             </TableCell>
-                            <TableCell>{transaction.data}</TableCell>
-                            <TableCell>{transaction.descricao}</TableCell>
-                            <TableCell>{transaction.categoria}</TableCell>
-                            <TableCell>{transaction.tipo}</TableCell>
-                            <TableCell>{transaction.conta}</TableCell>
-                            <TableCell>R$ {transaction.valor.toFixed(2)}</TableCell>
+                            <TableCell className="text-xs sm:text-sm">{transaction.data}</TableCell>
+                            <TableCell className="text-xs sm:text-sm truncate max-w-[150px]">{transaction.descricao}</TableCell>
+                            <TableCell className="text-xs sm:text-sm hidden sm:table-cell">{transaction.categoria}</TableCell>
+                            <TableCell className="text-xs sm:text-sm hidden md:table-cell">{transaction.tipo}</TableCell>
+                            <TableCell className="text-xs sm:text-sm hidden lg:table-cell">{transaction.conta}</TableCell>
+                            <TableCell className="text-xs sm:text-sm font-medium">R$ {transaction.valor.toFixed(2)}</TableCell>
                             <TableCell>
                               <div className="flex items-center gap-2">
                                 <Button

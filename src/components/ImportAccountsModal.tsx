@@ -635,18 +635,18 @@ export function ImportAccountsModal({
               <CardHeader>
                 <CardTitle>Prévia das Contas ({importedData.length} total)</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="max-h-96 overflow-auto">
+              <CardContent className="p-0 sm:p-6">
+                <div className="max-h-96 overflow-y-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="w-[100px]">Status</TableHead>
-                        <TableHead>Nome</TableHead>
-                        <TableHead>Tipo</TableHead>
-                        <TableHead>Saldo</TableHead>
-                        <TableHead>Limite</TableHead>
-                        <TableHead>Cor</TableHead>
-                        <TableHead className="w-[180px]">Ação</TableHead>
+                        <TableHead className="min-w-[80px]">Status</TableHead>
+                        <TableHead className="min-w-[150px]">Nome</TableHead>
+                        <TableHead className="min-w-[120px] hidden sm:table-cell">Tipo</TableHead>
+                        <TableHead className="min-w-[100px]">Saldo</TableHead>
+                        <TableHead className="min-w-[100px] hidden md:table-cell">Limite</TableHead>
+                        <TableHead className="min-w-[80px] hidden lg:table-cell">Cor</TableHead>
+                        <TableHead className="min-w-[150px]">Ação</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -660,32 +660,32 @@ export function ImportAccountsModal({
                           >
                             <TableCell>
                               {isExcluded ? (
-                                <Badge variant="outline" className="bg-muted">Excluída</Badge>
+                                <Badge variant="outline" className="bg-muted text-xs">Excluída</Badge>
                               ) : !account.isValid ? (
-                                <Badge variant="destructive">Erro</Badge>
+                                <Badge variant="destructive" className="text-xs">Erro</Badge>
                               ) : account.isDuplicate ? (
-                                <Badge variant="secondary" className="bg-warning/10 text-warning">Duplicata</Badge>
+                                <Badge variant="secondary" className="bg-warning/10 text-warning text-xs">Duplicata</Badge>
                               ) : (
-                                <Badge variant="default" className="bg-success/10 text-success">Nova</Badge>
+                                <Badge variant="default" className="bg-success/10 text-success text-xs">Nova</Badge>
                               )}
                             </TableCell>
-                            <TableCell>{account.nome}</TableCell>
-                            <TableCell>{account.tipo}</TableCell>
-                            <TableCell className={account.saldo < 0 ? "text-destructive font-medium" : "text-success font-medium"}>
+                            <TableCell className="text-xs sm:text-sm truncate max-w-[150px]">{account.nome}</TableCell>
+                            <TableCell className="text-xs sm:text-sm hidden sm:table-cell">{account.tipo}</TableCell>
+                            <TableCell className={`text-xs sm:text-sm font-medium ${account.saldo < 0 ? "text-destructive" : "text-success"}`}>
                               {formatCurrency(account.saldo * 100)}
                             </TableCell>
-                            <TableCell>
+                            <TableCell className="text-xs sm:text-sm hidden md:table-cell">
                               {account.limite > 0 ? formatCurrency(account.limite * 100) : '-'}
                             </TableCell>
-                            <TableCell>
+                            <TableCell className="hidden lg:table-cell">
                               <div className="flex items-center gap-2">
                                 {account.cor && isValidColor(account.cor) && (
                                   <div 
-                                    className="w-4 h-4 rounded-full border"
+                                    className="w-4 h-4 rounded-full border flex-shrink-0"
                                     style={{ backgroundColor: account.cor }}
                                   />
                                 )}
-                                <span className="text-xs font-mono">{account.cor}</span>
+                                <span className="text-xs font-mono truncate">{account.cor}</span>
                               </div>
                             </TableCell>
                             <TableCell>
