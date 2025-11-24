@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 import { rateLimiters } from '../_shared/rate-limiter.ts';
+import { withRetry } from '../_shared/retry.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -50,12 +51,14 @@ Deno.serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Buscar todas as transações recorrentes ativas
-    const { data: recurringTransactions, error: fetchError } = await supabase
-      .from('transactions')
-      .select('*')
-      .eq('is_recurring', true)
-      .order('user_id');
+    // Buscar todas as transações recorrentes ativas com retry
+    const { data: recurringTransactions, error: fetchError } = await withRetry(
+      () => supabase
+        .from('transactions')
+        .select('*')
+        .eq('is_recurring', true)
+        .order('user_id')
+    );
 
     if (fetchError) {
       console.error('[generate-recurring] ERROR: Failed to fetch recurring transactions:', fetchError);
@@ -94,14 +97,16 @@ Deno.serve(async (req) => {
           }
         }
 
-        // Buscar a última transação gerada por esta recorrência
-        const { data: lastGenerated, error: lastError } = await supabase
-          .from('transactions')
-          .select('date')
-          .eq('parent_transaction_id', recurring.id)
-          .order('date', { ascending: false })
-          .limit(1)
-          .single();
+        // Buscar a última transação gerada por esta recorrência com retry
+        const { data: lastGenerated, error: lastError } = await withRetry(
+          () => supabase
+            .from('transactions')
+            .select('date')
+            .eq('parent_transaction_id', recurring.id)
+            .order('date', { ascending: false })
+            .limit(1)
+            .single()
+        );
 
         if (lastError && lastError.code !== 'PGRST116') { // PGRST116 = not found
           console.error(`[generate-recurring] ERROR: Failed to fetch last generated for ${recurring.id}:`, lastError);
@@ -148,9 +153,11 @@ Deno.serve(async (req) => {
             invoice_month_overridden: false,
           };
 
-          const { error: insertError } = await supabase
-            .from('transactions')
-            .insert(newTransaction);
+          const { error: insertError } = await withRetry(
+            () => supabase
+              .from('transactions')
+              .insert(newTransaction)
+          );
 
           if (insertError) {
             console.error(`[generate-recurring] ERROR: Failed to insert transaction for ${recurring.id}:`, insertError);
@@ -228,12 +235,14 @@ async function calculateInvoiceMonth(
   accountId: string, 
   supabase: any
 ): Promise<string | null> {
-  // Buscar informações da conta para calcular invoice_month se for cartão de crédito
-  const { data: account } = await supabase
-    .from('accounts')
-    .select('type, closing_date, due_date')
-    .eq('id', accountId)
-    .single();
+  // Buscar informações da conta para calcular invoice_month se for cartão de crédito com retry
+  const { data: account } = await withRetry(
+    () => supabase
+      .from('accounts')
+      .select('type, closing_date, due_date')
+      .eq('id', accountId)
+      .single()
+  );
 
   if (!account || account.type !== 'credit' || !account.closing_date) {
     return null;

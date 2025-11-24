@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.56.0';
 import * as XLSX from 'https://esm.sh/xlsx@0.18.5';
+import { withRetry } from '../_shared/retry.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -26,13 +27,15 @@ Deno.serve(async (req) => {
 
     console.log('Starting scheduled backup generation...');
 
-    // Buscar agendamentos ativos que precisam de backup
+    // Buscar agendamentos ativos que precisam de backup com retry
     const now = new Date();
-    const { data: schedules, error: schedulesError } = await supabase
-      .from('backup_schedules')
-      .select('*')
-      .eq('is_active', true)
-      .or(`next_backup_at.is.null,next_backup_at.lte.${now.toISOString()}`);
+    const { data: schedules, error: schedulesError } = await withRetry(
+      () => supabase
+        .from('backup_schedules')
+        .select('*')
+        .eq('is_active', true)
+        .or(`next_backup_at.is.null,next_backup_at.lte.${now.toISOString()}`)
+    );
 
     if (schedulesError) {
       console.error('Error fetching schedules:', schedulesError);
@@ -47,11 +50,11 @@ Deno.serve(async (req) => {
       try {
         console.log(`Processing backup for user ${schedule.user_id}`);
         
-        // Buscar dados do usuário
+        // Buscar dados do usuário com retry
         const [accountsRes, categoriesRes, transactionsRes] = await Promise.all([
-          supabase.from('accounts').select('*').eq('user_id', schedule.user_id),
-          supabase.from('categories').select('*').eq('user_id', schedule.user_id),
-          supabase.from('transactions').select('*, accounts(name), categories(name)').eq('user_id', schedule.user_id),
+          withRetry(() => supabase.from('accounts').select('*').eq('user_id', schedule.user_id)),
+          withRetry(() => supabase.from('categories').select('*').eq('user_id', schedule.user_id)),
+          withRetry(() => supabase.from('transactions').select('*, accounts(name), categories(name)').eq('user_id', schedule.user_id)),
         ]);
 
         if (accountsRes.error || categoriesRes.error || transactionsRes.error) {
@@ -106,37 +109,43 @@ Deno.serve(async (req) => {
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
         const fileName = `${schedule.user_id}/backup-${timestamp}.xlsx`;
 
-        const { error: uploadError } = await supabase.storage
-          .from('backups')
-          .upload(fileName, wbout, {
-            contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            upsert: false,
-          });
+        const { error: uploadError } = await withRetry(
+          () => supabase.storage
+            .from('backups')
+            .upload(fileName, wbout, {
+              contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+              upsert: false,
+            })
+        );
 
         if (uploadError) {
           console.error('Upload error:', uploadError);
           throw uploadError;
         }
 
-        // Registrar no histórico
-        await supabase.from('backup_history').insert({
-          user_id: schedule.user_id,
-          file_path: fileName,
-          file_size: wbout.byteLength,
-          backup_type: 'scheduled',
-        });
+        // Registrar no histórico com retry
+        await withRetry(
+          () => supabase.from('backup_history').insert({
+            user_id: schedule.user_id,
+            file_path: fileName,
+            file_size: wbout.byteLength,
+            backup_type: 'scheduled',
+          })
+        );
 
         // Calcular próximo backup
         const nextBackup = calculateNextBackup(schedule.frequency);
 
-        // Atualizar agendamento
-        await supabase
-          .from('backup_schedules')
-          .update({
-            last_backup_at: now.toISOString(),
-            next_backup_at: nextBackup.toISOString(),
-          })
-          .eq('id', schedule.id);
+        // Atualizar agendamento com retry
+        await withRetry(
+          () => supabase
+            .from('backup_schedules')
+            .update({
+              last_backup_at: now.toISOString(),
+              next_backup_at: nextBackup.toISOString(),
+            })
+            .eq('id', schedule.id)
+        );
 
         results.push({
           user_id: schedule.user_id,
