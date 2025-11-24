@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.56.0'
 import { corsHeaders } from '../_shared/cors.ts'
+import { withRetry } from '../_shared/retry.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -33,13 +34,15 @@ Deno.serve(async (req) => {
       }
     })
 
-    // Buscar todas as transações fixas principais (is_fixed = true e sem parent)
-    const { data: fixedTransactions, error: fetchError } = await supabase
-      .from('transactions')
-      .select('*')
-      .eq('is_fixed', true)
-      .is('parent_transaction_id', null)
-      .neq('type', 'transfer')
+    // Buscar todas as transações fixas principais (is_fixed = true e sem parent) com retry
+    const { data: fixedTransactions, error: fetchError } = await withRetry(
+      () => supabase
+        .from('transactions')
+        .select('*')
+        .eq('is_fixed', true)
+        .is('parent_transaction_id', null)
+        .neq('type', 'transfer')
+    );
 
     if (fetchError) {
       console.error('Error fetching fixed transactions:', fetchError)
@@ -104,10 +107,12 @@ Deno.serve(async (req) => {
           })
         }
 
-        // Inserir as 12 novas transações
-        const { error: insertError } = await supabase
-          .from('transactions')
-          .insert(transactionsToGenerate)
+        // Inserir as 12 novas transações com retry
+        const { error: insertError } = await withRetry(
+          () => supabase
+            .from('transactions')
+            .insert(transactionsToGenerate)
+        );
 
         if (insertError) {
           console.error(`Error inserting transactions for ${transaction.description}:`, insertError)

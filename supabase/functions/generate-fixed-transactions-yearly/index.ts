@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.56.0'
 import { rateLimiters } from '../_shared/rate-limiter.ts';
+import { withRetry } from '../_shared/retry.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -51,12 +52,14 @@ Deno.serve(async (req) => {
       }
     )
 
-    // Buscar todas as transações fixas (parent transactions)
-    const { data: fixedTransactions, error: fetchError } = await supabase
-      .from('transactions')
-      .select('*')
-      .eq('is_fixed', true)
-      .neq('type', 'transfer')
+    // Buscar todas as transações fixas (parent transactions) com retry
+    const { data: fixedTransactions, error: fetchError } = await withRetry(
+      () => supabase
+        .from('transactions')
+        .select('*')
+        .eq('is_fixed', true)
+        .neq('type', 'transfer')
+    )
 
     if (fetchError) {
       console.error('[generate-fixed] ERROR: Failed to fetch fixed transactions:', fetchError);
@@ -117,10 +120,12 @@ Deno.serve(async (req) => {
         })
       }
 
-      // Inserir as transações futuras
-      const { error: insertError } = await supabase
-        .from('transactions')
-        .insert(futureTransactions)
+      // Inserir as transações futuras com retry
+      const { error: insertError } = await withRetry(
+        () => supabase
+          .from('transactions')
+          .insert(futureTransactions)
+      );
 
       if (insertError) {
         console.error(`[generate-fixed] ERROR: Failed for ${fixedTx.id}:`, insertError);

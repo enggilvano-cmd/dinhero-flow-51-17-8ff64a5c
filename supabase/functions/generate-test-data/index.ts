@@ -2,6 +2,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.56.0';
 import { corsHeaders } from '../_shared/cors.ts';
 import { rateLimiters } from '../_shared/rate-limiter.ts';
 import { GenerateTestDataInputSchema, validateWithZod, validationErrorResponse } from '../_shared/validation.ts';
+import { withRetry } from '../_shared/retry.ts';
 
 interface GenerateTestDataRequest {
   transactionCount?: number;
@@ -63,25 +64,29 @@ Deno.serve(async (req) => {
 
     console.log(`Generating ${transactionCount} test transactions for user ${user.id}`);
 
-    // 1. Limpar dados existentes se solicitado
+    // 1. Limpar dados existentes se solicitado com retry
     if (clearExisting) {
       console.log('Clearing existing test data...');
-      const { error: deleteError } = await supabase
-        .from('transactions')
-        .delete()
-        .eq('user_id', user.id)
-        .like('description', 'TEST:%');
+      const { error: deleteError } = await withRetry(
+        () => supabase
+          .from('transactions')
+          .delete()
+          .eq('user_id', user.id)
+          .like('description', 'TEST:%')
+      );
       
       if (deleteError) {
         console.error('Error clearing test data:', deleteError);
       }
     }
 
-    // 2. Buscar contas e categorias do usuário
-    const { data: accounts, error: accountsError } = await supabase
-      .from('accounts')
-      .select('id, type')
-      .eq('user_id', user.id);
+    // 2. Buscar contas e categorias do usuário com retry
+    const { data: accounts, error: accountsError } = await withRetry(
+      () => supabase
+        .from('accounts')
+        .select('id, type')
+        .eq('user_id', user.id)
+    );
 
     if (accountsError || !accounts || accounts.length === 0) {
       return new Response(
@@ -90,10 +95,12 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { data: categories, error: categoriesError } = await supabase
-      .from('categories')
-      .select('id, type')
-      .eq('user_id', user.id);
+    const { data: categories, error: categoriesError } = await withRetry(
+      () => supabase
+        .from('categories')
+        .select('id, type')
+        .eq('user_id', user.id)
+    );
 
     if (categoriesError || !categories || categories.length === 0) {
       return new Response(
@@ -173,11 +180,13 @@ Deno.serve(async (req) => {
         });
       }
 
-      // Inserir lote
-      const { data: inserted, error: insertError } = await supabase
-        .from('transactions')
-        .insert(transactions)
-        .select('id');
+      // Inserir lote com retry
+      const { data: inserted, error: insertError } = await withRetry(
+        () => supabase
+          .from('transactions')
+          .insert(transactions)
+          .select('id')
+      );
 
       if (insertError) {
         console.error(`Error inserting batch ${batch}:`, insertError);
@@ -198,11 +207,13 @@ Deno.serve(async (req) => {
     // Nota: ANALYZE precisa ser executado via RPC ou SQL direto
     // Para Edge Functions, o usuário pode executar manualmente
 
-    // 5. Buscar estatísticas finais
-    const { count: finalCount } = await supabase
-      .from('transactions')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', user.id);
+    // 5. Buscar estatísticas finais com retry
+    const { count: finalCount } = await withRetry(
+      () => supabase
+        .from('transactions')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+    );
 
     return new Response(
       JSON.stringify({
