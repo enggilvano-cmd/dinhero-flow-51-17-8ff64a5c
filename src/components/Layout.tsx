@@ -1,4 +1,4 @@
-import { Home, CreditCard, ArrowLeftRight, BarChart3, Settings, Tag, Users, LogOut, User, Receipt, Calendar, BookOpen } from "lucide-react";
+import { Home, CreditCard, ArrowLeftRight, BarChart3, Settings, Tag, Users, LogOut, User, Receipt, Calendar } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -40,7 +40,6 @@ const menuItems = [
   { id: "credit-bills", label: "Faturas de Cartão", icon: Receipt },
   { id: "transactions", label: "Transações", icon: ArrowLeftRight },
   { id: "fixed", label: "Transações Fixas", icon: Calendar },
-  { id: "accounting", label: "Contabilidade", icon: BookOpen },
   { id: "analytics", label: "Análises", icon: BarChart3 },
 ];
 

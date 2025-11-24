@@ -10,7 +10,7 @@ import SystemSettings from "@/components/SystemSettings";
 import { UserManagement } from "@/components/UserManagement";
 import { FixedTransactionsPage } from "@/components/FixedTransactionsPage";
 
-import { AccountingPage } from "@/components/AccountingPage";
+
 import { UserProfile } from "@/components/UserProfile";
 import { SettingsPage } from "@/components/SettingsPage";
 import BybitPage from "@/pages/BybitPage";
@@ -416,8 +416,6 @@ const PlaniFlowApp = () => {
         );
       case "fixed":
         return <FixedTransactionsPage />;
-      case "accounting":
-        return <AccountingPage />;
       case "categories":
         return <CategoriesPage />;
       case "analytics":
