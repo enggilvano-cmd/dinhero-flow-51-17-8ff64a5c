@@ -134,6 +134,14 @@ export function AccountsPage({
     .filter((acc) => acc.type === "credit")
     .reduce((sum, acc) => sum + Math.abs(Math.min(acc.balance, 0)), 0);
 
+  const creditAvailable = filteredAccounts
+    .filter((acc) => acc.type === "credit" && acc.limit_amount)
+    .reduce((sum, acc) => {
+      const used = Math.abs(Math.min(acc.balance, 0));
+      const available = (acc.limit_amount || 0) - used;
+      return sum + available;
+    }, 0);
+
   const exportToExcel = async () => {
     try {
       const { exportAccountsToExcel } = await import('@/lib/exportUtils');
@@ -204,7 +212,7 @@ export function AccountsPage({
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <Card className="financial-card">
           <CardContent className="p-3">
             <div className="flex items-center justify-between">
@@ -243,7 +251,26 @@ export function AccountsPage({
           </CardContent>
         </Card>
 
-        <Card className="financial-card col-span-2 lg:col-span-1">
+        <Card className="financial-card">
+          <CardContent className="p-3 text-center">
+            <div className="flex flex-col items-center justify-center gap-2">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <CreditCard className="h-5 w-5 text-primary" />
+              </div>
+              <p className="text-caption text-muted-foreground">
+                Crédito Disponível
+              </p>
+              <div className="balance-text text-primary">
+                {formatCurrency(creditAvailable)}
+              </div>
+              <p className="text-caption text-muted-foreground opacity-70">
+                Limite do Cartão
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="financial-card">
           <CardContent className="p-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3 min-w-0 flex-1">
