@@ -43,9 +43,30 @@ function validatePayBillInput(input: PayBillInput): { valid: boolean; error?: st
     return { valid: false, error: 'Payment date must be in YYYY-MM-DD format' };
   }
   
-  // Validar description (opcional)
-  if (input.description && input.description.length > 200) {
-    return { valid: false, error: 'Description must be less than 200 characters' };
+  // BUG FIX: Validar description (opcional) com sanitização contra SQL injection
+  if (input.description) {
+    if (input.description.length > 200) {
+      return { valid: false, error: 'Description must be less than 200 characters' };
+    }
+    // Bloquear caracteres especiais perigosos para SQL injection
+    const dangerousPatterns = [
+      /[\x00-\x08\x0B\x0C\x0E-\x1F]/g, // Caracteres de controle
+      /--/g, // Comentários SQL
+      /\/\*/g, // Comentários multi-linha
+      /\*\//g,
+      /;/g, // Múltiplas queries
+      /union\s+select/gi, // UNION SELECT
+      /drop\s+table/gi, // DROP TABLE
+      /insert\s+into/gi, // INSERT INTO
+      /update\s+set/gi, // UPDATE SET
+      /delete\s+from/gi, // DELETE FROM
+    ];
+    
+    for (const pattern of dangerousPatterns) {
+      if (pattern.test(input.description)) {
+        return { valid: false, error: 'Description contains invalid characters' };
+      }
+    }
   }
   
   return { valid: true };
