@@ -777,6 +777,7 @@ export default function AnalyticsPage({
 
             {/* Search and Period Filter */}
             <div className="flex flex-col sm:flex-row gap-3">
+              {/* Search */}
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -786,42 +787,35 @@ export default function AnalyticsPage({
                   className="pl-10"
                 />
               </div>
-              
-              {/* Period Navigation */}
-              {dateFilter === "month_picker" && (
-                <div className="flex items-center gap-2 min-w-[240px]">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setSelectedMonth(subMonths(selectedMonth, 1))}
-                    className="h-10 w-10 flex-shrink-0"
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                  <div className="flex-1 text-center px-2">
-                    <span className="text-body font-medium whitespace-nowrap">
-                      {format(selectedMonth, "MMMM 'de' yyyy", { locale: ptBR })}
-                    </span>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setSelectedMonth(addMonths(selectedMonth, 1))}
-                    className="h-10 w-10 flex-shrink-0"
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
-              
-              {/* Custom Date Range */}
-              {dateFilter === "custom" && customStartDate && customEndDate && (
-                <div className="flex items-center gap-2 min-w-[240px]">
-                  <span className="text-body font-medium whitespace-nowrap">
-                    {format(customStartDate, "dd/MM/yyyy", { locale: ptBR })} - {format(customEndDate, "dd/MM/yyyy", { locale: ptBR })}
-                  </span>
-                </div>
-              )}
+
+              {/* Period Navigation - sempre visível ao lado da busca */}
+              <div className="flex items-center gap-2 px-3 border border-input rounded-md bg-background min-w-[220px]">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedMonth(subMonths(selectedMonth, 1));
+                    setDateFilter("month_picker");
+                  }}
+                  className="h-8 w-8 p-0 flex-shrink-0"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <span className="flex-1 text-center text-sm font-medium">
+                  {format(selectedMonth, "MMM/yyyy", { locale: ptBR })}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedMonth(addMonths(selectedMonth, 1));
+                    setDateFilter("month_picker");
+                  }}
+                  className="h-8 w-8 p-0 flex-shrink-0"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
         </CardContent>
