@@ -87,10 +87,10 @@ export function AccountsSummary({
                     account.type === 'credit'
                       ? account.balance < 0
                         ? 'text-destructive'
-                        : 'text-emerald-600'
+                        : 'text-success'
                       : account.balance >= 0
-                      ? 'balance-positive'
-                      : 'balance-negative'
+                      ? 'text-success'
+                      : 'text-destructive'
                   }`}
                 >
                   {formatCurrency(account.balance)}
@@ -106,10 +106,10 @@ export function AccountsSummary({
                       accountTypes?.includes('credit')
                         ? totalBalance < 0
                           ? 'text-destructive'
-                          : 'text-emerald-600'
+                          : 'text-success'
                         : totalBalance >= 0
-                        ? 'balance-positive'
-                        : 'balance-negative'
+                        ? 'text-success'
+                        : 'text-destructive'
                     }`}
                   >
                     {formatCurrency(totalBalance)}
