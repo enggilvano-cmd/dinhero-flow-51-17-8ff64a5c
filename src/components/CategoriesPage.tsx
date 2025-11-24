@@ -338,7 +338,7 @@ export function CategoriesPage({}: CategoriesPageProps) {
               </div>
               <div>
                 <p className="text-caption font-medium">Total</p>
-                <div className="balance-text">{categories.length}</div>
+                <div className="balance-text">{filteredCategories.length}</div>
               </div>
             </div>
           </CardContent>
@@ -353,7 +353,7 @@ export function CategoriesPage({}: CategoriesPageProps) {
               <div>
                 <p className="text-caption font-medium">Receitas</p>
                 <div className="balance-text balance-positive">
-                  {categories.filter(c => c.type === "income" || c.type === "both").length}
+                  {filteredCategories.filter(c => c.type === "income" || c.type === "both").length}
                 </div>
               </div>
             </div>
@@ -369,7 +369,7 @@ export function CategoriesPage({}: CategoriesPageProps) {
               <div>
                 <p className="text-caption font-medium">Despesas</p>
                 <div className="balance-text balance-negative">
-                  {categories.filter(c => c.type === "expense" || c.type === "both").length}
+                  {filteredCategories.filter(c => c.type === "expense" || c.type === "both").length}
                 </div>
               </div>
             </div>
@@ -385,7 +385,7 @@ export function CategoriesPage({}: CategoriesPageProps) {
               <div>
                 <p className="text-caption font-medium">Ambos</p>
                 <div className="balance-text text-primary">
-                  {categories.filter(c => c.type === "both").length}
+                  {filteredCategories.filter(c => c.type === "both").length}
                 </div>
               </div>
             </div>
