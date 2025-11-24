@@ -14,8 +14,6 @@ import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/lib/formatters";
 import { cn } from "@/lib/utils";
 import { logger } from "@/lib/logger";
-import { useDoubleEntryValidation } from "@/hooks/useDoubleEntryValidation";
-import { DoubleEntryAlert } from "@/components/accounting/DoubleEntryAlert";
 
 interface JournalEntry {
   id: string;
@@ -57,9 +55,6 @@ export function LedgerPage() {
   // Filtros de período
   const [startDate, setStartDate] = useState<Date>(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
   const [endDate, setEndDate] = useState<Date>(new Date());
-
-  // Validação de partidas dobradas
-  const { validationResults, totalUnbalancedTransactions, hasUnbalancedEntries } = useDoubleEntryValidation(journalEntries);
 
   useEffect(() => {
     loadChartOfAccounts();
@@ -331,14 +326,6 @@ export function LedgerPage() {
           Histórico detalhado de movimentação por conta contábil
         </p>
       </div>
-
-      {/* Alerta de Partidas Dobradas Desbalanceadas */}
-      {hasUnbalancedEntries && (
-        <DoubleEntryAlert 
-          validationResults={validationResults}
-          totalUnbalancedTransactions={totalUnbalancedTransactions}
-        />
-      )}
 
       {/* Filtros */}
       <Card>
