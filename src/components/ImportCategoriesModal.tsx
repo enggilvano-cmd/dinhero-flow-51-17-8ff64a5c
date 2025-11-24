@@ -252,7 +252,21 @@ export function ImportCategoriesModal({
   };
 
   const handleImport = () => {
-    // Itens para adicionar: novos OU duplicatas com resolution='add' OU duplicatas com resolution='replace'
+    logger.debug('[ImportCategories] handleImport chamado. Estado inicial:', {
+      totalImportData: importedData.length,
+      excludedCount: excludedIndexes.size,
+      importDataSample: importedData.slice(0, 3).map(c => ({
+        nome: c.nome,
+        isValid: c.isValid,
+        isDuplicate: c.isDuplicate,
+        resolution: c.resolution
+      }))
+    });
+
+    // Itens para adicionar incluem:
+    // - Itens novos (não duplicatas) com resolution='add' 
+    // - Itens duplicados com resolution='add' (adicionar como nova categoria)
+    // - Itens duplicados com resolution='replace' (substituir a existente)
     const categoriesToAdd = importedData
       .filter((c, index) => 
         !excludedIndexes.has(index) && 
@@ -296,6 +310,10 @@ export function ImportCategoriesModal({
     });
 
     if (categoriesToAdd.length === 0 && categoriesToReplaceIds.length === 0) {
+      logger.error('[ImportCategories] Nenhum item válido para importar!', {
+        importedData,
+        excludedIndexes: Array.from(excludedIndexes)
+      });
       toast({
         title: 'Erro',
         description: 'Nenhum item válido para importar',
