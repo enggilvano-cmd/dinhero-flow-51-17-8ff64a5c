@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Pencil, Trash2, Plus, TrendingUp, TrendingDown, Calendar, Search, CalendarPlus } from "lucide-react";
+import { Pencil, Trash2, TrendingUp, TrendingDown, Calendar, Search, CalendarPlus } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -22,6 +22,10 @@ import { FixedTransactionScopeDialog, FixedScope } from "./FixedTransactionScope
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryClient";
+import { FixedTransactionPageActions } from "./fixedtransactions/FixedTransactionPageActions";
+import { ImportFixedTransactionsModal } from "./ImportFixedTransactionsModal";
+import * as XLSX from "xlsx";
+import { formatBRNumber } from "@/lib/formatters";
 
 interface FixedTransaction {
   id: string;
@@ -59,6 +63,7 @@ export function FixedTransactionsPage() {
   const [scopeMode, setScopeMode] = useState<"edit" | "delete">("edit");
   const [pendingTransactionsCount, setPendingTransactionsCount] = useState(0);
   const [hasCompletedTransactions, setHasCompletedTransactions] = useState(false);
+  const [importModalOpen, setImportModalOpen] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -569,6 +574,39 @@ export function FixedTransactionsPage() {
     return { totalFixed, monthlyIncome, monthlyExpenses };
   }, [filteredTransactions]);
 
+  const handleExportToExcel = () => {
+    try {
+      const exportData = filteredTransactions.map((transaction) => ({
+        Descrição: transaction.description,
+        Valor: formatBRNumber(transaction.amount),
+        Tipo: transaction.type === "income" ? "Receita" : "Despesa",
+        Conta: transaction.account?.name || "",
+        Categoria: transaction.category?.name || "",
+        "Dia do Mês": new Date(transaction.date).getDate(),
+        Data: new Date(transaction.date).toLocaleDateString("pt-BR"),
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Transações Fixas");
+      
+      const fileName = `transacoes_fixas_${new Date().toISOString().split('T')[0]}.xlsx`;
+      XLSX.writeFile(wb, fileName);
+
+      toast({
+        title: "Exportação concluída",
+        description: `${exportData.length} transação(ões) fixa(s) exportada(s) com sucesso.`,
+      });
+    } catch (error) {
+      logger.error("Error exporting fixed transactions:", error);
+      toast({
+        title: "Erro ao exportar",
+        description: "Não foi possível exportar as transações fixas.",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -584,18 +622,12 @@ export function FixedTransactionsPage() {
 
   return (
     <div className="spacing-responsive-lg fade-in pb-6 sm:pb-8">
-      {/* Header */}
-      <div className="flex flex-col gap-3">
-        <div className="grid grid-cols-1 gap-2 w-full lg:flex lg:flex-nowrap lg:gap-2 lg:w-auto lg:ml-auto">
-          <Button onClick={() => setAddModalOpen(true)} className="gap-1.5 apple-interaction h-9 text-xs sm:text-sm px-2 sm:px-3">
-            <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
-            <span className="truncate whitespace-nowrap">
-              <span className="hidden sm:inline">Nova Transação Fixa</span>
-              <span className="sm:hidden">Nova Fixa</span>
-            </span>
-          </Button>
-        </div>
-      </div>
+      <FixedTransactionPageActions
+        onImport={() => setImportModalOpen(true)}
+        onExport={handleExportToExcel}
+        onAdd={() => setAddModalOpen(true)}
+        hasTransactions={transactions.length > 0}
+      />
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
@@ -790,6 +822,12 @@ export function FixedTransactionsPage() {
           accounts={accounts}
         />
       )}
+
+      <ImportFixedTransactionsModal
+        open={importModalOpen}
+        onOpenChange={setImportModalOpen}
+        onImportComplete={loadFixedTransactions}
+      />
     </div>
   );
 }
