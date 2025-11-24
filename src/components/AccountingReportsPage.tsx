@@ -7,7 +7,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { CalendarIcon, BookOpen, Scale, TrendingUp, TrendingDown, Wallet, Waves, AlertTriangle } from "lucide-react";
+import { CalendarIcon, BookOpen, Scale, TrendingUp, Wallet, Waves, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,7 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/lib/formatters";
 import { cn } from "@/lib/utils";
 import { logger } from "@/lib/logger";
-import { generateCashFlow } from "@/lib/accountingReports";
+import { generateCashFlow, generateDRE } from "@/lib/accountingReports";
 import { useDoubleEntryValidation } from "@/hooks/useDoubleEntryValidation";
 import { DoubleEntryAlert } from "@/components/accounting/DoubleEntryAlert";
 
@@ -299,23 +299,10 @@ export function AccountingReportsPage() {
     );
   }, [trialBalance]);
 
-  // DRE (Demonstração de Resultados)
+  // DRE (Demonstração de Resultados) - Lei 6.404/76
   const incomeStatement = useMemo(() => {
-    const revenues = trialBalance.filter(entry => entry.category === "revenue");
-    const expenses = trialBalance.filter(entry => entry.category === "expense");
-
-    const totalRevenue = revenues.reduce((sum, entry) => sum + Math.abs(entry.balance), 0);
-    const totalExpense = expenses.reduce((sum, entry) => sum + Math.abs(entry.balance), 0);
-    const netIncome = totalRevenue - totalExpense;
-
-    return {
-      revenues: revenues.map(r => ({ ...r, balance: Math.abs(r.balance) })),
-      expenses: expenses.map(e => ({ ...e, balance: Math.abs(e.balance) })),
-      totalRevenue,
-      totalExpense,
-      netIncome,
-    };
-  }, [trialBalance]);
+    return generateDRE(journalEntries, chartOfAccounts, startDate, endDate);
+  }, [journalEntries, chartOfAccounts, startDate, endDate]);
 
   // Balanço Patrimonial
   const balanceSheet = useMemo(() => {
@@ -559,69 +546,289 @@ export function AccountingReportsPage() {
           </TabsTrigger>
         </TabsList>
 
-        {/* DRE */}
+        {/* DRE - Lei 6.404/76 */}
         <TabsContent value="dre">
           <Card>
             <CardHeader>
               <CardTitle>Demonstração do Resultado do Exercício (DRE)</CardTitle>
               <CardDescription>
-                {format(startDate, "dd/MM/yyyy")} - {format(endDate, "dd/MM/yyyy")}
+                Estrutura Vertical - Lei 6.404/76 | {format(startDate, "dd/MM/yyyy")} - {format(endDate, "dd/MM/yyyy")}
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Receitas */}
-              <div>
-                <div className="flex items-center justify-between py-2 border-b-2 border-success/30 mb-3">
-                  <h3 className="text-lg font-semibold text-success flex items-center gap-2">
-                    <TrendingUp className="w-5 h-5" />
-                    Receitas
-                  </h3>
-                  <span className="text-lg font-bold text-success">
-                    {formatCurrency(incomeStatement.totalRevenue)}
+            <CardContent className="space-y-4">
+              {/* 1. Receita Operacional Bruta */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between py-2 font-semibold">
+                  <span className="text-body">RECEITA OPERACIONAL BRUTA</span>
+                  <span className="balance-text text-success">
+                    {formatCurrency(incomeStatement.grossRevenue)}
                   </span>
                 </div>
-                <div className="space-y-2 ml-6">
-                  {incomeStatement.revenues.map((item) => (
-                    <div key={item.code} className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">{item.code} - {item.name}</span>
-                      <span className="font-medium">{formatCurrency(item.balance)}</span>
+                <div className="ml-6 space-y-1">
+                  {incomeStatement.revenueItems.map((item: { code: string; name: string; amount: number }) => (
+                    <div key={item.code} className="flex justify-between text-caption text-muted-foreground">
+                      <span>{item.code} - {item.name}</span>
+                      <span>{formatCurrency(item.amount)}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Despesas */}
-              <div>
-                <div className="flex items-center justify-between py-2 border-b-2 border-destructive/30 mb-3">
-                  <h3 className="text-lg font-semibold text-destructive flex items-center gap-2">
-                    <TrendingDown className="w-5 h-5" />
-                    Despesas
-                  </h3>
-                  <span className="text-lg font-bold text-destructive">
-                    {formatCurrency(incomeStatement.totalExpense)}
-                  </span>
+              {/* 2. Deduções */}
+              {incomeStatement.revenueDeductions > 0 && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between py-2 font-semibold">
+                    <span className="text-body">(-) DEDUÇÕES DA RECEITA BRUTA</span>
+                    <span className="balance-text text-destructive">
+                      {formatCurrency(incomeStatement.revenueDeductions)}
+                    </span>
+                  </div>
+                  <div className="ml-6 space-y-1">
+                    {incomeStatement.deductionItems.map((item: { code: string; name: string; amount: number }) => (
+                      <div key={item.code} className="flex justify-between text-caption text-muted-foreground">
+                        <span>{item.code} - {item.name}</span>
+                        <span>{formatCurrency(item.amount)}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <div className="space-y-2 ml-6">
-                  {incomeStatement.expenses.map((item) => (
-                    <div key={item.code} className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">{item.code} - {item.name}</span>
-                      <span className="font-medium">{formatCurrency(item.balance)}</span>
-                    </div>
-                  ))}
-                </div>
+              )}
+
+              {/* 3. Receita Líquida */}
+              <div className="flex items-center justify-between py-3 px-4 bg-success/10 rounded-lg font-bold">
+                <span className="text-body-large">= RECEITA OPERACIONAL LÍQUIDA</span>
+                <span className="text-headline text-success">
+                  {formatCurrency(incomeStatement.netRevenue)}
+                </span>
               </div>
 
-              {/* Resultado */}
-              <div className="pt-4 border-t-2 border-border">
-                <div className="flex items-center justify-between py-3 bg-muted/50 px-4 rounded-lg">
-                  <h3 className="text-xl font-bold">Resultado Líquido</h3>
-                  <span
-                    className={cn(
-                      "text-xl font-bold",
-                      incomeStatement.netIncome >= 0 ? "text-success" : "text-destructive"
-                    )}
-                  >
-                    {formatCurrency(incomeStatement.netIncome)}
+              {/* 4. CMV/CSV */}
+              {incomeStatement.cogs > 0 && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between py-2 font-semibold">
+                    <span className="text-body">(-) CMV/CSV</span>
+                    <span className="balance-text text-destructive">
+                      {formatCurrency(incomeStatement.cogs)}
+                    </span>
+                  </div>
+                  <div className="ml-6 space-y-1">
+                    {incomeStatement.cogsItems.map((item: { code: string; name: string; amount: number }) => (
+                      <div key={item.code} className="flex justify-between text-caption text-muted-foreground">
+                        <span>{item.code} - {item.name}</span>
+                        <span>{formatCurrency(item.amount)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* 5. Lucro Bruto */}
+              <div className="flex items-center justify-between py-3 px-4 bg-primary/10 rounded-lg font-bold border-l-4 border-primary">
+                <span className="text-body-large">= LUCRO BRUTO</span>
+                <span className={cn(
+                  "text-headline",
+                  incomeStatement.grossProfit >= 0 ? "text-success" : "text-destructive"
+                )}>
+                  {formatCurrency(incomeStatement.grossProfit)}
+                </span>
+              </div>
+
+              {/* 6. Despesas Operacionais */}
+              {incomeStatement.operatingExpenses > 0 && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between py-2 font-semibold">
+                    <span className="text-body">(-) DESPESAS OPERACIONAIS</span>
+                    <span className="balance-text text-destructive">
+                      {formatCurrency(incomeStatement.operatingExpenses)}
+                    </span>
+                  </div>
+                  
+                  {/* Despesas com Vendas */}
+                  {incomeStatement.salesExpenses > 0 && (
+                    <div className="ml-4 space-y-1">
+                      <div className="flex justify-between text-body-large font-medium">
+                        <span>Despesas com Vendas</span>
+                        <span className="text-destructive">{formatCurrency(incomeStatement.salesExpenses)}</span>
+                      </div>
+                      <div className="ml-4 space-y-1">
+                        {incomeStatement.salesExpenseItems.map((item: { code: string; name: string; amount: number }) => (
+                          <div key={item.code} className="flex justify-between text-caption text-muted-foreground">
+                            <span>{item.code} - {item.name}</span>
+                            <span>{formatCurrency(item.amount)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Despesas Administrativas */}
+                  {incomeStatement.administrativeExpenses > 0 && (
+                    <div className="ml-4 space-y-1">
+                      <div className="flex justify-between text-body-large font-medium">
+                        <span>Despesas Administrativas</span>
+                        <span className="text-destructive">{formatCurrency(incomeStatement.administrativeExpenses)}</span>
+                      </div>
+                      <div className="ml-4 space-y-1">
+                        {incomeStatement.administrativeExpenseItems.map((item: { code: string; name: string; amount: number }) => (
+                          <div key={item.code} className="flex justify-between text-caption text-muted-foreground">
+                            <span>{item.code} - {item.name}</span>
+                            <span>{formatCurrency(item.amount)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* 7. EBIT */}
+              <div className="flex items-center justify-between py-3 px-4 bg-primary/10 rounded-lg font-bold border-l-4 border-primary">
+                <span className="text-body-large">= LUCRO OPERACIONAL (EBIT)</span>
+                <span className={cn(
+                  "text-headline",
+                  incomeStatement.ebit >= 0 ? "text-success" : "text-destructive"
+                )}>
+                  {formatCurrency(incomeStatement.ebit)}
+                </span>
+              </div>
+
+              {/* 8. Resultado Financeiro */}
+              {(incomeStatement.financialRevenue > 0 || incomeStatement.financialExpenses > 0) && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between py-2 font-semibold">
+                    <span className="text-body">(+/-) RESULTADO FINANCEIRO</span>
+                    <span className={cn(
+                      "balance-text",
+                      incomeStatement.financialResult >= 0 ? "text-success" : "text-destructive"
+                    )}>
+                      {formatCurrency(incomeStatement.financialResult)}
+                    </span>
+                  </div>
+                  
+                  {incomeStatement.financialRevenue > 0 && (
+                    <div className="ml-6 space-y-1">
+                      <div className="text-body font-medium">Receitas Financeiras</div>
+                      {incomeStatement.financialRevenueItems.map((item: { code: string; name: string; amount: number }) => (
+                        <div key={item.code} className="flex justify-between text-caption text-muted-foreground ml-4">
+                          <span>{item.code} - {item.name}</span>
+                          <span className="text-success">{formatCurrency(item.amount)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {incomeStatement.financialExpenses > 0 && (
+                    <div className="ml-6 space-y-1">
+                      <div className="text-body font-medium">(-) Despesas Financeiras</div>
+                      {incomeStatement.financialExpenseItems.map((item: { code: string; name: string; amount: number }) => (
+                        <div key={item.code} className="flex justify-between text-caption text-muted-foreground ml-4">
+                          <span>{item.code} - {item.name}</span>
+                          <span className="text-destructive">{formatCurrency(item.amount)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* 9. Lucro antes IR */}
+              <div className="flex items-center justify-between py-3 px-4 bg-muted/50 rounded-lg font-bold">
+                <span className="text-body-large">= LUCRO ANTES DO IR/CSLL</span>
+                <span className={cn(
+                  "text-headline",
+                  incomeStatement.profitBeforeTaxes >= 0 ? "text-success" : "text-destructive"
+                )}>
+                  {formatCurrency(incomeStatement.profitBeforeTaxes)}
+                </span>
+              </div>
+
+              {/* 10. Impostos */}
+              {incomeStatement.incomeTaxes > 0 && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between py-2 font-semibold">
+                    <span className="text-body">(-) PROVISÃO PARA IR E CSLL</span>
+                    <span className="balance-text text-destructive">
+                      {formatCurrency(incomeStatement.incomeTaxes)}
+                    </span>
+                  </div>
+                  <div className="ml-6 space-y-1">
+                    {incomeStatement.incomeTaxItems.map((item: { code: string; name: string; amount: number }) => (
+                      <div key={item.code} className="flex justify-between text-caption text-muted-foreground">
+                        <span>{item.code} - {item.name}</span>
+                        <span>{formatCurrency(item.amount)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* 11. Lucro Líquido */}
+              <div className="flex items-center justify-between py-4 px-4 bg-success/20 rounded-lg font-bold border-2 border-success/30">
+                <span className="text-title">= LUCRO LÍQUIDO DO EXERCÍCIO</span>
+                <span className={cn(
+                  "text-display",
+                  incomeStatement.netProfit >= 0 ? "text-success" : "text-destructive"
+                )}>
+                  {formatCurrency(incomeStatement.netProfit)}
+                </span>
+              </div>
+
+              {/* 12. Outras Receitas/Despesas */}
+              {incomeStatement.otherRevenuesExpenses !== 0 && (
+                <>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between py-2 font-semibold">
+                      <span className="text-body">(+/-) OUTRAS RECEITAS E DESPESAS</span>
+                      <span className={cn(
+                        "balance-text",
+                        incomeStatement.otherRevenuesExpenses >= 0 ? "text-success" : "text-destructive"
+                      )}>
+                        {formatCurrency(incomeStatement.otherRevenuesExpenses)}
+                      </span>
+                    </div>
+                    <div className="ml-6 space-y-1 text-caption text-muted-foreground">
+                      {incomeStatement.otherRevenueItems.map((item: { code: string; name: string; amount: number }) => (
+                        <div key={item.code} className="flex justify-between">
+                          <span>{item.code} - {item.name}</span>
+                          <span className="text-success">{formatCurrency(item.amount)}</span>
+                        </div>
+                      ))}
+                      {incomeStatement.otherExpenseItems.map((item: { code: string; name: string; amount: number }) => (
+                        <div key={item.code} className="flex justify-between">
+                          <span>{item.code} - {item.name}</span>
+                          <span className="text-destructive">{formatCurrency(item.amount)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 13. Resultado Final */}
+                  <div className="flex items-center justify-between py-4 px-4 bg-primary/20 rounded-lg font-bold border-2 border-primary">
+                    <span className="text-title">= RESULTADO DO EXERCÍCIO</span>
+                    <span className={cn(
+                      "text-display",
+                      incomeStatement.finalResult >= 0 ? "text-success" : "text-destructive"
+                    )}>
+                      {formatCurrency(incomeStatement.finalResult)}
+                    </span>
+                  </div>
+                </>
+              )}
+
+              {/* EBITDA (Informativo) */}
+              <div className="pt-4 border-t mt-6">
+                <div className="flex items-center justify-between py-3 px-4 bg-muted/30 rounded-lg">
+                  <div className="space-y-1">
+                    <span className="text-body-large font-semibold">EBITDA (Informativo)</span>
+                    <p className="text-caption text-muted-foreground">
+                      EBIT + Depreciação + Amortização
+                    </p>
+                  </div>
+                  <span className={cn(
+                    "text-headline font-bold",
+                    incomeStatement.ebitda >= 0 ? "text-success" : "text-destructive"
+                  )}>
+                    {formatCurrency(incomeStatement.ebitda)}
                   </span>
                 </div>
               </div>
@@ -713,9 +920,9 @@ export function AccountingReportsPage() {
                           <span className="text-muted-foreground italic">Resultado do Exercício (período)</span>
                           <span className={cn(
                             "font-medium italic",
-                            incomeStatement.netIncome >= 0 ? "text-success" : "text-destructive"
+                            incomeStatement.finalResult >= 0 ? "text-success" : "text-destructive"
                           )}>
-                            {formatCurrency(incomeStatement.netIncome)}
+                            {formatCurrency(incomeStatement.finalResult)}
                           </span>
                         </div>
                         <p className="text-caption text-muted-foreground/70 italic">
@@ -1008,7 +1215,7 @@ export function AccountingReportsPage() {
                               trialBalance
                                 .filter(e => e.category === "equity")
                                 .reduce((sum, e) => sum + Math.abs(e.balance), 0) +
-                              incomeStatement.netIncome
+                              incomeStatement.finalResult
                             )}
                           </p>
                         </div>
@@ -1020,7 +1227,7 @@ export function AccountingReportsPage() {
                             (trialBalance.filter(e => e.category === "liability").reduce((sum, e) => sum + Math.abs(e.balance), 0) -
                             trialBalance.filter(e => e.category === "contra_liability").reduce((sum, e) => sum + Math.abs(e.balance), 0) +
                             trialBalance.filter(e => e.category === "equity").reduce((sum, e) => sum + Math.abs(e.balance), 0) +
-                            incomeStatement.netIncome)
+                            incomeStatement.finalResult)
                           ) < 0.01
                             ? "bg-success/10 border-2 border-success/20"
                             : "bg-destructive/10 border-2 border-destructive/20"
@@ -1034,7 +1241,7 @@ export function AccountingReportsPage() {
                               (trialBalance.filter(e => e.category === "liability").reduce((sum, e) => sum + Math.abs(e.balance), 0) -
                               trialBalance.filter(e => e.category === "contra_liability").reduce((sum, e) => sum + Math.abs(e.balance), 0) +
                               trialBalance.filter(e => e.category === "equity").reduce((sum, e) => sum + Math.abs(e.balance), 0) +
-                              incomeStatement.netIncome)
+                              incomeStatement.finalResult)
                             ) < 0.01
                               ? "text-success"
                               : "text-destructive"
@@ -1045,7 +1252,7 @@ export function AccountingReportsPage() {
                               (trialBalance.filter(e => e.category === "liability").reduce((sum, e) => sum + Math.abs(e.balance), 0) -
                               trialBalance.filter(e => e.category === "contra_liability").reduce((sum, e) => sum + Math.abs(e.balance), 0) +
                               trialBalance.filter(e => e.category === "equity").reduce((sum, e) => sum + Math.abs(e.balance), 0) +
-                              incomeStatement.netIncome)
+                              incomeStatement.finalResult)
                             ) < 0.01
                               ? "✓ Balanceado"
                               : "✗ Desbalanceado"}
@@ -1059,7 +1266,7 @@ export function AccountingReportsPage() {
                         (trialBalance.filter(e => e.category === "liability").reduce((sum, e) => sum + Math.abs(e.balance), 0) -
                         trialBalance.filter(e => e.category === "contra_liability").reduce((sum, e) => sum + Math.abs(e.balance), 0) +
                         trialBalance.filter(e => e.category === "equity").reduce((sum, e) => sum + Math.abs(e.balance), 0) +
-                        incomeStatement.netIncome)
+                        incomeStatement.finalResult)
                       ) >= 0.01 && (
                         <div className="mt-4 p-4 bg-destructive/10 border border-destructive/20 rounded-lg flex items-start gap-3">
                           <AlertTriangle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
@@ -1076,7 +1283,7 @@ export function AccountingReportsPage() {
                                 trialBalance.filter(e => e.category === "liability").reduce((sum, e) => sum + Math.abs(e.balance), 0) -
                                 trialBalance.filter(e => e.category === "contra_liability").reduce((sum, e) => sum + Math.abs(e.balance), 0) +
                                 trialBalance.filter(e => e.category === "equity").reduce((sum, e) => sum + Math.abs(e.balance), 0) +
-                                incomeStatement.netIncome
+                                incomeStatement.finalResult
                               )})
                             </p>
                             <p className="text-xs text-muted-foreground">
@@ -1086,7 +1293,7 @@ export function AccountingReportsPage() {
                                 (trialBalance.filter(e => e.category === "liability").reduce((sum, e) => sum + Math.abs(e.balance), 0) -
                                 trialBalance.filter(e => e.category === "contra_liability").reduce((sum, e) => sum + Math.abs(e.balance), 0) +
                                 trialBalance.filter(e => e.category === "equity").reduce((sum, e) => sum + Math.abs(e.balance), 0) +
-                                incomeStatement.netIncome)
+                                incomeStatement.finalResult)
                               ))}
                             </p>
                           </div>
