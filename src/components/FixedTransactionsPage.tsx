@@ -858,6 +858,7 @@ export function FixedTransactionsPage() {
         open={importModalOpen}
         onOpenChange={setImportModalOpen}
         onImportComplete={loadFixedTransactions}
+        accounts={accounts}
       />
     </div>
   );
