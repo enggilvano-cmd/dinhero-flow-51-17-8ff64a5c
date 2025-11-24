@@ -570,8 +570,9 @@ export function FixedTransactionsPage() {
     const monthlyExpenses = filteredTransactions
       .filter((t) => t.type === "expense")
       .reduce((sum, t) => sum + Number(t.amount), 0);
+    const monthlyBalance = monthlyIncome - monthlyExpenses;
 
-    return { totalFixed, monthlyIncome, monthlyExpenses };
+    return { totalFixed, monthlyIncome, monthlyExpenses, monthlyBalance };
   }, [filteredTransactions]);
 
   const handleExportToExcel = () => {
@@ -630,15 +631,17 @@ export function FixedTransactionsPage() {
       />
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="financial-card">
-          <CardContent className="p-4">
-            <div className="flex flex-col items-center gap-2 text-center">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Calendar className="h-6 w-6 text-primary" />
+          <CardContent className="p-3">
+            <div className="flex flex-col items-center text-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <Calendar className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <p className="text-caption font-medium">Total de Fixas</p>
+                <p className="text-caption text-muted-foreground">
+                  Total de Fixas
+                </p>
                 <div className="balance-text">{stats.totalFixed}</div>
               </div>
             </div>
@@ -646,13 +649,15 @@ export function FixedTransactionsPage() {
         </Card>
 
         <Card className="financial-card">
-          <CardContent className="p-4">
-            <div className="flex flex-col items-center gap-2 text-center">
-              <div className="w-12 h-12 rounded-xl bg-success/10 flex items-center justify-center">
-                <TrendingUp className="h-6 w-6 text-success" />
+          <CardContent className="p-3">
+            <div className="flex flex-col items-center text-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center">
+                <TrendingUp className="h-5 w-5 text-success" />
               </div>
               <div>
-                <p className="text-caption font-medium">Receitas Mensais</p>
+                <p className="text-caption text-muted-foreground">
+                  Receitas Mensais
+                </p>
                 <div className="balance-text balance-positive">
                   {formatCurrency(stats.monthlyIncome)}
                 </div>
@@ -661,16 +666,42 @@ export function FixedTransactionsPage() {
           </CardContent>
         </Card>
 
-        <Card className="financial-card col-span-2 lg:col-span-1">
-          <CardContent className="p-4">
-            <div className="flex flex-col items-center gap-2 text-center">
-              <div className="w-12 h-12 rounded-xl bg-destructive/10 flex items-center justify-center">
-                <TrendingDown className="h-6 w-6 text-destructive" />
+        <Card className="financial-card">
+          <CardContent className="p-3">
+            <div className="flex flex-col items-center text-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center">
+                <TrendingDown className="h-5 w-5 text-destructive" />
               </div>
               <div>
-                <p className="text-caption font-medium">Despesas Mensais</p>
+                <p className="text-caption text-muted-foreground">
+                  Despesas Mensais
+                </p>
                 <div className="balance-text balance-negative">
                   {formatCurrency(stats.monthlyExpenses)}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="financial-card">
+          <CardContent className="p-3">
+            <div className="flex flex-col items-center text-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <TrendingUp className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-caption text-muted-foreground">
+                  Saldo Mensal
+                </p>
+                <div
+                  className={`balance-text ${
+                    stats.monthlyBalance >= 0
+                      ? "balance-positive"
+                      : "balance-negative"
+                  }`}
+                >
+                  {formatCurrency(stats.monthlyBalance)}
                 </div>
               </div>
             </div>
