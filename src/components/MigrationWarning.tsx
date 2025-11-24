@@ -3,6 +3,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, Check, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { safeStorage } from '@/lib/safeStorage';
 
 interface MigrationWarningProps {
   onMigrationComplete?: () => void;
@@ -18,7 +19,7 @@ export function MigrationWarning({ onMigrationComplete }: MigrationWarningProps)
     const checkLocalData = () => {
       const keys = ['planiflow_accounts', 'planiflow_transactions', 'planiflow_categories', 'planiflow_settings'];
       const hasData = keys.some(key => {
-        const data = localStorage.getItem(key);
+        const data = safeStorage.getItem(key);
         return data && data !== 'null' && data !== '[]' && data !== '{}';
       });
       
@@ -32,9 +33,9 @@ export function MigrationWarning({ onMigrationComplete }: MigrationWarningProps)
   }, []);
 
   const handleMigrate = () => {
-    // Clear local storage data after confirming migration
+    // Clear storage data after confirming migration
     const keys = ['planiflow_accounts', 'planiflow_transactions', 'planiflow_categories', 'planiflow_settings'];
-    keys.forEach(key => localStorage.removeItem(key));
+    keys.forEach(key => safeStorage.removeItem(key));
     
     setIsVisible(false);
     onMigrationComplete?.();
@@ -47,7 +48,7 @@ export function MigrationWarning({ onMigrationComplete }: MigrationWarningProps)
 
   const handleDismiss = () => {
     setIsVisible(false);
-    localStorage.setItem('migration_dismissed', 'true');
+    safeStorage.setItem('migration_dismissed', 'true');
     
     toast({
       title: "Aviso dispensado",

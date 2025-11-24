@@ -1,6 +1,7 @@
 import { onCLS, onFCP, onINP, onLCP, onTTFB, Metric } from 'web-vitals';
 import { captureMessage } from './sentry';
 import { logger } from './logger';
+import { safeStorage } from './safeStorage';
 
 /**
  * Web Vitals monitoring
@@ -54,28 +55,30 @@ function handleVital(metric: Metric): void {
     });
   }
 
-  // Store in localStorage for analytics
-  try {
-    const vitalsKey = 'web-vitals-history';
-    const history = JSON.parse(localStorage.getItem(vitalsKey) || '[]');
-    
-    history.push({
-      name: metric.name,
-      value: metric.value,
-      rating,
-      timestamp: Date.now(),
-      path: window.location.pathname,
-    });
+  // Store in safeStorage for analytics
+  const vitalsKey = 'web-vitals-history';
+  const history = safeStorage.getJSON<Array<{
+    name: string;
+    value: number;
+    rating: string;
+    timestamp: number;
+    path: string;
+  }>>(vitalsKey) || [];
+  
+  history.push({
+    name: metric.name,
+    value: metric.value,
+    rating,
+    timestamp: Date.now(),
+    path: window.location.pathname,
+  });
 
-    // Keep only last 50 entries
-    if (history.length > 50) {
-      history.splice(0, history.length - 50);
-    }
-
-    localStorage.setItem(vitalsKey, JSON.stringify(history));
-  } catch (error) {
-    logger.error('Failed to store web vital:', error);
+  // Keep only last 50 entries
+  if (history.length > 50) {
+    history.splice(0, history.length - 50);
   }
+
+  safeStorage.setJSON(vitalsKey, history);
 }
 
 /**
@@ -106,7 +109,7 @@ export function initWebVitals(): void {
 }
 
 /**
- * Get Web Vitals history from localStorage
+ * Get Web Vitals history from storage
  */
 export function getWebVitalsHistory(): Array<{
   name: string;
@@ -115,21 +118,19 @@ export function getWebVitalsHistory(): Array<{
   timestamp: number;
   path: string;
 }> {
-  try {
-    return JSON.parse(localStorage.getItem('web-vitals-history') || '[]');
-  } catch {
-    return [];
-  }
+  return safeStorage.getJSON<Array<{
+    name: string;
+    value: number;
+    rating: string;
+    timestamp: number;
+    path: string;
+  }>>('web-vitals-history') || [];
 }
 
 /**
  * Clear Web Vitals history
  */
 export function clearWebVitalsHistory(): void {
-  try {
-    localStorage.removeItem('web-vitals-history');
-    logger.info('Web Vitals history cleared');
-  } catch (error) {
-    logger.error('Failed to clear Web Vitals history:', error);
-  }
+  safeStorage.removeItem('web-vitals-history');
+  logger.info('Web Vitals history cleared');
 }
