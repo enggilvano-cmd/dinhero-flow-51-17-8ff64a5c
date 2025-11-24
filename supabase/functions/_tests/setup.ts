@@ -193,11 +193,11 @@ export const cleanupTestUser = async (userId: string): Promise<void> => {
 };
 
 // Helper to invoke edge function
-export const invokeEdgeFunction = async <T = any>(
+export const invokeEdgeFunction = async <T = unknown>(
   functionName: string,
-  body: Record<string, any>,
+  body: Record<string, unknown>,
   userId?: string
-): Promise<{ data: T | null; error: any }> => {
+): Promise<{ data: T | null; error: unknown }> => {
   const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
   const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
 
@@ -241,7 +241,7 @@ export const invokeEdgeFunction = async <T = any>(
 };
 
 // Assert helpers
-export const assertEquals = (actual: any, expected: any, message?: string) => {
+export const assertEquals = (actual: unknown, expected: unknown, message?: string) => {
   if (actual !== expected) {
     throw new Error(
       message ?? `Expected ${expected} but got ${actual}`
@@ -249,7 +249,7 @@ export const assertEquals = (actual: any, expected: any, message?: string) => {
   }
 };
 
-export const assertNotEquals = (actual: any, expected: any, message?: string) => {
+export const assertNotEquals = (actual: unknown, expected: unknown, message?: string) => {
   if (actual === expected) {
     throw new Error(
       message ?? `Expected not to equal ${expected}`

@@ -104,7 +104,7 @@ const ChartTooltipContent = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div"> & {
     active?: boolean
-    payload?: any[]
+    payload?: unknown[]
     label?: string
     labelFormatter?: (label: unknown, payload: unknown[]) => React.ReactNode
     formatter?: (value: unknown, name: unknown, item: unknown, index: number, payload: unknown) => React.ReactNode
@@ -143,7 +143,7 @@ const ChartTooltipContent = React.forwardRef<
       }
 
       const [item] = payload
-      const key = `${labelKey || item.dataKey || item.name || "value"}`
+      const key = `${labelKey || (item as Record<string, unknown>).dataKey || (item as Record<string, unknown>).name || "value"}`
       const itemConfig = getPayloadConfigFromPayload(config, item, key)
       const value =
         !labelKey && typeof label === "string"
@@ -190,20 +190,21 @@ const ChartTooltipContent = React.forwardRef<
         {!nestLabel ? tooltipLabel : null}
         <div className="grid gap-1.5">
           {payload.map((item, index) => {
-            const key = `${nameKey || item.name || item.dataKey || "value"}`
+            const itemRecord = item as Record<string, unknown>;
+            const key = `${nameKey || itemRecord.name || itemRecord.dataKey || "value"}`
             const itemConfig = getPayloadConfigFromPayload(config, item, key)
-            const indicatorColor = color || item.payload.fill || item.color
+            const indicatorColor = color || (itemRecord.payload as Record<string, unknown>)?.fill || itemRecord.color
 
             return (
               <div
-                key={item.dataKey}
+                key={itemRecord.dataKey as string}
                 className={cn(
                   "flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-muted-foreground",
                   indicator === "dot" && "items-center"
                 )}
               >
-                {formatter && item?.value !== undefined && item.name ? (
-                  formatter(item.value, item.name, item, index, item.payload) as React.ReactNode
+                {formatter && itemRecord?.value !== undefined && itemRecord.name ? (
+                  formatter(itemRecord.value, itemRecord.name, item, index, itemRecord.payload) as React.ReactNode
                 ) : (
                   <>
                     {itemConfig?.icon ? (
@@ -239,12 +240,12 @@ const ChartTooltipContent = React.forwardRef<
                       <div className="grid gap-1.5">
                         {nestLabel ? tooltipLabel : null}
                         <span className="text-muted-foreground">
-                          {itemConfig?.label || item.name}
+                          {itemConfig?.label || (itemRecord.name as string)}
                         </span>
                       </div>
-                      {item.value && (
+                      {itemRecord.value !== undefined && (
                         <span className="font-mono font-medium tabular-nums text-foreground">
-                          {item.value.toLocaleString()}
+                          {typeof itemRecord.value === 'number' ? itemRecord.value.toLocaleString() : String(itemRecord.value)}
                         </span>
                       )}
                     </div>

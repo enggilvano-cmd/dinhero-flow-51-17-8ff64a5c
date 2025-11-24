@@ -201,7 +201,7 @@ export const transactionSchema = {
 };
 
 // Validação de objeto completo
-export function validateTransaction(data: any) {
+export function validateTransaction(data: Record<string, unknown>) {
   const errors: Record<string, string> = {};
 
   try {

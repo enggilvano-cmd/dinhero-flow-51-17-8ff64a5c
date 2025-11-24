@@ -167,7 +167,7 @@ export function TransactionsPage({
     if (filterAccountType === "all") {
       return accounts;
     }
-    return accounts.filter((account: any) => account.type === filterAccountType);
+    return accounts.filter((account) => account.type === filterAccountType);
   }, [accounts, filterAccountType]);
 
   // Handle date filter changes
@@ -614,7 +614,7 @@ export function TransactionsPage({
               <div className="flex gap-2">
                 <Select
                   value={sortBy}
-                  onValueChange={(value: any) => onSortByChange(value)}
+                  onValueChange={(value) => onSortByChange(value as typeof sortBy)}
                 >
                   <SelectTrigger className="w-32">
                     <SelectValue />

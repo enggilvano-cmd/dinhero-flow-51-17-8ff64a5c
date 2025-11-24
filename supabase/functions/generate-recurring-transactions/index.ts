@@ -83,7 +83,7 @@ Deno.serve(async (req) => {
     today.setHours(0, 0, 0, 0);
     
     let generatedCount = 0;
-    const errors: any[] = [];
+    const errors: Array<{ recurring_id: string; error: string }> = [];
 
     for (const recurring of recurringTransactions as RecurringTransaction[]) {
       try {
@@ -224,7 +224,7 @@ function calculateNextDate(lastDate: Date, recurrenceType: string): Date {
 async function calculateInvoiceMonth(
   date: Date, 
   accountId: string, 
-  supabase: any
+  supabase: ReturnType<typeof createClient>
 ): Promise<string | null> {
   // Buscar informações da conta para calcular invoice_month se for cartão de crédito com retry
   const { data: account } = await withRetry(

@@ -664,7 +664,7 @@ export function FixedTransactionsPage() {
             </div>
             <div>
               <Label htmlFor="filter" className="text-caption">Filtrar por Tipo</Label>
-              <Select value={filterType} onValueChange={(value: any) => setFilterType(value)}>
+              <Select value={filterType} onValueChange={(value) => setFilterType(value as typeof filterType)}>
                 <SelectTrigger id="filter" className="touch-target mt-2">
                   <SelectValue />
                 </SelectTrigger>
