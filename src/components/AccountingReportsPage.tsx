@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/lib/formatters";
 import { cn } from "@/lib/utils";
 import { logger } from "@/lib/logger";
+import { generateCashFlow } from "@/lib/accountingReports";
 
 interface JournalEntry {
   id: string;
@@ -333,20 +334,25 @@ export function AccountingReportsPage() {
 
   // Fluxo de Caixa
   const cashFlow = useMemo(() => {
-    // Buscar contas de caixa/banco (assets líquidos)
+    const report = generateCashFlow(journalEntries, chartOfAccounts, startDate, endDate);
+    
+    // Buscar contas de caixa/banco do balancete para exibição
     const cashAccounts = trialBalance.filter(e => 
-      e.category === "asset" && (e.code.startsWith("1.1") || e.name.toLowerCase().includes("caixa") || e.name.toLowerCase().includes("banco"))
+      e.category === "asset" && (e.code.startsWith("1.01.01") || e.code.startsWith("1.01.02") || e.code.startsWith("1.01.03"))
     );
-
-    const operatingCashFlow = incomeStatement.netIncome;
-    const totalCash = cashAccounts.reduce((sum, e) => sum + Math.abs(e.balance), 0);
 
     return {
       cashAccounts,
-      operatingCashFlow,
-      totalCash,
+      operatingCashFlow: report.operatingActivities,
+      totalCash: report.closingBalance,
+      openingBalance: report.openingBalance,
+      inflows: report.inflows,
+      outflows: report.outflows,
+      investmentActivities: report.investmentActivities,
+      netCashFlow: report.netCashFlow,
+      closingBalance: report.closingBalance,
     };
-  }, [trialBalance, incomeStatement]);
+  }, [journalEntries, chartOfAccounts, startDate, endDate, trialBalance]);
 
   const getCategoryLabel = (category: string) => {
     const labels: Record<string, string> = {
@@ -683,35 +689,101 @@ export function AccountingReportsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Contas de Caixa */}
+              {/* Saldo Inicial */}
               <div>
-                <h3 className="text-lg font-semibold mb-3">Disponibilidades</h3>
-                <div className="space-y-2">
-                  {cashFlow.cashAccounts.map((item) => (
-                    <div key={item.code} className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">{item.code} - {item.name}</span>
-                      <span className="font-medium">{formatCurrency(item.balance)}</span>
-                    </div>
-                  ))}
+                <div className="flex items-center justify-between py-3 bg-muted/50 px-4 rounded-lg">
+                  <h3 className="text-lg font-bold">Saldo Inicial</h3>
+                  <span className="text-lg font-bold">
+                    {formatCurrency(cashFlow.openingBalance)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Atividades Operacionais */}
+              <div>
+                <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-primary" />
+                  Atividades Operacionais
+                </h3>
+                <div className="space-y-2 ml-6">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-success">+ Entradas (Débitos em Caixa)</span>
+                    <span className="font-medium text-success">{formatCurrency(cashFlow.inflows)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-destructive">- Saídas (Créditos em Caixa)</span>
+                    <span className="font-medium text-destructive">({formatCurrency(cashFlow.outflows)})</span>
+                  </div>
                   <div className="flex justify-between pt-2 border-t font-bold">
-                    <span>Total em Caixa</span>
-                    <span>{formatCurrency(cashFlow.totalCash)}</span>
+                    <span>Fluxo Operacional Líquido</span>
+                    <span className={cn(
+                      cashFlow.operatingCashFlow >= 0 ? "text-success" : "text-destructive"
+                    )}>
+                      {formatCurrency(cashFlow.operatingCashFlow)}
+                    </span>
                   </div>
                 </div>
               </div>
 
-              {/* Fluxo Operacional */}
+              {/* Atividades de Investimento */}
+              {cashFlow.investmentActivities !== 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                    <Wallet className="h-5 w-5 text-primary" />
+                    Atividades de Investimento
+                  </h3>
+                  <div className="space-y-2 ml-6">
+                    <div className="flex justify-between pt-2 font-bold">
+                      <span>Fluxo de Investimentos</span>
+                      <span className={cn(
+                        cashFlow.investmentActivities >= 0 ? "text-success" : "text-destructive"
+                      )}>
+                        {formatCurrency(cashFlow.investmentActivities)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Fluxo de Caixa Líquido */}
               <div className="pt-4 border-t-2">
-                <div className="flex items-center justify-between py-3 bg-muted/50 px-4 rounded-lg">
-                  <h3 className="text-lg font-bold">Fluxo Operacional (Resultado)</h3>
+                <div className="flex items-center justify-between py-3 bg-primary/10 px-4 rounded-lg">
+                  <h3 className="text-lg font-bold">Fluxo de Caixa Líquido do Período</h3>
                   <span className={cn(
                     "text-lg font-bold",
-                    cashFlow.operatingCashFlow >= 0 ? "text-success" : "text-destructive"
+                    cashFlow.netCashFlow >= 0 ? "text-success" : "text-destructive"
                   )}>
-                    {formatCurrency(cashFlow.operatingCashFlow)}
+                    {formatCurrency(cashFlow.netCashFlow)}
                   </span>
                 </div>
               </div>
+
+              {/* Saldo Final */}
+              <div>
+                <div className="flex items-center justify-between py-4 bg-muted px-4 rounded-lg border-2 border-primary/20">
+                  <h3 className="text-xl font-bold">Saldo Final de Caixa</h3>
+                  <span className="text-xl font-bold text-primary">
+                    {formatCurrency(cashFlow.closingBalance)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Disponibilidades por Conta */}
+              {cashFlow.cashAccounts.length > 0 && (
+                <div className="pt-4 border-t">
+                  <h3 className="text-caption font-semibold mb-2 text-muted-foreground">
+                    Composição do Saldo Final:
+                  </h3>
+                  <div className="space-y-1 ml-4">
+                    {cashFlow.cashAccounts.map((item) => (
+                      <div key={item.code} className="flex justify-between text-caption">
+                        <span className="text-muted-foreground">{item.code} - {item.name}</span>
+                        <span className="font-medium">{formatCurrency(Math.abs(item.balance))}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

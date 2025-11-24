@@ -162,61 +162,90 @@ export function generateBalanceSheet(
 }
 
 // Gerar Fluxo de Caixa
+// ATUALIZADO: Agora usa journal_entries e chart_of_accounts
 export function generateCashFlow(
-  transactions: any[],
-  accounts: any[],
+  journalEntries: any[],
+  chartOfAccounts: any[],
   startDate: Date,
   endDate: Date
 ): CashFlowReport {
-  // Calcular saldo inicial (contas operacionais no início do período)
-  const operationalAccounts = accounts.filter(
-    (a) => a.type === "checking" || a.type === "savings"
+  // Identificar contas de caixa/banco (ativos circulantes líquidos)
+  const cashAccounts = chartOfAccounts.filter(
+    (acc) => 
+      acc.category === 'asset' && 
+      (acc.code.startsWith('1.01.01') || // Caixa
+       acc.code.startsWith('1.01.02') || // Banco Corrente
+       acc.code.startsWith('1.01.03'))   // Banco Poupança
   );
 
-  // Filtrar transações do período
-  const periodTransactions = transactions.filter((t) => {
-    const date = new Date(t.date);
+  const cashAccountIds = cashAccounts.map(acc => acc.id);
+
+  // Filtrar journal entries de contas de caixa
+  const cashEntries = journalEntries.filter(je => 
+    cashAccountIds.includes(je.account_id)
+  );
+
+  // Calcular saldo inicial (até a data inicial)
+  const entriesUntilStart = cashEntries.filter((je) => {
+    const date = new Date(je.entry_date);
+    return date < startDate;
+  });
+
+  let openingBalance = 0;
+  entriesUntilStart.forEach(entry => {
+    const account = cashAccounts.find(acc => acc.id === entry.account_id);
+    if (account) {
+      if (account.nature === 'debit') {
+        // Conta devedora: débito aumenta, crédito diminui
+        openingBalance += entry.entry_type === 'debit' ? entry.amount : -entry.amount;
+      } else {
+        // Conta credora: crédito aumenta, débito diminui
+        openingBalance += entry.entry_type === 'credit' ? entry.amount : -entry.amount;
+      }
+    }
+  });
+
+  // Filtrar entries do período
+  const periodEntries = cashEntries.filter((je) => {
+    const date = new Date(je.entry_date);
     return date >= startDate && date <= endDate;
   });
 
-  // CORREÇÃO: Calcular saldo inicial baseado em TODAS as transações ATÉ a data inicial
-  const transactionsUntilStart = transactions.filter((t) => {
-    const date = new Date(t.date);
-    return date < startDate && operationalAccounts.some((a) => a.id === t.account_id);
+  // Calcular entradas (débitos nas contas de caixa/banco)
+  const inflows = periodEntries
+    .filter(je => je.entry_type === 'debit')
+    .reduce((sum, je) => sum + je.amount, 0);
+
+  // Calcular saídas (créditos nas contas de caixa/banco)
+  const outflows = periodEntries
+    .filter(je => je.entry_type === 'credit')
+    .reduce((sum, je) => sum + je.amount, 0);
+
+  // Atividades Operacionais (entradas - saídas)
+  const operatingActivities = inflows - outflows;
+
+  // Atividades de Investimento
+  // Buscar contas de investimento
+  const investmentAccounts = chartOfAccounts.filter(
+    (acc) => acc.category === 'asset' && acc.code.startsWith('1.01.04')
+  );
+
+  const investmentAccountIds = investmentAccounts.map(acc => acc.id);
+
+  const investmentEntries = journalEntries.filter((je) => {
+    const date = new Date(je.entry_date);
+    return date >= startDate && date <= endDate && investmentAccountIds.includes(je.account_id);
   });
 
-  const openingBalance = transactionsUntilStart.reduce((sum, t) => sum + t.amount, 0);
-
-  // Entradas de Caixa (receitas)
-  const inflows = periodTransactions
-    .filter((t) => t.type === "income" && operationalAccounts.some((a) => a.id === t.account_id))
-    .reduce((sum, t) => sum + t.amount, 0);
-
-  // Saídas de Caixa (despesas)
-  const outflows = periodTransactions
-    .filter((t) => t.type === "expense" && operationalAccounts.some((a) => a.id === t.account_id))
-    .reduce((sum, t) => sum + t.amount, 0);
-
-  // Atividades Operacionais
-  const operatingActivities = inflows + outflows;
-
-  // Atividades de Investimento (transferências para/de contas de investimento)
-  const investmentAccounts = accounts.filter((a) => a.type === "investment");
-  const investmentActivities = periodTransactions
-    .filter((t) => 
-      t.type === "transfer" && 
-      (investmentAccounts.some((a) => a.id === t.account_id) ||
-       investmentAccounts.some((a) => a.id === t.to_account_id))
-    )
-    .reduce((sum, t) => {
-      // Se é uma transferência PARA investimento, é saída (negativo)
-      // Se é uma transferência DE investimento, é entrada (positivo)
-      if (investmentAccounts.some((a) => a.id === t.to_account_id)) {
-        return sum + t.amount; // amount já é negativo para expense
-      } else {
-        return sum - t.amount; // inverter o sinal
-      }
-    }, 0);
+  // Investimentos: débitos em contas de investimento = aplicação (saída)
+  //                créditos em contas de investimento = resgate (entrada)
+  const investmentActivities = investmentEntries.reduce((sum, je) => {
+    if (je.entry_type === 'debit') {
+      return sum - je.amount; // Aplicação é saída de caixa
+    } else {
+      return sum + je.amount; // Resgate é entrada de caixa
+    }
+  }, 0);
 
   // Fluxo de Caixa Líquido
   const netCashFlow = operatingActivities + investmentActivities;
