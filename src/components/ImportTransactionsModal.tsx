@@ -380,12 +380,13 @@ export function ImportTransactionsModal({
     setIsProcessing(false);
   };
 
-  const handleImport = () => {    
+  const handleImport = () => {
+    // Itens para adicionar: novos OU duplicatas com resolution='add' OU duplicatas com resolution='replace'
     const transactionsToAdd = importedData
       .filter((t, index) => 
         !excludedIndexes.has(index) && 
         t.isValid && 
-        (!t.isDuplicate || t.resolution === 'add' || t.resolution === 'replace')
+        (t.resolution === 'add' || t.resolution === 'replace')
       )
       .map(t => {
         // NÃO converter para centavos - os valores já estão no formato correto (centavos)
@@ -586,7 +587,7 @@ export function ImportTransactionsModal({
     return importedData.filter((t, index) => 
       !excludedIndexes.has(index) && 
       t.isValid && 
-      (!t.isDuplicate || t.resolution === 'add' || t.resolution === 'replace')
+      (t.resolution === 'add' || t.resolution === 'replace')
     ).length;
   }, [importedData, excludedIndexes]);
 
