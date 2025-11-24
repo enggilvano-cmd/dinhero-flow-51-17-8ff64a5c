@@ -43,6 +43,7 @@ const menuItems = [
   { id: "fixed", label: "Transações Fixas", icon: Calendar },
   { id: "reconciliation", label: "Reconciliação", icon: CheckCircle2 },
   { id: "accounting", label: "Contabilidade", icon: BookOpen },
+  { id: "relatorios-contabeis", label: "Relatórios Contábeis", icon: BarChart3 },
   { id: "analytics", label: "Análises", icon: BarChart3 },
 ];
 

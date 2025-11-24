@@ -12,6 +12,7 @@ import { FixedTransactionsPage } from "@/components/FixedTransactionsPage";
 import { RecurringTransactionsPage } from "@/components/RecurringTransactionsPage";
 import { BankReconciliationPage } from "@/components/BankReconciliationPage";
 import { AccountingPage } from "@/components/AccountingPage";
+import AccountingReportsEnhancedPage from "@/components/AccountingReportsEnhancedPage";
 import { UserProfile } from "@/components/UserProfile";
 import { SettingsPage } from "@/components/SettingsPage";
 import BybitPage from "@/pages/BybitPage";
@@ -431,6 +432,8 @@ const PlaniFlowApp = () => {
         return <AccountingPage />;
       case "categories":
         return <CategoriesPage />;
+      case "relatorios-contabeis":
+        return <AccountingReportsEnhancedPage />;
       case "analytics":
         return (
           <AnalyticsPage 
