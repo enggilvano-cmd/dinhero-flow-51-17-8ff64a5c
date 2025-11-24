@@ -447,8 +447,11 @@ export function LedgerPage() {
                       </TableCell>
                       <TableCell className="text-right">-</TableCell>
                       <TableCell className="text-right">-</TableCell>
-                      <TableCell className="text-right font-mono font-semibold">
-                        {formatCurrency(0)} {/* Atualizar com openingBalance real */}
+                      <TableCell className={cn(
+                        "text-right font-mono font-semibold",
+                        openingBalance >= 0 ? "text-success" : "text-destructive"
+                      )}>
+                        {formatCurrency(Math.abs(openingBalance))}
                       </TableCell>
                     </TableRow>
 
