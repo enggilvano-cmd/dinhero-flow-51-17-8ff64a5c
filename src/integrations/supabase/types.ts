@@ -924,6 +924,16 @@ export type Database = {
           total_debits: number
         }[]
       }
+      validate_period_entries: {
+        Args: { p_end_date: string; p_start_date: string; p_user_id: string }
+        Returns: {
+          error_details: Json
+          is_valid: boolean
+          missing_entries_count: number
+          total_transactions: number
+          unbalanced_count: number
+        }[]
+      }
       verify_journal_entries_balance: {
         Args: { p_transaction_id: string }
         Returns: boolean
