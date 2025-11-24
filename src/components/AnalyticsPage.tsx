@@ -12,6 +12,8 @@ import {
   TrendingDown,
   Download,
   Search,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { useChartResponsive } from "@/hooks/useChartResponsive";
 import {
@@ -46,6 +48,8 @@ import {
   isSameYear,
   format,
   isWithinInterval,
+  addMonths,
+  subMonths,
 } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
@@ -756,8 +760,6 @@ export default function AnalyticsPage({
                 onFilterCategoryChange={setFilterCategory}
                 dateFilter={dateFilter}
                 onDateFilterChange={(value) => setDateFilter(value as typeof dateFilter)}
-                selectedMonth={selectedMonth}
-                onMonthChange={setSelectedMonth}
                 customStartDate={customStartDate}
                 onCustomStartDateChange={setCustomStartDate}
                 customEndDate={customEndDate}
@@ -773,15 +775,53 @@ export default function AnalyticsPage({
               />
             </div>
 
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar transações..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
+            {/* Search and Period Filter */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar transações..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              
+              {/* Period Navigation */}
+              {dateFilter === "month_picker" && (
+                <div className="flex items-center gap-2 min-w-[240px]">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setSelectedMonth(subMonths(selectedMonth, 1))}
+                    className="h-10 w-10 flex-shrink-0"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <div className="flex-1 text-center px-2">
+                    <span className="text-body font-medium whitespace-nowrap">
+                      {format(selectedMonth, "MMMM 'de' yyyy", { locale: ptBR })}
+                    </span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setSelectedMonth(addMonths(selectedMonth, 1))}
+                    className="h-10 w-10 flex-shrink-0"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+              
+              {/* Custom Date Range */}
+              {dateFilter === "custom" && customStartDate && customEndDate && (
+                <div className="flex items-center gap-2 min-w-[240px]">
+                  <span className="text-body font-medium whitespace-nowrap">
+                    {format(customStartDate, "dd/MM/yyyy", { locale: ptBR })} - {format(customEndDate, "dd/MM/yyyy", { locale: ptBR })}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </CardContent>
