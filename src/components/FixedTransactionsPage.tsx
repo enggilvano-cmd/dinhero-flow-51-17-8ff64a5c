@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Pencil, Trash2, TrendingUp, TrendingDown, Calendar, Search, CalendarPlus } from "lucide-react";
+import { Pencil, Trash2, TrendingUp, TrendingDown, Calendar, Search, CalendarPlus, DollarSign } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -688,7 +688,7 @@ export function FixedTransactionsPage() {
           <CardContent className="p-3">
             <div className="flex flex-col items-center text-center gap-3">
               <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <TrendingUp className="h-5 w-5 text-primary" />
+                <DollarSign className="h-5 w-5 text-primary" />
               </div>
               <div>
                 <p className="text-caption text-muted-foreground">
