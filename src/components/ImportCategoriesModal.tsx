@@ -582,16 +582,15 @@ export function ImportCategoriesModal({
               <CardHeader>
                 <CardTitle>Prévia das Categorias ({importedData.length} total)</CardTitle>
               </CardHeader>
-              <CardContent className="p-0 sm:p-6">
-                <div className="max-h-96 overflow-y-auto">
+              <CardContent className="p-0">
+                <div className="max-h-96 overflow-y-auto overflow-x-hidden">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="min-w-[80px]">Status</TableHead>
-                        <TableHead className="min-w-[150px]">Nome</TableHead>
-                        <TableHead className="min-w-[100px] hidden sm:table-cell">Tipo</TableHead>
-                        <TableHead className="min-w-[120px] hidden md:table-cell">Cor</TableHead>
-                        <TableHead className="min-w-[150px]">Ação</TableHead>
+                        <TableHead className="w-14 px-2">Status</TableHead>
+                        <TableHead className="px-2">Nome</TableHead>
+                        <TableHead className="w-12 px-2 hidden sm:table-cell">Cor</TableHead>
+                        <TableHead className="w-20 px-2">Ação</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -603,67 +602,66 @@ export function ImportCategoriesModal({
                             key={index} 
                             className={isExcluded ? "opacity-50 bg-muted/50" : ""}
                           >
-                            <TableCell>
+                            <TableCell className="px-2">
                               {isExcluded ? (
-                                <Badge variant="outline" className="bg-muted text-xs">Excluída</Badge>
+                                <Badge variant="outline" className="bg-muted text-[10px] px-1">Excl</Badge>
                               ) : !category.isValid ? (
-                                <Badge variant="destructive" className="text-xs">Erro</Badge>
+                                <Badge variant="destructive" className="text-[10px] px-1">Erro</Badge>
                               ) : category.isDuplicate ? (
-                                <Badge variant="secondary" className="bg-warning/10 text-warning text-xs">Duplicata</Badge>
+                                <Badge variant="secondary" className="bg-warning/10 text-warning text-[10px] px-1">Dup</Badge>
                               ) : (
-                                <Badge variant="default" className="bg-success/10 text-success text-xs">Nova</Badge>
+                                <Badge variant="default" className="bg-success/10 text-success text-[10px] px-1">Nova</Badge>
                               )}
                             </TableCell>
-                            <TableCell className="text-xs sm:text-sm truncate max-w-[150px]">{category.nome}</TableCell>
-                            <TableCell className="text-xs sm:text-sm hidden sm:table-cell">{category.tipo}</TableCell>
-                            <TableCell className="hidden md:table-cell">
-                              <div className="flex items-center gap-2">
-                                {category.cor && isValidColor(category.cor) && (
-                                  <div 
-                                    className="w-4 h-4 rounded-full border flex-shrink-0"
-                                    style={{ backgroundColor: category.cor }}
-                                  />
-                                )}
-                                <span className="text-xs font-mono truncate">{category.cor}</span>
+                            <TableCell className="text-xs px-2">
+                              <div className="max-w-[120px] truncate" title={category.nome}>
+                                {category.nome}
                               </div>
+                              <div className="text-[10px] text-muted-foreground">{category.tipo}</div>
                             </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
+                            <TableCell className="px-2 hidden sm:table-cell">
+                              {category.cor && isValidColor(category.cor) && (
+                                <div 
+                                  className="w-6 h-6 rounded-full border"
+                                  style={{ backgroundColor: category.cor }}
+                                  title={category.cor}
+                                />
+                              )}
+                            </TableCell>
+                            <TableCell className="px-2">
+                              <div className="flex items-center gap-1">
                                 <Button
                                   variant={isExcluded ? "outline" : "ghost"}
                                   size="sm"
                                   onClick={() => handleToggleExclude(index)}
-                                  className="h-7 text-xs"
+                                  className="h-6 text-[10px] px-1"
                                 >
-                                  {isExcluded ? "Incluir" : "Excluir"}
+                                  {isExcluded ? "+" : "×"}
                                 </Button>
-                                
-                                {!isExcluded && !category.isValid && (
-                                  <div className="text-xs text-destructive space-y-1">
-                                    {category.errors.map((error, i) => (
-                                      <div key={i}>{error}</div>
-                                    ))}
-                                  </div>
-                                )}
                                 
                                 {!isExcluded && category.isDuplicate && category.isValid && (
                                   <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                      <Button variant="outline" size="sm" className="text-xs h-7">
-                                        {category.resolution === 'skip' && 'Ignorar'}
-                                        {category.resolution === 'add' && 'Adicionar'}
-                                        {category.resolution === 'replace' && 'Substituir'}
-                                        <MoreVertical className="h-3 w-3 ml-1" />
+                                      <Button variant="outline" size="sm" className="text-[10px] h-6 px-1">
+                                        {category.resolution === 'skip' && '⊘'}
+                                        {category.resolution === 'add' && '+'}
+                                        {category.resolution === 'replace' && '↻'}
+                                        <MoreVertical className="h-3 w-3 ml-0.5" />
                                       </Button>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent>
+                                    <DropdownMenuContent align="end">
                                       <DropdownMenuItem onClick={() => handleResolutionChange(index, 'skip')}>Ignorar</DropdownMenuItem>
-                                      <DropdownMenuItem onClick={() => handleResolutionChange(index, 'add')}>Adicionar como Nova</DropdownMenuItem>
+                                      <DropdownMenuItem onClick={() => handleResolutionChange(index, 'add')}>Adicionar</DropdownMenuItem>
                                       <DropdownMenuItem onClick={() => handleResolutionChange(index, 'replace')} className="text-destructive">Substituir</DropdownMenuItem>
                                     </DropdownMenuContent>
                                   </DropdownMenu>
                                 )}
                               </div>
+                              {!isExcluded && !category.isValid && (
+                                <div className="text-[10px] text-destructive mt-1 max-w-[100px]">
+                                  {category.errors[0]}
+                                </div>
+                              )}
                             </TableCell>
                           </TableRow>
                         );
