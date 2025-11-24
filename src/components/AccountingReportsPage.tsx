@@ -681,20 +681,28 @@ export function AccountingReportsPage() {
                       </span>
                     </div>
                     <div className="space-y-2 ml-4">
+                      {/* Capital Próprio e Lucros Acumulados */}
                       {balanceSheet.equity.map((item) => (
                         <div key={item.code} className="flex justify-between text-sm">
                           <span className="text-muted-foreground">{item.code} - {item.name}</span>
                           <span className="font-medium">{formatCurrency(item.balance)}</span>
                         </div>
                       ))}
-                      <div className="flex justify-between text-sm pt-2 border-t">
-                        <span className="text-muted-foreground">Resultado do Exercício</span>
-                        <span className={cn(
-                          "font-medium",
-                          incomeStatement.netIncome >= 0 ? "text-success" : "text-destructive"
-                        )}>
-                          {formatCurrency(incomeStatement.netIncome)}
-                        </span>
+                      
+                      {/* Resultado do Exercício (Lucro/Prejuízo do Período) */}
+                      <div className="pt-2 border-t space-y-1">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground italic">Resultado do Exercício (período)</span>
+                          <span className={cn(
+                            "font-medium italic",
+                            incomeStatement.netIncome >= 0 ? "text-success" : "text-destructive"
+                          )}>
+                            {formatCurrency(incomeStatement.netIncome)}
+                          </span>
+                        </div>
+                        <p className="text-caption text-muted-foreground/70 italic">
+                          * Já incluído no total de PL acima
+                        </p>
                       </div>
                     </div>
                   </div>

@@ -39,6 +39,7 @@ interface ChartAccount {
 interface LedgerEntry {
   date: string;
   description: string;
+  transactionId: string | null;
   debit: number;
   credit: number;
   balance: number;
@@ -170,7 +171,10 @@ export function LedgerPage() {
       setLoading(true);
       const { data, error } = await supabase
         .from("journal_entries")
-        .select("*")
+        .select(`
+          *,
+          transaction:transactions(id, description)
+        `)
         .eq("account_id", selectedAccountId)
         .gte("entry_date", format(startDate, "yyyy-MM-dd"))
         .lte("entry_date", format(endDate, "yyyy-MM-dd"))
@@ -251,6 +255,7 @@ export function LedgerPage() {
       entries.push({
         date: entry.entry_date,
         description: entry.description,
+        transactionId: entry.transaction_id,
         debit,
         credit,
         balance: runningBalance,
@@ -447,6 +452,7 @@ export function LedgerPage() {
                     <TableRow>
                       <TableHead>Data</TableHead>
                       <TableHead>Histórico</TableHead>
+                      <TableHead className="text-center">ID Transação</TableHead>
                       <TableHead className="text-right">Débito</TableHead>
                       <TableHead className="text-right">Crédito</TableHead>
                       <TableHead className="text-right">Saldo</TableHead>
@@ -455,7 +461,7 @@ export function LedgerPage() {
                   <TableBody>
                     {/* Saldo Inicial */}
                     <TableRow className="bg-muted/50">
-                      <TableCell colSpan={2} className="font-medium">
+                      <TableCell colSpan={3} className="font-medium">
                         Saldo Anterior
                       </TableCell>
                       <TableCell className="text-right">-</TableCell>
@@ -475,6 +481,15 @@ export function LedgerPage() {
                           {format(new Date(entry.date), "dd/MM/yyyy")}
                         </TableCell>
                         <TableCell className="max-w-md">{entry.description}</TableCell>
+                        <TableCell className="text-center">
+                          {entry.transactionId ? (
+                            <Badge variant="outline" className="font-mono text-caption">
+                              {entry.transactionId.slice(0, 8)}...
+                            </Badge>
+                          ) : (
+                            <span className="text-muted-foreground text-caption">-</span>
+                          )}
+                        </TableCell>
                         <TableCell className="text-right font-mono">
                           {entry.debit > 0 ? formatCurrency(entry.debit) : "-"}
                         </TableCell>
@@ -492,7 +507,7 @@ export function LedgerPage() {
 
                     {/* Totais */}
                     <TableRow className="font-bold bg-muted/50">
-                      <TableCell colSpan={2}>Total do Período</TableCell>
+                      <TableCell colSpan={3}>Total do Período</TableCell>
                       <TableCell className="text-right font-mono">
                         {formatCurrency(totals.debit)}
                       </TableCell>
