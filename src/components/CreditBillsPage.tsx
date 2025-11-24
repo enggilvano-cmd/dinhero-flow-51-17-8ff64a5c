@@ -389,7 +389,7 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
               </div>
               <div>
                 <p className="text-caption font-medium">
-                  Disponível
+                  Limite Disponível
                 </p>
                 <div
                   className={cn(
