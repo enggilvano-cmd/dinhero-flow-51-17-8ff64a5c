@@ -65,14 +65,14 @@ export function generateDRE(
     const amount = accountEntries.reduce((sum, je) => sum + je.amount, 0);
     return {
       category: `${account.code} - ${account.name}`,
-      amount: -amount // Negativo para exibição
+      amount: amount // Despesas como valores positivos (débitos)
     };
-  }).filter(item => item.amount < 0);
+  }).filter(item => item.amount > 0);
 
   const totalExpenses = expensesByCategory.reduce((sum, item) => sum + item.amount, 0);
 
   // Resultado Líquido (Receitas - Despesas)
-  const netResult = totalRevenue + totalExpenses; // totalExpenses já é negativo
+  const netResult = totalRevenue - totalExpenses;
 
   return {
     totalRevenue,
@@ -338,14 +338,14 @@ function exportDREtoPDF(doc: any, data: DREReport, startY: number, t: any) {
   doc.setFontSize(12);
   doc.setFont("helvetica", "bold");
   doc.text(t("reports.expenses"), 20, y);
-  doc.text(formatCurrency(Math.abs(data.totalExpenses)), 170, y, { align: "right" });
+  doc.text(formatCurrency(data.totalExpenses), 170, y, { align: "right" });
   y += 7;
 
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
   data.expensesByCategory.forEach((item) => {
     doc.text(`  ${item.category}`, 25, y);
-    doc.text(formatCurrency(Math.abs(item.amount)), 170, y, { align: "right" });
+    doc.text(formatCurrency(item.amount), 170, y, { align: "right" });
     y += 5;
   });
 
