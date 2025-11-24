@@ -322,15 +322,15 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
         {/* Card Fatura Atual */}
         <Card className="financial-card">
           <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center flex-shrink-0">
-                <CalendarDays className="h-5 w-5 text-destructive" />
+            <div className="flex flex-col items-center gap-2 text-center">
+              <div className="w-12 h-12 rounded-xl bg-destructive/10 flex items-center justify-center">
+                <CalendarDays className="h-6 w-6 text-destructive" />
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm font-medium text-muted-foreground">
+              <div>
+                <p className="text-caption font-medium">
                   Fatura Atual
                 </p>
-                <div className="text-base sm:text-lg lg:text-xl font-bold balance-negative leading-tight">
+                <div className="balance-text balance-negative">
                   {/* BUGFIX: Corrigido para mostrar o valor correto, mesmo se for crédito (negativo) */}
                   {formatCents(Math.max(0, totalSummary.currentBill))}
                 </div>
@@ -342,15 +342,15 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
         {/* Card Próxima Fatura */}
         <Card className="financial-card">
           <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-muted/50 flex items-center justify-center flex-shrink-0">
-                <TrendingUp className="h-5 w-5 text-muted-foreground" />
+            <div className="flex flex-col items-center gap-2 text-center">
+              <div className="w-12 h-12 rounded-xl bg-muted/50 flex items-center justify-center">
+                <TrendingUp className="h-6 w-6 text-muted-foreground" />
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm font-medium text-muted-foreground">
+              <div>
+                <p className="text-caption font-medium">
                   Próxima Fatura
                 </p>
-                <div className="text-base sm:text-lg lg:text-xl font-bold text-muted-foreground leading-tight">
+                <div className="balance-text text-muted-foreground">
                   {formatCents(totalSummary.nextBill)}
                 </div>
               </div>
@@ -361,17 +361,17 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
         {/* Card Limite Disponível */}
         <Card className="financial-card sm:col-span-2 xl:col-span-1">
           <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <DollarSign className="h-5 w-5 text-primary" />
+            <div className="flex flex-col items-center gap-2 text-center">
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                <DollarSign className="h-6 w-6 text-primary" />
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm font-medium text-muted-foreground">
+              <div>
+                <p className="text-caption font-medium">
                   Disponível
                 </p>
                 <div
                   className={cn(
-                    "text-base sm:text-lg lg:text-xl font-bold leading-tight",
+                    "balance-text",
                     totalSummary.availableLimit >= 0
                       ? "balance-positive"
                       : "balance-negative"
