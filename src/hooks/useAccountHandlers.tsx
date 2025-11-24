@@ -113,6 +113,12 @@ export function useAccountHandlers() {
   ) => {
     if (!user) return;
     try {
+      logger.debug('[ImportAccounts] handleImportAccounts chamado', {
+        totalAccounts: accountsData.length,
+        accountsToReplace: accountsToReplace.length,
+        firstAccountSample: accountsData[0]
+      });
+
       // 1. Validar cada conta usando Zod schema
       const validatedAccounts: ImportAccountData[] = [];
       const validationErrors: string[] = [];
@@ -120,6 +126,10 @@ export function useAccountHandlers() {
       for (let i = 0; i < accountsData.length; i++) {
         const result = importAccountSchema.safeParse(accountsData[i]);
         if (!result.success) {
+          logger.error(`[ImportAccounts] Validação falhou na linha ${i + 1}:`, {
+            data: accountsData[i],
+            errors: result.error.errors
+          });
           validationErrors.push(
             `Linha ${i + 1}: ${result.error.errors.map((e: z.ZodIssue) => e.message).join(', ')}`
           );
@@ -129,6 +139,10 @@ export function useAccountHandlers() {
       }
 
       if (validationErrors.length > 0) {
+        logger.error('[ImportAccounts] Erros de validação encontrados:', {
+          totalErrors: validationErrors.length,
+          errors: validationErrors
+        });
         toast({
           title: 'Erro de validação',
           description: validationErrors.slice(0, 3).join('; ') + 
@@ -137,6 +151,10 @@ export function useAccountHandlers() {
         });
         throw new Error('Dados inválidos na importação');
       }
+
+      logger.debug('[ImportAccounts] Todas as contas validadas com sucesso:', {
+        validatedCount: validatedAccounts.length
+      });
 
       // 2. Deletar contas que serão substituídas
       if (accountsToReplace.length > 0) {
