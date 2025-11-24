@@ -87,6 +87,10 @@ interface Transaction {
 interface AnalyticsPageProps {
   transactions: Transaction[];
   accounts: Account[];
+  initialDateFilter?: "all" | "current_month" | "month_picker" | "custom";
+  initialSelectedMonth?: Date;
+  initialCustomStartDate?: Date;
+  initialCustomEndDate?: Date;
 }
 
 interface DotProps {
@@ -117,6 +121,10 @@ const FALLBACK_COLOR = "#8884d8";
 export default function AnalyticsPage({
   transactions,
   accounts,
+  initialDateFilter = "all",
+  initialSelectedMonth = new Date(),
+  initialCustomStartDate = undefined,
+  initialCustomEndDate = undefined,
 }: AnalyticsPageProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<
@@ -129,13 +137,13 @@ export default function AnalyticsPage({
   >("all");
   const [dateFilter, setDateFilter] = useState<
     "all" | "current_month" | "month_picker" | "custom"
-  >("all");
-  const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
+  >(initialDateFilter);
+  const [selectedMonth, setSelectedMonth] = useState<Date>(initialSelectedMonth);
   const [customStartDate, setCustomStartDate] = useState<Date | undefined>(
-    undefined
+    initialCustomStartDate
   );
   const [customEndDate, setCustomEndDate] = useState<Date | undefined>(
-    undefined
+    initialCustomEndDate
   );
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
   const { toast } = useToast();

@@ -343,6 +343,25 @@ const PlaniFlowApp = () => {
         
         setCurrentPage("transactions");
       }}
+      onNavigateToAnalytics={(
+        dateFilter,
+        selectedMonth,
+        customStartDate,
+        customEndDate
+      ) => {
+        // Sincronizar filtros para Analytics
+        setTransactionsPeriodFilter(dateFilter || 'all');
+        if (selectedMonth) {
+          setTransactionsSelectedMonth(selectedMonth);
+        }
+        if (customStartDate) {
+          setTransactionsCustomStartDate(customStartDate);
+        }
+        if (customEndDate) {
+          setTransactionsCustomEndDate(customEndDate);
+        }
+        setCurrentPage("analytics");
+      }}
     />
   );
 
@@ -422,7 +441,11 @@ const PlaniFlowApp = () => {
         return (
           <AnalyticsPage 
             transactions={analyticsTransactions} 
-            accounts={accounts} 
+            accounts={accounts}
+            initialDateFilter={transactionsPeriodFilter}
+            initialSelectedMonth={transactionsSelectedMonth}
+            initialCustomStartDate={transactionsCustomStartDate}
+            initialCustomEndDate={transactionsCustomEndDate}
           />
         );
       case "users":
