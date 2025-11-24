@@ -401,7 +401,44 @@ export function ImportFixedTransactionsModal({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Usuário não autenticado");
 
-      // Deletar transações a serem substituídas
+      // Carregar categorias existentes
+      const { data: existingCategories } = await supabase
+        .from("categories")
+        .select("id, name")
+        .eq("user_id", user.id);
+
+      const categoryMap = new Map(existingCategories?.map(c => [normalizeString(c.name), c.id]) || []);
+
+      // Coletar categorias únicas necessárias
+      const uniqueCategoryNames = new Set(transactionsToAdd.map(t => t.categoria.trim()));
+      const categoriesToCreate = Array.from(uniqueCategoryNames).filter(
+        name => !categoryMap.has(normalizeString(name))
+      );
+
+      // Criar categorias em batch se necessário
+      if (categoriesToCreate.length > 0) {
+        const { data: newCategories, error: createError } = await supabase
+          .from("categories")
+          .insert(
+            categoriesToCreate.map(name => ({
+              user_id: user.id,
+              name: name,
+              type: 'both' as const,
+              color: '#6b7280',
+            }))
+          )
+          .select();
+
+        if (createError) {
+          logger.error("Error creating categories:", createError);
+          throw createError;
+        }
+
+        // Adicionar ao mapa
+        newCategories?.forEach(cat => categoryMap.set(normalizeString(cat.name), cat.id));
+      }
+
+      // Deletar transações marcadas para substituição
       if (transactionsToReplaceIds.length > 0) {
         const { error: deleteError } = await supabase
           .from("transactions")
@@ -412,13 +449,13 @@ export function ImportFixedTransactionsModal({
         if (deleteError) throw deleteError;
       }
 
-      // Criar novas transações fixas
+      // Criar transações fixas
       let successCount = 0;
       let errorCount = 0;
 
       for (const t of transactionsToAdd) {
         try {
-          // Calcular a data inicial (dia do mês atual)
+          // Calcular a data inicial (dia do mês atual ou próximo mês)
           const today = new Date();
           const currentYear = today.getFullYear();
           const currentMonth = today.getMonth();
@@ -430,6 +467,7 @@ export function ImportFixedTransactionsModal({
           }
 
           const amount = Math.round(Math.abs(t.valor) * 100);
+          const categoryId = categoryMap.get(normalizeString(t.categoria)) || null;
 
           const { data, error } = await supabase.functions.invoke('atomic-create-fixed', {
             body: {
@@ -437,7 +475,7 @@ export function ImportFixedTransactionsModal({
               amount: amount,
               date: initialDate.toISOString().split('T')[0],
               type: t.parsedType,
-              category_id: null, // Categoria será mapeada depois
+              category_id: categoryId,
               account_id: t.accountId,
               status: t.parsedStatus || 'pending',
             },
@@ -446,7 +484,7 @@ export function ImportFixedTransactionsModal({
           if (error) {
             logger.error("Error creating fixed transaction:", error);
             errorCount++;
-          } else if (data?.[0]?.success) {
+          } else if (data?.success) {
             successCount++;
           } else {
             errorCount++;
