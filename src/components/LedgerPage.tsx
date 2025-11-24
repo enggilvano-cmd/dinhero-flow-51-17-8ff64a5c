@@ -486,8 +486,17 @@ export function LedgerPage() {
                       <TableCell className="text-right font-mono">
                         {formatCurrency(totals.credit)}
                       </TableCell>
-                      <TableCell className="text-right font-mono">
-                        {formatCurrency(Math.abs(totals.debit - totals.credit))}
+                      <TableCell className={cn(
+                        "text-right font-mono",
+                        (ledgerEntries.length > 0 ? ledgerEntries[ledgerEntries.length - 1].balance : openingBalance) >= 0 
+                          ? "text-success" 
+                          : "text-destructive"
+                      )}>
+                        {formatCurrency(Math.abs(
+                          ledgerEntries.length > 0 
+                            ? ledgerEntries[ledgerEntries.length - 1].balance 
+                            : openingBalance
+                        ))}
                       </TableCell>
                     </TableRow>
                   </TableBody>
