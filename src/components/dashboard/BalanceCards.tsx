@@ -50,7 +50,7 @@ export function BalanceCards({
         onClick={() => onNavigateToAccounts?.()}
         role="button"
         tabIndex={0}
-        aria-label={`Saldo Total: ${formatCurrency(totalBalance / 100)}. Clique para ver contas`}
+        aria-label={`Saldo Total: ${formatCurrency(totalBalance)}. Clique para ver contas`}
       >
         <CardContent className="p-3 text-center">
           <div className="flex items-center justify-center gap-2 mb-1">
@@ -66,7 +66,7 @@ export function BalanceCards({
               totalBalance >= 0 ? 'balance-positive' : 'balance-negative'
             }`}
           >
-            {formatCurrency(totalBalance / 100)}
+            {formatCurrency(totalBalance)}
           </div>
           <p className="text-caption text-muted-foreground mt-1 opacity-70">
             Corrente • Poupança
@@ -90,7 +90,7 @@ export function BalanceCards({
         }}
         role="button"
         tabIndex={0}
-        aria-label={`Receitas do Mês: ${formatCurrency(periodIncome / 100)}. Clique para ver todas as receitas`}
+        aria-label={`Receitas do Mês: ${formatCurrency(periodIncome)}. Clique para ver todas as receitas`}
       >
         <CardContent className="p-3 text-center">
           <div className="flex items-center justify-center gap-2 mb-1">
@@ -102,7 +102,7 @@ export function BalanceCards({
             Receitas do Mês
           </p>
           <div className="balance-text balance-positive">
-            {formatCurrency(periodIncome / 100)}
+            {formatCurrency(periodIncome)}
           </div>
           <p className="text-caption text-muted-foreground mt-1 opacity-70">
             {getPeriodLabel()}
@@ -126,7 +126,7 @@ export function BalanceCards({
         }}
         role="button"
         tabIndex={0}
-        aria-label={`Despesas do Mês: ${formatCurrency(periodExpenses / 100)}. Clique para ver todas as despesas`}
+        aria-label={`Despesas do Mês: ${formatCurrency(periodExpenses)}. Clique para ver todas as despesas`}
       >
         <CardContent className="p-3 text-center">
           <div className="flex items-center justify-center gap-2 mb-1">
@@ -138,7 +138,7 @@ export function BalanceCards({
             Despesas do Mês
           </p>
           <div className="balance-text balance-negative">
-            {formatCurrency(periodExpenses / 100)}
+            {formatCurrency(periodExpenses)}
           </div>
           <p className="text-caption text-muted-foreground mt-1 opacity-70">
             {getPeriodLabel()}
@@ -151,7 +151,7 @@ export function BalanceCards({
         onClick={() => onNavigateToAccounts?.('credit')}
         role="button"
         tabIndex={0}
-        aria-label={`Crédito Disponível: ${formatCurrency(creditAvailable / 100)}. Clique para ver cartões`}
+        aria-label={`Crédito Disponível: ${formatCurrency(creditAvailable)}. Clique para ver cartões`}
       >
         <CardContent className="p-3 text-center">
           <div className="flex items-center justify-center gap-2 mb-1">
@@ -163,7 +163,7 @@ export function BalanceCards({
             Crédito Disponível
           </p>
           <div className="balance-text text-primary">
-            {formatCurrency(creditAvailable / 100)}
+            {formatCurrency(creditAvailable)}
           </div>
           <p className="text-caption text-muted-foreground mt-1 opacity-70">
             Limite do Cartão
@@ -187,7 +187,7 @@ export function BalanceCards({
         }}
         role="button"
         tabIndex={0}
-        aria-label={`Despesas no Cartão: ${formatCurrency(creditCardExpenses / 100)}. Clique para ver detalhes`}
+        aria-label={`Despesas no Cartão: ${formatCurrency(creditCardExpenses)}. Clique para ver detalhes`}
       >
         <CardContent className="p-3 text-center">
           <div className="flex items-center justify-center gap-2 mb-1">
@@ -199,7 +199,7 @@ export function BalanceCards({
             Despesas no Cartão
           </p>
           <div className="balance-text text-warning">
-            {formatCurrency(creditCardExpenses / 100)}
+            {formatCurrency(creditCardExpenses)}
           </div>
           <p className="text-caption text-muted-foreground mt-1 opacity-70">
             {getPeriodLabel()}
@@ -223,7 +223,7 @@ export function BalanceCards({
         }}
         role="button"
         tabIndex={0}
-        aria-label={`Receitas Pendentes: ${formatCurrency(pendingIncome / 100)}. Clique para ver detalhes`}
+        aria-label={`Receitas Pendentes: ${formatCurrency(pendingIncome)}. Clique para ver detalhes`}
       >
         <CardContent className="p-3 text-center">
           <div className="flex items-center justify-center gap-2 mb-1">
@@ -240,7 +240,7 @@ export function BalanceCards({
             Receitas Pendentes
           </p>
           <div className="balance-text text-success">
-            {formatCurrency(pendingIncome / 100)}
+            {formatCurrency(pendingIncome)}
           </div>
           <p className="text-caption text-muted-foreground mt-1 opacity-70">
             {getPeriodLabel()}
@@ -264,7 +264,7 @@ export function BalanceCards({
         }}
         role="button"
         tabIndex={0}
-        aria-label={`Despesas Pendentes: ${formatCurrency(pendingExpenses / 100)}. Clique para ver detalhes`}
+        aria-label={`Despesas Pendentes: ${formatCurrency(pendingExpenses)}. Clique para ver detalhes`}
       >
         <CardContent className="p-3 text-center">
           <div className="flex items-center justify-center gap-2 mb-1">
@@ -281,7 +281,7 @@ export function BalanceCards({
             Despesas Pendentes
           </p>
           <div className="balance-text text-destructive">
-            {formatCurrency(pendingExpenses / 100)}
+            {formatCurrency(pendingExpenses)}
           </div>
           <p className="text-caption text-muted-foreground mt-1 opacity-70">
             {getPeriodLabel()}
