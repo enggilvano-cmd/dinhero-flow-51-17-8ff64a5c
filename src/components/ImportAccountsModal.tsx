@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Upload, FileSpreadsheet, AlertCircle, MoreVertical, Copy, AlertTriangle, PlusCircle } from "lucide-react";
@@ -628,92 +628,155 @@ export function ImportAccountsModal({
             </Alert>
           )}
 
-          {/* Preview Table */}
+          {/* Preview List */}
           {importedData.length > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle>Prévia das Contas ({importedData.length} total)</CardTitle>
               </CardHeader>
-              <CardContent className="p-0">
-                <div className="max-h-96 overflow-y-auto overflow-x-hidden">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-14 px-2">Status</TableHead>
-                        <TableHead className="px-2">Nome</TableHead>
-                        <TableHead className="w-20 px-2">Saldo</TableHead>
-                        <TableHead className="w-20 px-2">Ação</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {importedData.map((account, index) => {
-                        const isExcluded = excludedIndexes.has(index);
-                        
-                        return (
-                          <TableRow 
-                            key={index} 
-                            className={isExcluded ? "opacity-50 bg-muted/50" : ""}
-                          >
-                            <TableCell className="px-2">
-                              {isExcluded ? (
-                                <Badge variant="outline" className="bg-muted text-[10px] px-1">Excl</Badge>
-                              ) : !account.isValid ? (
-                                <Badge variant="destructive" className="text-[10px] px-1">Erro</Badge>
-                              ) : account.isDuplicate ? (
-                                <Badge variant="secondary" className="bg-warning/10 text-warning text-[10px] px-1">Dup</Badge>
-                              ) : (
-                                <Badge variant="default" className="bg-success/10 text-success text-[10px] px-1">Nova</Badge>
+              <CardContent className="p-4">
+                <div className="max-h-96 overflow-y-auto space-y-3">
+                  {importedData.map((account, index) => {
+                    const isExcluded = excludedIndexes.has(index);
+                    
+                    return (
+                      <div 
+                        key={index} 
+                        className={`border rounded-lg p-3 space-y-2 ${
+                          isExcluded ? "opacity-50 bg-muted/50" : "bg-card"
+                        }`}
+                      >
+                        {/* Header: Status + Name + Actions */}
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            {isExcluded ? (
+                              <Badge variant="outline" className="bg-muted text-xs shrink-0">Excluída</Badge>
+                            ) : !account.isValid ? (
+                              <Badge variant="destructive" className="text-xs shrink-0">Erro</Badge>
+                            ) : account.isDuplicate ? (
+                              <Badge variant="secondary" className="bg-warning/10 text-warning text-xs shrink-0">Duplicata</Badge>
+                            ) : (
+                              <Badge variant="default" className="bg-success/10 text-success text-xs shrink-0">Nova</Badge>
+                            )}
+                            <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                              {account.cor && isValidColor(account.cor) && (
+                                <div 
+                                  className="w-5 h-5 rounded-full border shrink-0"
+                                  style={{ backgroundColor: account.cor }}
+                                  title={account.cor}
+                                />
                               )}
-                            </TableCell>
-                            <TableCell className="text-xs px-2">
-                              <div className="max-w-[120px] truncate" title={account.nome}>
+                              <span className="font-medium text-sm truncate" title={account.nome}>
                                 {account.nome}
+                              </span>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-1 shrink-0">
+                            <Button
+                              variant={isExcluded ? "outline" : "ghost"}
+                              size="sm"
+                              onClick={() => handleToggleExclude(index)}
+                              className="h-7 px-2"
+                              title={isExcluded ? "Incluir" : "Excluir"}
+                            >
+                              {isExcluded ? <PlusCircle className="h-3.5 w-3.5" /> : "×"}
+                            </Button>
+                            
+                            {!isExcluded && account.isDuplicate && account.isValid && (
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="outline" size="sm" className="h-7 px-2">
+                                    <MoreVertical className="h-3.5 w-3.5" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="z-50 bg-popover">
+                                  <DropdownMenuItem onClick={() => handleResolutionChange(index, 'skip')}>
+                                    Pular (ignorar)
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleResolutionChange(index, 'add')}>
+                                    Adicionar como nova
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem 
+                                    onClick={() => handleResolutionChange(index, 'replace')} 
+                                    className="text-destructive"
+                                  >
+                                    Substituir existente
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Details Grid */}
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+                          <div>
+                            <span className="text-muted-foreground">Tipo:</span>
+                            <span className="ml-1 font-medium capitalize">{account.tipo}</span>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Saldo:</span>
+                            <span className="ml-1 font-medium">R$ {account.saldo}</span>
+                          </div>
+                          {account.limite && (
+                            <div>
+                              <span className="text-muted-foreground">Limite:</span>
+                              <span className="ml-1 font-medium">R$ {account.limite}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Credit Card Specific */}
+                        {account.tipo === 'credit' && (
+                          <div className="grid grid-cols-2 gap-2 text-xs pt-1 border-t">
+                            {account.fechamento && (
+                              <div>
+                                <span className="text-muted-foreground">Fechamento:</span>
+                                <span className="ml-1 font-medium">Dia {account.fechamento}</span>
                               </div>
-                              <div className="text-[10px] text-muted-foreground">{account.tipo}</div>
-                            </TableCell>
-                            <TableCell className={`text-xs px-2 font-medium whitespace-nowrap ${account.saldo < 0 ? "text-destructive" : "text-success"}`}>
-                              R$ {(account.saldo).toFixed(0)}
-                            </TableCell>
-                            <TableCell className="px-2">
-                              <div className="flex items-center gap-1">
-                                <Button
-                                  variant={isExcluded ? "outline" : "ghost"}
-                                  size="sm"
-                                  onClick={() => handleToggleExclude(index)}
-                                  className="h-6 text-[10px] px-1"
-                                >
-                                  {isExcluded ? "+" : "×"}
-                                </Button>
-                                
-                                {!isExcluded && account.isDuplicate && account.isValid && (
-                                  <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                      <Button variant="outline" size="sm" className="text-[10px] h-6 px-1">
-                                        {account.resolution === 'skip' && '⊘'}
-                                        {account.resolution === 'add' && '+'}
-                                        {account.resolution === 'replace' && '↻'}
-                                        <MoreVertical className="h-3 w-3 ml-0.5" />
-                                      </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                      <DropdownMenuItem onClick={() => handleResolutionChange(index, 'skip')}>Ignorar</DropdownMenuItem>
-                                      <DropdownMenuItem onClick={() => handleResolutionChange(index, 'add')}>Adicionar</DropdownMenuItem>
-                                      <DropdownMenuItem onClick={() => handleResolutionChange(index, 'replace')} className="text-destructive">Substituir</DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                  </DropdownMenu>
-                                )}
+                            )}
+                            {account.vencimento && (
+                              <div>
+                                <span className="text-muted-foreground">Vencimento:</span>
+                                <span className="ml-1 font-medium">Dia {account.vencimento}</span>
                               </div>
-                              {!isExcluded && !account.isValid && (
-                                <div className="text-[10px] text-destructive mt-1 max-w-[100px]">
-                                  {account.errors[0]}
-                                </div>
-                              )}
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Resolution Badge for Duplicates */}
+                        {!isExcluded && account.isDuplicate && (
+                          <div className="pt-1 border-t">
+                            <span className="text-xs text-muted-foreground">Ação: </span>
+                            {account.resolution === 'skip' && (
+                              <Badge variant="outline" className="text-xs">Pular</Badge>
+                            )}
+                            {account.resolution === 'add' && (
+                              <Badge variant="default" className="bg-primary/10 text-primary text-xs">Adicionar nova</Badge>
+                            )}
+                            {account.resolution === 'replace' && (
+                              <Badge variant="destructive" className="text-xs">Substituir</Badge>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Errors */}
+                        {!isExcluded && !account.isValid && account.errors.length > 0 && (
+                          <Alert variant="destructive" className="py-2">
+                            <AlertCircle className="h-3 w-3" />
+                            <AlertDescription className="text-xs">
+                              <div className="space-y-0.5">
+                                {account.errors.map((error, i) => (
+                                  <div key={i}>• {error}</div>
+                                ))}
+                              </div>
+                            </AlertDescription>
+                          </Alert>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>
