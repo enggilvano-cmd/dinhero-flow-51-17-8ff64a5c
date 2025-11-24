@@ -13,7 +13,6 @@ import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import BybitPage from "./pages/BybitPage";
 import { queryClient } from './lib/queryClient';
-import AccountingReportsEnhancedPage from "./components/AccountingReportsEnhancedPage";
 
 const App = () => (
   <ErrorBoundary>
@@ -42,15 +41,6 @@ const App = () => (
                       <ProtectedRoute>
                     {/* Bybit integration page */}
                     <BybitPage />
-                      </ProtectedRoute>
-                    }
-                  />
-                  {/* Relatórios Contábeis */}
-                  <Route 
-                    path="/relatorios-contabeis"
-                    element={
-                      <ProtectedRoute>
-                        <AccountingReportsEnhancedPage />
                       </ProtectedRoute>
                     }
                   />
