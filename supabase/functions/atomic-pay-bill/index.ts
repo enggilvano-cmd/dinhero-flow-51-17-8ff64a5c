@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { PayBillInputSchema, validateWithZod, validationErrorResponse } from '../_shared/validation.ts';
+import { withRetry } from '../_shared/retry.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -102,12 +103,13 @@ Deno.serve(async (req) => {
 
     const { credit_account_id, debit_account_id, amount, payment_date, description } = validation.data;
 
-    // Verificar se o período está fechado
-    const { data: isLocked } = await supabaseClient
-      .rpc('is_period_locked', { 
+    // Verificar se o período está fechado com retry
+    const { data: isLocked } = await withRetry(
+      () => supabaseClient.rpc('is_period_locked', { 
         p_user_id: user.id, 
         p_date: payment_date 
-      });
+      })
+    );
 
     if (isLocked) {
       console.error('[atomic-pay-bill] ERROR: Period is locked:', payment_date);
@@ -120,12 +122,14 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Buscar contas
-    const { data: accounts, error: accError } = await supabaseClient
-      .from('accounts')
-      .select('id, type, name')
-      .in('id', [credit_account_id, debit_account_id])
-      .eq('user_id', user.id);
+    // Buscar contas com retry
+    const { data: accounts, error: accError } = await withRetry(
+      () => supabaseClient
+        .from('accounts')
+        .select('id, type, name')
+        .in('id', [credit_account_id, debit_account_id])
+        .eq('user_id', user.id)
+    );
 
     if (accError || !accounts || accounts.length !== 2) {
       return new Response(JSON.stringify({ error: 'Invalid accounts' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
@@ -134,44 +138,48 @@ Deno.serve(async (req) => {
     const creditAcc = accounts.find(a => a.id === credit_account_id)!;
     const debitAcc = accounts.find(a => a.id === debit_account_id)!;
 
-    // Inserir as duas transações vinculadas
+    // Inserir as duas transações vinculadas com retry
     // 1) Saída da conta bancária (expense, valor NEGATIVO para reduzir saldo)
-    const { data: debitTx, error: debitErr } = await supabaseClient
-      .from('transactions')
-      .insert({
-        user_id: user.id,
-        description: description || `Pagamento Fatura ${creditAcc.name}`,
-        amount: -Math.abs(amount), // NEGATIVO para expense (sai dinheiro)
-        date: payment_date,
-        type: 'expense',
-        category_id: null,
-        account_id: debit_account_id,
-        status: 'completed',
-      })
-      .select()
-      .single();
+    const { data: debitTx, error: debitErr } = await withRetry(
+      () => supabaseClient
+        .from('transactions')
+        .insert({
+          user_id: user.id,
+          description: description || `Pagamento Fatura ${creditAcc.name}`,
+          amount: -Math.abs(amount), // NEGATIVO para expense (sai dinheiro)
+          date: payment_date,
+          type: 'expense',
+          category_id: null,
+          account_id: debit_account_id,
+          status: 'completed',
+        })
+        .select()
+        .single()
+    );
 
     if (debitErr) {
       console.error('[atomic-pay-bill] ERROR: debit insert failed:', debitErr);
       throw debitErr;
     }
 
-    // 2) Entrada no cartão (income, valor POSITIVO para reduzir dívida)
-    const { data: creditTx, error: creditErr } = await supabaseClient
-      .from('transactions')
-      .insert({
-        user_id: user.id,
-        description: description || `Pagamento Recebido de ${debitAcc.name}`,
-        amount: Math.abs(amount), // POSITIVO para income (reduz dívida)
-        date: payment_date,
-        type: 'income',
-        category_id: null,
-        account_id: credit_account_id,
-        linked_transaction_id: debitTx.id,
-        status: 'completed',
-      })
-      .select()
-      .single();
+    // 2) Entrada no cartão (income, valor POSITIVO para reduzir dívida) com retry
+    const { data: creditTx, error: creditErr } = await withRetry(
+      () => supabaseClient
+        .from('transactions')
+        .insert({
+          user_id: user.id,
+          description: description || `Pagamento Recebido de ${debitAcc.name}`,
+          amount: Math.abs(amount), // POSITIVO para income (reduz dívida)
+          date: payment_date,
+          type: 'income',
+          category_id: null,
+          account_id: credit_account_id,
+          linked_transaction_id: debitTx.id,
+          status: 'completed',
+        })
+        .select()
+        .single()
+    );
 
     if (creditErr) {
       console.error('[atomic-pay-bill] ERROR: credit insert failed:', creditErr);

@@ -1,6 +1,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { rateLimiters } from '../_shared/rate-limiter.ts';
 import { TransferInputSchema, validateWithZod, validationErrorResponse } from '../_shared/validation.ts';
+import { withRetry } from '../_shared/retry.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -101,11 +102,13 @@ Deno.serve(async (req) => {
 
     const transfer = validation.data;
 
-    // Buscar nomes das contas para descrições mais claras
-    const { data: accounts } = await supabaseClient
-      .from('accounts')
-      .select('id, name')
-      .in('id', [transfer.from_account_id, transfer.to_account_id]);
+    // Buscar nomes das contas para descrições mais claras com retry
+    const { data: accounts } = await withRetry(
+      () => supabaseClient
+        .from('accounts')
+        .select('id, name')
+        .in('id', [transfer.from_account_id, transfer.to_account_id])
+    );
 
     const fromAccount = accounts?.find(a => a.id === transfer.from_account_id);
     const toAccount = accounts?.find(a => a.id === transfer.to_account_id);
@@ -114,9 +117,9 @@ Deno.serve(async (req) => {
     const outgoingDescription = transfer.description || `Transferência para ${toAccount?.name || 'Conta Destino'}`;
     const incomingDescription = transfer.description ? transfer.description : `Transferência de ${fromAccount?.name || 'Conta Origem'}`;
 
-    // Usar função PL/pgSQL atômica
-    const { data: result, error: functionError } = await supabaseClient
-      .rpc('atomic_create_transfer', {
+    // Usar função PL/pgSQL atômica com retry
+    const { data: result, error: functionError } = await withRetry(
+      () => supabaseClient.rpc('atomic_create_transfer', {
         p_user_id: user.id,
         p_from_account_id: transfer.from_account_id,
         p_to_account_id: transfer.to_account_id,
@@ -125,7 +128,8 @@ Deno.serve(async (req) => {
         p_incoming_description: incomingDescription,
         p_date: transfer.date,
         p_status: transfer.status,
-      });
+      })
+    );
 
     if (functionError) {
       console.error('[atomic-transfer] ERROR: Function failed:', functionError);

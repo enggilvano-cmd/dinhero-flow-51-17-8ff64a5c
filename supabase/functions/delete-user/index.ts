@@ -1,6 +1,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.56.0'
 import { rateLimiters } from '../_shared/rate-limiter.ts';
 import { DeleteUserInputSchema, validateWithZod, validationErrorResponse } from '../_shared/validation.ts';
+import { withRetry } from '../_shared/retry.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -96,8 +97,10 @@ Deno.serve(async (req) => {
 
     console.log('[delete-user] INFO: Deleting user:', userId);
 
-    // Delete user from auth.users (this will cascade to profiles due to ON DELETE CASCADE)
-    const { error: deleteError } = await supabaseClient.auth.admin.deleteUser(userId)
+    // Delete user from auth.users (this will cascade to profiles due to ON DELETE CASCADE) with retry
+    const { error: deleteError } = await withRetry(
+      () => supabaseClient.auth.admin.deleteUser(userId)
+    )
 
     if (deleteError) {
       console.error('[delete-user] ERROR:', deleteError);

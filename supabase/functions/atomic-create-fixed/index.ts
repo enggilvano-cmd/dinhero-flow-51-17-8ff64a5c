@@ -6,6 +6,7 @@ import {
   validationErrorResponse 
 } from '../_shared/validation.ts';
 import { rateLimiters } from '../_shared/rate-limiter.ts';
+import { withRetry } from '../_shared/retry.ts';
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -56,19 +57,21 @@ Deno.serve(async (req) => {
 
     const validatedData = validation.data;
 
-    // Call atomic SQL function
-    const { data, error } = await supabaseClient.rpc(
-      'atomic_create_fixed_transaction',
-      {
-        p_user_id: user.id,
-        p_description: validatedData.description,
-        p_amount: validatedData.amount,
-        p_date: validatedData.date,
-        p_type: validatedData.type,
-        p_category_id: validatedData.category_id,
-        p_account_id: validatedData.account_id,
-        p_status: validatedData.status,
-      }
+    // Call atomic SQL function with retry
+    const { data, error } = await withRetry(
+      () => supabaseClient.rpc(
+        'atomic_create_fixed_transaction',
+        {
+          p_user_id: user.id,
+          p_description: validatedData.description,
+          p_amount: validatedData.amount,
+          p_date: validatedData.date,
+          p_type: validatedData.type,
+          p_category_id: validatedData.category_id,
+          p_account_id: validatedData.account_id,
+          p_status: validatedData.status,
+        }
+      )
     );
 
     if (error) {
