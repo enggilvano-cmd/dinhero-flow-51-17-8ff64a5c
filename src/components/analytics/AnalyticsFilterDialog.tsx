@@ -21,8 +21,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Filter, CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
-import { format, addMonths, subMonths } from "date-fns";
+import { Filter, CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -54,8 +54,6 @@ interface AnalyticsFilterDialogProps {
   onFilterCategoryChange: (value: string) => void;
   dateFilter: string;
   onDateFilterChange: (value: string) => void;
-  selectedMonth: Date;
-  onMonthChange: (date: Date) => void;
   customStartDate?: Date;
   onCustomStartDateChange: (date?: Date) => void;
   customEndDate?: Date;
@@ -78,8 +76,6 @@ export function AnalyticsFilterDialog({
   onFilterCategoryChange,
   dateFilter,
   onDateFilterChange,
-  selectedMonth,
-  onMonthChange,
   customStartDate,
   onCustomStartDateChange,
   customEndDate,
@@ -206,33 +202,6 @@ export function AnalyticsFilterDialog({
               </SelectContent>
             </Select>
           </div>
-
-          {/* Month Picker */}
-          {dateFilter === "month_picker" && (
-            <div className="border rounded-lg p-4 bg-muted/30">
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => onMonthChange(subMonths(selectedMonth, 1))}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <div className="flex-1 text-center">
-                  <Badge variant="secondary" className="px-4 py-2 text-sm">
-                    {format(selectedMonth, "MMMM 'de' yyyy", { locale: ptBR })}
-                  </Badge>
-                </div>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => onMonthChange(addMonths(selectedMonth, 1))}
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          )}
 
           {/* Custom Date Range */}
           {dateFilter === "custom" && (
