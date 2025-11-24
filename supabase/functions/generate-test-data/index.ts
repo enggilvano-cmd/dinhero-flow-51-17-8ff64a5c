@@ -3,6 +3,7 @@ import { corsHeaders } from '../_shared/cors.ts';
 import { rateLimiters } from '../_shared/rate-limiter.ts';
 import { GenerateTestDataInputSchema, validateWithZod, validationErrorResponse } from '../_shared/validation.ts';
 import { withRetry } from '../_shared/retry.ts';
+import { getNowInUserTimezone, toUserTimezone, formatDateString, addYears } from '../_shared/timezone.ts';
 
 interface GenerateTestDataRequest {
   transactionCount?: number;
@@ -58,8 +59,10 @@ Deno.serve(async (req) => {
     }
 
     const transactionCount = validation.data.transactionCount || 1000;
-    const startDate = validation.data.startDate || new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-    const endDate = validation.data.endDate || new Date().toISOString().split('T')[0];
+    const nowInUserTz = getNowInUserTimezone();
+    const oneYearAgo = addYears(nowInUserTz, -1);
+    const startDate = validation.data.startDate || formatDateString(oneYearAgo);
+    const endDate = validation.data.endDate || formatDateString(nowInUserTz);
     const clearExisting = validation.data.clearExisting || false;
 
     console.log(`Generating ${transactionCount} test transactions for user ${user.id}`);
@@ -124,10 +127,12 @@ Deno.serve(async (req) => {
       for (let i = 0; i < currentBatchSize; i++) {
         const transactionIndex = batch * batchSize + i;
         
-        // Distribuir datas uniformemente entre startDate e endDate
-        const dateRange = new Date(endDate).getTime() - new Date(startDate).getTime();
-        const randomDate = new Date(new Date(startDate).getTime() + Math.random() * dateRange);
-        const date = randomDate.toISOString().split('T')[0];
+        // Distribuir datas uniformemente entre startDate e endDate (timezone-aware)
+        const startDateObj = toUserTimezone(startDate);
+        const endDateObj = toUserTimezone(endDate);
+        const dateRange = endDateObj.getTime() - startDateObj.getTime();
+        const randomDate = new Date(startDateObj.getTime() + Math.random() * dateRange);
+        const date = formatDateString(randomDate);
 
         // Determinar tipo de transação (60% despesa, 30% receita, 10% transferência)
         const random = Math.random();

@@ -1,6 +1,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.56.0';
 import * as XLSX from 'https://esm.sh/xlsx@0.18.5';
 import { withRetry } from '../_shared/retry.ts';
+import { getNowInUserTimezone, formatInUserTimezone, addDays, addMonths, setTimeInUserTimezone } from '../_shared/timezone.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -28,7 +29,7 @@ Deno.serve(async (req) => {
     console.log('Starting scheduled backup generation...');
 
     // Buscar agendamentos ativos que precisam de backup com retry
-    const now = new Date();
+    const now = getNowInUserTimezone();
     const { data: schedules, error: schedulesError } = await withRetry(
       () => supabase
         .from('backup_schedules')
@@ -106,7 +107,7 @@ Deno.serve(async (req) => {
         const wbout = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
 
         // Salvar no storage
-        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const timestamp = formatInUserTimezone(now, "yyyy-MM-dd'T'HH-mm-ss");
         const fileName = `${schedule.user_id}/backup-${timestamp}.xlsx`;
 
         const { error: uploadError } = await withRetry(
@@ -190,22 +191,22 @@ Deno.serve(async (req) => {
 });
 
 function calculateNextBackup(frequency: 'daily' | 'weekly' | 'monthly'): Date {
-  const next = new Date();
+  let next = getNowInUserTimezone();
   
   switch (frequency) {
     case 'daily':
-      next.setDate(next.getDate() + 1);
+      next = addDays(next, 1);
       break;
     case 'weekly':
-      next.setDate(next.getDate() + 7);
+      next = addDays(next, 7);
       break;
     case 'monthly':
-      next.setMonth(next.getMonth() + 1);
+      next = addMonths(next, 1);
       break;
   }
   
-  // Definir para 3:00 AM
-  next.setHours(3, 0, 0, 0);
+  // Definir para 3:00 AM no timezone do usuário
+  next = setTimeInUserTimezone(next, 3, 0, 0, 0);
   
   return next;
 }

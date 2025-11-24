@@ -1,6 +1,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 import { rateLimiters } from '../_shared/rate-limiter.ts';
 import { withRetry } from '../_shared/retry.ts';
+import { getNowInUserTimezone, toUserTimezone, formatDateString, addDays, addMonths, addYears } from '../_shared/timezone.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -78,7 +79,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    const today = new Date();
+    const today = getNowInUserTimezone();
     today.setHours(0, 0, 0, 0);
     
     let generatedCount = 0;
@@ -88,7 +89,7 @@ Deno.serve(async (req) => {
       try {
         // Verificar se a recorrência já expirou
         if (recurring.recurrence_end_date) {
-          const endDate = new Date(recurring.recurrence_end_date);
+          const endDate = toUserTimezone(recurring.recurrence_end_date);
           endDate.setHours(0, 0, 0, 0);
           
           if (today > endDate) {
@@ -115,8 +116,8 @@ Deno.serve(async (req) => {
 
         // Data base para cálculo (última gerada ou data da recorrente)
         const lastDate = lastGenerated?.date 
-          ? new Date(lastGenerated.date) 
-          : new Date(recurring.date);
+          ? toUserTimezone(lastGenerated.date) 
+          : toUserTimezone(recurring.date);
         lastDate.setHours(0, 0, 0, 0);
 
         // Calcular a próxima data baseada na frequência
@@ -126,7 +127,7 @@ Deno.serve(async (req) => {
         if (nextDate <= today) {
           // Verificar se não ultrapassa a data final
           if (recurring.recurrence_end_date) {
-            const endDate = new Date(recurring.recurrence_end_date);
+            const endDate = toUserTimezone(recurring.recurrence_end_date);
             endDate.setHours(0, 0, 0, 0);
             
             if (nextDate > endDate) {
@@ -143,7 +144,7 @@ Deno.serve(async (req) => {
             type: recurring.type,
             category_id: recurring.category_id,
             account_id: recurring.account_id,
-            date: formatDate(nextDate),
+            date: formatDateString(nextDate),
             status: recurring.status,
             is_recurring: false, // A transação gerada não é recorrente
             recurrence_type: null,
@@ -167,7 +168,7 @@ Deno.serve(async (req) => {
             generatedCount++;
           }
         } else {
-          console.log(`[generate-recurring] INFO: Next date (${formatDate(nextDate)}) not reached for: ${recurring.id}`);
+          console.log(`[generate-recurring] INFO: Next date (${formatDateString(nextDate)}) not reached for: ${recurring.id}`);
         }
       } catch (error) {
         console.error(`[generate-recurring] ERROR: Failed to process ${recurring.id}:`, error);
@@ -206,28 +207,18 @@ Deno.serve(async (req) => {
 });
 
 function calculateNextDate(lastDate: Date, recurrenceType: string): Date {
-  const nextDate = new Date(lastDate);
-  
   switch (recurrenceType) {
     case 'daily':
-      nextDate.setDate(nextDate.getDate() + 1);
-      break;
+      return addDays(lastDate, 1);
     case 'weekly':
-      nextDate.setDate(nextDate.getDate() + 7);
-      break;
+      return addDays(lastDate, 7);
     case 'monthly':
-      nextDate.setMonth(nextDate.getMonth() + 1);
-      break;
+      return addMonths(lastDate, 1);
     case 'yearly':
-      nextDate.setFullYear(nextDate.getFullYear() + 1);
-      break;
+      return addYears(lastDate, 1);
+    default:
+      return lastDate;
   }
-  
-  return nextDate;
-}
-
-function formatDate(date: Date): string {
-  return date.toISOString().split('T')[0];
 }
 
 async function calculateInvoiceMonth(
@@ -256,7 +247,7 @@ async function calculateInvoiceMonth(
   if (date.getDate() < closingDate) {
     return `${invoiceDate.getFullYear()}-${String(invoiceDate.getMonth() + 1).padStart(2, '0')}`;
   } else {
-    invoiceDate.setMonth(invoiceDate.getMonth() + 1);
-    return `${invoiceDate.getFullYear()}-${String(invoiceDate.getMonth() + 1).padStart(2, '0')}`;
+    const nextMonth = addMonths(invoiceDate, 1);
+    return `${nextMonth.getFullYear()}-${String(nextMonth.getMonth() + 1).padStart(2, '0')}`;
   }
 }

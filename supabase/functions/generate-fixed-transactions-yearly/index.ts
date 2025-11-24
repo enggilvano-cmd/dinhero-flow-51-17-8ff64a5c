@@ -1,6 +1,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.56.0'
 import { rateLimiters } from '../_shared/rate-limiter.ts';
 import { withRetry } from '../_shared/retry.ts';
+import { getNowInUserTimezone, createDateInUserTimezone, formatDateString } from '../_shared/timezone.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -83,14 +84,15 @@ Deno.serve(async (req) => {
       const startDate = new Date(fixedTx.date)
       const dayOfMonth = startDate.getDate()
       
-      // Ano que será gerado (próximo ano a partir de hoje)
-      const nextYear = new Date().getFullYear() + 1
+      // Ano que será gerado (próximo ano a partir de hoje no timezone do usuário)
+      const nowInUserTz = getNowInUserTimezone();
+      const nextYear = nowInUserTz.getFullYear() + 1
       
       const futureTransactions = []
       
       // Gerar todos os 12 meses do próximo ano
       for (let month = 0; month < 12; month++) {
-        const futureDate = new Date(nextYear, month, dayOfMonth)
+        const futureDate = createDateInUserTimezone(nextYear, month, dayOfMonth)
         
         // Ajustar para o dia correto do mês
         const targetMonth = futureDate.getMonth()
@@ -101,15 +103,15 @@ Deno.serve(async (req) => {
           futureDate.setDate(0)
         }
         
+        const dateString = formatDateString(futureDate)
         const year = futureDate.getFullYear()
         const monthStr = String(futureDate.getMonth() + 1).padStart(2, '0')
-        const day = String(futureDate.getDate()).padStart(2, '0')
         
         futureTransactions.push({
           user_id: fixedTx.user_id,
           description: fixedTx.description,
           amount: fixedTx.amount,
-          date: `${year}-${monthStr}-${day}`,
+          date: dateString,
           type: fixedTx.type,
           category_id: fixedTx.category_id,
           account_id: fixedTx.account_id,

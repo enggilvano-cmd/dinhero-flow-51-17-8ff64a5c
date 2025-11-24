@@ -19,8 +19,9 @@ O sistema PlaniFlow passou por uma **análise minuciosa e exaustiva** de todos o
 ✅ **Todos os P1 (Alta Prioridade) CORRIGIDOS** - Incluindo retry logic completo
 ✅ **P2-3 CORRIGIDO** - SafeStorage wrapper com error handling robusto
 ✅ **P2-5 CORRIGIDO** - Retry logic aplicado em 5 edge functions de jobs
+✅ **P2-6 CORRIGIDO** - Timezone handling implementado em 5 edge functions de jobs
 ✅ **P2-7 CORRIGIDO** - Idempotency cache com LRU eviction e limite de 1000 entradas
-⚠️ **6 bugs P2 (Média Prioridade) PENDENTES** - Impactam manutenibilidade e qualidade
+⚠️ **5 bugs P2 (Média Prioridade) PENDENTES** - Impactam manutenibilidade e qualidade
 
 ---
 
@@ -172,12 +173,13 @@ const { data: recurringTransactions, error: fetchError } = await withRetry(
 
 ---
 
-### Bug P2-6: Timezone Naive em Edge Functions de Jobs ⚠️
+### Bug P2-6: Timezone Naive em Edge Functions de Jobs ✅ CORRIGIDO
 
 **Severidade:** 🟡 P2 (MÉDIA)  
 **Impacto:** Jobs podem gerar transações em datas incorretas para usuários em timezones diferentes
+**Status:** ✅ **CORRIGIDO**
 
-**Problema:** 5 edge functions usam `new Date()` sem timezone do usuário:
+**Problema:** 5 edge functions usavam `new Date()` sem timezone do usuário:
 
 **Exemplos:**
 ```typescript
@@ -192,8 +194,13 @@ today.setHours(0, 0, 0, 0);
 const now = new Date();
 ```
 
-**Solução:** Implementar timezone handling em edge functions usando sistema de timezone centralizado  
-**Estimativa:** 3 horas  
+**Solução Implementada:** Criado módulo `supabase/functions/_shared/timezone.ts` com funções timezone-aware  
+- ✅ 31 alterações em 5 edge functions
+- ✅ Todas operações de data agora usam timezone do usuário
+- ✅ Cálculos de datas futuras corretos
+- ✅ Comparações de datas respeitam timezone
+
+**Tempo de Correção:** 3 horas  
 **Prioridade:** 🟡 MÉDIA (importante para precisão de datas)
 
 ---
@@ -439,12 +446,13 @@ catch (error) { ... }
    - Migrados 12 usos em 3 arquivos
    - Fallback em memória implementado
 
-3. **Idempotency Cache Limits** (2h) - P2-7
-   - Implementar LRU eviction
-   - Reduzir TTL para 2 minutos
+3. ✅ **Idempotency Cache Limits** (2h) - P2-7 **CONCLUÍDO**
+   - Implementado LRU eviction
+   - TTL reduzido para 2 minutos
 
-4. **Timezone em Jobs** (3h) - P2-6
-   - Implementar timezone handling em edge functions
+4. ✅ **Timezone em Jobs** (3h) - P2-6 **CONCLUÍDO**
+   - Implementado timezone handling em 5 edge functions
+   - 31 alterações para timezone awareness
 
 5. **Frontend Rate Limiting** (2h)
    - Prevenir spam de requisições
@@ -454,7 +462,7 @@ catch (error) { ... }
    - Criar /health para monitoring
    - Database connection check
 
-**Total:** 11.5 horas (~1.4 dias) | **Concluído:** 4h (35%) ✅
+**Total:** 11.5 horas (~1.4 dias) | **Concluído:** 9.5h (83%) ✅
 
 ---
 

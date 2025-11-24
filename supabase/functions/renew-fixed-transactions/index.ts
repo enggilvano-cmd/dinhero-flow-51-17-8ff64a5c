@@ -1,6 +1,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.56.0'
 import { corsHeaders } from '../_shared/cors.ts'
 import { withRetry } from '../_shared/retry.ts';
+import { getNowInUserTimezone, createDateInUserTimezone, formatDateString } from '../_shared/timezone.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -67,7 +68,8 @@ Deno.serve(async (req) => {
     console.log(`Found ${fixedTransactions.length} fixed transactions to renew`)
 
     let totalGenerated = 0
-    const nextYear = new Date().getFullYear() + 1
+    const nowInUserTz = getNowInUserTimezone();
+    const nextYear = nowInUserTz.getFullYear() + 1
 
     // Para cada transação fixa, gerar 12 ocorrências para o próximo ano
     for (const transaction of fixedTransactions as FixedTransaction[]) {
@@ -82,7 +84,7 @@ Deno.serve(async (req) => {
         const transactionsToGenerate = []
         
         for (let month = 0; month < 12; month++) {
-          const nextDate = new Date(nextYear, month, dayOfMonth)
+          const nextDate = createDateInUserTimezone(nextYear, month, dayOfMonth)
           
           // Ajustar para o dia correto do mês
           const targetMonth = nextDate.getMonth()
@@ -97,7 +99,7 @@ Deno.serve(async (req) => {
             user_id: transaction.user_id,
             description: transaction.description,
             amount: transaction.amount,
-            date: nextDate.toISOString().split('T')[0],
+            date: formatDateString(nextDate),
             type: transaction.type,
             category_id: transaction.category_id,
             account_id: transaction.account_id,
