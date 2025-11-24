@@ -788,34 +788,39 @@ export default function AnalyticsPage({
                 />
               </div>
 
-              {/* Period Navigation - sempre visível ao lado da busca */}
-              <div className="flex items-center gap-2 px-3 border border-input rounded-md bg-background min-w-[220px]">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setSelectedMonth(subMonths(selectedMonth, 1));
-                    setDateFilter("month_picker");
-                  }}
-                  className="h-8 w-8 p-0 flex-shrink-0"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <span className="flex-1 text-center text-sm font-medium">
-                  {format(selectedMonth, "MMM/yyyy", { locale: ptBR })}
-                </span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setSelectedMonth(addMonths(selectedMonth, 1));
-                    setDateFilter("month_picker");
-                  }}
-                  className="h-8 w-8 p-0 flex-shrink-0"
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
+              {/* Period Navigation - visível apenas quando selecionado */}
+              {dateFilter === "month_picker" && (
+                <div className="flex items-center gap-2 px-3 border border-input rounded-md bg-background min-w-[220px]">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedMonth(subMonths(selectedMonth, 1))}
+                    className="h-8 w-8 p-0 flex-shrink-0"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <span className="flex-1 text-center text-sm font-medium">
+                    {format(selectedMonth, "MMM/yyyy", { locale: ptBR })}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedMonth(addMonths(selectedMonth, 1))}
+                    className="h-8 w-8 p-0 flex-shrink-0"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+
+              {/* Custom Date Range Display */}
+              {dateFilter === "custom" && customStartDate && customEndDate && (
+                <div className="flex items-center gap-2 px-3 border border-input rounded-md bg-background min-w-[220px]">
+                  <span className="text-sm font-medium whitespace-nowrap">
+                    {format(customStartDate, "dd/MM/yyyy", { locale: ptBR })} - {format(customEndDate, "dd/MM/yyyy", { locale: ptBR })}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </CardContent>
