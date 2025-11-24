@@ -729,18 +729,16 @@ export function ImportFixedTransactionsModal({
               <CardHeader>
                 <CardTitle>Prévia das Transações Fixas ({importedData.length} total)</CardTitle>
               </CardHeader>
-              <CardContent className="p-0 sm:p-6">
-                <div className="max-h-96 overflow-y-auto">
+              <CardContent className="p-0">
+                <div className="max-h-96 overflow-y-auto overflow-x-hidden">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="min-w-[80px]">Status</TableHead>
-                        <TableHead className="min-w-[150px]">Descrição</TableHead>
-                        <TableHead className="min-w-[100px]">Valor</TableHead>
-                        <TableHead className="min-w-[90px] hidden md:table-cell">Tipo</TableHead>
-                        <TableHead className="min-w-[120px] hidden lg:table-cell">Conta</TableHead>
-                        <TableHead className="min-w-[60px]">Dia</TableHead>
-                        <TableHead className="min-w-[150px]">Ação</TableHead>
+                        <TableHead className="w-16 px-2">Status</TableHead>
+                        <TableHead className="px-2">Descrição</TableHead>
+                        <TableHead className="w-20 px-2">Valor</TableHead>
+                        <TableHead className="w-16 px-2 hidden sm:table-cell">Dia</TableHead>
+                        <TableHead className="w-20 px-2">Ação</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -752,59 +750,63 @@ export function ImportFixedTransactionsModal({
                             key={index} 
                             className={isExcluded ? "opacity-50 bg-muted/50" : ""}
                           >
-                            <TableCell>
+                            <TableCell className="px-2">
                               {isExcluded ? (
-                                <Badge variant="outline" className="bg-muted text-xs">Excluída</Badge>
+                                <Badge variant="outline" className="bg-muted text-[10px] px-1">Excl</Badge>
                               ) : !transaction.isValid ? (
-                                <Badge variant="destructive" className="text-xs">Erro</Badge>
+                                <Badge variant="destructive" className="text-[10px] px-1">Erro</Badge>
                               ) : transaction.isDuplicate ? (
-                                <Badge variant="secondary" className="bg-warning/10 text-warning text-xs">Duplicata</Badge>
+                                <Badge variant="secondary" className="bg-warning/10 text-warning text-[10px] px-1">Dup</Badge>
                               ) : (
-                                <Badge variant="default" className="bg-success/10 text-success text-xs">Nova</Badge>
+                                <Badge variant="default" className="bg-success/10 text-success text-[10px] px-1">Nova</Badge>
                               )}
                             </TableCell>
-                            <TableCell className="text-xs sm:text-sm truncate max-w-[150px]">{transaction.descricao}</TableCell>
-                            <TableCell className="text-xs sm:text-sm font-medium">R$ {transaction.valor.toFixed(2)}</TableCell>
-                            <TableCell className="text-xs sm:text-sm hidden md:table-cell">{transaction.tipo}</TableCell>
-                            <TableCell className="text-xs sm:text-sm hidden lg:table-cell">{transaction.conta}</TableCell>
-                            <TableCell className="text-xs sm:text-sm text-center">{transaction.diaDoMes}</TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
+                            <TableCell className="text-xs px-2">
+                              <div className="max-w-[120px] truncate" title={transaction.descricao}>
+                                {transaction.descricao}
+                              </div>
+                              <div className="text-[10px] text-muted-foreground truncate">
+                                {transaction.tipo} • {transaction.conta}
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-xs px-2 font-medium whitespace-nowrap">
+                              R$ {transaction.valor.toFixed(0)}
+                            </TableCell>
+                            <TableCell className="text-xs px-2 text-center hidden sm:table-cell">{transaction.diaDoMes}</TableCell>
+                            <TableCell className="px-2">
+                              <div className="flex items-center gap-1">
                                 <Button
                                   variant={isExcluded ? "outline" : "ghost"}
                                   size="sm"
                                   onClick={() => handleToggleExclude(index)}
-                                  className="h-7 text-xs"
+                                  className="h-6 text-[10px] px-1"
                                 >
-                                  {isExcluded ? "Incluir" : "Excluir"}
+                                  {isExcluded ? "+" : "×"}
                                 </Button>
-                                
-                                {!isExcluded && !transaction.isValid && (
-                                  <div className="text-xs text-destructive space-y-1">
-                                    {transaction.errors.map((error, i) => (
-                                      <div key={i}>{error}</div>
-                                    ))}
-                                  </div>
-                                )}
                                 
                                 {!isExcluded && transaction.isDuplicate && transaction.isValid && (
                                   <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                      <Button variant="outline" size="sm" className="text-xs h-7">
-                                        {transaction.resolution === 'skip' && 'Ignorar'}
-                                        {transaction.resolution === 'add' && 'Adicionar'}
-                                        {transaction.resolution === 'replace' && 'Substituir'}
-                                        <MoreVertical className="h-3 w-3 ml-1" />
+                                      <Button variant="outline" size="sm" className="text-[10px] h-6 px-1">
+                                        {transaction.resolution === 'skip' && '⊘'}
+                                        {transaction.resolution === 'add' && '+'}
+                                        {transaction.resolution === 'replace' && '↻'}
+                                        <MoreVertical className="h-3 w-3 ml-0.5" />
                                       </Button>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent>
+                                    <DropdownMenuContent align="end">
                                       <DropdownMenuItem onClick={() => handleResolutionChange(index, 'skip')}>Ignorar</DropdownMenuItem>
-                                      <DropdownMenuItem onClick={() => handleResolutionChange(index, 'add')}>Adicionar como Nova</DropdownMenuItem>
+                                      <DropdownMenuItem onClick={() => handleResolutionChange(index, 'add')}>Adicionar</DropdownMenuItem>
                                       <DropdownMenuItem onClick={() => handleResolutionChange(index, 'replace')} className="text-destructive">Substituir</DropdownMenuItem>
                                     </DropdownMenuContent>
                                   </DropdownMenu>
                                 )}
                               </div>
+                              {!isExcluded && !transaction.isValid && (
+                                <div className="text-[10px] text-destructive mt-1 max-w-[100px]">
+                                  {transaction.errors[0]}
+                                </div>
+                              )}
                             </TableCell>
                           </TableRow>
                         );

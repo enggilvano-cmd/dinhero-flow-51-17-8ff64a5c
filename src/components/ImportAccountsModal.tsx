@@ -11,7 +11,6 @@ import { Upload, FileSpreadsheet, AlertCircle, MoreVertical, Copy, AlertTriangle
 import { useToast } from "@/hooks/use-toast";
 import { logger } from "@/lib/logger";
 import { loadXLSX } from "@/lib/lazyImports";
-import { formatCurrency } from "@/lib/formatters";
 import type { ImportAccountData } from '@/types';
 
 interface Account {
@@ -635,18 +634,15 @@ export function ImportAccountsModal({
               <CardHeader>
                 <CardTitle>Prévia das Contas ({importedData.length} total)</CardTitle>
               </CardHeader>
-              <CardContent className="p-0 sm:p-6">
-                <div className="max-h-96 overflow-y-auto">
+              <CardContent className="p-0">
+                <div className="max-h-96 overflow-y-auto overflow-x-hidden">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="min-w-[80px]">Status</TableHead>
-                        <TableHead className="min-w-[150px]">Nome</TableHead>
-                        <TableHead className="min-w-[120px] hidden sm:table-cell">Tipo</TableHead>
-                        <TableHead className="min-w-[100px]">Saldo</TableHead>
-                        <TableHead className="min-w-[100px] hidden md:table-cell">Limite</TableHead>
-                        <TableHead className="min-w-[80px] hidden lg:table-cell">Cor</TableHead>
-                        <TableHead className="min-w-[150px]">Ação</TableHead>
+                        <TableHead className="w-14 px-2">Status</TableHead>
+                        <TableHead className="px-2">Nome</TableHead>
+                        <TableHead className="w-20 px-2">Saldo</TableHead>
+                        <TableHead className="w-20 px-2">Ação</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -658,73 +654,60 @@ export function ImportAccountsModal({
                             key={index} 
                             className={isExcluded ? "opacity-50 bg-muted/50" : ""}
                           >
-                            <TableCell>
+                            <TableCell className="px-2">
                               {isExcluded ? (
-                                <Badge variant="outline" className="bg-muted text-xs">Excluída</Badge>
+                                <Badge variant="outline" className="bg-muted text-[10px] px-1">Excl</Badge>
                               ) : !account.isValid ? (
-                                <Badge variant="destructive" className="text-xs">Erro</Badge>
+                                <Badge variant="destructive" className="text-[10px] px-1">Erro</Badge>
                               ) : account.isDuplicate ? (
-                                <Badge variant="secondary" className="bg-warning/10 text-warning text-xs">Duplicata</Badge>
+                                <Badge variant="secondary" className="bg-warning/10 text-warning text-[10px] px-1">Dup</Badge>
                               ) : (
-                                <Badge variant="default" className="bg-success/10 text-success text-xs">Nova</Badge>
+                                <Badge variant="default" className="bg-success/10 text-success text-[10px] px-1">Nova</Badge>
                               )}
                             </TableCell>
-                            <TableCell className="text-xs sm:text-sm truncate max-w-[150px]">{account.nome}</TableCell>
-                            <TableCell className="text-xs sm:text-sm hidden sm:table-cell">{account.tipo}</TableCell>
-                            <TableCell className={`text-xs sm:text-sm font-medium ${account.saldo < 0 ? "text-destructive" : "text-success"}`}>
-                              {formatCurrency(account.saldo * 100)}
-                            </TableCell>
-                            <TableCell className="text-xs sm:text-sm hidden md:table-cell">
-                              {account.limite > 0 ? formatCurrency(account.limite * 100) : '-'}
-                            </TableCell>
-                            <TableCell className="hidden lg:table-cell">
-                              <div className="flex items-center gap-2">
-                                {account.cor && isValidColor(account.cor) && (
-                                  <div 
-                                    className="w-4 h-4 rounded-full border flex-shrink-0"
-                                    style={{ backgroundColor: account.cor }}
-                                  />
-                                )}
-                                <span className="text-xs font-mono truncate">{account.cor}</span>
+                            <TableCell className="text-xs px-2">
+                              <div className="max-w-[120px] truncate" title={account.nome}>
+                                {account.nome}
                               </div>
+                              <div className="text-[10px] text-muted-foreground">{account.tipo}</div>
                             </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
+                            <TableCell className={`text-xs px-2 font-medium whitespace-nowrap ${account.saldo < 0 ? "text-destructive" : "text-success"}`}>
+                              R$ {(account.saldo).toFixed(0)}
+                            </TableCell>
+                            <TableCell className="px-2">
+                              <div className="flex items-center gap-1">
                                 <Button
                                   variant={isExcluded ? "outline" : "ghost"}
                                   size="sm"
                                   onClick={() => handleToggleExclude(index)}
-                                  className="h-7 text-xs"
+                                  className="h-6 text-[10px] px-1"
                                 >
-                                  {isExcluded ? "Incluir" : "Excluir"}
+                                  {isExcluded ? "+" : "×"}
                                 </Button>
-                                
-                                {!isExcluded && !account.isValid && (
-                                  <div className="text-xs text-destructive space-y-1">
-                                    {account.errors.map((error, i) => (
-                                      <div key={i}>{error}</div>
-                                    ))}
-                                  </div>
-                                )}
                                 
                                 {!isExcluded && account.isDuplicate && account.isValid && (
                                   <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                      <Button variant="outline" size="sm" className="text-xs h-7">
-                                        {account.resolution === 'skip' && 'Ignorar'}
-                                        {account.resolution === 'add' && 'Adicionar'}
-                                        {account.resolution === 'replace' && 'Substituir'}
-                                        <MoreVertical className="h-3 w-3 ml-1" />
+                                      <Button variant="outline" size="sm" className="text-[10px] h-6 px-1">
+                                        {account.resolution === 'skip' && '⊘'}
+                                        {account.resolution === 'add' && '+'}
+                                        {account.resolution === 'replace' && '↻'}
+                                        <MoreVertical className="h-3 w-3 ml-0.5" />
                                       </Button>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent>
+                                    <DropdownMenuContent align="end">
                                       <DropdownMenuItem onClick={() => handleResolutionChange(index, 'skip')}>Ignorar</DropdownMenuItem>
-                                      <DropdownMenuItem onClick={() => handleResolutionChange(index, 'add')}>Adicionar como Nova</DropdownMenuItem>
+                                      <DropdownMenuItem onClick={() => handleResolutionChange(index, 'add')}>Adicionar</DropdownMenuItem>
                                       <DropdownMenuItem onClick={() => handleResolutionChange(index, 'replace')} className="text-destructive">Substituir</DropdownMenuItem>
                                     </DropdownMenuContent>
                                   </DropdownMenu>
                                 )}
                               </div>
+                              {!isExcluded && !account.isValid && (
+                                <div className="text-[10px] text-destructive mt-1 max-w-[100px]">
+                                  {account.errors[0]}
+                                </div>
+                              )}
                             </TableCell>
                           </TableRow>
                         );
