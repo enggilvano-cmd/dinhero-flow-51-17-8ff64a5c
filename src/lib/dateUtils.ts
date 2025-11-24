@@ -1,6 +1,7 @@
 import { addMonths, format } from "date-fns";
 import { Account, AppTransaction } from "@/types";
 import { logger } from "@/lib/logger";
+import { toUserTimezone } from "@/lib/timezone";
 
 /**
  * Helper para criar uma data de fallback (1970) quando o parse falha.
@@ -103,7 +104,8 @@ export function addMonthsToDate(date: Date, months: number): Date {
 
 /**
  * Cria um objeto Date a partir de qualquer input (string, nulo, etc),
- * garantindo que não haja problemas de fuso horário (UTC) e NUNCA quebre.
+ * garantindo que não haja problemas de fuso horário e NUNCA quebre.
+ * BUG FIX: Agora usa o sistema de timezone robusto do timezone.ts
  */
 export function createDateFromString(dateInput: any): Date {
   const dateString = String(dateInput || "").trim();
@@ -113,23 +115,30 @@ export function createDateFromString(dateInput: any): Date {
 
   // Trata Date object diretamente
   if (dateInput instanceof Date && !isNaN(dateInput.getTime())) {
-    return dateInput;
+    // BUG FIX: Converte para o timezone do usuário
+    return toUserTimezone(dateInput);
   }
 
   // Tenta ISO 8601
   if (dateString.includes("T") || dateString.includes("Z")) {
     const d = new Date(dateString);
-    if (!isNaN(d.getTime())) return d;
+    if (!isNaN(d.getTime())) {
+      // BUG FIX: Converte para o timezone do usuário
+      return toUserTimezone(d);
+    }
   }
 
-  // Tenta YYYY-MM-DD
+  // Tenta YYYY-MM-DD - usa o sistema de timezone
   try {
     const match = dateString.match(/^(\d{4})-(\d{2})-(\d{2})/);
     if (match) {
       const [_, year, month, day] = match.map(Number);
       if (year && month && day) {
-        const d = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
-        if (!isNaN(d.getTime())) return d;
+        // BUG FIX: Cria Date no timezone do usuário
+        const d = new Date(year, month - 1, day, 0, 0, 0, 0);
+        if (!isNaN(d.getTime())) {
+          return toUserTimezone(d);
+        }
       }
     }
   } catch (e) { /* ignora */ }
@@ -137,7 +146,8 @@ export function createDateFromString(dateInput: any): Date {
   // Fallback final
   const d = new Date(dateString);
   if (!isNaN(d.getTime())) {
-     return new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate(), 12, 0, 0));
+    // BUG FIX: Converte para o timezone do usuário
+    return toUserTimezone(d);
   }
 
   return createFallbackDate(dateInput);

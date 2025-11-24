@@ -76,9 +76,9 @@ export function useDashboardChartData(
         a.localeCompare(b)
       );
 
-      const saldoInicial = accounts
-        .filter((acc) => acc.type !== 'credit' && acc.type !== 'investment')
-        .reduce((sum, acc) => sum + acc.balance, 0);
+      // BUG FIX: Incluir TODOS os tipos de conta no saldo inicial
+      // Cartões de crédito têm saldo negativo (dívida), que deve ser incluído
+      const saldoInicial = accounts.reduce((sum, acc) => sum + acc.balance, 0);
 
       let saldoAcumulado = saldoInicial;
       return sortedEntries.map(([dateKey, data]) => {

@@ -282,13 +282,13 @@ export async function validateCreditLimitForAdd(
       };
     }
 
-    // Para cartões de crédito, buscar transações pendentes
+    // BUG FIX: Para cartões de crédito, buscar transações PENDING e COMPLETED
     const { data: pendingTransactions, error: pendingError } = await supabase
       .from('transactions')
       .select('amount')
       .eq('account_id', account.id)
       .eq('type', 'expense')
-      .eq('status', 'pending');
+      .in('status', ['completed', 'pending']); // Inclui ambos completed e pending
 
     if (pendingError) throw pendingError;
 
@@ -517,13 +517,13 @@ export async function validateCreditLimitForEdit(
       };
     }
 
-    // Buscar transações pendentes deste cartão (excluindo a atual)
+    // BUG FIX: Buscar transações PENDING e COMPLETED deste cartão (excluindo a atual)
     const { data: pendingTransactions, error } = await supabase
       .from('transactions')
       .select('amount')
       .eq('account_id', account.id)
       .eq('type', 'expense')
-      .eq('status', 'pending')
+      .in('status', ['completed', 'pending']) // Inclui ambos completed e pending
       .neq('id', transactionId);
 
     if (error) throw error;
