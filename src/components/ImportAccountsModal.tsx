@@ -311,19 +311,32 @@ export function ImportAccountsModal({
       });
 
     const accountsToReplaceIds = importedData
-      .filter((a, index) => 
-        !excludedIndexes.has(index) && 
-        a.isValid && 
-        a.isDuplicate && 
-        a.resolution === 'replace' && 
-        a.existingAccountId
-      )
+      .filter((a, index) => {
+        const shouldInclude = !excludedIndexes.has(index) && 
+          a.isValid && 
+          a.isDuplicate && 
+          a.resolution === 'replace' && 
+          a.existingAccountId;
+        
+        if (shouldInclude) {
+          logger.debug('[ImportAccounts] Item marcado para substituição:', {
+            index,
+            nome: a.nome,
+            existingAccountId: a.existingAccountId,
+            resolution: a.resolution,
+            isDuplicate: a.isDuplicate
+          });
+        }
+        
+        return shouldInclude;
+      })
       .map(a => a.existingAccountId!);
 
     logger.debug('[ImportAccounts] Processando importação:', {
       total: importedData.length,
       accountsToAdd: accountsToAdd.length,
       accountsToReplaceIds: accountsToReplaceIds.length,
+      accountsToReplaceDetails: accountsToReplaceIds,
       excluded: excludedIndexes.size
     });
 

@@ -265,19 +265,32 @@ export function ImportCategoriesModal({
       }));
 
     const categoriesToReplaceIds = importedData
-      .filter((c, index) => 
-        !excludedIndexes.has(index) && 
-        c.isValid && 
-        c.isDuplicate && 
-        c.resolution === 'replace' && 
-        c.existingCategoryId
-      )
+      .filter((c, index) => {
+        const shouldInclude = !excludedIndexes.has(index) && 
+          c.isValid && 
+          c.isDuplicate && 
+          c.resolution === 'replace' && 
+          c.existingCategoryId;
+        
+        if (shouldInclude) {
+          logger.debug('[ImportCategories] Item marcado para substituição:', {
+            index,
+            nome: c.nome,
+            existingCategoryId: c.existingCategoryId,
+            resolution: c.resolution,
+            isDuplicate: c.isDuplicate
+          });
+        }
+        
+        return shouldInclude;
+      })
       .map(c => c.existingCategoryId!);
 
     logger.debug('[ImportCategories] Processando importação:', {
       total: importedData.length,
       categoriesToAdd: categoriesToAdd.length,
       categoriesToReplaceIds: categoriesToReplaceIds.length,
+      categoriesToReplaceDetails: categoriesToReplaceIds,
       excluded: excludedIndexes.size
     });
 

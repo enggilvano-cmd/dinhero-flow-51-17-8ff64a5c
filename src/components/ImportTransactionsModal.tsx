@@ -409,19 +409,32 @@ export function ImportTransactionsModal({
       });
 
     const transactionsToReplaceIds = importedData
-      .filter((t, index) => 
-        !excludedIndexes.has(index) && 
-        t.isValid && 
-        t.isDuplicate && 
-        t.resolution === 'replace' && 
-        t.existingTransactionId
-      )
+      .filter((t, index) => {
+        const shouldInclude = !excludedIndexes.has(index) && 
+          t.isValid && 
+          t.isDuplicate && 
+          t.resolution === 'replace' && 
+          t.existingTransactionId;
+        
+        if (shouldInclude) {
+          logger.debug('[ImportTransactions] Item marcado para substituição:', {
+            index,
+            descricao: t.descricao,
+            existingTransactionId: t.existingTransactionId,
+            resolution: t.resolution,
+            isDuplicate: t.isDuplicate
+          });
+        }
+        
+        return shouldInclude;
+      })
       .map(t => t.existingTransactionId!);
 
     logger.debug('[ImportTransactions] Processando importação:', {
       total: importedData.length,
       transactionsToAdd: transactionsToAdd.length,
       transactionsToReplaceIds: transactionsToReplaceIds.length,
+      transactionsToReplaceDetails: transactionsToReplaceIds,
       excluded: excludedIndexes.size
     });
 
