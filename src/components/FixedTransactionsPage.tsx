@@ -87,6 +87,7 @@ export function FixedTransactionsPage() {
         `)
         .eq("user_id", user.id)
         .eq("is_fixed", true)
+        .is("parent_transaction_id", null)
         .neq("type", "transfer")
         .order("date", { ascending: false });
 
