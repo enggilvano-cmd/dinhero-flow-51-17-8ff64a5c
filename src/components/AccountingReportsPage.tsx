@@ -1007,7 +1007,8 @@ export function AccountingReportsPage() {
                                 .reduce((sum, e) => sum + Math.abs(e.balance), 0) +
                               trialBalance
                                 .filter(e => e.category === "equity")
-                                .reduce((sum, e) => sum + Math.abs(e.balance), 0)
+                                .reduce((sum, e) => sum + Math.abs(e.balance), 0) +
+                              incomeStatement.netIncome
                             )}
                           </p>
                         </div>
@@ -1018,7 +1019,8 @@ export function AccountingReportsPage() {
                             trialBalance.filter(e => e.category === "contra_asset").reduce((sum, e) => sum + Math.abs(e.balance), 0)) -
                             (trialBalance.filter(e => e.category === "liability").reduce((sum, e) => sum + Math.abs(e.balance), 0) -
                             trialBalance.filter(e => e.category === "contra_liability").reduce((sum, e) => sum + Math.abs(e.balance), 0) +
-                            trialBalance.filter(e => e.category === "equity").reduce((sum, e) => sum + Math.abs(e.balance), 0))
+                            trialBalance.filter(e => e.category === "equity").reduce((sum, e) => sum + Math.abs(e.balance), 0) +
+                            incomeStatement.netIncome)
                           ) < 0.01
                             ? "bg-success/10 border-2 border-success/20"
                             : "bg-destructive/10 border-2 border-destructive/20"
@@ -1031,7 +1033,8 @@ export function AccountingReportsPage() {
                               trialBalance.filter(e => e.category === "contra_asset").reduce((sum, e) => sum + Math.abs(e.balance), 0)) -
                               (trialBalance.filter(e => e.category === "liability").reduce((sum, e) => sum + Math.abs(e.balance), 0) -
                               trialBalance.filter(e => e.category === "contra_liability").reduce((sum, e) => sum + Math.abs(e.balance), 0) +
-                              trialBalance.filter(e => e.category === "equity").reduce((sum, e) => sum + Math.abs(e.balance), 0))
+                              trialBalance.filter(e => e.category === "equity").reduce((sum, e) => sum + Math.abs(e.balance), 0) +
+                              incomeStatement.netIncome)
                             ) < 0.01
                               ? "text-success"
                               : "text-destructive"
@@ -1041,7 +1044,8 @@ export function AccountingReportsPage() {
                               trialBalance.filter(e => e.category === "contra_asset").reduce((sum, e) => sum + Math.abs(e.balance), 0)) -
                               (trialBalance.filter(e => e.category === "liability").reduce((sum, e) => sum + Math.abs(e.balance), 0) -
                               trialBalance.filter(e => e.category === "contra_liability").reduce((sum, e) => sum + Math.abs(e.balance), 0) +
-                              trialBalance.filter(e => e.category === "equity").reduce((sum, e) => sum + Math.abs(e.balance), 0))
+                              trialBalance.filter(e => e.category === "equity").reduce((sum, e) => sum + Math.abs(e.balance), 0) +
+                              incomeStatement.netIncome)
                             ) < 0.01
                               ? "✓ Balanceado"
                               : "✗ Desbalanceado"}
@@ -1054,7 +1058,8 @@ export function AccountingReportsPage() {
                         trialBalance.filter(e => e.category === "contra_asset").reduce((sum, e) => sum + Math.abs(e.balance), 0)) -
                         (trialBalance.filter(e => e.category === "liability").reduce((sum, e) => sum + Math.abs(e.balance), 0) -
                         trialBalance.filter(e => e.category === "contra_liability").reduce((sum, e) => sum + Math.abs(e.balance), 0) +
-                        trialBalance.filter(e => e.category === "equity").reduce((sum, e) => sum + Math.abs(e.balance), 0))
+                        trialBalance.filter(e => e.category === "equity").reduce((sum, e) => sum + Math.abs(e.balance), 0) +
+                        incomeStatement.netIncome)
                       ) >= 0.01 && (
                         <div className="mt-4 p-4 bg-destructive/10 border border-destructive/20 rounded-lg flex items-start gap-3">
                           <AlertTriangle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
@@ -1067,10 +1072,11 @@ export function AccountingReportsPage() {
                                 trialBalance.filter(e => e.category === "asset").reduce((sum, e) => sum + Math.abs(e.balance), 0) -
                                 trialBalance.filter(e => e.category === "contra_asset").reduce((sum, e) => sum + Math.abs(e.balance), 0)
                               )}) ≠ 
-                              PASSIVO + PL ({formatCurrency(
+                              PASSIVO + PL + RESULTADO ({formatCurrency(
                                 trialBalance.filter(e => e.category === "liability").reduce((sum, e) => sum + Math.abs(e.balance), 0) -
                                 trialBalance.filter(e => e.category === "contra_liability").reduce((sum, e) => sum + Math.abs(e.balance), 0) +
-                                trialBalance.filter(e => e.category === "equity").reduce((sum, e) => sum + Math.abs(e.balance), 0)
+                                trialBalance.filter(e => e.category === "equity").reduce((sum, e) => sum + Math.abs(e.balance), 0) +
+                                incomeStatement.netIncome
                               )})
                             </p>
                             <p className="text-xs text-muted-foreground">
@@ -1079,7 +1085,8 @@ export function AccountingReportsPage() {
                                 trialBalance.filter(e => e.category === "contra_asset").reduce((sum, e) => sum + Math.abs(e.balance), 0)) -
                                 (trialBalance.filter(e => e.category === "liability").reduce((sum, e) => sum + Math.abs(e.balance), 0) -
                                 trialBalance.filter(e => e.category === "contra_liability").reduce((sum, e) => sum + Math.abs(e.balance), 0) +
-                                trialBalance.filter(e => e.category === "equity").reduce((sum, e) => sum + Math.abs(e.balance), 0))
+                                trialBalance.filter(e => e.category === "equity").reduce((sum, e) => sum + Math.abs(e.balance), 0) +
+                                incomeStatement.netIncome)
                               ))}
                             </p>
                           </div>
