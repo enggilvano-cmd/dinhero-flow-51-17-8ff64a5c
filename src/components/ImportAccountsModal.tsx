@@ -9,6 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Upload, FileSpreadsheet, AlertCircle, MoreVertical, Copy, AlertTriangle, PlusCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { logger } from "@/lib/logger";
 import { loadXLSX } from "@/lib/lazyImports";
 import { formatCurrency } from "@/lib/formatters";
 import type { ImportAccountData } from '@/types';
@@ -318,6 +319,13 @@ export function ImportAccountsModal({
         a.existingAccountId
       )
       .map(a => a.existingAccountId!);
+
+    logger.debug('[ImportAccounts] Processando importação:', {
+      total: importedData.length,
+      accountsToAdd: accountsToAdd.length,
+      accountsToReplaceIds: accountsToReplaceIds.length,
+      excluded: excludedIndexes.size
+    });
 
     if (accountsToAdd.length === 0 && accountsToReplaceIds.length === 0) {
       toast({

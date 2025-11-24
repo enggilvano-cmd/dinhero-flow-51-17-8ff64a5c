@@ -3,6 +3,18 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 /**
+ * Formata números para padrão brasileiro (vírgula como decimal, ponto como milhar)
+ * Valores são assumidos estar em centavos
+ */
+function formatBRNumber(valueInCents: number): string {
+  const valueInReais = valueInCents / 100;
+  return valueInReais.toLocaleString('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+}
+
+/**
  * Exporta contas para Excel
  */
 export async function exportAccountsToExcel(accounts: any[]) {
@@ -11,8 +23,8 @@ export async function exportAccountsToExcel(accounts: any[]) {
   const exportData = accounts.map(account => ({
     'Nome': account.name,
     'Tipo': getAccountTypeLabel(account.type),
-    'Saldo': (account.balance).toFixed(2),
-    'Limite': account.limit_amount !== undefined && account.limit_amount !== null ? (account.limit_amount).toFixed(2) : '',
+    'Saldo': formatBRNumber(account.balance),
+    'Limite': account.limit_amount !== undefined && account.limit_amount !== null ? formatBRNumber(account.limit_amount) : '',
     'Fechamento': account.closing_date || '',
     'Vencimento': account.due_date || '',
     'Cor': account.color
@@ -90,7 +102,7 @@ export async function exportTransactionsToExcel(
       'Tipo': getTransactionTypeLabel(transaction.type),
       'Conta': account?.name || 'Desconhecida',
       'Conta Destino': toAccount?.name || '',
-      'Valor': (Math.abs(transaction.amount)).toFixed(2),
+      'Valor': formatBRNumber(Math.abs(transaction.amount)),
       'Status': transaction.status === 'completed' ? 'Concluída' : 'Pendente',
       'Parcelas': transaction.installments 
         ? `${transaction.current_installment}/${transaction.installments}`
@@ -145,8 +157,8 @@ export async function exportAllDataToExcel(
   const accountsData = accounts.map(account => ({
     'Nome': account.name,
     'Tipo': getAccountTypeLabel(account.type),
-    'Saldo': (account.balance).toFixed(2),
-    'Limite': account.limit_amount !== undefined && account.limit_amount !== null ? (account.limit_amount).toFixed(2) : '',
+    'Saldo': formatBRNumber(account.balance),
+    'Limite': account.limit_amount !== undefined && account.limit_amount !== null ? formatBRNumber(account.limit_amount) : '',
     'Fechamento': account.closing_date || '',
     'Vencimento': account.due_date || '',
     'Cor': account.color
@@ -186,7 +198,7 @@ export async function exportAllDataToExcel(
       'Tipo': getTransactionTypeLabel(transaction.type),
       'Conta': account?.name || 'Desconhecida',
       'Conta Destino': toAccount?.name || '',
-      'Valor': (Math.abs(transaction.amount)).toFixed(2),
+      'Valor': formatBRNumber(Math.abs(transaction.amount)),
       'Status': transaction.status === 'completed' ? 'Concluída' : 'Pendente',
       'Parcelas': transaction.installments 
         ? `${transaction.current_installment}/${transaction.installments}`
