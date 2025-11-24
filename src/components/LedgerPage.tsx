@@ -468,9 +468,9 @@ export function LedgerPage() {
                         <TableCell className="text-right font-mono">
                           {entry.credit > 0 ? formatCurrency(entry.credit) : "-"}
                         </TableCell>
-                        <TableCell className={cn(
+                         <TableCell className={cn(
                           "text-right font-mono font-semibold",
-                          entry.balance >= 0 ? "text-green-600" : "text-red-600"
+                          entry.balance >= 0 ? "text-success" : "text-destructive"
                         )}>
                           {formatCurrency(Math.abs(entry.balance))}
                         </TableCell>
@@ -487,7 +487,7 @@ export function LedgerPage() {
                         {formatCurrency(totals.credit)}
                       </TableCell>
                       <TableCell className={cn(
-                        "text-right font-mono",
+                        "text-right font-mono font-semibold",
                         (ledgerEntries.length > 0 ? ledgerEntries[ledgerEntries.length - 1].balance : openingBalance) >= 0 
                           ? "text-success" 
                           : "text-destructive"
