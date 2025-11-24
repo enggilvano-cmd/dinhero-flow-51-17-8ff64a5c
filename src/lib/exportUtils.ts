@@ -11,8 +11,8 @@ export async function exportAccountsToExcel(accounts: any[]) {
   const exportData = accounts.map(account => ({
     'Nome': account.name,
     'Tipo': getAccountTypeLabel(account.type),
-    'Saldo': (account.balance / 100).toFixed(2),
-    'Limite': account.limit_amount ? (account.limit_amount / 100).toFixed(2) : '',
+    'Saldo': (account.balance).toFixed(2),
+    'Limite': account.limit_amount !== undefined && account.limit_amount !== null ? (account.limit_amount).toFixed(2) : '',
     'Fechamento': account.closing_date || '',
     'Vencimento': account.due_date || '',
     'Cor': account.color
@@ -90,7 +90,7 @@ export async function exportTransactionsToExcel(
       'Tipo': getTransactionTypeLabel(transaction.type),
       'Conta': account?.name || 'Desconhecida',
       'Conta Destino': toAccount?.name || '',
-      'Valor': (Math.abs(transaction.amount) / 100).toFixed(2),
+      'Valor': (Math.abs(transaction.amount)).toFixed(2),
       'Status': transaction.status === 'completed' ? 'Concluída' : 'Pendente',
       'Parcelas': transaction.installments 
         ? `${transaction.current_installment}/${transaction.installments}`
@@ -145,8 +145,8 @@ export async function exportAllDataToExcel(
   const accountsData = accounts.map(account => ({
     'Nome': account.name,
     'Tipo': getAccountTypeLabel(account.type),
-    'Saldo': (account.balance / 100).toFixed(2),
-    'Limite': account.limit_amount ? (account.limit_amount / 100).toFixed(2) : '',
+    'Saldo': (account.balance).toFixed(2),
+    'Limite': account.limit_amount !== undefined && account.limit_amount !== null ? (account.limit_amount).toFixed(2) : '',
     'Fechamento': account.closing_date || '',
     'Vencimento': account.due_date || '',
     'Cor': account.color
@@ -186,7 +186,7 @@ export async function exportAllDataToExcel(
       'Tipo': getTransactionTypeLabel(transaction.type),
       'Conta': account?.name || 'Desconhecida',
       'Conta Destino': toAccount?.name || '',
-      'Valor': (Math.abs(transaction.amount) / 100).toFixed(2),
+      'Valor': (Math.abs(transaction.amount)).toFixed(2),
       'Status': transaction.status === 'completed' ? 'Concluída' : 'Pendente',
       'Parcelas': transaction.installments 
         ? `${transaction.current_installment}/${transaction.installments}`
