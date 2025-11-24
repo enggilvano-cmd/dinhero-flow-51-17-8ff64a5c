@@ -60,7 +60,7 @@ export function UserManagement() {
       // Fetch profiles with roles from user_roles table (security best practice)
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, user_id, email, full_name, avatar_url, is_active, trial_expires_at, subscription_expires_at, created_at, updated_at')
         .order('created_at', { ascending: false });
 
       if (profilesError) throw profilesError;
@@ -81,7 +81,6 @@ export function UserManagement() {
             role: roleData?.role || 'user',
             full_name: profile.full_name ?? undefined,
             avatar_url: profile.avatar_url ?? undefined,
-            whatsapp: profile.whatsapp ?? undefined,
             trial_expires_at: profile.trial_expires_at ?? undefined,
             subscription_expires_at: profile.subscription_expires_at ?? undefined,
           };
@@ -89,6 +88,12 @@ export function UserManagement() {
       );
 
       setUsers(usersWithRoles);
+      logger.info('Users loaded:', usersWithRoles.map(u => ({ 
+        email: u.email, 
+        role: u.role, 
+        trial_expires_at: u.trial_expires_at,
+        subscription_expires_at: u.subscription_expires_at 
+      })));
     } catch (error) {
       logger.error('Error fetching users:', error);
       toast({
