@@ -39,12 +39,9 @@ Deno.serve(async (req) => {
     }
 
     // Apply rate limiting
-    const rateLimitResult = rateLimiters.moderate.middleware(req, user.id);
+    const rateLimitResult = await rateLimiters.moderate.middleware(req, user.id);
     if (rateLimitResult) {
-      return new Response(rateLimitResult.body, {
-        status: rateLimitResult.status,
-        headers: { ...corsHeaders, ...Object.fromEntries(rateLimitResult.headers) },
-      });
+      return rateLimitResult;
     }
 
     // Parse and validate request body

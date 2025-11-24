@@ -37,16 +37,10 @@ Deno.serve(async (req) => {
     }
 
     // Rate limiting - Lenient para operações administrativas
-    const rateLimitResponse = rateLimiters.lenient.middleware(req, user.id);
+    const rateLimitResponse = await rateLimiters.lenient.middleware(req, user.id);
     if (rateLimitResponse) {
       console.warn('[generate-test-data] WARN: Rate limit exceeded for user:', user.id);
-      return new Response(
-        rateLimitResponse.body,
-        { 
-          status: rateLimitResponse.status, 
-          headers: { ...corsHeaders, ...Object.fromEntries(rateLimitResponse.headers.entries()) } 
-        }
-      );
+      return rateLimitResponse;
     }
 
     // Parse e validar input com Zod

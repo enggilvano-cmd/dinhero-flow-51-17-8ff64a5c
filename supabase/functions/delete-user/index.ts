@@ -61,16 +61,10 @@ Deno.serve(async (req) => {
     }
 
     // Rate limiting - Strict para operações críticas de admin
-    const rateLimitResponse = rateLimiters.strict.middleware(req, user.id);
+    const rateLimitResponse = await rateLimiters.strict.middleware(req, user.id);
     if (rateLimitResponse) {
       console.warn('[delete-user] WARN: Rate limit exceeded for user:', user.id);
-      return new Response(
-        rateLimitResponse.body,
-        { 
-          status: rateLimitResponse.status, 
-          headers: { ...corsHeaders, ...Object.fromEntries(rateLimitResponse.headers.entries()) } 
-        }
-      );
+      return rateLimitResponse;
     }
 
     // Parse e validar input com Zod

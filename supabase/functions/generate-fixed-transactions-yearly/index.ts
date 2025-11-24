@@ -30,16 +30,10 @@ Deno.serve(async (req) => {
 
     // Rate limiting - Lenient para jobs automatizados
     const identifier = req.headers.get('x-job-id') || 'fixed-job';
-    const rateLimitResponse = rateLimiters.lenient.middleware(req, identifier);
+    const rateLimitResponse = await rateLimiters.lenient.middleware(req, identifier);
     if (rateLimitResponse) {
       console.warn('[generate-fixed] WARN: Rate limit exceeded');
-      return new Response(
-        rateLimitResponse.body,
-        { 
-          status: rateLimitResponse.status, 
-          headers: { ...corsHeaders, ...Object.fromEntries(rateLimitResponse.headers.entries()) } 
-        }
-      );
+      return rateLimitResponse;
     }
 
     const supabase = createClient(
