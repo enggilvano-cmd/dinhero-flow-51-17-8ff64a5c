@@ -9,7 +9,7 @@ import AnalyticsPage from "@/components/AnalyticsPage";
 import SystemSettings from "@/components/SystemSettings";
 import { UserManagement } from "@/components/UserManagement";
 import { FixedTransactionsPage } from "@/components/FixedTransactionsPage";
-import { BankReconciliationPage } from "@/components/BankReconciliationPage";
+
 import { AccountingPage } from "@/components/AccountingPage";
 import { UserProfile } from "@/components/UserProfile";
 import { SettingsPage } from "@/components/SettingsPage";
@@ -416,14 +416,6 @@ const PlaniFlowApp = () => {
         );
       case "fixed":
         return <FixedTransactionsPage />;
-      case "reconciliation":
-        return (
-          <BankReconciliationPage 
-            transactions={transactions}
-            accounts={accounts}
-            categories={categories}
-          />
-        );
       case "accounting":
         return <AccountingPage />;
       case "categories":
