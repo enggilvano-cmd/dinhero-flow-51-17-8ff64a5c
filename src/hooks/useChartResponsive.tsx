@@ -62,7 +62,7 @@ export function useChartResponsive(): {
   const getChartConfig = (): ChartDimensions => {
     const configs = {
       mobile: {
-        containerHeight: "min-h-[220px]",
+        containerHeight: "min-h-[176px]",
         outerRadius: 50,
         fontSize: 10,
         tickFontSize: 9,
@@ -77,7 +77,7 @@ export function useChartResponsive(): {
         activeDotRadius: 4,
       },
       tablet: {
-        containerHeight: "min-h-[280px]",
+        containerHeight: "min-h-[224px]",
         outerRadius: 70,
         fontSize: 11,
         tickFontSize: 10,
@@ -92,7 +92,7 @@ export function useChartResponsive(): {
         activeDotRadius: 5,
       },
       desktop: {
-        containerHeight: "min-h-[800px]",
+        containerHeight: "min-h-[640px]",
         outerRadius: 192,
         fontSize: 12,
         tickFontSize: 12,
