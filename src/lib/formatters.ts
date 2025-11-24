@@ -96,3 +96,16 @@ export function hasCreditInFavor(account: Account | undefined): boolean {
   if (!account || account.type !== 'credit') return false;
   return account.balance > 0;
 }
+
+/**
+ * Formata um número (em centavos) para o padrão brasileiro.
+ * @param valueInCents O valor em centavos.
+ * @returns String formatada no padrão BR (vírgula como decimal, ponto como milhar).
+ */
+export function formatBRNumber(valueInCents: number): string {
+  const value = valueInCents / 100;
+  return new Intl.NumberFormat('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
+}
