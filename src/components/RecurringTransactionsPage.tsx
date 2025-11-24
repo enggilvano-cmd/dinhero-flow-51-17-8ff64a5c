@@ -337,7 +337,7 @@ export function RecurringTransactionsPage() {
                     </CardDescription>
                   </div>
                   <div className="text-right">
-                    <div className={`balance-text font-bold ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
+                    <div className={`balance-text font-bold ${transaction.type === 'income' ? 'text-success' : 'text-destructive'}`}>
                       {transaction.type === 'income' ? '+' : '-'} {formatCurrency(Math.abs(transaction.amount))}
                     </div>
                   </div>

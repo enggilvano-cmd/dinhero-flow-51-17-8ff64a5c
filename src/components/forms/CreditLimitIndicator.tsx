@@ -88,8 +88,8 @@ export function CreditLimitIndicator({
   // Determinar cor baseado no percentual projetado
   const getColor = (percentage: number) => {
     if (percentage >= 90) return "text-destructive";
-    if (percentage >= 60) return "text-yellow-600 dark:text-yellow-500";
-    return "text-green-600 dark:text-green-500";
+    if (percentage >= 60) return "text-warning";
+    return "text-success";
   };
 
   const colorClass = getColor(projectedPercentage);
@@ -162,7 +162,7 @@ export function CreditLimitIndicator({
               <span className="text-muted-foreground">
                 {transactionType === 'expense' ? 'Novo Gasto:' : 'Pagamento:'}
               </span>
-              <span className={cn("font-medium", transactionType === 'income' && "text-green-600 dark:text-green-500")}>
+              <span className={cn("font-medium", transactionType === 'income' && "text-success")}>
                 {transactionType === 'income' && '- '}
                 {formatCurrency(transactionAmount)}
                 {isInstallment && installmentsCount > 1 && (

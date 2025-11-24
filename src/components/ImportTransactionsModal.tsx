@@ -756,9 +756,9 @@ export function ImportTransactionsModal({
                               ) : !transaction.isValid ? (
                                 <Badge variant="destructive">Erro</Badge>
                               ) : transaction.isDuplicate ? (
-                                <Badge variant="secondary" className="bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300">Duplicata</Badge>
+                                <Badge variant="secondary" className="bg-warning/10 text-warning">Duplicata</Badge>
                               ) : (
-                                <Badge variant="default" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300">Nova</Badge>
+                                <Badge variant="default" className="bg-success/10 text-success">Nova</Badge>
                               )}
                             </TableCell>
                             <TableCell>{transaction.data}</TableCell>

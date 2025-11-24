@@ -75,8 +75,8 @@ export function CreditBillDetailsModal({ bill, onClose }: CreditBillDetailsModal
             <div className="text-2xl font-bold text-foreground">{formatCurrency(bill.total_amount)}</div>
           </div>
           <div className="text-right">
-            <div className="text-sm font-medium text-green-600 dark:text-green-500">Pago: {formatCurrency(paidAmount)}</div>
-            <div className="text-sm font-medium text-red-600 dark:text-red-500">Restante: {formatCurrency(remainingAmount)}</div>
+            <div className="text-sm font-medium text-success">Pago: {formatCurrency(paidAmount)}</div>
+            <div className="text-sm font-medium text-destructive">Restante: {formatCurrency(remainingAmount)}</div>
           </div>
         </div>
         <div className="max-h-[400px] overflow-y-auto">
