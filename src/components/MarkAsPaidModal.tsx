@@ -45,7 +45,7 @@ export function MarkAsPaidModal({
   useEffect(() => {
     if (open && transaction) {
       setDate(new Date());
-      setAmount((transaction.amount / 100).toFixed(2));
+      setAmount(Math.abs(transaction.amount / 100).toFixed(2));
       setAccountId(transaction.account_id);
     }
   }, [open, transaction]);
