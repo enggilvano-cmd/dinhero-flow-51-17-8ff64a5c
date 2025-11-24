@@ -41,6 +41,7 @@ interface LedgerEntry {
   debit: number;
   credit: number;
   balance: number;
+  sequentialNumber: number;
 }
 
 export function LedgerPage() {
@@ -224,10 +225,11 @@ export function LedgerPage() {
     fetchOpeningBalance();
   }, [selectedAccountId, selectedAccount, startDate]);
 
-  // Construir livro razão com saldo acumulado
+  // Construir livro razão com saldo acumulado e numeração sequencial
   const ledgerEntries = useMemo(() => {
     const entries: LedgerEntry[] = [];
     let runningBalance = openingBalance;
+    let sequentialNumber = 1;
 
     journalEntries.forEach(entry => {
       const debit = entry.entry_type === "debit" ? entry.amount : 0;
@@ -247,6 +249,7 @@ export function LedgerPage() {
         debit,
         credit,
         balance: runningBalance,
+        sequentialNumber: sequentialNumber++,
       });
     });
 
@@ -430,6 +433,7 @@ export function LedgerPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-16">Nº</TableHead>
                       <TableHead>Data</TableHead>
                       <TableHead>Histórico</TableHead>
                       <TableHead className="text-center">ID Transação</TableHead>
@@ -441,6 +445,7 @@ export function LedgerPage() {
                   <TableBody>
                     {/* Saldo Inicial */}
                     <TableRow className="bg-muted/50">
+                      <TableCell className="text-center text-muted-foreground">-</TableCell>
                       <TableCell colSpan={3} className="font-medium">
                         Saldo Anterior
                       </TableCell>
@@ -457,6 +462,9 @@ export function LedgerPage() {
                     {/* Lançamentos */}
                     {ledgerEntries.map((entry, index) => (
                       <TableRow key={index}>
+                        <TableCell className="text-center font-medium text-muted-foreground">
+                          {entry.sequentialNumber}
+                        </TableCell>
                         <TableCell className="whitespace-nowrap">
                           {format(new Date(entry.date), "dd/MM/yyyy")}
                         </TableCell>
@@ -487,6 +495,7 @@ export function LedgerPage() {
 
                     {/* Totais */}
                     <TableRow className="font-bold bg-muted/50">
+                      <TableCell className="text-center text-muted-foreground">-</TableCell>
                       <TableCell colSpan={3}>Total do Período</TableCell>
                       <TableCell className="text-right font-mono">
                         {formatCurrency(totals.debit)}
