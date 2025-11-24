@@ -351,7 +351,7 @@ export const importAccountSchema = z.object({
   
   limit_amount: z
     .number({ invalid_type_error: "O limite deve ser um número" })
-    .positive({ message: "O limite deve ser maior que zero" })
+    .nonnegative({ message: "O limite deve ser zero ou maior" })
     .optional(),
   
   due_date: z
