@@ -29,7 +29,7 @@ export function EditCategoryModal({ open, onOpenChange, onEditCategory, category
         name: category.name,
         type: category.type,
         color: category.color,
-        chart_account_id: category.chart_account_id || ""
+        chart_account_id: category.chart_account_id || "_none_"
       });
     }
   }, [category]);
@@ -53,7 +53,7 @@ export function EditCategoryModal({ open, onOpenChange, onEditCategory, category
       name: formData.name.trim(),
       type: formData.type,
       color: formData.color,
-      chart_account_id: formData.chart_account_id || null
+      chart_account_id: formData.chart_account_id === "_none_" ? null : formData.chart_account_id || null
     });
 
     onOpenChange(false);
@@ -65,7 +65,7 @@ export function EditCategoryModal({ open, onOpenChange, onEditCategory, category
         name: category.name,
         type: category.type,
         color: category.color,
-        chart_account_id: category.chart_account_id || ""
+        chart_account_id: category.chart_account_id || "_none_"
       });
     }
     onOpenChange(false);
@@ -131,7 +131,7 @@ export function EditCategoryModal({ open, onOpenChange, onEditCategory, category
                   <SelectValue placeholder="Selecione a conta contábil" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Nenhuma</SelectItem>
+                  <SelectItem value="_none_">Nenhuma</SelectItem>
                   {chartAccounts.map(account => (
                     <SelectItem key={account.id} value={account.id}>
                       {account.code} - {account.name}
