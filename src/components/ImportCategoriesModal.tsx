@@ -274,6 +274,13 @@ export function ImportCategoriesModal({
       )
       .map(c => c.existingCategoryId!);
 
+    logger.debug('[ImportCategories] Processando importação:', {
+      total: importedData.length,
+      categoriesToAdd: categoriesToAdd.length,
+      categoriesToReplaceIds: categoriesToReplaceIds.length,
+      excluded: excludedIndexes.size
+    });
+
     if (categoriesToAdd.length === 0 && categoriesToReplaceIds.length === 0) {
       toast({
         title: 'Erro',

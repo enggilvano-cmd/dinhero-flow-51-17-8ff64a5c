@@ -418,6 +418,13 @@ export function ImportTransactionsModal({
       )
       .map(t => t.existingTransactionId!);
 
+    logger.debug('[ImportTransactions] Processando importação:', {
+      total: importedData.length,
+      transactionsToAdd: transactionsToAdd.length,
+      transactionsToReplaceIds: transactionsToReplaceIds.length,
+      excluded: excludedIndexes.size
+    });
+
     if (transactionsToAdd.length === 0 && transactionsToReplaceIds.length === 0) {
       toast({
         title: 'Erro',
