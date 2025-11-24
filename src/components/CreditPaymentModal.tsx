@@ -62,6 +62,18 @@ export function CreditPaymentModal({
     [allAccounts]
   );
 
+  // ✅ BUGFIX P0: Hook deve ser chamado no top level, não dentro de handler condicional
+  const selectedBankAccount = useMemo(
+    () => allAccounts.find((acc) => acc.id === formData.bankAccountId),
+    [allAccounts, formData.bankAccountId]
+  );
+
+  const balanceValidation = useBalanceValidation({
+    account: selectedBankAccount,
+    amountInCents: formData.amountInCents,
+    transactionType: 'expense',
+  });
+
   // Normalização: garantir valores positivos em centavos
   const normalizeCents = (v: number) => Math.max(0, Math.abs(v || 0));
   const invoiceValueNorm = normalizeCents(invoiceValueInCents);
@@ -120,29 +132,17 @@ export function CreditPaymentModal({
 
     const { amountInCents } = formData;
 
-    // ✅ Usar hook centralizado para validação de saldo
-    const bankAccount = allAccounts.find(
-      (acc) => acc.id === formData.bankAccountId
-    );
-    
-    if (bankAccount) {
-      const validation = useBalanceValidation({
-        account: bankAccount,
-        amountInCents,
-        transactionType: 'expense',
+    // ✅ BUGFIX P0: Usar validação já calculada no top level
+    if (selectedBankAccount && !balanceValidation.isValid) {
+      const limitText = selectedBankAccount.limit_amount
+        ? ` (incluindo limite de ${formatBRL(selectedBankAccount.limit_amount)})`
+        : "";
+      toast({
+        title: "Saldo Insuficiente",
+        description: `A conta ${selectedBankAccount.name} não possui saldo suficiente${limitText}.`,
+        variant: "destructive",
       });
-
-      if (!validation.isValid) {
-        const limitText = bankAccount.limit_amount
-          ? ` (incluindo limite de ${formatBRL(bankAccount.limit_amount)})`
-          : "";
-        toast({
-          title: "Saldo Insuficiente",
-          description: `A conta ${bankAccount.name} não possui saldo suficiente${limitText}.`,
-          variant: "destructive",
-        });
-        return;
-      }
+      return;
     }
 
     // Validação contra a dívida total normalizada (valor absoluto)
