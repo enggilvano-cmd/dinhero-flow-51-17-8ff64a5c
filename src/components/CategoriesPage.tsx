@@ -26,8 +26,8 @@ export function CategoriesPage({}: CategoriesPageProps) {
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<any | null>(null);
-  const [categoryToDelete, setCategoryToDelete] = useState<any | null>(null);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
