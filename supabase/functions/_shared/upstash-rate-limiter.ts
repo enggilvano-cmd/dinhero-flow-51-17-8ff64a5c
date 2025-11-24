@@ -27,8 +27,12 @@ export class UpstashRateLimiter {
     this.config = config;
     
     // Variáveis de ambiente para Upstash Redis
-    this.redisUrl = Deno.env.get('UPSTASH_REDIS_REST_URL') || '';
-    this.redisToken = Deno.env.get('UPSTASH_REDIS_REST_TOKEN') || '';
+    // Remove quotes if they exist (handles cases where secrets are stored with quotes)
+    const rawUrl = Deno.env.get('UPSTASH_REDIS_REST_URL') || '';
+    const rawToken = Deno.env.get('UPSTASH_REDIS_REST_TOKEN') || '';
+    
+    this.redisUrl = rawUrl.replace(/^["']|["']$/g, '');
+    this.redisToken = rawToken.replace(/^["']|["']$/g, '');
   }
 
   /**
