@@ -215,11 +215,11 @@ export function AccountsPage({
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <Card className="financial-card">
           <CardContent className="p-3">
-            <div className="flex flex-col items-start gap-2">
+            <div className="flex flex-col items-center gap-2">
               <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                 <DollarSign className="h-5 w-5 text-primary" />
               </div>
-              <div className="w-full">
+              <div className="w-full text-center">
                 <p className="text-caption font-medium mb-1">Saldo Total</p>
                 <div className={`balance-text ${
                   totalBalance >= 0 ? "balance-positive" : "balance-negative"
@@ -233,11 +233,11 @@ export function AccountsPage({
 
         <Card className="financial-card">
           <CardContent className="p-3">
-            <div className="flex flex-col items-start gap-2">
+            <div className="flex flex-col items-center gap-2">
               <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center flex-shrink-0">
                 <CreditCard className="h-5 w-5 text-destructive" />
               </div>
-              <div className="w-full">
+              <div className="w-full text-center">
                 <p className="text-caption font-medium mb-1">Dívida Total</p>
                 <div className="balance-text balance-negative">
                   {formatCurrency(creditUsed)}
@@ -249,11 +249,11 @@ export function AccountsPage({
 
         <Card className="financial-card">
           <CardContent className="p-3">
-            <div className="flex flex-col items-start gap-2">
+            <div className="flex flex-col items-center gap-2">
               <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                 <CreditCard className="h-5 w-5 text-primary" />
               </div>
-              <div className="w-full">
+              <div className="w-full text-center">
                 <p className="text-caption font-medium mb-1">Crédito Disponível</p>
                 <div className="balance-text text-primary">
                   {formatCurrency(creditAvailable)}
@@ -265,11 +265,11 @@ export function AccountsPage({
 
         <Card className="financial-card">
           <CardContent className="p-3">
-            <div className="flex flex-col items-start gap-2">
+            <div className="flex flex-col items-center gap-2">
               <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
                 <Wallet className="h-5 w-5 text-accent" />
               </div>
-              <div className="w-full">
+              <div className="w-full text-center">
                 <p className="text-caption font-medium mb-1">Total de Contas</p>
                 <div className="balance-text">
                   {filteredAccounts.length}
