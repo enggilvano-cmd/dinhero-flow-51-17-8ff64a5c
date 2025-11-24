@@ -493,7 +493,11 @@ export function LedgerPage() {
                         "text-right font-mono font-semibold",
                         openingBalance >= 0 ? "text-success" : "text-destructive"
                       )}>
-                        {formatCurrency(openingBalance)} {openingBalance >= 0 ? "(D)" : "(C)"}
+                        {formatCurrency(openingBalance)} {
+                          selectedAccount?.nature === "debit" 
+                            ? (openingBalance >= 0 ? "(D)" : "(C)")
+                            : (openingBalance >= 0 ? "(C)" : "(D)")
+                        }
                       </TableCell>
                     </TableRow>
 
@@ -539,7 +543,11 @@ export function LedgerPage() {
                           "text-right font-mono font-semibold",
                           entry.balance >= 0 ? "text-success" : "text-destructive"
                         )}>
-                          {formatCurrency(entry.balance)} {entry.balance >= 0 ? "(D)" : "(C)"}
+                          {formatCurrency(entry.balance)} {
+                            selectedAccount?.nature === "debit"
+                              ? (entry.balance >= 0 ? "(D)" : "(C)")
+                              : (entry.balance >= 0 ? "(C)" : "(D)")
+                          }
                         </TableCell>
                       </TableRow>
                     ))}
@@ -564,7 +572,11 @@ export function LedgerPage() {
                           ledgerEntries.length > 0 
                             ? ledgerEntries[ledgerEntries.length - 1].balance 
                             : openingBalance
-                        )} {(ledgerEntries.length > 0 ? ledgerEntries[ledgerEntries.length - 1].balance : openingBalance) >= 0 ? "(D)" : "(C)"}
+                        )} {
+                          selectedAccount?.nature === "debit"
+                            ? ((ledgerEntries.length > 0 ? ledgerEntries[ledgerEntries.length - 1].balance : openingBalance) >= 0 ? "(D)" : "(C)")
+                            : ((ledgerEntries.length > 0 ? ledgerEntries[ledgerEntries.length - 1].balance : openingBalance) >= 0 ? "(C)" : "(D)")
+                        }
                       </TableCell>
                     </TableRow>
                   </TableBody>
