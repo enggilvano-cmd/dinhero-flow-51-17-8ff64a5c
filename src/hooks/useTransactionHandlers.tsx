@@ -101,15 +101,14 @@ export function useTransactionHandlers() {
       
       // Refetch após 10ms para atualização imediata
       refetchWithDelay(queryClient, [queryKeys.transactionsBase, queryKeys.accounts]);
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Error adding transaction:', error);
-      if (error instanceof Error) {
-        toast({
-          title: 'Erro',
-          description: error.message,
-          variant: 'destructive',
-        });
-      }
+      const errorMessage = getErrorMessage(error);
+      toast({
+        title: 'Erro',
+        description: errorMessage,
+        variant: 'destructive',
+      });
       throw error;
     }
   }, [user, queryClient, toast]);
@@ -224,8 +223,14 @@ export function useTransactionHandlers() {
       
       // Refetch após 10ms para atualização imediata
       refetchWithDelay(queryClient, [queryKeys.transactionsBase, queryKeys.accounts]);
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Error adding installment transactions:', error);
+      const errorMessage = getErrorMessage(error);
+      toast({
+        title: 'Erro ao criar parcelas',
+        description: errorMessage,
+        variant: 'destructive',
+      });
       throw error;
     }
   }, [user, queryClient]);
@@ -284,15 +289,14 @@ export function useTransactionHandlers() {
       
       // Refetch após 10ms para atualização imediata
       refetchWithDelay(queryClient, [queryKeys.transactionsBase, queryKeys.accounts]);
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Error updating transaction:', error);
-      if (error instanceof Error) {
-        toast({
-          title: 'Erro',
-          description: error.message,
-          variant: 'destructive',
-        });
-      }
+      const errorMessage = getErrorMessage(error);
+      toast({
+        title: 'Erro',
+        description: errorMessage,
+        variant: 'destructive',
+      });
       throw error;
     }
   }, [user, queryClient, toast]);
@@ -335,11 +339,9 @@ export function useTransactionHandlers() {
         title: 'Sucesso',
         description: `${data?.deleted || 1} transação(ões) excluída(s)`,
       });
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Error deleting transaction:', error);
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : 'Erro ao excluir transação';
+      const errorMessage = getErrorMessage(error);
       
       toast({
         title: 'Erro ao excluir',
@@ -386,15 +388,14 @@ export function useTransactionHandlers() {
       
       // Refetch após 10ms para atualização imediata
       refetchWithDelay(queryClient, [queryKeys.transactionsBase, queryKeys.accounts]);
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Error processing transfer:', error);
-      if (error instanceof Error) {
-        toast({
-          title: 'Erro na transferência',
-          description: error.message,
-          variant: 'destructive',
-        });
-      }
+      const errorMessage = getErrorMessage(error);
+      toast({
+        title: 'Erro na transferência',
+        description: errorMessage,
+        variant: 'destructive',
+      });
       throw error;
     }
   }, [user, accounts, queryClient, toast]);
@@ -535,11 +536,12 @@ export function useTransactionHandlers() {
         title: 'Importação concluída',
         description: `${results.length} transações importadas${transactionsToReplace.length > 0 ? ` (${transactionsToReplace.length} substituídas)` : ''} com sucesso`,
       });
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Error importing transactions:', error);
+      const errorMessage = getErrorMessage(error);
       toast({
         title: 'Erro na importação',
-        description: 'Erro inesperado durante a importação',
+        description: errorMessage,
         variant: 'destructive',
       });
       throw error;
@@ -595,8 +597,14 @@ export function useTransactionHandlers() {
         creditAccount: { ...creditAccount, balance: data.credit_balance?.[0]?.new_balance || creditAccount.balance },
         bankAccount: { ...bankAccount, balance: data.debit_balance?.[0]?.new_balance || bankAccount.balance },
       };
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Error processing credit payment:', error);
+      const errorMessage = getErrorMessage(error);
+      toast({
+        title: 'Erro no pagamento',
+        description: errorMessage,
+        variant: 'destructive',
+      });
       throw error;
     }
   }, [user, accounts, queryClient]);
@@ -635,11 +643,12 @@ export function useTransactionHandlers() {
       refetchWithDelay(queryClient, [queryKeys.transactionsBase, queryKeys.accounts]);
 
       toast({ title: 'Pagamento estornado com sucesso!' });
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Erro ao estornar pagamento:', error);
+      const errorMessage = getErrorMessage(error);
       toast({
         title: 'Erro ao estornar',
-        description: (error as Error).message,
+        description: errorMessage,
         variant: 'destructive',
       });
     }

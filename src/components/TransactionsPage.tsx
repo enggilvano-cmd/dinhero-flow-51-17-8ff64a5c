@@ -138,7 +138,7 @@ export function TransactionsPage({
 }: TransactionsPageProps) {
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [scopeDialogOpen, setScopeDialogOpen] = useState(false);
-  const [pendingDeleteTransaction, setPendingDeleteTransaction] = useState<any>(null);
+  const [pendingDeleteTransaction, setPendingDeleteTransaction] = useState<Transaction | null>(null);
   const [pendingTransactionsCount, setPendingTransactionsCount] = useState(0);
   const [hasCompletedTransactions, setHasCompletedTransactions] = useState(false);
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
