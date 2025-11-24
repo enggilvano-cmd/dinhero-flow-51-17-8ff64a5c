@@ -589,6 +589,7 @@ export function ImportCategoriesModal({
                       <TableRow>
                         <TableHead className="w-14 px-2">Status</TableHead>
                         <TableHead className="px-2">Nome</TableHead>
+                        <TableHead className="w-20 px-2 hidden md:table-cell">Tipo</TableHead>
                         <TableHead className="w-12 px-2 hidden sm:table-cell">Cor</TableHead>
                         <TableHead className="w-20 px-2">Ação</TableHead>
                       </TableRow>
@@ -617,7 +618,12 @@ export function ImportCategoriesModal({
                               <div className="max-w-[120px] truncate" title={category.nome}>
                                 {category.nome}
                               </div>
-                              <div className="text-[10px] text-muted-foreground">{category.tipo}</div>
+                              <div className="text-[10px] text-muted-foreground md:hidden">{category.tipo}</div>
+                            </TableCell>
+                            <TableCell className="text-xs px-2 hidden md:table-cell">
+                              <Badge variant="outline" className="text-[10px] px-1.5">
+                                {category.tipo}
+                              </Badge>
                             </TableCell>
                             <TableCell className="px-2 hidden sm:table-cell">
                               {category.cor && isValidColor(category.cor) && (
