@@ -13,7 +13,6 @@ import { TransactionFormFields } from "./add-transaction/TransactionFormFields";
 import { AccountCategoryFields } from "./add-transaction/AccountCategoryFields";
 import { InvoiceMonthSelector } from "./add-transaction/InvoiceMonthSelector";
 import { InstallmentOptions } from "./add-transaction/InstallmentOptions";
-import { RecurringOptions } from "./add-transaction/RecurringOptions";
 import { FixedTransactionOptions } from "./add-transaction/FixedTransactionOptions";
 
 export function AddTransactionModal({
@@ -145,7 +144,7 @@ export function AddTransactionModal({
             accountType={selectedAccount?.type}
             isRecurring={formData.isRecurring}
             isFixed={formData.isFixed}
-            onInstallmentChange={(checked) =>
+            onInstallmentChange={(checked: boolean) =>
               setFormData((prev) => ({
                 ...prev,
                 isInstallment: checked,
@@ -155,26 +154,6 @@ export function AddTransactionModal({
               setFormData((prev) => ({ ...prev, installments: value }));
             }}
             onCustomInstallmentsChange={setCustomInstallments}
-          />
-
-          <RecurringOptions
-            isRecurring={formData.isRecurring}
-            recurrenceType={formData.recurrenceType}
-            recurrenceEndDate={formData.recurrenceEndDate}
-            isInstallment={formData.isInstallment}
-            isFixed={formData.isFixed}
-            onRecurringChange={(checked) =>
-              setFormData((prev) => ({
-                ...prev,
-                isRecurring: checked,
-              }))
-            }
-            onRecurrenceTypeChange={(value) =>
-              setFormData((prev) => ({ ...prev, recurrenceType: value }))
-            }
-            onRecurrenceEndDateChange={(value) =>
-              setFormData((prev) => ({ ...prev, recurrenceEndDate: value }))
-            }
           />
 
           <FixedTransactionOptions
