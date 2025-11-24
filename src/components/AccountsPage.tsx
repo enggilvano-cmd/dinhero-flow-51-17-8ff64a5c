@@ -252,20 +252,19 @@ export function AccountsPage({
         </Card>
 
         <Card className="financial-card">
-          <CardContent className="p-3 text-center">
-            <div className="flex flex-col items-center justify-center gap-2">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <CreditCard className="h-5 w-5 text-primary" />
+          <CardContent className="p-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <CreditCard className="h-5 w-5 text-primary" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-caption font-medium">Crédito Disponível</p>
+                  <div className="balance-text text-primary">
+                    {formatCurrency(creditAvailable)}
+                  </div>
+                </div>
               </div>
-              <p className="text-caption text-muted-foreground">
-                Crédito Disponível
-              </p>
-              <div className="balance-text text-primary">
-                {formatCurrency(creditAvailable)}
-              </div>
-              <p className="text-caption text-muted-foreground opacity-70">
-                Limite do Cartão
-              </p>
             </div>
           </CardContent>
         </Card>
