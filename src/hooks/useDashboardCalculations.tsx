@@ -1,7 +1,9 @@
-import { useMemo } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import type { Account, Transaction, DateFilterType } from '@/types';
-import { format } from 'date-fns';
+import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
 
 export function useDashboardCalculations(
   accounts: Account[],
@@ -11,6 +13,7 @@ export function useDashboardCalculations(
   customStartDate: Date | undefined,
   customEndDate: Date | undefined
 ) {
+  // Saldo total das contas (excluindo credit e investment)
   const totalBalance = useMemo(() => 
     accounts
       .filter((acc) => acc.type !== 'credit' && acc.type !== 'investment')
@@ -29,20 +32,78 @@ export function useDashboardCalculations(
     [accounts]
   );
 
-  const periodIncome = useMemo(() => 
-    filteredTransactions
-      .filter((t) => t.type === 'income')
-      .reduce((sum, t) => sum + t.amount, 0),
-    [filteredTransactions]
-  );
+  // Usar agregação SQL para totais do período (consistente com TransactionsPage)
+  const [aggregatedTotals, setAggregatedTotals] = useState({
+    periodIncome: 0,
+    periodExpenses: 0,
+    balance: 0,
+  });
 
-  const periodExpenses = useMemo(() => 
-    filteredTransactions
-      .filter((t) => t.type === 'expense')
-      .reduce((sum, t) => sum + t.amount, 0),
-    [filteredTransactions]
-  );
+  // Calcular date range baseado no filtro
+  const getDateRange = () => {
+    if (dateFilter === 'all') {
+      return { dateFrom: undefined, dateTo: undefined };
+    } else if (dateFilter === 'current_month') {
+      const now = new Date();
+      return {
+        dateFrom: format(startOfMonth(now), 'yyyy-MM-dd'),
+        dateTo: format(endOfMonth(now), 'yyyy-MM-dd'),
+      };
+    } else if (dateFilter === 'month_picker') {
+      return {
+        dateFrom: format(startOfMonth(selectedMonth), 'yyyy-MM-dd'),
+        dateTo: format(endOfMonth(selectedMonth), 'yyyy-MM-dd'),
+      };
+    } else if (dateFilter === 'custom' && customStartDate && customEndDate) {
+      return {
+        dateFrom: format(customStartDate, 'yyyy-MM-dd'),
+        dateTo: format(customEndDate, 'yyyy-MM-dd'),
+      };
+    }
+    return { dateFrom: undefined, dateTo: undefined };
+  };
 
+  useEffect(() => {
+    const fetchAggregatedTotals = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { dateFrom, dateTo } = getDateRange();
+
+        const { data, error } = await supabase.rpc('get_transactions_totals', {
+          p_user_id: user.id,
+          p_type: 'all',
+          p_status: 'all',
+          p_account_id: undefined,
+          p_category_id: undefined,
+          p_account_type: 'all',
+          p_date_from: dateFrom,
+          p_date_to: dateTo,
+          p_search: undefined,
+        });
+
+        if (error) {
+          logger.error("Error fetching aggregated totals:", error);
+          return;
+        }
+        
+        if (data && data.length > 0) {
+          setAggregatedTotals({
+            periodIncome: data[0].total_income,
+            periodExpenses: data[0].total_expenses,
+            balance: data[0].balance,
+          });
+        }
+      } catch (error) {
+        logger.error("Error fetching aggregated totals:", error);
+      }
+    };
+
+    fetchAggregatedTotals();
+  }, [dateFilter, selectedMonth, customStartDate, customEndDate]);
+
+  // Calcular despesas de cartão de crédito do período (filtradas)
   const creditCardExpenses = useMemo(() => 
     filteredTransactions
       .filter((t) => {
@@ -53,6 +114,7 @@ export function useDashboardCalculations(
     [filteredTransactions, accounts]
   );
 
+  // Calcular pendências (filtradas)
   const pendingExpenses = useMemo(() => 
     filteredTransactions
       .filter((t) => t.type === 'expense' && t.status === 'pending')
@@ -105,8 +167,8 @@ export function useDashboardCalculations(
   return {
     totalBalance,
     creditAvailable,
-    periodIncome,
-    periodExpenses,
+    periodIncome: aggregatedTotals.periodIncome,
+    periodExpenses: aggregatedTotals.periodExpenses,
     creditCardExpenses,
     pendingExpenses,
     pendingIncome,
