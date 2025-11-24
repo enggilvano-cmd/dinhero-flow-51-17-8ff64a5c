@@ -779,6 +779,14 @@ export type Database = {
           updated_count: number
         }[]
       }
+      calculate_opening_balance: {
+        Args: {
+          p_account_id: string
+          p_nature: Database["public"]["Enums"]["account_nature"]
+          p_start_date: string
+        }
+        Returns: number
+      }
       cleanup_orphan_journal_entries: { Args: never; Returns: number }
       deactivate_expired_subscriptions: { Args: never; Returns: undefined }
       deactivate_expired_trials: { Args: never; Returns: undefined }

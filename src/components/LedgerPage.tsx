@@ -202,7 +202,7 @@ export function LedgerPage() {
   // State para armazenar saldo inicial
   const [openingBalance, setOpeningBalance] = useState(0);
 
-  // Calcular saldo inicial (antes do período selecionado) usando useEffect
+  // Calcular saldo inicial (antes do período selecionado) usando função SQL otimizada
   useEffect(() => {
     const fetchOpeningBalance = async () => {
       if (!selectedAccountId || !selectedAccount) {
@@ -210,27 +210,20 @@ export function LedgerPage() {
         return;
       }
 
-      const { data, error } = await supabase
-        .from("journal_entries")
-        .select("entry_type, amount")
-        .eq("account_id", selectedAccountId)
-        .lt("entry_date", format(startDate, "yyyy-MM-dd"));
+      // Usar função RPC otimizada que calcula agregação no banco de dados
+      const { data, error } = await supabase.rpc('calculate_opening_balance', {
+        p_account_id: selectedAccountId,
+        p_start_date: format(startDate, "yyyy-MM-dd"),
+        p_nature: selectedAccount.nature
+      });
 
       if (error) {
+        logger.error("Erro ao calcular saldo inicial:", error);
         setOpeningBalance(0);
         return;
       }
 
-      let balance = 0;
-      (data || []).forEach(entry => {
-        if (selectedAccount.nature === "debit") {
-          balance += entry.entry_type === "debit" ? entry.amount : -entry.amount;
-        } else {
-          balance += entry.entry_type === "credit" ? entry.amount : -entry.amount;
-        }
-      });
-
-      setOpeningBalance(balance);
+      setOpeningBalance(data ?? 0);
     };
 
     fetchOpeningBalance();
