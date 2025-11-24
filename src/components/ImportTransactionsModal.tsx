@@ -213,8 +213,11 @@ export function ImportTransactionsModal({
       isValid = false;
     }
 
-    if (isNaN(valor) || valor <= 0) {
-      errors.push('Valor inválido. Deve ser um número positivo');
+    if (isNaN(valor)) {
+      errors.push('Valor inválido. Deve ser um número');
+      isValid = false;
+    } else if (valor <= 0) {
+      errors.push('Valor deve ser maior que zero');
       isValid = false;
     }
 
@@ -262,6 +265,7 @@ export function ImportTransactionsModal({
           txDate.getUTCFullYear() === parsedNorm.getUTCFullYear() &&
           txDate.getUTCMonth() === parsedNorm.getUTCMonth() &&
           txDate.getUTCDate() === parsedNorm.getUTCDate();
+        // Comparar valores sem conversão - ambos já estão em centavos
         const isSameAmount = Math.abs(tx.amount) === valorInCents;
         const isSameDescription = (tx.description || '').trim().toLowerCase() === descricao.trim().toLowerCase();
         const isSameAccount = tx.account_id === accountId;
@@ -384,14 +388,14 @@ export function ImportTransactionsModal({
         (!t.isDuplicate || t.resolution === 'add' || t.resolution === 'replace')
       )
       .map(t => {
-        // Converter para centavos (multiplicar por 100)
+        // NÃO converter para centavos - os valores já estão no formato correto (centavos)
         // Valores são sempre positivos no arquivo, o tipo define se é entrada ou saída
-        const amountInCents = Math.round(Math.abs(t.valor) * 100);
+        const amount = Math.round(Math.abs(t.valor));
         
         return {
           description: t.descricao.trim(),        
           // Despesas são negativas, receitas são positivas
-          amount: t.parsedType === 'expense' ? -amountInCents : amountInCents,
+          amount: t.parsedType === 'expense' ? -amount : amount,
           category: t.categoria.trim(),
           type: t.parsedType as 'income' | 'expense' | 'transfer',
           account_id: t.accountId as string,

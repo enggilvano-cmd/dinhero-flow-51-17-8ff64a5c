@@ -110,8 +110,10 @@ export function ImportAccountsModal({
   const parseNumber = (value: unknown): number => {
     if (typeof value === 'number') return value;
     if (typeof value === 'string') {
-      const cleaned = value.replace(/[^\d,.-]/g, '').replace(',', '.');
+      // Remove tudo exceto números, ponto, vírgula e sinal negativo
+      const cleaned = value.trim().replace(/[^\d,.-]/g, '').replace(',', '.');
       const parsed = parseFloat(cleaned);
+      // Retorna NaN se a conversão falhar (para detectar erros)
       return isNaN(parsed) ? 0 : parsed;
     }
     return 0;
@@ -291,16 +293,16 @@ export function ImportAccountsModal({
         (!a.isDuplicate || a.resolution === 'add' || a.resolution === 'replace')
       )
       .map(a => {
-        // Converter valores para centavos
-        const balanceInCents = Math.round(a.saldo * 100);
-        // Corrigido: aceitar limite 0 como valor válido, não converter para null
-        const limitInCents = (a.limite !== undefined && a.limite !== null) ? Math.round(a.limite * 100) : undefined;
+        // NÃO converter para centavos - os valores já estão no formato correto (centavos)
+        const balance = Math.round(a.saldo);
+        // Aceitar limite 0 como valor válido
+        const limit = (a.limite !== undefined && a.limite !== null) ? Math.round(a.limite) : undefined;
 
         return {
           name: a.nome.trim(),
           type: a.parsedType as 'checking' | 'savings' | 'credit' | 'investment',
-          balance: balanceInCents,
-          limit_amount: limitInCents,
+          balance: balance,
+          limit_amount: limit,
           closing_date: a.parsedType === 'credit' && a.fechamento > 0 ? a.fechamento : undefined,
           due_date: a.parsedType === 'credit' && a.vencimento > 0 ? a.vencimento : undefined,
           color: a.cor.toUpperCase(),
