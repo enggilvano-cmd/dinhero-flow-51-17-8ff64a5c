@@ -585,23 +585,24 @@ export function ImportFixedTransactionsModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
-        className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col"
+        className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
         onInteractOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
       >
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-headline">
+          <DialogTitle className="flex items-center gap-2">
             <Upload className="h-5 w-5" />
             Importar Transações Fixas
           </DialogTitle>
-          <DialogDescription className="text-body">
+          <DialogDescription>
             Importe transações fixas em lote a partir de um arquivo Excel
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 overflow-auto space-y-4">
+        <div className="flex-1 overflow-auto space-y-6">
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Selecionar Arquivo</CardTitle>
+            <CardHeader>
+              <CardTitle className="text-lg">Selecionar Arquivo</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-3">
@@ -654,50 +655,50 @@ export function ImportFixedTransactionsModal({
 
           {/* Summary Stats */}
           {importedData.length > 0 && (
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <Card>
-                <CardContent className="pt-4 pb-4">
+                <CardContent className="pt-6">
                   <div className="flex items-center gap-2">
-                    <PlusCircle className="h-4 w-4 text-primary flex-shrink-0" />
+                    <PlusCircle className="h-5 w-5 text-primary" />
                     <div>
-                      <div className="text-xl font-bold text-primary">{summary.new}</div>
-                      <p className="text-xs text-muted-foreground">Novas</p>
+                      <div className="text-2xl font-bold text-primary">{summary.new}</div>
+                      <p className="text-sm text-muted-foreground">Novas Transações</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
               <Card>
-                <CardContent className="pt-4 pb-4">
+                <CardContent className="pt-6">
                   <div className="flex items-center gap-2">
-                    <Copy className="h-4 w-4 text-amber-500 flex-shrink-0" />
+                    <Copy className="h-5 w-5 text-amber-500" />
                     <div>
-                      <div className="text-xl font-bold text-amber-500">{summary.duplicates}</div>
-                      <p className="text-xs text-muted-foreground">Duplicadas</p>
+                      <div className="text-2xl font-bold text-amber-500">{summary.duplicates}</div>
+                      <p className="text-sm text-muted-foreground">Duplicatas Encontradas</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
               
               <Card>
-                <CardContent className="pt-4 pb-4">
+                <CardContent className="pt-6">
                   <div className="flex items-center gap-2">
-                    <AlertTriangle className="h-4 w-4 text-destructive flex-shrink-0" />
+                    <AlertTriangle className="h-5 w-5 text-destructive" />
                     <div>
-                      <div className="text-xl font-bold text-destructive">{summary.invalid}</div>
-                      <p className="text-xs text-muted-foreground">Com Erros</p>
+                      <div className="text-2xl font-bold text-destructive">{summary.invalid}</div>
+                      <p className="text-sm text-muted-foreground">Com Erros</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
               <Card>
-                <CardContent className="pt-4 pb-4">
+                <CardContent className="pt-6">
                   <div className="flex items-center gap-2">
-                    <AlertCircle className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                    <AlertCircle className="h-5 w-5 text-muted-foreground" />
                     <div>
-                      <div className="text-xl font-bold text-muted-foreground">{summary.excluded}</div>
-                      <p className="text-xs text-muted-foreground">Excluídas</p>
+                      <div className="text-2xl font-bold text-muted-foreground">{summary.excluded}</div>
+                      <p className="text-sm text-muted-foreground">Excluídas</p>
                     </div>
                   </div>
                 </CardContent>
@@ -705,17 +706,19 @@ export function ImportFixedTransactionsModal({
             </div>
           )}
 
-          {/* Duplicates Alert */}
+          {/* Banner de Ação para Duplicadas */}
           {importedData.length > 0 && summary.duplicates > 0 && (
             <Alert className="border-amber-500 bg-amber-50 dark:bg-amber-950/30">
-              <AlertCircle className="h-4 w-4 text-amber-600 flex-shrink-0" />
+              <AlertCircle className="h-5 w-5 text-amber-600" />
               <AlertDescription className="text-amber-900 dark:text-amber-200">
-                <p className="font-semibold text-sm mb-1">
-                  {summary.duplicates} duplicatas encontradas
-                </p>
-                <p className="text-xs">
-                  Escolha uma ação: <strong>Pular</strong>, <strong>Adicionar</strong> ou <strong>Substituir</strong>
-                </p>
+                <div className="space-y-2">
+                  <p className="font-semibold text-base">
+                    Duplicatas Encontradas: {summary.duplicates} transações fixas
+                  </p>
+                  <p className="text-sm">
+                    Para cada item duplicado, escolha uma ação clicando no menu ao lado: <strong>Pular</strong> (ignorar), <strong>Adicionar</strong> (criar novo) ou <strong>Substituir</strong> (sobrescrever existente).
+                  </p>
+                </div>
               </AlertDescription>
             </Alert>
           )}
@@ -723,21 +726,21 @@ export function ImportFixedTransactionsModal({
           {/* Preview Table */}
           {importedData.length > 0 && (
             <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">Prévia ({importedData.length} transações)</CardTitle>
+              <CardHeader>
+                <CardTitle>Prévia das Transações Fixas ({importedData.length} total)</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="max-h-96 overflow-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="w-24">Status</TableHead>
+                        <TableHead className="w-[100px]">Status</TableHead>
                         <TableHead>Descrição</TableHead>
                         <TableHead>Valor</TableHead>
                         <TableHead>Tipo</TableHead>
                         <TableHead>Conta</TableHead>
-                        <TableHead className="w-16">Dia</TableHead>
-                        <TableHead className="w-36">Ação</TableHead>
+                        <TableHead>Dia</TableHead>
+                        <TableHead className="w-[180px]">Ação</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -751,60 +754,53 @@ export function ImportFixedTransactionsModal({
                           >
                             <TableCell>
                               {isExcluded ? (
-                                <Badge variant="outline" className="bg-muted text-xs">Excluída</Badge>
+                                <Badge variant="outline" className="bg-muted">Excluída</Badge>
                               ) : !transaction.isValid ? (
-                                <Badge variant="destructive" className="text-xs">Erro</Badge>
+                                <Badge variant="destructive">Erro</Badge>
                               ) : transaction.isDuplicate ? (
-                                <Badge variant="secondary" className="bg-warning/10 text-warning text-xs">Duplicata</Badge>
+                                <Badge variant="secondary" className="bg-warning/10 text-warning">Duplicata</Badge>
                               ) : (
-                                <Badge variant="default" className="bg-success/10 text-success text-xs">Nova</Badge>
+                                <Badge variant="default" className="bg-success/10 text-success">Nova</Badge>
                               )}
                             </TableCell>
-                            <TableCell className="text-sm">{transaction.descricao}</TableCell>
-                            <TableCell className="text-sm">R$ {transaction.valor.toFixed(2)}</TableCell>
-                            <TableCell className="text-sm">{transaction.tipo}</TableCell>
-                            <TableCell className="text-sm">{transaction.conta}</TableCell>
-                            <TableCell className="text-sm text-center">{transaction.diaDoMes}</TableCell>
+                            <TableCell>{transaction.descricao}</TableCell>
+                            <TableCell>R$ {transaction.valor.toFixed(2)}</TableCell>
+                            <TableCell>{transaction.tipo}</TableCell>
+                            <TableCell>{transaction.conta}</TableCell>
+                            <TableCell>{transaction.diaDoMes}</TableCell>
                             <TableCell>
-                              <div className="flex items-center gap-1">
+                              <div className="flex items-center gap-2">
                                 <Button
                                   variant={isExcluded ? "outline" : "ghost"}
                                   size="sm"
                                   onClick={() => handleToggleExclude(index)}
-                                  className="h-7 text-xs px-2"
+                                  className="h-7 text-xs"
                                 >
                                   {isExcluded ? "Incluir" : "Excluir"}
                                 </Button>
                                 
                                 {!isExcluded && !transaction.isValid && (
-                                  <div className="text-xs text-destructive">
-                                    {transaction.errors[0]}
+                                  <div className="text-xs text-destructive space-y-1">
+                                    {transaction.errors.map((error, i) => (
+                                      <div key={i}>{error}</div>
+                                    ))}
                                   </div>
                                 )}
                                 
                                 {!isExcluded && transaction.isDuplicate && transaction.isValid && (
                                   <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                      <Button variant="outline" size="sm" className="text-xs h-7 px-2">
-                                        {transaction.resolution === 'skip' && 'Pular'}
+                                      <Button variant="outline" size="sm" className="text-xs h-7">
+                                        {transaction.resolution === 'skip' && 'Ignorar'}
                                         {transaction.resolution === 'add' && 'Adicionar'}
                                         {transaction.resolution === 'replace' && 'Substituir'}
                                         <MoreVertical className="h-3 w-3 ml-1" />
                                       </Button>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" className="z-50 bg-popover">
-                                      <DropdownMenuItem onClick={() => handleResolutionChange(index, 'skip')}>
-                                        Pular
-                                      </DropdownMenuItem>
-                                      <DropdownMenuItem onClick={() => handleResolutionChange(index, 'add')}>
-                                        Adicionar como Nova
-                                      </DropdownMenuItem>
-                                      <DropdownMenuItem 
-                                        onClick={() => handleResolutionChange(index, 'replace')}
-                                        className="text-destructive"
-                                      >
-                                        Substituir
-                                      </DropdownMenuItem>
+                                    <DropdownMenuContent>
+                                      <DropdownMenuItem onClick={() => handleResolutionChange(index, 'skip')}>Ignorar</DropdownMenuItem>
+                                      <DropdownMenuItem onClick={() => handleResolutionChange(index, 'add')}>Adicionar como Nova</DropdownMenuItem>
+                                      <DropdownMenuItem onClick={() => handleResolutionChange(index, 'replace')} className="text-destructive">Substituir</DropdownMenuItem>
                                     </DropdownMenuContent>
                                   </DropdownMenu>
                                 )}
@@ -821,21 +817,15 @@ export function ImportFixedTransactionsModal({
           )}
         </div>
 
-        <div className="flex flex-col sm:flex-row justify-end gap-2 pt-4 border-t">
-          <Button
-            variant="outline"
-            onClick={handleCancel}
-            disabled={importing || isProcessing}
-            className="w-full sm:w-auto"
-          >
+        <div className="flex justify-end gap-3 pt-4 border-t">
+          <Button variant="outline" onClick={handleCancel} disabled={importing || isProcessing}>
             Cancelar
           </Button>
           <Button 
             onClick={handleImport}
             disabled={transactionsToImportCount === 0 || importing || isProcessing}
-            className="w-full sm:w-auto"
           >
-            {importing ? "Importando..." : `Importar ${transactionsToImportCount} transação${transactionsToImportCount !== 1 ? 'ões' : ''}`}
+            Importar {transactionsToImportCount} transação{transactionsToImportCount !== 1 ? 'ões' : ''}
           </Button>
         </div>
       </DialogContent>
