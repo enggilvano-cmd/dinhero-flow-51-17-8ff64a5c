@@ -907,7 +907,7 @@ export function AccountingReportsPage() {
                             </TableCell>
                             <TableCell className={cn(
                               "text-right font-mono font-semibold",
-                              entry.balance >= 0 ? "text-green-600" : "text-red-600"
+                              entry.balance >= 0 ? "text-success" : "text-destructive"
                             )}>
                               {formatCurrency(Math.abs(entry.balance))}
                             </TableCell>
@@ -948,6 +948,86 @@ export function AccountingReportsPage() {
                       <p className="text-sm text-destructive font-medium">
                         ⚠️ Atenção: Balancete não está balanceado. Diferença de {formatCurrency(Math.abs(trialBalanceTotals.debit - trialBalanceTotals.credit))}
                       </p>
+                    </div>
+                  )}
+
+                  {/* Validação da Equação Contábil Fundamental */}
+                  {Math.abs(trialBalanceTotals.debit - trialBalanceTotals.credit) < 0.01 && (
+                    <div className="mt-6 pt-6 border-t-2">
+                      <h3 className="text-headline font-semibold mb-4">Validação da Equação Contábil Fundamental</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="p-4 bg-primary/5 rounded-lg">
+                          <p className="text-caption text-muted-foreground mb-1">Total de Ativos</p>
+                          <p className="text-xl font-bold text-primary">
+                            {formatCurrency(
+                              trialBalance
+                                .filter(e => e.category === "asset" || e.category === "contra_asset")
+                                .reduce((sum, e) => sum + Math.abs(e.balance), 0)
+                            )}
+                          </p>
+                        </div>
+                        <div className="p-4 bg-warning/5 rounded-lg">
+                          <p className="text-caption text-muted-foreground mb-1">Passivo + Patrimônio Líquido</p>
+                          <p className="text-xl font-bold text-warning">
+                            {formatCurrency(
+                              trialBalance
+                                .filter(e => e.category === "liability" || e.category === "contra_liability" || e.category === "equity")
+                                .reduce((sum, e) => sum + Math.abs(e.balance), 0)
+                            )}
+                          </p>
+                        </div>
+                        <div className={cn(
+                          "p-4 rounded-lg",
+                          Math.abs(
+                            trialBalance.filter(e => e.category === "asset" || e.category === "contra_asset").reduce((sum, e) => sum + Math.abs(e.balance), 0) -
+                            trialBalance.filter(e => e.category === "liability" || e.category === "contra_liability" || e.category === "equity").reduce((sum, e) => sum + Math.abs(e.balance), 0)
+                          ) < 0.01
+                            ? "bg-success/10 border-2 border-success/20"
+                            : "bg-destructive/10 border-2 border-destructive/20"
+                        )}>
+                          <p className="text-caption text-muted-foreground mb-1">Status A = P + PL</p>
+                          <p className={cn(
+                            "text-xl font-bold",
+                            Math.abs(
+                              trialBalance.filter(e => e.category === "asset" || e.category === "contra_asset").reduce((sum, e) => sum + Math.abs(e.balance), 0) -
+                              trialBalance.filter(e => e.category === "liability" || e.category === "contra_liability" || e.category === "equity").reduce((sum, e) => sum + Math.abs(e.balance), 0)
+                            ) < 0.01
+                              ? "text-success"
+                              : "text-destructive"
+                          )}>
+                            {Math.abs(
+                              trialBalance.filter(e => e.category === "asset" || e.category === "contra_asset").reduce((sum, e) => sum + Math.abs(e.balance), 0) -
+                              trialBalance.filter(e => e.category === "liability" || e.category === "contra_liability" || e.category === "equity").reduce((sum, e) => sum + Math.abs(e.balance), 0)
+                            ) < 0.01
+                              ? "✓ Balanceado"
+                              : "✗ Desbalanceado"}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      {Math.abs(
+                        trialBalance.filter(e => e.category === "asset" || e.category === "contra_asset").reduce((sum, e) => sum + Math.abs(e.balance), 0) -
+                        trialBalance.filter(e => e.category === "liability" || e.category === "contra_liability" || e.category === "equity").reduce((sum, e) => sum + Math.abs(e.balance), 0)
+                      ) >= 0.01 && (
+                        <div className="mt-4 p-4 bg-destructive/10 border border-destructive/20 rounded-lg flex items-start gap-3">
+                          <AlertTriangle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+                          <div>
+                            <p className="text-sm text-destructive font-medium">
+                              A equação contábil fundamental não está balanceada.
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              ATIVO ({formatCurrency(trialBalance.filter(e => e.category === "asset" || e.category === "contra_asset").reduce((sum, e) => sum + Math.abs(e.balance), 0))}) ≠ 
+                              PASSIVO + PL ({formatCurrency(trialBalance.filter(e => e.category === "liability" || e.category === "contra_liability" || e.category === "equity").reduce((sum, e) => sum + Math.abs(e.balance), 0))})
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Diferença: {formatCurrency(Math.abs(
+                                trialBalance.filter(e => e.category === "asset" || e.category === "contra_asset").reduce((sum, e) => sum + Math.abs(e.balance), 0) -
+                                trialBalance.filter(e => e.category === "liability" || e.category === "contra_liability" || e.category === "equity").reduce((sum, e) => sum + Math.abs(e.balance), 0)
+                              ))}
+                            </p>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </>
