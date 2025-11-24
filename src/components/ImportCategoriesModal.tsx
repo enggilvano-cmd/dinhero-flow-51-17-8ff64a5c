@@ -251,12 +251,13 @@ export function ImportCategoriesModal({
     setIsProcessing(false);
   };
 
-  const handleImport = () => {    
+  const handleImport = () => {
+    // Itens para adicionar: novos OU duplicatas com resolution='add' OU duplicatas com resolution='replace'
     const categoriesToAdd = importedData
       .filter((c, index) => 
         !excludedIndexes.has(index) && 
         c.isValid && 
-        (!c.isDuplicate || c.resolution === 'add' || c.resolution === 'replace')
+        (c.resolution === 'add' || c.resolution === 'replace')
       )
       .map(c => ({
         name: c.nome.trim(),
@@ -401,7 +402,7 @@ export function ImportCategoriesModal({
     return importedData.filter((c, index) => 
       !excludedIndexes.has(index) && 
       c.isValid && 
-      (!c.isDuplicate || c.resolution === 'add' || c.resolution === 'replace')
+      (c.resolution === 'add' || c.resolution === 'replace')
     ).length;
   }, [importedData, excludedIndexes]);
 

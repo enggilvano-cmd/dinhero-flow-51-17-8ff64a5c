@@ -286,12 +286,13 @@ export function ImportAccountsModal({
     setIsProcessing(false);
   };
 
-  const handleImport = () => {    
+  const handleImport = () => {
+    // Itens para adicionar: novos OU duplicatas com resolution='add' OU duplicatas com resolution='replace'
     const accountsToAdd = importedData
       .filter((a, index) => 
         !excludedIndexes.has(index) && 
         a.isValid && 
-        (!a.isDuplicate || a.resolution === 'add' || a.resolution === 'replace')
+        (a.resolution === 'add' || a.resolution === 'replace')
       )
       .map(a => {
         // NÃO converter para centavos - os valores já estão no formato correto (centavos)
@@ -463,7 +464,7 @@ export function ImportAccountsModal({
     return importedData.filter((a, index) => 
       !excludedIndexes.has(index) && 
       a.isValid && 
-      (!a.isDuplicate || a.resolution === 'add' || a.resolution === 'replace')
+      (a.resolution === 'add' || a.resolution === 'replace')
     ).length;
   }, [importedData, excludedIndexes]);
 
