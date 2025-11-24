@@ -28,9 +28,9 @@ export function NotificationBell() {
   const getIconColor = (type: string) => {
     switch (type) {
       case 'reminder':
-        return 'text-blue-500';
+        return 'text-primary';
       case 'alert':
-        return 'text-orange-500';
+        return 'text-warning';
       default:
         return 'text-muted-foreground';
     }

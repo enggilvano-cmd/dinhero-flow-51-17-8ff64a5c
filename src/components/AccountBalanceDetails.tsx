@@ -51,7 +51,7 @@ export function AccountBalanceDetails({ account }: AccountBalanceDetailsProps) {
     <p className="text-sm text-muted-foreground">
       Disponível: {formatCurrency(getAvailableBalance(account))}
       {account.limit_amount && account.limit_amount > 0 ? (
-        <span className="block text-xs text-blue-600">
+        <span className="block text-xs text-primary">
           (Saldo: {formatCurrency(account.balance)} + Limite: {formatCurrency(account.limit_amount)})
         </span>
       ) : null}
