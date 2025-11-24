@@ -39,8 +39,8 @@ export function useDashboardCalculations(
     balance: 0,
   });
 
-  // Calcular date range baseado no filtro
-  const getDateRange = () => {
+  // Calcular date range baseado no filtro (memoizado para estabilidade)
+  const dateRange = useMemo(() => {
     if (dateFilter === 'all') {
       return { dateFrom: undefined, dateTo: undefined };
     } else if (dateFilter === 'current_month') {
@@ -61,15 +61,13 @@ export function useDashboardCalculations(
       };
     }
     return { dateFrom: undefined, dateTo: undefined };
-  };
+  }, [dateFilter, selectedMonth, customStartDate, customEndDate]);
 
   useEffect(() => {
     const fetchAggregatedTotals = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
-
-        const { dateFrom, dateTo } = getDateRange();
 
         const { data, error } = await supabase.rpc('get_transactions_totals', {
           p_user_id: user.id,
@@ -78,8 +76,8 @@ export function useDashboardCalculations(
           p_account_id: undefined,
           p_category_id: undefined,
           p_account_type: 'all',
-          p_date_from: dateFrom,
-          p_date_to: dateTo,
+          p_date_from: dateRange.dateFrom,
+          p_date_to: dateRange.dateTo,
           p_search: undefined,
         });
 
@@ -101,7 +99,7 @@ export function useDashboardCalculations(
     };
 
     fetchAggregatedTotals();
-  }, [dateFilter, selectedMonth, customStartDate, customEndDate]);
+  }, [dateRange]);
 
   // Calcular despesas de cartão de crédito do período (filtradas)
   const creditCardExpenses = useMemo(() => 
