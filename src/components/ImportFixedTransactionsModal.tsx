@@ -15,6 +15,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { logger } from "@/lib/logger";
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/queryClient";
 import { loadXLSX } from "@/lib/lazyImports";
 import { Upload, FileSpreadsheet, AlertCircle, Download, PlusCircle, Copy, AlertTriangle, MoreVertical } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -63,6 +65,7 @@ export function ImportFixedTransactionsModal({
   const [excludedIndexes, setExcludedIndexes] = useState<Set<number>>(new Set());
   const [existingTransactions, setExistingTransactions] = useState<any[]>([]);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Normalizar string para comparação
   const normalizeString = (str: string): string => {
@@ -502,6 +505,13 @@ export function ImportFixedTransactionsModal({
       });
 
       if (successCount > 0) {
+        // Invalidar todas as queries relacionadas
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase }),
+          queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
+          queryClient.refetchQueries({ queryKey: ['transactions-totals'] }),
+        ]);
+        
         onImportComplete();
         setFile(null);
         setImportedData([]);
