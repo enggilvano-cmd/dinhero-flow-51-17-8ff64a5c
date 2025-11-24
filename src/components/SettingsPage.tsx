@@ -220,13 +220,13 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
         // Import data to Supabase
         const results = await Promise.allSettled([
           data.accounts?.length > 0 ? supabase.from('accounts').upsert(
-            data.accounts.map((acc: any) => ({ ...acc, user_id: user.id }))
+            data.accounts.map((acc: Record<string, unknown>) => ({ ...acc, user_id: user.id }))
           ) : Promise.resolve(),
           data.categories?.length > 0 ? supabase.from('categories').upsert(
-            data.categories.map((cat: any) => ({ ...cat, user_id: user.id }))
+            data.categories.map((cat: Record<string, unknown>) => ({ ...cat, user_id: user.id }))
           ) : Promise.resolve(),
           data.transactions?.length > 0 ? supabase.from('transactions').upsert(
-            data.transactions.map((tx: any) => ({ ...tx, user_id: user.id }))
+            data.transactions.map((tx: Record<string, unknown>) => ({ ...tx, user_id: user.id }))
           ) : Promise.resolve()
         ]);
 
@@ -316,7 +316,7 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
                 </p>
                 <Select 
                   value={localSettings.theme} 
-                  onValueChange={(value: any) => setLocalSettings(prev => ({ ...prev, theme: value }))}
+                  onValueChange={(value) => setLocalSettings(prev => ({ ...prev, theme: value as typeof prev.theme }))}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -493,7 +493,7 @@ export function SettingsPage({ settings, onUpdateSettings, onClearAllData }: Set
                       <Label>Frequência</Label>
                       <Select 
                         value={scheduleFrequency}
-                        onValueChange={(value: any) => setScheduleFrequency(value)}
+                        onValueChange={(value) => setScheduleFrequency(value as typeof scheduleFrequency)}
                       >
                         <SelectTrigger>
                           <SelectValue />

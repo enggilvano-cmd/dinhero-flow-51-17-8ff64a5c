@@ -165,12 +165,12 @@ const PlaniFlowApp = () => {
     }
   };
 
-  const openEditAccount = (account: any) => {
+  const openEditAccount = (account: Account) => {
     setEditingAccount(account);
     setEditAccountModalOpen(true);
   };
 
-  const openEditTransaction = (transaction: any) => {
+  const openEditTransaction = (transaction: Transaction) => {
     setEditingTransaction(transaction);
     setEditTransactionModalOpen(true);
   };

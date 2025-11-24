@@ -20,7 +20,7 @@ const DEFAULT_OPTIONS: Required<RetryOptions> = {
 /**
  * Checks if an error is retryable (transient failure)
  */
-function isRetryableError(error: any): boolean {
+function isRetryableError(error: unknown): boolean {
   // Network timeouts
   if (error?.message?.toLowerCase().includes('timeout')) {
     return true;
@@ -66,7 +66,7 @@ export async function withRetry<T>(
   options: RetryOptions = {}
 ): Promise<T> {
   const opts = { ...DEFAULT_OPTIONS, ...options };
-  let lastError: any;
+  let lastError: unknown;
   
   for (let attempt = 0; attempt <= opts.maxRetries; attempt++) {
     try {

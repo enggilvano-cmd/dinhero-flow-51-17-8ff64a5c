@@ -139,7 +139,10 @@ export function UserProfile() {
       }
 
       // Update profile data (do NOT change profiles.email until confirmation)
-      const updates: any = {
+      const updates: {
+        full_name: string;
+        email?: string;
+      } = {
         full_name: formData.fullName,
       };
       if (!emailChanged) {

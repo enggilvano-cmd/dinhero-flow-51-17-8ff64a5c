@@ -48,8 +48,8 @@ interface TransactionFilterDialogProps {
   onCustomStartDateChange: (date?: Date) => void;
   customEndDate?: Date;
   onCustomEndDateChange: (date?: Date) => void;
-  accounts: any[];
-  categories: any[];
+  accounts: Array<{ id: string; name: string; type: string; color?: string }>;
+  categories: Array<{ id: string; name: string; color: string; type: string }>;
   activeFiltersCount: number;
 }
 

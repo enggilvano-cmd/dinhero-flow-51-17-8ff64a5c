@@ -116,7 +116,7 @@ Deno.serve(async (req) => {
     const batchSize = 100;
     const batches = Math.ceil(transactionCount / batchSize);
     let totalCreated = 0;
-    const errors: any[] = [];
+    const errors: Array<{ batch: number; error: string }> = [];
 
     const startTime = Date.now();
 

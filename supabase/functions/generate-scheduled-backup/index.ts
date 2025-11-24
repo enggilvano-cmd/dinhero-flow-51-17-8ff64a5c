@@ -66,7 +66,7 @@ Deno.serve(async (req) => {
         const wb = XLSX.utils.book_new();
 
         // Sheet de contas
-        const accountsData = (accountsRes.data || []).map((acc: any) => ({
+        const accountsData = (accountsRes.data || []).map((acc) => ({
           Nome: acc.name,
           Tipo: acc.type,
           Saldo: acc.balance,
@@ -79,7 +79,7 @@ Deno.serve(async (req) => {
         XLSX.utils.book_append_sheet(wb, accountsWs, 'Contas');
 
         // Sheet de categorias
-        const categoriesData = (categoriesRes.data || []).map((cat: any) => ({
+        const categoriesData = (categoriesRes.data || []).map((cat) => ({
           Nome: cat.name,
           Tipo: cat.type,
           Cor: cat.color,
@@ -88,7 +88,7 @@ Deno.serve(async (req) => {
         XLSX.utils.book_append_sheet(wb, categoriesWs, 'Categorias');
 
         // Sheet de transações
-        const transactionsData = (transactionsRes.data || []).map((tx: any) => ({
+        const transactionsData = (transactionsRes.data || []).map((tx) => ({
           Data: tx.date,
           Descrição: tx.description,
           Valor: tx.amount,
