@@ -70,6 +70,8 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { useCategories } from "@/hooks/useCategories";
 import { formatCurrency } from "@/lib/formatters";
+import { Badge } from "@/components/ui/badge";
+import { X } from "lucide-react";
 
 interface Account {
   id: string;
@@ -668,8 +670,141 @@ export default function AnalyticsPage({
       </div>
 
       {/* Filters */}
-      <Card>
-        <CardContent className="p-2 sm:p-3">
+      <Card className="mt-6 shadow-sm">
+        <CardContent className="p-4 sm:p-6">
+          {/* Active Filters Chips */}
+          {(searchTerm || filterType !== "all" || filterAccount !== "all" || filterCategory !== "all" || filterStatus !== "all" || dateFilter !== "all") && (
+            <div className="flex flex-wrap items-center gap-2 mb-4 pb-4 border-b">
+              {searchTerm && (
+                <Badge
+                  variant="secondary"
+                  className="pl-3 pr-2 py-1.5 text-sm font-medium flex items-center gap-2 hover:bg-secondary/80 transition-colors"
+                >
+                  <span>Busca: {searchTerm}</span>
+                  <button
+                    onClick={() => setSearchTerm("")}
+                    className="ml-1 rounded-full hover:bg-background/50 p-0.5 transition-colors"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
+              {filterType !== "all" && (
+                <Badge
+                  variant="secondary"
+                  className="pl-3 pr-2 py-1.5 text-sm font-medium flex items-center gap-2 hover:bg-secondary/80 transition-colors"
+                >
+                  <span>
+                    Tipo: {filterType === "income" ? "Receitas" : filterType === "expense" ? "Despesas" : "Transferências"}
+                  </span>
+                  <button
+                    onClick={() => setFilterType("all")}
+                    className="ml-1 rounded-full hover:bg-background/50 p-0.5 transition-colors"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
+              {filterAccount !== "all" && (
+                <Badge
+                  variant="secondary"
+                  className="pl-3 pr-2 py-1.5 text-sm font-medium flex items-center gap-2 hover:bg-secondary/80 transition-colors"
+                >
+                  {(() => {
+                    const account = accounts.find(a => a.id === filterAccount);
+                    return (
+                      <>
+                        {account?.color && (
+                          <div
+                            className="w-2 h-2 rounded-full flex-shrink-0"
+                            style={{ backgroundColor: account.color }}
+                          />
+                        )}
+                        <span>Conta: {account?.name || filterAccount}</span>
+                      </>
+                    );
+                  })()}
+                  <button
+                    onClick={() => setFilterAccount("all")}
+                    className="ml-1 rounded-full hover:bg-background/50 p-0.5 transition-colors"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
+              {filterCategory !== "all" && (
+                <Badge
+                  variant="secondary"
+                  className="pl-3 pr-2 py-1.5 text-sm font-medium flex items-center gap-2 hover:bg-secondary/80 transition-colors"
+                >
+                  {(() => {
+                    const category = categories.find(c => c.id === filterCategory);
+                    return (
+                      <>
+                        {category?.color && (
+                          <div
+                            className="w-2 h-2 rounded-full flex-shrink-0"
+                            style={{ backgroundColor: category.color }}
+                          />
+                        )}
+                        <span>Categoria: {category?.name || filterCategory}</span>
+                      </>
+                    );
+                  })()}
+                  <button
+                    onClick={() => setFilterCategory("all")}
+                    className="ml-1 rounded-full hover:bg-background/50 p-0.5 transition-colors"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
+              {filterStatus !== "all" && (
+                <Badge
+                  variant="secondary"
+                  className="pl-3 pr-2 py-1.5 text-sm font-medium flex items-center gap-2 hover:bg-secondary/80 transition-colors"
+                >
+                  <span>Status: {filterStatus === "completed" ? "Concluídas" : "Pendentes"}</span>
+                  <button
+                    onClick={() => setFilterStatus("all")}
+                    className="ml-1 rounded-full hover:bg-background/50 p-0.5 transition-colors"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
+              {dateFilter !== "all" && (
+                <Badge
+                  variant="secondary"
+                  className="pl-3 pr-2 py-1.5 text-sm font-medium flex items-center gap-2 hover:bg-secondary/80 transition-colors"
+                >
+                  <span>
+                    Período: {dateFilter === "current_month" ? "Mês Atual" : dateFilter === "month_picker" ? "Navegar por Mês" : "Personalizado"}
+                  </span>
+                  <button
+                    onClick={() => setDateFilter("all")}
+                    className="ml-1 rounded-full hover:bg-background/50 p-0.5 transition-colors"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
+              <button
+                onClick={() => {
+                  setSearchTerm("");
+                  setFilterType("all");
+                  setFilterAccount("all");
+                  setFilterCategory("all");
+                  setFilterStatus("all");
+                  setDateFilter("all");
+                }}
+                className="text-xs text-muted-foreground hover:text-foreground underline transition-colors"
+              >
+                Limpar tudo
+              </button>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
               <label htmlFor="search" className="text-caption">Buscar transações</label>
