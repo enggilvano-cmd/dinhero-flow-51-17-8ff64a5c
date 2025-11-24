@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
 import { setSentryUser } from '@/lib/sentry';
+import { getErrorMessage } from '@/types/errors';
 
 interface Profile {
   id: string;
@@ -99,11 +100,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       };
       
       return enrichedProfile; // CRITICAL: Return profile data
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Error fetching profile:', error);
       toast({
         title: "Erro",
-        description: "Erro inesperado ao carregar perfil.",
+        description: getErrorMessage(error) || "Erro inesperado ao carregar perfil.",
         variant: "destructive",
       });
       return null; // CRITICAL: Return null on error
@@ -123,7 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (result.error) {
           logger.error('Error logging activity:', result.error);
         }
-      } catch (error) {
+      } catch (error: unknown) {
         logger.error('Error logging activity:', error);
       }
     }
@@ -160,7 +161,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }, { onConflict: 'user_id', ignoreDuplicates: true });
       
       logger.debug('User data initialization completed');
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Error initializing user data:', error);
     }
   };
@@ -178,7 +179,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else {
         logger.success('Profile email synced to auth email');
       }
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Unexpected error syncing profile email:', error);
     }
   };
@@ -235,7 +236,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 
                 await initializeUserData();
               }
-            } catch (error) {
+            } catch (error: unknown) {
               // Only log if still mounted
               if (isMounted) {
                 logger.error('Error in auth state change handler:', error);
@@ -286,7 +287,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (!isMounted) return;
           
           await syncProfileEmail(session.user.id, session.user.email);
-        } catch (error) {
+        } catch (error: unknown) {
           if (isMounted) {
             logger.error('Error in initial session setup:', error);
           }
@@ -331,8 +332,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       return { error };
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido ao fazer login';
+    } catch (error: unknown) {
+      const errorMessage = getErrorMessage(error) || 'Erro desconhecido ao fazer login';
       logger.error('Sign in error:', error);
       toast({
         title: "Erro no login",
@@ -377,8 +378,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       return { error };
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido ao cadastrar';
+    } catch (error: unknown) {
+      const errorMessage = getErrorMessage(error) || 'Erro desconhecido ao cadastrar';
       logger.error('Sign up error:', error);
       toast({
         title: "Erro no cadastro",
@@ -412,8 +413,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       return { error };
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido ao sair';
+    } catch (error: unknown) {
+      const errorMessage = getErrorMessage(error) || 'Erro desconhecido ao sair';
       logger.error('Sign out error:', error);
       toast({
         title: "Erro ao sair",
@@ -450,8 +451,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       return { error };
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido na recuperação';
+    } catch (error: unknown) {
+      const errorMessage = getErrorMessage(error) || 'Erro desconhecido na recuperação';
       logger.error('Reset password error:', error);
       toast({
         title: "Erro na recuperação",

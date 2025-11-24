@@ -29,7 +29,7 @@ export function handleSupabaseError(
 
   // Handle Supabase PostgrestError
   if (error && typeof error === 'object' && 'message' in error) {
-    errorMessage = (error as Error).message;
+    errorMessage = String((error as { message: unknown }).message);
   }
 
   // Handle specific error codes
@@ -80,7 +80,7 @@ export async function withErrorHandling<T>(
   try {
     const data = await operation();
     return { data, error: null };
-  } catch (error) {
+  } catch (error: unknown) {
     const errorMessage = handleSupabaseError(error, context, showToast);
     return { data: null, error: errorMessage };
   }
