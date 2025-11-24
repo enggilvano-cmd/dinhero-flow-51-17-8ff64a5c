@@ -65,6 +65,32 @@ export function LedgerPage() {
     }
   }, [selectedAccountId, startDate, endDate]);
 
+  // Atualização em tempo real para journal entries
+  useEffect(() => {
+    if (!selectedAccountId) return;
+
+    const channel = supabase
+      .channel('journal-entries-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'journal_entries',
+          filter: `account_id=eq.${selectedAccountId}`,
+        },
+        () => {
+          // Recarregar dados quando houver mudanças
+          loadJournalEntries();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [selectedAccountId, startDate, endDate]);
+
   const initializeChartOfAccounts = async () => {
     try {
       setInitializing(true);
