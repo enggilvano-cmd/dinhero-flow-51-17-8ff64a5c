@@ -8,6 +8,7 @@ import { logger } from '@/lib/logger';
 import { queryKeys } from '@/lib/queryClient';
 import { importAccountSchema } from '@/lib/validationSchemas';
 import { z } from 'zod';
+import { getErrorMessage } from '@/types/errors';
 
 export function useAccountHandlers() {
   const { user } = useAuth();
@@ -30,11 +31,11 @@ export function useAccountHandlers() {
         title: 'Sucesso',
         description: 'Conta atualizada com sucesso',
       });
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Error updating account:', error);
       toast({
         title: 'Erro',
-        description: error instanceof Error ? error.message : 'Erro ao atualizar conta',
+        description: getErrorMessage(error) || 'Erro ao atualizar conta',
         variant: 'destructive',
       });
       throw error;
@@ -95,11 +96,11 @@ export function useAccountHandlers() {
         title: 'Sucesso',
         description: 'Conta excluída com sucesso',
       });
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Error deleting account:', error);
       toast({
         title: 'Erro',
-        description: error instanceof Error ? error.message : 'Erro ao excluir conta',
+        description: getErrorMessage(error) || 'Erro ao excluir conta',
         variant: 'destructive',
       });
       throw error;
@@ -171,12 +172,13 @@ export function useAccountHandlers() {
         title: 'Sucesso',
         description: `${accountsToAdd.length} contas importadas${accountsToReplace.length > 0 ? ` (${accountsToReplace.length} substituídas)` : ''} com sucesso!`,
       });
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Error importing accounts:', error);
-      if (!(error instanceof Error && error.message === 'Dados inválidos na importação')) {
+      const errorMsg = getErrorMessage(error);
+      if (errorMsg !== 'Dados inválidos na importação') {
         toast({
           title: 'Erro',
-          description: 'Erro ao importar contas.',
+          description: errorMsg || 'Erro ao importar contas.',
           variant: 'destructive'
         });
       }

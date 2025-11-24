@@ -8,6 +8,7 @@ import { addTransactionSchema } from "@/lib/validationSchemas";
 import { z } from "zod";
 import { queryKeys } from "@/lib/queryClient";
 import { supabase } from "@/integrations/supabase/client";
+import { getErrorMessage } from "@/types/errors";
 import { validateCreditLimitForAdd } from "@/hooks/useBalanceValidation";
 
 import { useCategories } from "@/hooks/useCategories";
@@ -243,11 +244,11 @@ export function useAddTransactionForm({
       setFormData(initialFormState);
       setCustomInstallments("");
       onClose();
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error("Error creating transaction(s):", error);
       toast({
         title: "Erro",
-        description: "Erro ao criar transação",
+        description: getErrorMessage(error) || "Erro ao criar transação",
         variant: "destructive",
       });
     }
@@ -373,11 +374,11 @@ export function useAddTransactionForm({
       queryClient.invalidateQueries({ queryKey: ['accounts'] });
       onSuccess?.();
       onClose();
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Unexpected error creating fixed transaction:', error);
       toast({
         title: 'Erro',
-        description: 'Erro inesperado ao criar transação fixa',
+        description: getErrorMessage(error) || 'Erro inesperado ao criar transação fixa',
         variant: 'destructive',
       });
     }

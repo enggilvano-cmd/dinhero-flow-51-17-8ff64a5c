@@ -8,6 +8,7 @@ import { createDateFromString, getTodayString } from "@/lib/dateUtils";
 import { CurrencyInput } from "./forms/CurrencyInput";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/lib/formatters";
+import { getErrorMessage } from "@/types/errors";
 import { ArrowRight } from "lucide-react";
 import { AccountBalanceDetails } from "./AccountBalanceDetails";
 import { useAccounts } from "@/hooks/queries/useAccounts";
@@ -126,12 +127,12 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
       });
 
       onOpenChange(false);
-    } catch (error) {
+    } catch (error: unknown) {
       // A função onTransfer deve lançar um erro em caso de falha para este bloco ser ativado.
       logger.error("Transfer failed:", error);
       toast({
         title: "Erro na Transferência",
-        description: "Não foi possível realizar a transferência. Tente novamente.",
+        description: getErrorMessage(error) || "Não foi possível realizar a transferência. Tente novamente.",
         variant: "destructive",
       });
     } finally {
