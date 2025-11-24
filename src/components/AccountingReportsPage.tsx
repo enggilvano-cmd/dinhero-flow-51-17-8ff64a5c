@@ -15,7 +15,8 @@ import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/lib/formatters";
 import { cn } from "@/lib/utils";
 import { logger } from "@/lib/logger";
-import { generateCashFlow } from "@/lib/accountingReports";
+import { generateCashFlow, DREReport } from "@/lib/accountingReports";
+import { generateDRE } from "@/lib/accountingReports";
 import { useDoubleEntryValidation } from "@/hooks/useDoubleEntryValidation";
 import { DoubleEntryAlert } from "@/components/accounting/DoubleEntryAlert";
 

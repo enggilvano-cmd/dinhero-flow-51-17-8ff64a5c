@@ -443,7 +443,7 @@ export async function exportReportToPDF(
   doc.save(filename);
 }
 
-function exportDREtoPDF(doc: any, data: DREReport, startY: number, t: any) {
+function exportDREtoPDF(doc: any, data: DREReport, startY: number) {
   let y = startY;
 
   // Receita Bruta
