@@ -323,9 +323,10 @@ export function AccountingReportsPage() {
     const totalLiabilities = liabilities.reduce((sum, e) => sum + Math.abs(e.balance), 0);
     const equityFromAccounts = equity.reduce((sum, e) => sum + Math.abs(e.balance), 0);
     
-    // CORREÇÃO: Patrimônio Líquido = Ativo - Passivo + Resultado do Exercício
-    // Isso garante que a equação contábil seja respeitada: ATIVO = PASSIVO + PL
-    const totalEquity = (totalAssets - totalLiabilities) + incomeStatement.netIncome;
+    // CORREÇÃO: Patrimônio Líquido = Ativo - Passivo
+    // O Resultado do Exercício já está refletido nos saldos das contas através dos journal_entries
+    // Não devemos somar o netIncome novamente, pois isso causaria dupla contabilização
+    const totalEquity = totalAssets - totalLiabilities;
 
     return {
       assets: assets.map(a => ({ ...a, balance: Math.abs(a.balance) })),
