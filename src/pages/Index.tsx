@@ -202,21 +202,8 @@ const PlaniFlowApp = () => {
     const transaction = markingAsPaidTransaction;
     if (!transaction) return;
 
-    // Guardar os dados do modal
-    setMarkAsPaidData({ date, amount, accountId });
-
-    // Verificar se é parcela ou transação fixa
-    const isInstallment = Boolean(transaction.installments && transaction.installments > 1);
-    const isFixed = Boolean(transaction.is_fixed || transaction.parent_transaction_id);
-    
-    if (isInstallment || isFixed) {
-      // Fechar o modal e abrir diálogo de escopo
-      setMarkAsPaidModalOpen(false);
-      setMarkAsPaidScopeDialogOpen(true);
-    } else {
-      // Processar diretamente
-      await processMarkAsPaid(transaction, 'current', { date, amount, accountId });
-    }
+    // Processar diretamente - sempre marcar apenas a transação atual
+    await processMarkAsPaid(transaction, 'current', { date, amount, accountId });
   };
 
   const processMarkAsPaid = async (
