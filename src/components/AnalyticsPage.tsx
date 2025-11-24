@@ -4,30 +4,14 @@ import { logger } from "@/lib/logger";
 import { useMemo, useState, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import {
   BarChart3,
   PieChart,
   TrendingUp,
   TrendingDown,
   Download,
-  Calendar as CalendarIcon,
   Search,
-  ChevronLeft,
-  ChevronRight,
 } from "lucide-react";
 import { useChartResponsive } from "@/hooks/useChartResponsive";
 import {
@@ -58,8 +42,6 @@ import { loadHtmlToImage, loadJsPDF } from "@/lib/lazyImports";
 import {
   startOfMonth,
   endOfMonth,
-  subMonths,
-  addMonths,
   isSameMonth,
   isSameYear,
   format,
@@ -70,8 +52,8 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { useCategories } from "@/hooks/useCategories";
 import { formatCurrency } from "@/lib/formatters";
-import { Badge } from "@/components/ui/badge";
-import { X } from "lucide-react";
+import { TransactionFilterChips } from "@/components/transactions/TransactionFilterChips";
+import { AnalyticsFilterDialog } from "@/components/analytics/AnalyticsFilterDialog";
 
 interface Account {
   id: string;
@@ -151,6 +133,7 @@ export default function AnalyticsPage({
   const [customEndDate, setCustomEndDate] = useState<Date | undefined>(
     undefined
   );
+  const [filterDialogOpen, setFilterDialogOpen] = useState(false);
   const { toast } = useToast();
   const {
     chartConfig: responsiveConfig,
@@ -645,13 +628,98 @@ export default function AnalyticsPage({
     return config;
   }, [categoryData]);
 
-  // Funções para navegação de mês
-  const goToPreviousMonth = () => {
-    setSelectedMonth((prev) => subMonths(prev, 1));
-  };
+  // Filter chips configuration
+  const filterChips = useMemo(() => {
+    const chips: Array<{
+      id: string;
+      label: string;
+      value: string;
+      color?: string;
+      onRemove: () => void;
+    }> = [];
 
-  const goToNextMonth = () => {
-    setSelectedMonth((prev) => addMonths(prev, 1));
+    if (searchTerm) {
+      chips.push({
+        id: "search",
+        label: `Busca: ${searchTerm}`,
+        value: searchTerm,
+        onRemove: () => setSearchTerm(""),
+      });
+    }
+
+    if (filterType !== "all") {
+      const typeLabels = {
+        income: "Receitas",
+        expense: "Despesas",
+        transfer: "Transferências",
+      };
+      chips.push({
+        id: "type",
+        label: `Tipo: ${typeLabels[filterType as keyof typeof typeLabels]}`,
+        value: filterType,
+        onRemove: () => setFilterType("all"),
+      });
+    }
+
+    if (filterAccount !== "all") {
+      const account = accounts.find((a) => a.id === filterAccount);
+      chips.push({
+        id: "account",
+        label: `Conta: ${account?.name || filterAccount}`,
+        value: filterAccount,
+        color: account?.color,
+        onRemove: () => setFilterAccount("all"),
+      });
+    }
+
+    if (filterCategory !== "all") {
+      const category = categories.find((c) => c.id === filterCategory);
+      chips.push({
+        id: "category",
+        label: `Categoria: ${category?.name || filterCategory}`,
+        value: filterCategory,
+        color: category?.color,
+        onRemove: () => setFilterCategory("all"),
+      });
+    }
+
+    if (filterStatus !== "all") {
+      const statusLabels = {
+        completed: "Concluídas",
+        pending: "Pendentes",
+      };
+      chips.push({
+        id: "status",
+        label: `Status: ${statusLabels[filterStatus as keyof typeof statusLabels]}`,
+        value: filterStatus,
+        onRemove: () => setFilterStatus("all"),
+      });
+    }
+
+    if (dateFilter !== "all") {
+      const periodLabels = {
+        current_month: "Mês Atual",
+        month_picker: "Navegar por Mês",
+        custom: "Personalizado",
+      };
+      chips.push({
+        id: "period",
+        label: `Período: ${periodLabels[dateFilter as keyof typeof periodLabels]}`,
+        value: dateFilter,
+        onRemove: () => setDateFilter("all"),
+      });
+    }
+
+    return chips;
+  }, [searchTerm, filterType, filterAccount, filterCategory, filterStatus, dateFilter, accounts, categories]);
+
+  const clearAllFilters = () => {
+    setSearchTerm("");
+    setFilterType("all");
+    setFilterAccount("all");
+    setFilterCategory("all");
+    setFilterStatus("all");
+    setDateFilter("all");
   };
 
   return (
@@ -670,342 +738,52 @@ export default function AnalyticsPage({
       </div>
 
       {/* Filters */}
-      <Card className="mt-6 shadow-sm">
-        <CardContent className="p-4 sm:p-6">
-          {/* Active Filters Chips */}
-          {(searchTerm || filterType !== "all" || filterAccount !== "all" || filterCategory !== "all" || filterStatus !== "all" || dateFilter !== "all") && (
-            <div className="flex flex-wrap items-center gap-2 mb-4 pb-4 border-b">
-              {searchTerm && (
-                <Badge
-                  variant="secondary"
-                  className="pl-3 pr-2 py-1.5 text-sm font-medium flex items-center gap-2 hover:bg-secondary/80 transition-colors"
-                >
-                  <span>Busca: {searchTerm}</span>
-                  <button
-                    onClick={() => setSearchTerm("")}
-                    className="ml-1 rounded-full hover:bg-background/50 p-0.5 transition-colors"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </Badge>
-              )}
-              {filterType !== "all" && (
-                <Badge
-                  variant="secondary"
-                  className="pl-3 pr-2 py-1.5 text-sm font-medium flex items-center gap-2 hover:bg-secondary/80 transition-colors"
-                >
-                  <span>
-                    Tipo: {filterType === "income" ? "Receitas" : filterType === "expense" ? "Despesas" : "Transferências"}
-                  </span>
-                  <button
-                    onClick={() => setFilterType("all")}
-                    className="ml-1 rounded-full hover:bg-background/50 p-0.5 transition-colors"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </Badge>
-              )}
-              {filterAccount !== "all" && (
-                <Badge
-                  variant="secondary"
-                  className="pl-3 pr-2 py-1.5 text-sm font-medium flex items-center gap-2 hover:bg-secondary/80 transition-colors"
-                >
-                  {(() => {
-                    const account = accounts.find(a => a.id === filterAccount);
-                    return (
-                      <>
-                        {account?.color && (
-                          <div
-                            className="w-2 h-2 rounded-full flex-shrink-0"
-                            style={{ backgroundColor: account.color }}
-                          />
-                        )}
-                        <span>Conta: {account?.name || filterAccount}</span>
-                      </>
-                    );
-                  })()}
-                  <button
-                    onClick={() => setFilterAccount("all")}
-                    className="ml-1 rounded-full hover:bg-background/50 p-0.5 transition-colors"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </Badge>
-              )}
-              {filterCategory !== "all" && (
-                <Badge
-                  variant="secondary"
-                  className="pl-3 pr-2 py-1.5 text-sm font-medium flex items-center gap-2 hover:bg-secondary/80 transition-colors"
-                >
-                  {(() => {
-                    const category = categories.find(c => c.id === filterCategory);
-                    return (
-                      <>
-                        {category?.color && (
-                          <div
-                            className="w-2 h-2 rounded-full flex-shrink-0"
-                            style={{ backgroundColor: category.color }}
-                          />
-                        )}
-                        <span>Categoria: {category?.name || filterCategory}</span>
-                      </>
-                    );
-                  })()}
-                  <button
-                    onClick={() => setFilterCategory("all")}
-                    className="ml-1 rounded-full hover:bg-background/50 p-0.5 transition-colors"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </Badge>
-              )}
-              {filterStatus !== "all" && (
-                <Badge
-                  variant="secondary"
-                  className="pl-3 pr-2 py-1.5 text-sm font-medium flex items-center gap-2 hover:bg-secondary/80 transition-colors"
-                >
-                  <span>Status: {filterStatus === "completed" ? "Concluídas" : "Pendentes"}</span>
-                  <button
-                    onClick={() => setFilterStatus("all")}
-                    className="ml-1 rounded-full hover:bg-background/50 p-0.5 transition-colors"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </Badge>
-              )}
-              {dateFilter !== "all" && (
-                <Badge
-                  variant="secondary"
-                  className="pl-3 pr-2 py-1.5 text-sm font-medium flex items-center gap-2 hover:bg-secondary/80 transition-colors"
-                >
-                  <span>
-                    Período: {dateFilter === "current_month" ? "Mês Atual" : dateFilter === "month_picker" ? "Navegar por Mês" : "Personalizado"}
-                  </span>
-                  <button
-                    onClick={() => setDateFilter("all")}
-                    className="ml-1 rounded-full hover:bg-background/50 p-0.5 transition-colors"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </Badge>
-              )}
-              <button
-                onClick={() => {
-                  setSearchTerm("");
-                  setFilterType("all");
-                  setFilterAccount("all");
-                  setFilterCategory("all");
-                  setFilterStatus("all");
-                  setDateFilter("all");
-                }}
-                className="text-xs text-muted-foreground hover:text-foreground underline transition-colors"
-              >
-                Limpar tudo
-              </button>
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div>
-              <label htmlFor="search" className="text-caption">Buscar transações</label>
-              <div className="relative mt-2">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="search"
-                  placeholder="Digite para buscar..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 touch-target"
-                />
-              </div>
+      <Card className="mt-6">
+        <CardContent className="p-4 space-y-4">
+          <div className="flex flex-col gap-4">
+            {/* Filter button and active chips */}
+            <div className="flex flex-wrap items-center gap-3">
+              <AnalyticsFilterDialog
+                open={filterDialogOpen}
+                onOpenChange={setFilterDialogOpen}
+                filterType={filterType}
+                onFilterTypeChange={(value) => setFilterType(value as typeof filterType)}
+                filterStatus={filterStatus}
+                onFilterStatusChange={(value) => setFilterStatus(value as typeof filterStatus)}
+                filterAccount={filterAccount}
+                onFilterAccountChange={setFilterAccount}
+                filterCategory={filterCategory}
+                onFilterCategoryChange={setFilterCategory}
+                dateFilter={dateFilter}
+                onDateFilterChange={(value) => setDateFilter(value as typeof dateFilter)}
+                selectedMonth={selectedMonth}
+                onMonthChange={setSelectedMonth}
+                customStartDate={customStartDate}
+                onCustomStartDateChange={setCustomStartDate}
+                customEndDate={customEndDate}
+                onCustomEndDateChange={setCustomEndDate}
+                accounts={accounts}
+                categories={categories}
+                activeFiltersCount={filterChips.length}
+              />
+              
+              <TransactionFilterChips
+                chips={filterChips}
+                onClearAll={clearAllFilters}
+              />
             </div>
 
-            <div>
-              <label htmlFor="filter-type" className="text-caption">Tipo</label>
-              <Select
-                value={filterType}
-                onValueChange={(value) => setFilterType(value as typeof filterType)}
-              >
-                <SelectTrigger id="filter-type" className="touch-target mt-2">
-                  <SelectValue placeholder="Tipo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos os tipos</SelectItem>
-                  <SelectItem value="income">Receitas</SelectItem>
-                  <SelectItem value="expense">Despesas</SelectItem>
-                  <SelectItem value="transfer">Transferências</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label htmlFor="filter-account" className="text-caption">Conta</label>
-              <Select value={filterAccount} onValueChange={setFilterAccount}>
-                <SelectTrigger id="filter-account" className="touch-target mt-2">
-                  <SelectValue placeholder="Conta" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas as contas</SelectItem>
-                  {accounts.map((account) => (
-                    <SelectItem key={account.id} value={account.id}>
-                      {account.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label htmlFor="filter-category" className="text-caption">Categoria</label>
-              <Select value={filterCategory} onValueChange={setFilterCategory}>
-                <SelectTrigger id="filter-category" className="touch-target mt-2">
-                  <SelectValue placeholder="Categoria" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas as categorias</SelectItem>
-                  {categories.map((category) => (
-                    <SelectItem key={category.id} value={category.id}>
-                      <div className="flex items-center gap-2">
-                        <div
-                          className="w-3 h-3 rounded-full"
-                          style={{
-                            backgroundColor: category.color || "#6b7280",
-                          }}
-                        />
-                        {category.name}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label htmlFor="filter-status" className="text-caption">Status</label>
-              <Select
-                value={filterStatus}
-                onValueChange={(value) => setFilterStatus(value as typeof filterStatus)}
-              >
-                <SelectTrigger id="filter-status" className="touch-target mt-2">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos os status</SelectItem>
-                  <SelectItem value="completed">Concluídas</SelectItem>
-                  <SelectItem value="pending">Pendentes</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label htmlFor="filter-date" className="text-caption">Período</label>
-              <Select
-                value={dateFilter}
-                onValueChange={(
-                  value: "all" | "current_month" | "month_picker" | "custom"
-                ) => setDateFilter(value)}
-              >
-                <SelectTrigger id="filter-date" className="touch-target mt-2">
-                  <SelectValue placeholder="Período" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos os períodos</SelectItem>
-                  <SelectItem value="current_month">Mês Atual</SelectItem>
-                  <SelectItem value="month_picker">Navegar por Mês</SelectItem>
-                  <SelectItem value="custom">Período Personalizado</SelectItem>
-                </SelectContent>
-              </Select>
+            {/* Search */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar transações..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
             </div>
           </div>
-
-          {dateFilter === "month_picker" && (
-            <div className="mt-4">
-              <label className="text-caption">Selecione o Mês</label>
-              <div className="flex items-center gap-2 border border-input rounded-md px-3 py-2 mt-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={goToPreviousMonth}
-                  className="h-6 w-6 p-0"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <span className="flex-1 text-center text-sm font-medium min-w-[100px]">
-                  {format(selectedMonth, "MMM/yyyy", { locale: ptBR })}
-                </span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={goToNextMonth}
-                  className="h-6 w-6 p-0"
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {dateFilter === "custom" && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-              <div>
-                <label className="text-caption">Data Inicial</label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal mt-2",
-                        !customStartDate && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {customStartDate
-                        ? format(customStartDate, "dd/MM/yyyy")
-                        : "Selecione a data"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={customStartDate}
-                      onSelect={setCustomStartDate}
-                      initialFocus
-                      className="pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-
-              <div>
-                <label className="text-caption">Data Final</label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal mt-2",
-                        !customEndDate && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {customEndDate
-                        ? format(customEndDate, "dd/MM/yyyy")
-                        : "Selecione a data"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={customEndDate}
-                      onSelect={setCustomEndDate}
-                      initialFocus
-                      className="pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-            </div>
-          )}
         </CardContent>
       </Card>
 
