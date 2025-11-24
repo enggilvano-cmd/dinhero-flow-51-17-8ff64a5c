@@ -1,7 +1,7 @@
 import { addMonths, format } from "date-fns";
 import { Account, AppTransaction } from "@/types";
 import { logger } from "@/lib/logger";
-import { toUserTimezone } from "@/lib/timezone";
+import { toUserTimezone, getTodayInUserTimezone } from "@/lib/timezone";
 
 /**
  * Helper para criar uma data de fallback (1970) quando o parse falha.
@@ -17,6 +17,7 @@ function createFallbackDate(invalidInput?: any): Date {
 
 /**
  * Calcula o mês de fatura (YYYY-MM) baseado na DATA DA COMPRA e DIA DE FECHAMENTO.
+ * ✅ BUGFIX P0: Agora usa timezone do usuário corretamente
  * 
  * Regra: O mês da fatura é o mês de VENCIMENTO, não de fechamento.
  *        Normalmente a fatura vence alguns dias APÓS o fechamento.
@@ -30,17 +31,12 @@ export function calculateInvoiceMonthByDue(
   closingDate: number,
   dueDate: number = 10 // Dia de vencimento padrão
 ): string {
-  // Normaliza a data da transação para UTC meio-dia
-  const txDate = new Date(Date.UTC(
-    transactionDate.getUTCFullYear(),
-    transactionDate.getUTCMonth(),
-    transactionDate.getUTCDate(),
-    12, 0, 0
-  ));
+  // ✅ BUGFIX P0: Converte para timezone do usuário
+  const txDate = toUserTimezone(transactionDate);
 
-  const txDay = txDate.getUTCDate();
-  const txMonth = txDate.getUTCMonth();
-  const txYear = txDate.getUTCFullYear();
+  const txDay = txDate.getDate();
+  const txMonth = txDate.getMonth();
+  const txYear = txDate.getFullYear();
 
   // Determina o mês de FECHAMENTO da fatura
   let closingMonth: number;
@@ -90,9 +86,10 @@ export function calculateInvoiceMonthByDue(
 
 /**
  * Retorna a data de hoje como uma string no formato "YYYY-MM-DD".
+ * ✅ BUGFIX P0: Agora usa o sistema de timezone robusto
  */
 export function getTodayString(): string {
-  return format(new Date(), "yyyy-MM-dd");
+  return getTodayInUserTimezone();
 }
 
 /**
@@ -179,6 +176,7 @@ export function normalizeTransactionDates<T extends { date: string | Date }>(
 /**
  * Calcula os valores da fatura atual e da próxima fatura
  * com base nas transações e datas do cartão.
+ * ✅ BUGFIX P0: Agora usa timezone do usuário corretamente
  * @param monthOffset - Offset de meses (0 = atual, 1 = próximo, -1 = anterior)
  */
 export function calculateBillDetails(
@@ -193,51 +191,40 @@ export function calculateBillDetails(
       nextBillAmount: 0,
       totalBalance: 0,
       availableLimit: 0,
-      paymentTransactions: [], // <-- ADICIONADO
+      paymentTransactions: [],
     };
   }
   
-  const today = new Date();
+  // ✅ BUGFIX P0: Usar timezone do usuário
+  const today = toUserTimezone(new Date());
   const closingDate = account.closing_date || 1; 
 
   // Aplica o offset de meses à data de referência
   const referenceDate = addMonths(today, monthOffset);
   
-  const todayNormalized = new Date(
-    Date.UTC(
-      referenceDate.getUTCFullYear(),
-      referenceDate.getUTCMonth(),
-      referenceDate.getUTCDate(),
-      12, 0, 0
-    )
-  );
+  // ✅ BUGFIX P0: Usar timezone do usuário para normalização
+  const todayNormalized = toUserTimezone(referenceDate);
 
-  // --- Lógica de data (sem alterações) ---
+  // --- Lógica de data usando timezone do usuário ---
   let currentBillEnd = new Date(
-    Date.UTC(
-      todayNormalized.getUTCFullYear(),
-      todayNormalized.getUTCMonth(),
-      closingDate, 12, 0, 0
-    )
+    todayNormalized.getFullYear(),
+    todayNormalized.getMonth(),
+    closingDate, 12, 0, 0
   );
 
-  if (todayNormalized.getUTCDate() > closingDate) {
+  if (todayNormalized.getDate() > closingDate) {
     currentBillEnd = new Date(
-      Date.UTC(
-        todayNormalized.getUTCFullYear(),
-        todayNormalized.getUTCMonth() + 1,
-        closingDate, 12, 0, 0
-      )
+      todayNormalized.getFullYear(),
+      todayNormalized.getMonth() + 1,
+      closingDate, 12, 0, 0
     );
   }
 
   const nextBillStart = new Date(currentBillEnd.getTime() + 24 * 60 * 60 * 1000);
   const nextBillEnd = new Date(
-    Date.UTC(
-      nextBillStart.getUTCFullYear(),
-      nextBillStart.getUTCMonth() + 1,
-      closingDate, 12, 0, 0
-    )
+    nextBillStart.getFullYear(),
+    nextBillStart.getMonth() + 1,
+    closingDate, 12, 0, 0
   );
 
   // Calcula a data de vencimento para cada fatura
@@ -245,33 +232,25 @@ export function calculateBillDetails(
   
   // Data de vencimento da fatura atual
   let currentDueDate = new Date(
-    Date.UTC(
-      currentBillEnd.getUTCFullYear(),
-      currentBillEnd.getUTCMonth(),
-      dueDate, 12, 0, 0
-    )
+    currentBillEnd.getFullYear(),
+    currentBillEnd.getMonth(),
+    dueDate, 12, 0, 0
   );
   
   // Se a data de vencimento for antes do fechamento, o vencimento é no mês seguinte
   if (dueDate <= closingDate) {
     currentDueDate = new Date(
-      Date.UTC(
-        currentBillEnd.getUTCFullYear(),
-        currentBillEnd.getUTCMonth() + 1,
-        dueDate, 12, 0, 0
-      )
+      currentBillEnd.getFullYear(),
+      currentBillEnd.getMonth() + 1,
+      dueDate, 12, 0, 0
     );
   }
   
   // Data de vencimento da próxima fatura
-  // CORREÇÃO: Usar a mesma lógica da currentDueDate
-  // nextBillEnd já está 1 mês à frente do currentBillEnd
   let nextDueDate = new Date(
-    Date.UTC(
-      nextBillEnd.getUTCFullYear(),
-      nextBillEnd.getUTCMonth(),
-      dueDate, 12, 0, 0
-    )
+    nextBillEnd.getFullYear(),
+    nextBillEnd.getMonth(),
+    dueDate, 12, 0, 0
   );
   
   // Se a data de vencimento for antes do fechamento, o vencimento é no mês seguinte
