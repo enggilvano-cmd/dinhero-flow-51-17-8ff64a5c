@@ -93,7 +93,7 @@ export function AccountsSummary({
                       : 'balance-negative'
                   }`}
                 >
-                  {formatCurrency(account.balance / 100)}
+                  {formatCurrency(account.balance)}
                 </div>
               </div>
             ))}
@@ -112,7 +112,7 @@ export function AccountsSummary({
                         : 'balance-negative'
                     }`}
                   >
-                    {formatCurrency(totalBalance / 100)}
+                    {formatCurrency(totalBalance)}
                   </span>
                 </div>
               </div>

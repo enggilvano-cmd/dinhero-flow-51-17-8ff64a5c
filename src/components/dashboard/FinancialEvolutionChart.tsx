@@ -76,7 +76,7 @@ export function FinancialEvolutionChart({
   // Memoize tooltip formatter to prevent re-renders
   const tooltipFormatter = useMemo(
     () => (value: number, name: string) => [
-      formatCurrency(value / 100),
+      formatCurrency(value),
       name === 'receitas'
         ? 'Receitas'
         : name === 'despesas'
