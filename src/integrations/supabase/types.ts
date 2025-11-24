@@ -189,6 +189,7 @@ export type Database = {
       }
       categories: {
         Row: {
+          chart_account_id: string | null
           color: string
           created_at: string
           id: string
@@ -198,6 +199,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          chart_account_id?: string | null
           color?: string
           created_at?: string
           id?: string
@@ -207,6 +209,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          chart_account_id?: string | null
           color?: string
           created_at?: string
           id?: string
@@ -215,7 +218,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "categories_chart_account_id_fkey"
+            columns: ["chart_account_id"]
+            isOneToOne: false
+            referencedRelation: "chart_of_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       chart_of_accounts: {
         Row: {
