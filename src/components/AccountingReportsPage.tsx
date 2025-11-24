@@ -318,9 +318,14 @@ export function AccountingReportsPage() {
     const liabilities = trialBalance.filter(e => e.category === "liability" || e.category === "contra_liability");
     const equity = trialBalance.filter(e => e.category === "equity");
 
+    // Calcular totais com valores absolutos para exibição
     const totalAssets = assets.reduce((sum, e) => sum + Math.abs(e.balance), 0);
     const totalLiabilities = liabilities.reduce((sum, e) => sum + Math.abs(e.balance), 0);
-    const totalEquity = equity.reduce((sum, e) => sum + Math.abs(e.balance), 0) + incomeStatement.netIncome;
+    const equityFromAccounts = equity.reduce((sum, e) => sum + Math.abs(e.balance), 0);
+    
+    // CORREÇÃO: Patrimônio Líquido = Ativo - Passivo + Resultado do Exercício
+    // Isso garante que a equação contábil seja respeitada: ATIVO = PASSIVO + PL
+    const totalEquity = (totalAssets - totalLiabilities) + incomeStatement.netIncome;
 
     return {
       assets: assets.map(a => ({ ...a, balance: Math.abs(a.balance) })),
@@ -329,6 +334,7 @@ export function AccountingReportsPage() {
       totalAssets,
       totalLiabilities,
       totalEquity,
+      equityFromAccounts, // Patrimônio registrado nas contas (sem o resultado)
     };
   }, [trialBalance, incomeStatement]);
 
@@ -669,11 +675,64 @@ export function AccountingReportsPage() {
                       ))}
                       <div className="flex justify-between text-sm pt-2 border-t">
                         <span className="text-muted-foreground">Resultado do Exercício</span>
-                        <span className="font-medium">{formatCurrency(incomeStatement.netIncome)}</span>
+                        <span className={cn(
+                          "font-medium",
+                          incomeStatement.netIncome >= 0 ? "text-success" : "text-destructive"
+                        )}>
+                          {formatCurrency(incomeStatement.netIncome)}
+                        </span>
                       </div>
                     </div>
                   </div>
                 </div>
+              </div>
+
+              {/* Validação da Equação Contábil */}
+              <div className="pt-6 border-t-2">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="p-4 bg-primary/5 rounded-lg">
+                    <p className="text-caption text-muted-foreground mb-1">Total de Ativos</p>
+                    <p className="text-xl font-bold text-primary">{formatCurrency(balanceSheet.totalAssets)}</p>
+                  </div>
+                  <div className="p-4 bg-warning/5 rounded-lg">
+                    <p className="text-caption text-muted-foreground mb-1">Passivo + Patrimônio Líquido</p>
+                    <p className="text-xl font-bold text-warning">
+                      {formatCurrency(balanceSheet.totalLiabilities + balanceSheet.totalEquity)}
+                    </p>
+                  </div>
+                  <div className={cn(
+                    "p-4 rounded-lg",
+                    Math.abs(balanceSheet.totalAssets - (balanceSheet.totalLiabilities + balanceSheet.totalEquity)) < 0.01
+                      ? "bg-success/10 border-2 border-success/20"
+                      : "bg-destructive/10 border-2 border-destructive/20"
+                  )}>
+                    <p className="text-caption text-muted-foreground mb-1">Status da Equação</p>
+                    <p className={cn(
+                      "text-xl font-bold",
+                      Math.abs(balanceSheet.totalAssets - (balanceSheet.totalLiabilities + balanceSheet.totalEquity)) < 0.01
+                        ? "text-success"
+                        : "text-destructive"
+                    )}>
+                      {Math.abs(balanceSheet.totalAssets - (balanceSheet.totalLiabilities + balanceSheet.totalEquity)) < 0.01
+                        ? "✓ Balanceado"
+                        : "✗ Desbalanceado"}
+                    </p>
+                  </div>
+                </div>
+                
+                {Math.abs(balanceSheet.totalAssets - (balanceSheet.totalLiabilities + balanceSheet.totalEquity)) >= 0.01 && (
+                  <div className="mt-4 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+                    <p className="text-sm text-destructive font-medium">
+                      ⚠️ Atenção: A equação contábil fundamental não está balanceada.
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      ATIVO ({formatCurrency(balanceSheet.totalAssets)}) ≠ PASSIVO + PL ({formatCurrency(balanceSheet.totalLiabilities + balanceSheet.totalEquity)})
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Diferença: {formatCurrency(Math.abs(balanceSheet.totalAssets - (balanceSheet.totalLiabilities + balanceSheet.totalEquity)))}
+                    </p>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
