@@ -582,16 +582,16 @@ export function ImportCategoriesModal({
               <CardHeader>
                 <CardTitle>Prévia das Categorias ({importedData.length} total)</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="max-h-96 overflow-auto">
+              <CardContent className="p-0 sm:p-6">
+                <div className="max-h-96 overflow-y-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="w-[100px]">Status</TableHead>
-                        <TableHead>Nome</TableHead>
-                        <TableHead>Tipo</TableHead>
-                        <TableHead>Cor</TableHead>
-                        <TableHead className="w-[180px]">Ação</TableHead>
+                        <TableHead className="min-w-[80px]">Status</TableHead>
+                        <TableHead className="min-w-[150px]">Nome</TableHead>
+                        <TableHead className="min-w-[100px] hidden sm:table-cell">Tipo</TableHead>
+                        <TableHead className="min-w-[120px] hidden md:table-cell">Cor</TableHead>
+                        <TableHead className="min-w-[150px]">Ação</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -605,26 +605,26 @@ export function ImportCategoriesModal({
                           >
                             <TableCell>
                               {isExcluded ? (
-                                <Badge variant="outline" className="bg-muted">Excluída</Badge>
+                                <Badge variant="outline" className="bg-muted text-xs">Excluída</Badge>
                               ) : !category.isValid ? (
-                                <Badge variant="destructive">Erro</Badge>
+                                <Badge variant="destructive" className="text-xs">Erro</Badge>
                               ) : category.isDuplicate ? (
-                                <Badge variant="secondary" className="bg-warning/10 text-warning">Duplicata</Badge>
+                                <Badge variant="secondary" className="bg-warning/10 text-warning text-xs">Duplicata</Badge>
                               ) : (
-                                <Badge variant="default" className="bg-success/10 text-success">Nova</Badge>
+                                <Badge variant="default" className="bg-success/10 text-success text-xs">Nova</Badge>
                               )}
                             </TableCell>
-                            <TableCell>{category.nome}</TableCell>
-                            <TableCell>{category.tipo}</TableCell>
-                            <TableCell>
+                            <TableCell className="text-xs sm:text-sm truncate max-w-[150px]">{category.nome}</TableCell>
+                            <TableCell className="text-xs sm:text-sm hidden sm:table-cell">{category.tipo}</TableCell>
+                            <TableCell className="hidden md:table-cell">
                               <div className="flex items-center gap-2">
                                 {category.cor && isValidColor(category.cor) && (
                                   <div 
-                                    className="w-4 h-4 rounded-full border"
+                                    className="w-4 h-4 rounded-full border flex-shrink-0"
                                     style={{ backgroundColor: category.cor }}
                                   />
                                 )}
-                                <span className="text-xs font-mono">{category.cor}</span>
+                                <span className="text-xs font-mono truncate">{category.cor}</span>
                               </div>
                             </TableCell>
                             <TableCell>
