@@ -33,12 +33,6 @@ interface DashboardProps {
     customStartDate?: Date,
     customEndDate?: Date
   ) => void;
-  onNavigateToAnalytics?: (
-    dateFilter?: DateFilterType,
-    selectedMonth?: Date,
-    customStartDate?: Date,
-    customEndDate?: Date
-  ) => void;
 }
 
 export function Dashboard({
@@ -52,7 +46,6 @@ export function Dashboard({
   onAddCreditExpense,
   onNavigateToAccounts,
   onNavigateToTransactions,
-  onNavigateToAnalytics,
 }: DashboardProps) {
   const { formatCurrency } = useSettings();
 
