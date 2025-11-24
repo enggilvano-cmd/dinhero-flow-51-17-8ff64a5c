@@ -455,6 +455,14 @@ export function UserManagement() {
                             </SelectContent>
                           </Select>
                           
+                          {user.role === 'trial' && user.trial_expires_at && (
+                            <div className="flex gap-2">
+                              <span className="text-xs text-muted-foreground self-center">
+                                Exp: {new Date(user.trial_expires_at).toLocaleDateString()}
+                              </span>
+                            </div>
+                          )}
+                          
                           {user.role === 'subscriber' && (
                             <div className="flex gap-2">
                               <input
@@ -589,6 +597,14 @@ export function UserManagement() {
                                   <SelectItem value="subscriber">Assinante</SelectItem>
                                 </SelectContent>
                               </Select>
+                              {user.role === 'trial' && user.trial_expires_at && (
+                                <div className="flex gap-2 items-center flex-wrap">
+                                  <span className="text-xs text-muted-foreground">
+                                    Exp: {new Date(user.trial_expires_at).toLocaleDateString()}
+                                  </span>
+                                </div>
+                              )}
+                              
                               {user.role === 'subscriber' && (
                                 <div className="flex gap-2 items-center flex-wrap">
                                   <input
