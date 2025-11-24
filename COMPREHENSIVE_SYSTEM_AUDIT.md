@@ -17,9 +17,10 @@ O sistema PlaniFlow passou por uma **análise minuciosa e exaustiva** de todos o
 ### Status Geral:
 ✅ **Todos os P0 (Críticos) CORRIGIDOS** - Sistema pronto para produção
 ✅ **Todos os P1 (Alta Prioridade) CORRIGIDOS** - Incluindo retry logic completo
-✅ **P2-5 CORRIGIDO** - Retry logic aplicado em 5 edge functions de jobs
 ✅ **P2-3 CORRIGIDO** - SafeStorage wrapper com error handling robusto
-⚠️ **7 bugs P2 (Média Prioridade) PENDENTES** - Impactam manutenibilidade e qualidade
+✅ **P2-5 CORRIGIDO** - Retry logic aplicado em 5 edge functions de jobs
+✅ **P2-7 CORRIGIDO** - Idempotency cache com LRU eviction e limite de 1000 entradas
+⚠️ **6 bugs P2 (Média Prioridade) PENDENTES** - Impactam manutenibilidade e qualidade
 
 ---
 

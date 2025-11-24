@@ -3,13 +3,19 @@ import { logger } from './logger';
 /**
  * Idempotency key manager for critical operations
  * Prevents duplicate operations from being executed
+ * 
+ * Features:
+ * - LRU eviction policy when cache exceeds MAX_CACHE_SIZE
+ * - Automatic cleanup of expired entries
+ * - Memory-safe with bounded cache size
  */
 class IdempotencyManager {
   private pendingOperations = new Map<string, Promise<any>>();
-  private completedOperations = new Map<string, { result: any; timestamp: number }>();
+  private completedOperations = new Map<string, { result: any; timestamp: number; lastAccessed: number }>();
   
-  // Cache completed operations for 5 minutes
-  private readonly CACHE_TTL = 5 * 60 * 1000;
+  // Cache limits to prevent memory leaks
+  private readonly MAX_CACHE_SIZE = 1000;
+  private readonly CACHE_TTL = 2 * 60 * 1000; // 2 minutes (reduced from 5min)
 
   /**
    * Generate a unique idempotency key based on operation type and parameters
@@ -29,6 +35,8 @@ class IdempotencyManager {
    * Execute an operation with idempotency protection
    * If the same operation is already in progress, return the existing promise
    * If the operation was recently completed, return the cached result
+   * 
+   * Features LRU eviction when cache is full
    */
   async execute<T>(
     key: string,
@@ -46,6 +54,8 @@ class IdempotencyManager {
     if (completed) {
       const age = Date.now() - completed.timestamp;
       if (age < this.CACHE_TTL) {
+        // Update last accessed time for LRU
+        completed.lastAccessed = Date.now();
         logger.info('Idempotency: Returning cached result', { key, age });
         return completed.result as T;
       } else {
@@ -54,13 +64,19 @@ class IdempotencyManager {
       }
     }
 
+    // Check cache size and evict if necessary (before adding new entry)
+    if (this.completedOperations.size >= this.MAX_CACHE_SIZE) {
+      this.evictLRU();
+    }
+
     // Execute the operation
     const promise = operation()
       .then((result) => {
-        // Cache the result
+        // Cache the result with timestamps
         this.completedOperations.set(key, {
           result,
           timestamp: Date.now(),
+          lastAccessed: Date.now(),
         });
         
         // Remove from pending
@@ -83,7 +99,32 @@ class IdempotencyManager {
   }
 
   /**
-   * Clear expired cache entries
+   * Evict least recently used entries when cache is full
+   * Removes 10% of entries (those with oldest lastAccessed timestamps)
+   * This prevents the cache from growing unbounded
+   */
+  private evictLRU(): void {
+    const evictionCount = Math.floor(this.MAX_CACHE_SIZE * 0.1); // 10% eviction
+    
+    // Sort by lastAccessed (oldest first)
+    const sortedEntries = Array.from(this.completedOperations.entries())
+      .sort((a, b) => a[1].lastAccessed - b[1].lastAccessed);
+    
+    // Remove oldest 10%
+    const toEvict = sortedEntries.slice(0, evictionCount);
+    toEvict.forEach(([key]) => {
+      this.completedOperations.delete(key);
+    });
+    
+    logger.info('Idempotency: LRU eviction completed', { 
+      evicted: toEvict.length,
+      remaining: this.completedOperations.size 
+    });
+  }
+
+  /**
+   * Clear expired cache entries (TTL-based cleanup)
+   * Runs periodically to remove stale entries
    */
   cleanup(): void {
     const now = Date.now();
@@ -117,6 +158,23 @@ class IdempotencyManager {
     this.pendingOperations.clear();
     this.completedOperations.clear();
     logger.info('Idempotency: Cleared all caches');
+  }
+
+  /**
+   * Get cache statistics for monitoring
+   */
+  getStats(): {
+    cacheSize: number;
+    maxSize: number;
+    pendingCount: number;
+    utilizationPercent: number;
+  } {
+    return {
+      cacheSize: this.completedOperations.size,
+      maxSize: this.MAX_CACHE_SIZE,
+      pendingCount: this.pendingOperations.size,
+      utilizationPercent: (this.completedOperations.size / this.MAX_CACHE_SIZE) * 100,
+    };
   }
 }
 
