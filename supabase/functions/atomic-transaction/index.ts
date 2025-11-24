@@ -39,16 +39,10 @@ Deno.serve(async (req) => {
     }
 
     // Rate limiting - Moderado para criação de transações
-    const rateLimitResponse = rateLimiters.moderate.middleware(req, user.id);
+    const rateLimitResponse = await rateLimiters.moderate.middleware(req, user.id);
     if (rateLimitResponse) {
       console.warn('[atomic-transaction] WARN: Rate limit exceeded for user:', user.id);
-      return new Response(
-        rateLimitResponse.body,
-        { 
-          status: rateLimitResponse.status, 
-          headers: { ...corsHeaders, ...Object.fromEntries(rateLimitResponse.headers.entries()) } 
-        }
-      );
+      return rateLimitResponse;
     }
 
     const body = await req.json();
