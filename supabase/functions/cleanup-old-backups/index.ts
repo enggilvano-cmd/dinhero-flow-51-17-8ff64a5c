@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.56.0';
+import { withRetry } from '../_shared/retry.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -24,12 +25,14 @@ Deno.serve(async (req) => {
 
     console.log(`Deleting backups older than: ${cutoffDate}`);
 
-    // Buscar backups antigos
-    const { data: oldBackups, error: fetchError } = await supabase
-      .from('backup_history')
-      .select('*')
-      .lt('created_at', cutoffDate)
-      .order('created_at', { ascending: true });
+    // Buscar backups antigos com retry
+    const { data: oldBackups, error: fetchError } = await withRetry(
+      () => supabase
+        .from('backup_history')
+        .select('*')
+        .lt('created_at', cutoffDate)
+        .order('created_at', { ascending: true })
+    );
 
     if (fetchError) {
       console.error('Error fetching old backups:', fetchError);
@@ -59,10 +62,10 @@ Deno.serve(async (req) => {
     // Deletar cada backup
     for (const backup of oldBackups) {
       try {
-        // Deletar arquivo do storage
-        const { error: storageError } = await supabase.storage
-          .from('backups')
-          .remove([backup.file_path]);
+        // Deletar arquivo do storage com retry
+        const { error: storageError } = await withRetry(
+          () => supabase.storage.from('backups').remove([backup.file_path])
+        );
 
         if (storageError) {
           console.error(`Error deleting file ${backup.file_path}:`, storageError);
@@ -75,11 +78,10 @@ Deno.serve(async (req) => {
 
         deletedFiles++;
 
-        // Deletar registro do histórico
-        const { error: deleteError } = await supabase
-          .from('backup_history')
-          .delete()
-          .eq('id', backup.id);
+        // Deletar registro do histórico com retry
+        const { error: deleteError } = await withRetry(
+          () => supabase.from('backup_history').delete().eq('id', backup.id)
+        );
 
         if (deleteError) {
           console.error(`Error deleting record ${backup.id}:`, deleteError);

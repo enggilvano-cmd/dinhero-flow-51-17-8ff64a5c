@@ -1,6 +1,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { rateLimiters } from '../_shared/rate-limiter.ts';
 import { TransactionInputSchema, validateWithZod, validationErrorResponse } from '../_shared/validation.ts';
+import { withRetry } from '../_shared/retry.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -116,9 +117,9 @@ Deno.serve(async (req) => {
 
     const transaction = validation.data;
 
-    // Usar função PL/pgSQL atômica
-    const { data: result, error: functionError } = await supabaseClient
-      .rpc('atomic_create_transaction', {
+    // Usar função PL/pgSQL atômica com retry
+    const { data: result, error: functionError } = await withRetry(
+      () => supabaseClient.rpc('atomic_create_transaction', {
         p_user_id: user.id,
         p_description: transaction.description,
         p_amount: transaction.amount,
@@ -129,7 +130,8 @@ Deno.serve(async (req) => {
         p_status: transaction.status,
         p_invoice_month: transaction.invoice_month || null,
         p_invoice_month_overridden: transaction.invoice_month_overridden || false,
-      });
+      })
+    );
 
     if (functionError) {
       console.error('[atomic-transaction] ERROR: Function failed:', functionError);

@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { DeleteTransactionInputSchema, validateWithZod, validationErrorResponse } from '../_shared/validation.ts';
+import { withRetry } from '../_shared/retry.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -52,13 +53,14 @@ Deno.serve(async (req) => {
 
     const { transaction_id, scope } = validation.data;
 
-    // Usar função PL/pgSQL atômica
-    const { data: result, error: functionError } = await supabaseClient
-      .rpc('atomic_delete_transaction', {
+    // Usar função PL/pgSQL atômica com retry
+    const { data: result, error: functionError } = await withRetry(
+      () => supabaseClient.rpc('atomic_delete_transaction', {
         p_user_id: user.id,
         p_transaction_id: transaction_id,
         p_scope: scope || 'current',
-      });
+      })
+    );
 
     if (functionError) {
       console.error('[atomic-delete-transaction] ERROR: Function failed:', functionError);

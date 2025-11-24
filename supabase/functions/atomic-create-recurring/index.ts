@@ -1,6 +1,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { rateLimiters } from '../_shared/rate-limiter.ts';
 import { RecurringTransactionInputSchema, validateWithZod, validationErrorResponse } from '../_shared/validation.ts';
+import { withRetry } from '../_shared/retry.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -59,9 +60,9 @@ Deno.serve(async (req) => {
     const validatedData = validationResult.data;
     console.log('[atomic-create-recurring] INFO: Creating recurring transaction for user:', user.id);
 
-    // Call atomic SQL function
-    const { data: result, error: functionError } = await supabaseClient
-      .rpc('atomic_create_recurring_transaction', {
+    // Call atomic SQL function with retry
+    const { data: result, error: functionError } = await withRetry(
+      () => supabaseClient.rpc('atomic_create_recurring_transaction', {
         p_user_id: user.id,
         p_description: validatedData.description,
         p_amount: Math.abs(validatedData.amount),
@@ -72,7 +73,8 @@ Deno.serve(async (req) => {
         p_status: validatedData.status,
         p_recurrence_type: validatedData.recurrence_type,
         p_recurrence_end_date: validatedData.recurrence_end_date || null,
-      });
+      })
+    );
 
     if (functionError) {
       console.error('[atomic-create-recurring] ERROR: Function failed:', functionError);
