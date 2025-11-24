@@ -3,6 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { logger } from '@/lib/logger';
 import { supabase } from '@/integrations/supabase/client';
 import { formatCurrency as formatCurrencyBase } from '@/lib/formatters';
+import { safeStorage } from '@/lib/safeStorage';
 
 export interface AppSettings {
   currency: string;
@@ -107,16 +108,11 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
   const loading = auth?.loading ?? true;
   
   const [settings, setSettings] = useState<AppSettings>(() => {
-    // Try to load from localStorage first for immediate theme application
-    try {
-      const savedSettings = localStorage.getItem('userSettings');
-      if (savedSettings) {
-        const parsed = JSON.parse(savedSettings);
-        logger.debug('Loaded settings from localStorage:', parsed);
-        return parsed;
-      }
-    } catch (error) {
-      logger.error('Error loading settings from localStorage:', error);
+    // Try to load from safeStorage first for immediate theme application
+    const savedSettings = safeStorage.getJSON<AppSettings>('userSettings');
+    if (savedSettings) {
+      logger.debug('Loaded settings from storage:', savedSettings);
+      return savedSettings;
     }
     
     return {
@@ -169,8 +165,8 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
         logger.debug('Settings loaded successfully:', loadedSettings);
         setSettings(loadedSettings);
         
-        // Save to localStorage for next page load
-        localStorage.setItem('userSettings', JSON.stringify(loadedSettings));
+        // Save to safeStorage for next page load
+        safeStorage.setJSON('userSettings', loadedSettings);
         
         applyTheme(loadedSettings.theme);
       } catch (error) {
@@ -203,8 +199,11 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     logger.debug('Updating settings:', newSettings);
     setSettings(newSettings);
     
-    // Save to localStorage immediately
-    localStorage.setItem('userSettings', JSON.stringify(newSettings));
+    // Save to safeStorage immediately
+    const saved = safeStorage.setJSON('userSettings', newSettings);
+    if (!saved) {
+      logger.warn('Failed to save settings to storage, continuing anyway');
+    }
     
     applyTheme(newSettings.theme);
     
@@ -215,10 +214,10 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
         logger.success('Settings saved successfully');
       } catch (error) {
         logger.error('Failed to save settings to database:', error);
-        // Settings are still in localStorage, so they won't be lost
+        // Settings are still in safeStorage, so they won't be lost
       }
     } else {
-      logger.warn('Cannot save to database - user not authenticated, using localStorage only');
+      logger.warn('Cannot save to database - user not authenticated, using safeStorage only');
     }
   };
 
