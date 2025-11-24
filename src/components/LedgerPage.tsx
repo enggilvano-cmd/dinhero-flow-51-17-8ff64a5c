@@ -24,6 +24,13 @@ interface JournalEntry {
   description: string;
   entry_date: string;
   created_at: string;
+  contrapartidas?: Array<{
+    account_id: string;
+    chart_of_accounts: {
+      code: string;
+      name: string;
+    };
+  }>;
 }
 
 interface ChartAccount {
@@ -42,6 +49,7 @@ interface LedgerEntry {
   credit: number;
   balance: number;
   sequentialNumber: number;
+  contrapartidas: string[];
 }
 
 export function LedgerPage() {
@@ -178,7 +186,30 @@ export function LedgerPage() {
         .order("created_at", { ascending: true });
 
       if (error) throw error;
-      setJournalEntries((data || []) as JournalEntry[]);
+      
+      // Buscar contrapartidas para cada lançamento
+      const entriesWithContrapartidas = await Promise.all(
+        (data || []).map(async (entry) => {
+          if (!entry.transaction_id) return entry;
+          
+          // Buscar outros lançamentos da mesma transação
+          const { data: contrapartidasData } = await supabase
+            .from("journal_entries")
+            .select(`
+              account_id,
+              chart_of_accounts:chart_of_accounts(code, name)
+            `)
+            .eq("transaction_id", entry.transaction_id)
+            .neq("account_id", selectedAccountId);
+          
+          return {
+            ...entry,
+            contrapartidas: contrapartidasData || []
+          };
+        })
+      );
+      
+      setJournalEntries(entriesWithContrapartidas as JournalEntry[]);
     } catch (error) {
       logger.error("Erro ao carregar lançamentos:", error);
       toast({
@@ -242,6 +273,11 @@ export function LedgerPage() {
         runningBalance += credit - debit;
       }
 
+      // Formatar contrapartidas
+      const contrapartidas = (entry.contrapartidas || []).map(c => 
+        `${c.chart_of_accounts?.code} - ${c.chart_of_accounts?.name}`
+      );
+
       entries.push({
         date: entry.entry_date,
         description: entry.description,
@@ -250,6 +286,7 @@ export function LedgerPage() {
         credit,
         balance: runningBalance,
         sequentialNumber: sequentialNumber++,
+        contrapartidas,
       });
     });
 
@@ -436,6 +473,7 @@ export function LedgerPage() {
                       <TableHead className="w-16">Nº</TableHead>
                       <TableHead>Data</TableHead>
                       <TableHead>Histórico</TableHead>
+                      <TableHead>Contrapartida</TableHead>
                       <TableHead className="text-center">ID Transação</TableHead>
                       <TableHead className="text-right">Débito</TableHead>
                       <TableHead className="text-right">Crédito</TableHead>
@@ -446,7 +484,7 @@ export function LedgerPage() {
                     {/* Saldo Inicial */}
                     <TableRow className="bg-muted/50">
                       <TableCell className="text-center text-muted-foreground">-</TableCell>
-                      <TableCell colSpan={3} className="font-medium">
+                      <TableCell colSpan={4} className="font-medium">
                         Saldo Anterior
                       </TableCell>
                       <TableCell className="text-right">-</TableCell>
@@ -469,6 +507,19 @@ export function LedgerPage() {
                           {format(new Date(entry.date), "dd/MM/yyyy")}
                         </TableCell>
                         <TableCell className="max-w-md">{entry.description}</TableCell>
+                        <TableCell className="max-w-xs">
+                          {entry.contrapartidas.length > 0 ? (
+                            <div className="space-y-1">
+                              {entry.contrapartidas.map((contrapartida, idx) => (
+                                <div key={idx} className="text-caption text-muted-foreground">
+                                  {contrapartida}
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground text-caption">-</span>
+                          )}
+                        </TableCell>
                         <TableCell className="text-center">
                           {entry.transactionId ? (
                             <Badge variant="outline" className="font-mono text-caption">
@@ -496,7 +547,7 @@ export function LedgerPage() {
                     {/* Totais */}
                     <TableRow className="font-bold bg-muted/50">
                       <TableCell className="text-center text-muted-foreground">-</TableCell>
-                      <TableCell colSpan={3}>Total do Período</TableCell>
+                      <TableCell colSpan={4}>Total do Período</TableCell>
                       <TableCell className="text-right font-mono">
                         {formatCurrency(totals.debit)}
                       </TableCell>
