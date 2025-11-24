@@ -286,7 +286,7 @@ export function ImportAccountsModal({
     setIsProcessing(false);
   };
 
-  const handleImport = () => {
+  const handleImport = async () => {
     // Itens para adicionar: novos OU duplicatas com resolution='add' OU duplicatas com resolution='replace'
     const accountsToAdd = importedData
       .filter((a, index) => 
@@ -338,7 +338,8 @@ export function ImportAccountsModal({
       accountsToAdd: accountsToAdd.length,
       accountsToReplaceIds: accountsToReplaceIds.length,
       accountsToReplaceDetails: accountsToReplaceIds,
-      excluded: excludedIndexes.size
+      excluded: excludedIndexes.size,
+      firstAccountSample: accountsToAdd[0]
     });
 
     if (accountsToAdd.length === 0 && accountsToReplaceIds.length === 0) {
@@ -350,18 +351,22 @@ export function ImportAccountsModal({
       return;
     }
 
-    onImportAccounts(accountsToAdd, accountsToReplaceIds);
-    
-    toast({
-      title: 'Sucesso',
-      description: `${accountsToAdd.length} conta(s) importada(s) com sucesso`,
-    });
-
-    // Reset
-    setFile(null);
-    setImportedData([]);
-    setExcludedIndexes(new Set());
-    onOpenChange(false);
+    try {
+      // Chama a função de importação e aguarda
+      await onImportAccounts(accountsToAdd, accountsToReplaceIds);
+      
+      // Só mostra toast de sucesso se não houver erro
+      // (o toast de sucesso já é mostrado pelo useAccountHandlers)
+      
+      // Reset
+      setFile(null);
+      setImportedData([]);
+      setExcludedIndexes(new Set());
+      onOpenChange(false);
+    } catch (error) {
+      // Erro já foi tratado pelo useAccountHandlers
+      logger.error('[ImportAccounts] Erro ao importar:', error);
+    }
   };
 
   const handleCancel = () => {
