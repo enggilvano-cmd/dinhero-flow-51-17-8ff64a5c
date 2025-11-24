@@ -131,7 +131,6 @@ export function EditCategoryModal({ open, onOpenChange, onEditCategory, category
                   <SelectValue placeholder="Selecione a conta contábil" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Nenhuma</SelectItem>
                   {chartAccounts.map(account => (
                     <SelectItem key={account.id} value={account.id}>
                       {account.code} - {account.name}
