@@ -7,7 +7,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { CalendarIcon, BookOpen, Scale, TrendingUp, TrendingDown, Wallet, Waves } from "lucide-react";
+import { CalendarIcon, BookOpen, Scale, TrendingUp, TrendingDown, Wallet, Waves, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,6 +16,8 @@ import { formatCurrency } from "@/lib/formatters";
 import { cn } from "@/lib/utils";
 import { logger } from "@/lib/logger";
 import { generateCashFlow } from "@/lib/accountingReports";
+import { useDoubleEntryValidation } from "@/hooks/useDoubleEntryValidation";
+import { DoubleEntryAlert } from "@/components/accounting/DoubleEntryAlert";
 
 interface JournalEntry {
   id: string;
@@ -69,6 +71,9 @@ export function AccountingReportsPage() {
   const [periodType, setPeriodType] = useState<"month" | "year" | "custom">("month");
   const [startDate, setStartDate] = useState<Date>(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
   const [endDate, setEndDate] = useState<Date>(new Date());
+
+  // Validação de partidas dobradas
+  const { validationResults, totalUnbalancedTransactions, hasUnbalancedEntries } = useDoubleEntryValidation(journalEntries);
 
   useEffect(() => {
     loadData();
@@ -424,6 +429,14 @@ export function AccountingReportsPage() {
 
   return (
     <div className="space-y-6">
+      {/* Alerta de Partidas Dobradas Desbalanceadas */}
+      {hasUnbalancedEntries && (
+        <DoubleEntryAlert 
+          validationResults={validationResults}
+          totalUnbalancedTransactions={totalUnbalancedTransactions}
+        />
+      )}
+
       {/* Cabeçalho com botão de migração */}
       {journalEntries.length === 0 && (
         <Card className="border-warning">
@@ -900,18 +913,32 @@ export function AccountingReportsPage() {
                             </TableCell>
                           </TableRow>
                         ))}
-                        <TableRow className="font-bold bg-muted/50">
-                          <TableCell colSpan={3}>Total</TableCell>
-                          <TableCell className="text-right font-mono">
-                            {formatCurrency(trialBalanceTotals.debit)}
-                          </TableCell>
-                          <TableCell className="text-right font-mono">
-                            {formatCurrency(trialBalanceTotals.credit)}
-                          </TableCell>
-                          <TableCell className="text-right font-mono">
-                            {formatCurrency(Math.abs(trialBalanceTotals.debit - trialBalanceTotals.credit))}
-                          </TableCell>
-                        </TableRow>
+                      <TableRow className={cn(
+                        "font-bold bg-muted/50",
+                        Math.abs(trialBalanceTotals.debit - trialBalanceTotals.credit) >= 0.01 && "bg-destructive/10"
+                      )}>
+                        <TableCell colSpan={3} className="flex items-center gap-2">
+                          Total
+                          {Math.abs(trialBalanceTotals.debit - trialBalanceTotals.credit) >= 0.01 && (
+                            <Badge variant="destructive" className="text-caption">
+                              <AlertTriangle className="h-3 w-3 mr-1" />
+                              Desbalanceado
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right font-mono">
+                          {formatCurrency(trialBalanceTotals.debit)}
+                        </TableCell>
+                        <TableCell className="text-right font-mono">
+                          {formatCurrency(trialBalanceTotals.credit)}
+                        </TableCell>
+                        <TableCell className={cn(
+                          "text-right font-mono font-semibold",
+                          Math.abs(trialBalanceTotals.debit - trialBalanceTotals.credit) >= 0.01 && "text-destructive"
+                        )}>
+                          {formatCurrency(Math.abs(trialBalanceTotals.debit - trialBalanceTotals.credit))}
+                        </TableCell>
+                      </TableRow>
                       </TableBody>
                     </Table>
                   </div>
