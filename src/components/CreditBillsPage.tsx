@@ -297,9 +297,12 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
         acc.currentBill += details.currentBillAmount;
         acc.nextBill += details.nextBillAmount;
         acc.availableLimit += details.availableLimit;
+        // Calcula o limite usado: limite total - limite disponível
+        const limitAmount = details.account.limit_amount || 0;
+        acc.usedLimit += limitAmount - details.availableLimit;
         return acc;
       },
-      { currentBill: 0, nextBill: 0, availableLimit: 0 }
+      { currentBill: 0, nextBill: 0, availableLimit: 0, usedLimit: 0 }
     );
   }, [billDetails]);
 
@@ -318,7 +321,7 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
     <div className="spacing-responsive-lg fade-in pb-6 sm:pb-8">
 
       {/* CARDS DE TOTAIS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
         {/* Card Fatura Atual */}
         <Card className="financial-card">
           <CardContent className="p-4">
@@ -358,8 +361,27 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
           </CardContent>
         </Card>
 
+        {/* Card Limite Usado */}
+        <Card className="financial-card">
+          <CardContent className="p-4">
+            <div className="flex flex-col items-center gap-2 text-center">
+              <div className="w-12 h-12 rounded-xl bg-warning/10 flex items-center justify-center">
+                <CreditCard className="h-6 w-6 text-warning" />
+              </div>
+              <div>
+                <p className="text-caption font-medium">
+                  Limite Usado
+                </p>
+                <div className="balance-text text-warning">
+                  {formatCents(totalSummary.usedLimit)}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Card Limite Disponível */}
-        <Card className="financial-card sm:col-span-2 xl:col-span-1">
+        <Card className="financial-card">
           <CardContent className="p-4">
             <div className="flex flex-col items-center gap-2 text-center">
               <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
