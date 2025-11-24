@@ -829,16 +829,16 @@ export default function AnalyticsPage({
       {/* Summary Cards */}
       <div className="analytics-section grid grid-cols-1 lg:grid-cols-3 gap-4 mt-8">
         <Card className="financial-card">
-          <CardContent className="p-3 overflow-hidden">
-            <div className="grid grid-cols-[2.5rem_1fr] gap-x-3 gap-y-1 items-center">
-              <div className="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center col-start-1 row-span-2">
-                <TrendingUp className="h-5 w-5 text-success" />
+          <CardContent className="p-4">
+            <div className="flex flex-col items-center gap-2 text-center">
+              <div className="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center">
+                <TrendingUp className="h-6 w-6 text-success" />
               </div>
-              <div className="col-start-2">
-                <p className="text-caption font-semibold">Receitas</p>
+              <div>
+                <p className="text-caption font-medium">Receitas</p>
                 <p className="text-caption text-muted-foreground">Período filtrado</p>
               </div>
-              <div className="col-start-2 balance-text balance-positive leading-tight truncate max-w-full">
+              <div className="balance-text balance-positive">
                 {formatCurrency(totalsByType.income)}
               </div>
             </div>
@@ -846,16 +846,16 @@ export default function AnalyticsPage({
         </Card>
 
         <Card className="financial-card">
-          <CardContent className="p-3 overflow-hidden">
-            <div className="grid grid-cols-[2.5rem_1fr] gap-x-3 gap-y-1 items-center">
-              <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center col-start-1 row-span-2">
-                <TrendingDown className="h-5 w-5 text-destructive" />
+          <CardContent className="p-4">
+            <div className="flex flex-col items-center gap-2 text-center">
+              <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center">
+                <TrendingDown className="h-6 w-6 text-destructive" />
               </div>
-              <div className="col-start-2">
-                <p className="text-caption font-semibold">Despesas</p>
+              <div>
+                <p className="text-caption font-medium">Despesas</p>
                 <p className="text-caption text-muted-foreground">Período filtrado</p>
               </div>
-              <div className="col-start-2 balance-text balance-negative leading-tight truncate max-w-full">
+              <div className="balance-text balance-negative">
                 {formatCurrency(totalsByType.expenses)}
               </div>
             </div>
@@ -863,16 +863,16 @@ export default function AnalyticsPage({
         </Card>
 
         <Card className="financial-card">
-          <CardContent className="p-3 overflow-hidden">
-            <div className="grid grid-cols-[2.5rem_1fr] gap-x-3 gap-y-1 items-center">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center col-start-1 row-span-2">
-                <BarChart3 className="h-5 w-5 text-primary" />
+          <CardContent className="p-4">
+            <div className="flex flex-col items-center gap-2 text-center">
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                <BarChart3 className="h-6 w-6 text-primary" />
               </div>
-              <div className="col-start-2">
-                <p className="text-caption font-semibold">Saldo Líquido</p>
+              <div>
+                <p className="text-caption font-medium">Saldo Líquido</p>
                 <p className="text-caption text-muted-foreground">Período filtrado</p>
               </div>
-              <div className={`col-start-2 balance-text leading-tight truncate max-w-full ${
+              <div className={`balance-text ${
                 totalsByType.income - totalsByType.expenses >= 0 ? "balance-positive" : "balance-negative"
               }`}>
                 {formatCurrency(totalsByType.income - totalsByType.expenses)}
