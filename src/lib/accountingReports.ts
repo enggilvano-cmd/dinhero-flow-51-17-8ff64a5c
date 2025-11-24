@@ -145,8 +145,10 @@ export function generateBalanceSheet(
   const totalAssets = totalCurrentAssets + totalInvestments;
   const totalLiabilities = totalCurrentLiabilities;
 
-  // Patrimônio Líquido (Ativos - Passivos)
-  const equity = totalAssets + totalLiabilities; // totalLiabilities é negativo
+  // Patrimônio Líquido = Ativos - Passivos
+  // CORREÇÃO: Aplicar a equação contábil fundamental (ATIVO = PASSIVO + PL)
+  // Portanto: PL = ATIVO - PASSIVO
+  const equity = totalAssets - totalLiabilities;
 
   return {
     totalAssets,
