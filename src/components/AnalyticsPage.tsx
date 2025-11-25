@@ -1059,7 +1059,7 @@ export default function AnalyticsPage({
             <div className="relative w-full">
               <ChartContainer
                 config={accountChartConfig}
-                className={`${isMobile ? 'min-h-[400px]' : 'min-h-[500px]'} w-full overflow-hidden`}
+                className={`${isMobile ? 'min-h-[320px]' : 'min-h-[400px]'} w-full overflow-hidden`}
               >
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
