@@ -51,8 +51,8 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Rate limiting - Strict para edições (mais sensível)
-    const rateLimitResponse = await rateLimiters.strict.middleware(req, user.id);
+    // Rate limiting - moderado para permitir múltiplas edições (ex: marcar como pago)
+    const rateLimitResponse = await rateLimiters.moderate.middleware(req, user.id);
     if (rateLimitResponse) {
       console.warn('[atomic-edit] WARN: Rate limit exceeded for user:', user.id);
       return rateLimitResponse;
