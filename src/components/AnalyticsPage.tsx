@@ -984,14 +984,13 @@ export default function AnalyticsPage({
                 </Pie>
               </RechartsPieChart>
               
-              {/* Custom Legend */}
-              {categoryData.length > 0 && (
+              {/* Custom Legend - desktop/tablet (ao lado do gráfico) */}
+              {!isMobile && categoryData.length > 0 && (
                 <div 
                   className={cn(
-                    "flex flex-col gap-2 px-4",
-                    isMobile ? "mt-4" : "absolute right-4 top-1/2 -translate-y-1/2"
+                    "flex flex-col gap-2 px-4 absolute right-4 top-1/2 -translate-y-1/2",
                   )}
-                  style={{ maxWidth: isMobile ? "100%" : "35%" }}
+                  style={{ maxWidth: "35%" }}
                 >
                   {categoryData.map((item, index) => (
                     <div 
@@ -1016,6 +1015,31 @@ export default function AnalyticsPage({
               )}
             </ChartContainer>
             </div>
+
+            {/* Custom Legend - mobile (abaixo do gráfico) */}
+            {isMobile && categoryData.length > 0 && (
+              <div className="mt-4 flex flex-col gap-2 px-2">
+                {categoryData.map((item, index) => (
+                  <div 
+                    key={`legend-mobile-${index}`} 
+                    className="flex items-center justify-between gap-2 text-caption"
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div 
+                        className="w-3 h-3 rounded-full flex-shrink-0" 
+                        style={{ backgroundColor: item.fill }}
+                      />
+                      <span className="truncate text-foreground">
+                        {item.category}
+                      </span>
+                    </div>
+                    <span className="text-muted-foreground font-medium flex-shrink-0">
+                      {item.percentage.toFixed(1)}%
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
             {categoryData.length === 0 && (
               <div className="text-body text-center text-muted-foreground py-8">
                 Nenhuma transação encontrada para o período selecionado
