@@ -1065,13 +1065,12 @@ export default function AnalyticsPage({
                        position="top"
                        content={(props: any) => {
                          const { x, y, width, value } = props;
-                         const numValue = typeof value === 'number' ? value : 0;
+                         const numValue = typeof value === "number" ? value : 0;
                          if (numValue <= 0) return null;
                          
                          const labelX = x + width / 2;
-                         const labelY = y - 5;
-                         // Inclina se a barra for estreita (< 70px) ou em mobile
-                         const shouldRotate = width < 70 || isMobile;
+                         const shouldRotate = isMobile; // apenas em telas menores
+                         const labelY = shouldRotate ? y + 16 : y - 5;
                          
                          return (
                            <text
@@ -1097,14 +1096,13 @@ export default function AnalyticsPage({
                        dataKey="negativeBalance"
                        content={(props: any) => {
                          const { x, y, width, height, value } = props;
-                         const numValue = typeof value === 'number' ? value : 0;
+                         const numValue = typeof value === "number" ? value : 0;
                          if (numValue >= 0) return null;
                          
                          const barBottom = Math.max(y, y + height);
                          const labelX = x + width / 2;
-                         const labelY = barBottom + 15;
-                         // Inclina se a barra for estreita (< 70px) ou em mobile
-                         const shouldRotate = width < 70 || isMobile;
+                         const shouldRotate = isMobile; // apenas em telas menores
+                         const labelY = shouldRotate ? barBottom - 12 : barBottom + 15;
                          
                          return (
                            <text
