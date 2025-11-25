@@ -4,7 +4,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -144,9 +143,6 @@ export function AddFixedTransactionModal({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="text-headline">Nova Transação Fixa</DialogTitle>
-          <DialogDescription className="text-body">
-            Adicione uma receita ou despesa que se repete todo mês, sem data de término.
-          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
