@@ -1069,8 +1069,8 @@ export default function AnalyticsPage({
                          if (numValue <= 0) return null;
                          
                          const labelX = x + width / 2;
-                         const shouldRotate = isMobile; // apenas em telas menores
-                         const labelY = shouldRotate ? y + 16 : y - 5;
+                         const shouldRotate = width < 70 || isMobile; // ajusta conforme largura da barra
+                         const labelY = shouldRotate ? y - 10 : y - 5;
                          
                          return (
                            <text
@@ -1101,8 +1101,8 @@ export default function AnalyticsPage({
                          
                          const barBottom = Math.max(y, y + height);
                          const labelX = x + width / 2;
-                         const shouldRotate = isMobile; // apenas em telas menores
-                         const labelY = shouldRotate ? barBottom - 12 : barBottom + 15;
+                         const shouldRotate = width < 70 || isMobile; // ajusta conforme largura da barra
+                         const labelY = shouldRotate ? barBottom + 10 : barBottom + 15;
                          
                          return (
                            <text
