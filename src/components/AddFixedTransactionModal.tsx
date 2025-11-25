@@ -17,10 +17,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { getTodayString } from "@/lib/dateUtils";
+import { getTodayString, createDateFromString } from "@/lib/dateUtils";
 import { useCategories } from "@/hooks/useCategories";
 import { CurrencyInput } from "@/components/forms/CurrencyInput";
 import { ACCOUNT_TYPE_LABELS } from "@/types";
+import { DatePicker } from "@/components/ui/date-picker";
 
 interface Account {
   id: string;
@@ -250,13 +251,17 @@ export function AddFixedTransactionModal({
 
           <div className="space-y-2">
             <Label htmlFor="date">Dia do Mês</Label>
-            <Input
-              id="date"
-              type="date"
-              value={formData.date}
-              onChange={(e) =>
-                setFormData({ ...formData, date: e.target.value })
-              }
+            <DatePicker
+              date={formData.date ? createDateFromString(formData.date) : undefined}
+              onDateChange={(newDate) => {
+                if (newDate) {
+                  const year = newDate.getFullYear();
+                  const month = String(newDate.getMonth() + 1).padStart(2, '0');
+                  const day = String(newDate.getDate()).padStart(2, '0');
+                  setFormData({ ...formData, date: `${year}-${month}-${day}` });
+                }
+              }}
+              placeholder="Selecione o dia do mês"
             />
             <p className="text-caption text-muted-foreground">
               A transação será gerada automaticamente todo dia {new Date(formData.date).getDate()} de cada mês.

@@ -2,6 +2,8 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CurrencyInput } from "@/components/forms/CurrencyInput";
+import { DatePicker } from "@/components/ui/date-picker";
+import { createDateFromString } from "@/lib/dateUtils";
 
 interface TransactionFormFieldsProps {
   description: string;
@@ -80,12 +82,17 @@ export function TransactionFormFields({
 
       <div className="space-y-2">
         <Label htmlFor="date" className="text-caption">Data</Label>
-        <Input
-          id="date"
-          type="date"
-          value={date}
-          onChange={(e) => onDateChange(e.target.value)}
-          className="[color-scheme:light] dark:[color-scheme:dark]"
+        <DatePicker
+          date={date ? createDateFromString(date) : undefined}
+          onDateChange={(newDate) => {
+            if (newDate) {
+              const year = newDate.getFullYear();
+              const month = String(newDate.getMonth() + 1).padStart(2, '0');
+              const day = String(newDate.getDate()).padStart(2, '0');
+              onDateChange(`${year}-${month}-${day}`);
+            }
+          }}
+          placeholder="Selecione a data"
         />
         {validationErrors.date && (
           <p className="text-body text-destructive">{validationErrors.date}</p>
