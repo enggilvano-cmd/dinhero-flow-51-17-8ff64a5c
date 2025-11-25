@@ -1061,7 +1061,7 @@ export default function AnalyticsPage({
                 config={accountChartConfig}
                 className={`${responsiveConfig.containerHeight} w-full overflow-hidden`}
               >
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height={isMobile ? 320 : 400}>
                   <BarChart
                     data={accountBalanceData}
                     margin={{
