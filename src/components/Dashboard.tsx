@@ -57,10 +57,6 @@ export function Dashboard({
     setCustomStartDate,
     customEndDate,
     setCustomEndDate,
-    startDatePickerOpen,
-    setStartDatePickerOpen,
-    endDatePickerOpen,
-    setEndDatePickerOpen,
     getFilteredTransactions,
     goToPreviousMonth,
     goToNextMonth,
@@ -111,10 +107,6 @@ export function Dashboard({
             setCustomStartDate={setCustomStartDate}
             customEndDate={customEndDate}
             setCustomEndDate={setCustomEndDate}
-            startDatePickerOpen={startDatePickerOpen}
-            setStartDatePickerOpen={setStartDatePickerOpen}
-            endDatePickerOpen={endDatePickerOpen}
-            setEndDatePickerOpen={setEndDatePickerOpen}
             goToPreviousMonth={goToPreviousMonth}
             goToNextMonth={goToNextMonth}
           />

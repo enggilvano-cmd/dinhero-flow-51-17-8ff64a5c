@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,17 +8,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { Label } from "@/components/ui/label";
-import { Search, CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { format, addMonths, subMonths } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { cn } from "@/lib/utils";
+import { DatePicker } from "@/components/ui/date-picker";
 
 interface TransactionFiltersProps {
   searchTerm: string;
@@ -60,9 +53,6 @@ export function TransactionFilters({
   onCustomEndDateChange,
   t,
 }: TransactionFiltersProps) {
-  const [startDatePickerOpen, setStartDatePickerOpen] = useState(false);
-  const [endDatePickerOpen, setEndDatePickerOpen] = useState(false);
-
   return (
     <div className="space-y-4">
       {/* Search */}
@@ -166,68 +156,20 @@ export function TransactionFilters({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <Label>{t("transactions.filters.startDate")}</Label>
-            <Popover open={startDatePickerOpen} onOpenChange={setStartDatePickerOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !customStartDate && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {customStartDate ? (
-                    format(customStartDate, "PPP", { locale: ptBR })
-                  ) : (
-                    <span>{t("transactions.filters.selectDate")}</span>
-                  )}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <CalendarComponent
-                  mode="single"
-                  selected={customStartDate}
-                  onSelect={(date) => {
-                    onCustomStartDateChange(date);
-                    setStartDatePickerOpen(false);
-                  }}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
+            <DatePicker
+              date={customStartDate}
+              onDateChange={onCustomStartDateChange}
+              placeholder={t("transactions.filters.selectDate")}
+            />
           </div>
 
           <div>
             <Label>{t("transactions.filters.endDate")}</Label>
-            <Popover open={endDatePickerOpen} onOpenChange={setEndDatePickerOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !customEndDate && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {customEndDate ? (
-                    format(customEndDate, "PPP", { locale: ptBR })
-                  ) : (
-                    <span>{t("transactions.filters.selectDate")}</span>
-                  )}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <CalendarComponent
-                  mode="single"
-                  selected={customEndDate}
-                  onSelect={(date) => {
-                    onCustomEndDateChange(date);
-                    setEndDatePickerOpen(false);
-                  }}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
+            <DatePicker
+              date={customEndDate}
+              onDateChange={onCustomEndDateChange}
+              placeholder={t("transactions.filters.selectDate")}
+            />
           </div>
         </div>
       )}

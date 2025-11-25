@@ -6,17 +6,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { format, addMonths, subMonths } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { DatePicker } from "@/components/ui/date-picker";
 
 export type PeriodFilterType = 'all' | 'current_month' | 'month_picker' | 'custom';
 
@@ -41,9 +34,6 @@ export function PeriodFilter({
   customEndDate,
   onCustomEndDateChange,
 }: PeriodFilterProps) {
-  const [startDatePickerOpen, setStartDatePickerOpen] = useState(false);
-  const [endDatePickerOpen, setEndDatePickerOpen] = useState(false);
-
   const goToPreviousMonth = () => {
     onMonthChange(subMonths(selectedMonth, 1));
   };
@@ -108,68 +98,22 @@ export function PeriodFilter({
             <label className="text-sm font-medium mb-1.5 block">
               Data Inicial
             </label>
-            <Popover open={startDatePickerOpen} onOpenChange={setStartDatePickerOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    'w-full justify-start text-left font-normal',
-                    !customStartDate && 'text-muted-foreground'
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {customStartDate
-                    ? format(customStartDate, 'dd/MM/yyyy', { locale: ptBR })
-                    : 'Selecione'}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={customStartDate}
-                  onSelect={(date) => {
-                    onCustomStartDateChange(date);
-                    setStartDatePickerOpen(false);
-                  }}
-                  initialFocus
-                  className="p-3 pointer-events-auto"
-                />
-              </PopoverContent>
-            </Popover>
+            <DatePicker
+              date={customStartDate}
+              onDateChange={onCustomStartDateChange}
+              placeholder="Selecione"
+            />
           </div>
 
           <div>
             <label className="text-sm font-medium mb-1.5 block">
               Data Final
             </label>
-            <Popover open={endDatePickerOpen} onOpenChange={setEndDatePickerOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    'w-full justify-start text-left font-normal',
-                    !customEndDate && 'text-muted-foreground'
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {customEndDate
-                    ? format(customEndDate, 'dd/MM/yyyy', { locale: ptBR })
-                    : 'Selecione'}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={customEndDate}
-                  onSelect={(date) => {
-                    onCustomEndDateChange(date);
-                    setEndDatePickerOpen(false);
-                  }}
-                  initialFocus
-                  className="p-3 pointer-events-auto"
-                />
-              </PopoverContent>
-            </Popover>
+            <DatePicker
+              date={customEndDate}
+              onDateChange={onCustomEndDateChange}
+              placeholder="Selecione"
+            />
           </div>
         </div>
       )}

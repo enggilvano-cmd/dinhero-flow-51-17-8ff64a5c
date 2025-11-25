@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -16,16 +15,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Filter, CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { cn } from "@/lib/utils";
+import { DatePicker } from "@/components/ui/date-picker";
+import { Filter } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface Account {
@@ -85,9 +76,6 @@ export function AnalyticsFilterDialog({
   categories,
   activeFiltersCount,
 }: AnalyticsFilterDialogProps) {
-  const [startDatePickerOpen, setStartDatePickerOpen] = useState(false);
-  const [endDatePickerOpen, setEndDatePickerOpen] = useState(false);
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
@@ -213,70 +201,22 @@ export function AnalyticsFilterDialog({
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>Data Inicial</Label>
-                  <Popover open={startDatePickerOpen} onOpenChange={setStartDatePickerOpen}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-left font-normal mt-2",
-                          !customStartDate && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {customStartDate ? (
-                          format(customStartDate, "dd/MM/yyyy", { locale: ptBR })
-                        ) : (
-                          <span>Selecione</span>
-                        )}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <CalendarComponent
-                        mode="single"
-                        selected={customStartDate}
-                        onSelect={(date) => {
-                          onCustomStartDateChange(date);
-                          setStartDatePickerOpen(false);
-                        }}
-                        initialFocus
-                        className="pointer-events-auto"
-                      />
-                    </PopoverContent>
-                  </Popover>
+                  <DatePicker
+                    date={customStartDate}
+                    onDateChange={onCustomStartDateChange}
+                    placeholder="Selecione"
+                    className="mt-2"
+                  />
                 </div>
 
                 <div>
                   <Label>Data Final</Label>
-                  <Popover open={endDatePickerOpen} onOpenChange={setEndDatePickerOpen}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-left font-normal mt-2",
-                          !customEndDate && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {customEndDate ? (
-                          format(customEndDate, "dd/MM/yyyy", { locale: ptBR })
-                        ) : (
-                          <span>Selecione</span>
-                        )}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <CalendarComponent
-                        mode="single"
-                        selected={customEndDate}
-                        onSelect={(date) => {
-                          onCustomEndDateChange(date);
-                          setEndDatePickerOpen(false);
-                        }}
-                        initialFocus
-                        className="pointer-events-auto"
-                      />
-                    </PopoverContent>
-                  </Popover>
+                  <DatePicker
+                    date={customEndDate}
+                    onDateChange={onCustomEndDateChange}
+                    placeholder="Selecione"
+                    className="mt-2"
+                  />
                 </div>
               </div>
             </div>

@@ -7,16 +7,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Calendar } from '@/components/ui/calendar';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { cn } from '@/lib/utils';
+import { DatePicker } from '@/components/ui/date-picker';
 import type { DateFilterType } from '@/types';
 
 interface FilterCardProps {
@@ -27,10 +21,6 @@ interface FilterCardProps {
   setCustomStartDate: (date: Date | undefined) => void;
   customEndDate: Date | undefined;
   setCustomEndDate: (date: Date | undefined) => void;
-  startDatePickerOpen: boolean;
-  setStartDatePickerOpen: (open: boolean) => void;
-  endDatePickerOpen: boolean;
-  setEndDatePickerOpen: (open: boolean) => void;
   goToPreviousMonth: () => void;
   goToNextMonth: () => void;
 }
@@ -43,10 +33,6 @@ export function FilterCard({
   setCustomStartDate,
   customEndDate,
   setCustomEndDate,
-  startDatePickerOpen,
-  setStartDatePickerOpen,
-  endDatePickerOpen,
-  setEndDatePickerOpen,
   goToPreviousMonth,
   goToNextMonth,
 }: FilterCardProps) {
@@ -108,76 +94,24 @@ export function FilterCard({
                 <label id="start-date-label" className="text-caption mb-1 block">
                   Início
                 </label>
-                <Popover open={startDatePickerOpen} onOpenChange={setStartDatePickerOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className={cn(
-                        'w-full h-8 justify-start text-left font-normal text-body',
-                        !customStartDate && 'text-muted-foreground'
-                      )}
-                      aria-labelledby="start-date-label"
-                    >
-                      <CalendarIcon className="mr-1 h-3 w-3" aria-hidden="true" />
-                      <span className="truncate">
-                        {customStartDate
-                          ? format(customStartDate, 'dd/MM', { locale: ptBR })
-                          : 'Inicial'}
-                      </span>
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={customStartDate}
-                      onSelect={(date) => {
-                        setCustomStartDate(date);
-                        setStartDatePickerOpen(false);
-                      }}
-                      initialFocus
-                      className="p-3 pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
+                <DatePicker
+                  date={customStartDate}
+                  onDateChange={setCustomStartDate}
+                  placeholder="Inicial"
+                  className="h-8 text-body"
+                />
               </div>
 
               <div>
                 <label id="end-date-label" className="text-caption mb-1 block">
                   Final
                 </label>
-                <Popover open={endDatePickerOpen} onOpenChange={setEndDatePickerOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className={cn(
-                        'w-full h-8 justify-start text-left font-normal text-body',
-                        !customEndDate && 'text-muted-foreground'
-                      )}
-                      aria-labelledby="end-date-label"
-                    >
-                      <CalendarIcon className="mr-1 h-3 w-3" aria-hidden="true" />
-                      <span className="truncate">
-                        {customEndDate
-                          ? format(customEndDate, 'dd/MM', { locale: ptBR })
-                          : 'Final'}
-                      </span>
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={customEndDate}
-                      onSelect={(date) => {
-                        setCustomEndDate(date);
-                        setEndDatePickerOpen(false);
-                      }}
-                      initialFocus
-                      className="p-3 pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
+                <DatePicker
+                  date={customEndDate}
+                  onDateChange={setCustomEndDate}
+                  placeholder="Final"
+                  className="h-8 text-body"
+                />
               </div>
             </div>
           )}

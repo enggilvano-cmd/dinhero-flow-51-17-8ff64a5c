@@ -42,13 +42,6 @@ describe('useDashboardFilters', () => {
       expect(result.current.customStartDate).toBeUndefined();
       expect(result.current.customEndDate).toBeUndefined();
     });
-
-    it('should initialize date pickers as closed', () => {
-      const { result } = renderHook(() => useDashboardFilters());
-
-      expect(result.current.startDatePickerOpen).toBe(false);
-      expect(result.current.endDatePickerOpen).toBe(false);
-    });
   });
 
   describe('Filter transactions - current_month', () => {

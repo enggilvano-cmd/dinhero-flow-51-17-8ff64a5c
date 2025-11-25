@@ -16,16 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { cn } from "@/lib/utils";
+import { DatePicker } from "@/components/ui/date-picker";
 
 import { ACCOUNT_TYPE_LABELS } from '@/types';
 import { MarkAsPaidModalProps } from '@/types/formProps';
@@ -40,7 +31,6 @@ export function MarkAsPaidModal({
   const [date, setDate] = useState<Date>(new Date());
   const [amount, setAmount] = useState<string>("");
   const [accountId, setAccountId] = useState<string>("");
-  const [datePickerOpen, setDatePickerOpen] = useState(false);
 
   // Quando o modal abre, pré-preenche os valores
   useEffect(() => {
@@ -87,34 +77,11 @@ export function MarkAsPaidModal({
           {/* Data */}
           <div className="grid gap-2">
             <Label htmlFor="date" className="text-caption">Data</Label>
-            <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "justify-start text-left font-normal",
-                    !date && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {date ? format(date, "dd/MM/yyyy", { locale: ptBR }) : "Selecione uma data"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={date}
-                  onSelect={(newDate) => {
-                    if (newDate) {
-                      setDate(newDate);
-                      setDatePickerOpen(false);
-                    }
-                  }}
-                  initialFocus
-                  className="pointer-events-auto"
-                />
-              </PopoverContent>
-            </Popover>
+            <DatePicker
+              date={date}
+              onDateChange={(newDate) => newDate && setDate(newDate)}
+              placeholder="Selecione uma data"
+            />
           </div>
 
           {/* Valor */}
