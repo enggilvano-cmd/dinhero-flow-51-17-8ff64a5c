@@ -960,7 +960,7 @@ export default function AnalyticsPage({
                     name: item.category,
                     value: item.amount,
                   }))}
-                  cx="50%"
+                  cx={isMobile ? "50%" : "40%"}
                   cy="50%"
                   labelLine={false}
                   label={responsiveConfig.showLabels && categoryData.length <= 6 ? undefined : false}
@@ -979,9 +979,14 @@ export default function AnalyticsPage({
                     content={((props: any) => (
                       <ChartLegendContent {...props} nameKey="name" />
                     )) as any}
-                    wrapperStyle={{
-                      paddingTop: responsiveConfig.showLabels ? "10px" : "20px",
-                    }}
+                    layout="vertical"
+                    align={isMobile ? "center" : "right"}
+                    verticalAlign={isMobile ? "bottom" : "middle"}
+                    wrapperStyle={
+                      isMobile
+                        ? { paddingTop: "20px" }
+                        : { paddingRight: "10px" }
+                    }
                     iconType="circle"
                   />
                 )}
