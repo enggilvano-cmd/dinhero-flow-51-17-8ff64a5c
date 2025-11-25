@@ -1103,27 +1103,29 @@ export default function AnalyticsPage({
 
             {/* Legenda de Contas - desktop/tablet (dentro do container) */}
             {!isMobile && accountBalanceData.length > 0 && (
-              <div className="absolute right-6 top-1/2 -translate-y-1/2 flex flex-col gap-2.5 bg-card/95 backdrop-blur-sm p-4 rounded-lg border border-border shadow-sm" style={{ maxWidth: '180px' }}>
-                <div className="text-caption font-semibold text-muted-foreground mb-1">Contas</div>
+              <div 
+                className="flex flex-col gap-2 px-4 absolute right-4 top-1/2 -translate-y-1/2"
+                style={{ maxWidth: "35%" }}
+              >
                 {accountBalanceData.map((account, index) => (
                   <div 
                     key={`legend-account-desktop-${index}`} 
-                    className="flex items-start gap-2"
+                    className="flex items-center justify-between gap-2 text-caption"
                   >
-                    <div 
-                      className="w-3 h-3 rounded-full flex-shrink-0 mt-0.5" 
-                      style={{ backgroundColor: account.color }}
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="text-caption text-foreground truncate">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div 
+                        className="w-3 h-3 rounded-full flex-shrink-0" 
+                        style={{ backgroundColor: account.color }}
+                      />
+                      <span className="truncate text-foreground">
                         {account.name}
-                      </div>
-                      <div className={`text-caption font-semibold ${
-                        account.balance >= 0 ? 'text-success' : 'text-destructive'
-                      }`}>
-                        {formatCurrency(account.balance)}
-                      </div>
+                      </span>
                     </div>
+                    <span className={`font-medium flex-shrink-0 ${
+                      account.balance >= 0 ? 'text-success' : 'text-destructive'
+                    }`}>
+                      {formatCurrency(account.balance)}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -1132,27 +1134,26 @@ export default function AnalyticsPage({
 
             {/* Legenda de Contas - mobile (abaixo do gráfico) */}
             {isMobile && accountBalanceData.length > 0 && (
-              <div className="mt-4 flex flex-col gap-2.5 bg-card/95 backdrop-blur-sm p-4 rounded-lg border border-border">
-                <div className="text-caption font-semibold text-muted-foreground mb-1">Contas</div>
+              <div className="mt-4 flex flex-col gap-2 px-2">
                 {accountBalanceData.map((account, index) => (
                   <div 
                     key={`legend-account-mobile-${index}`} 
-                    className="flex items-start gap-2"
+                    className="flex items-center justify-between gap-2 text-caption"
                   >
-                    <div 
-                      className="w-3 h-3 rounded-full flex-shrink-0 mt-0.5" 
-                      style={{ backgroundColor: account.color }}
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="text-caption text-foreground truncate">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div 
+                        className="w-3 h-3 rounded-full flex-shrink-0" 
+                        style={{ backgroundColor: account.color }}
+                      />
+                      <span className="truncate text-foreground">
                         {account.name}
-                      </div>
-                      <div className={`text-caption font-semibold ${
-                        account.balance >= 0 ? 'text-success' : 'text-destructive'
-                      }`}>
-                        {formatCurrency(account.balance)}
-                      </div>
+                      </span>
                     </div>
+                    <span className={`font-medium flex-shrink-0 ${
+                      account.balance >= 0 ? 'text-success' : 'text-destructive'
+                    }`}>
+                      {formatCurrency(account.balance)}
+                    </span>
                   </div>
                 ))}
               </div>
