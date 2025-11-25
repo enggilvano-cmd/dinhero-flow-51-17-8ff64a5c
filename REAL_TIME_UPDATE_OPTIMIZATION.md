@@ -51,8 +51,9 @@ queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
 4. ✅ `src/hooks/transactions/useImportMutations.tsx`
 5. ✅ `src/hooks/transactions/useCreditPaymentMutations.tsx` (2 funções)
 6. ✅ `src/hooks/queries/useTransactions.tsx` (4 mutations)
+7. ✅ `src/hooks/queries/useAccounts.tsx` (3 mutations - updateMutation, deleteMutation, importMutation)
 
-**Total**: 12 pontos de otimização aplicados
+**Total**: 15 pontos de otimização aplicados
 
 ## Testes de Performance
 
