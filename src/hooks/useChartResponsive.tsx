@@ -92,8 +92,8 @@ export function useChartResponsive(): {
         activeDotRadius: 5,
       },
       desktop: {
-        containerHeight: "min-h-[680px]",
-        outerRadius: 202,
+        containerHeight: "min-h-[720px]",
+        outerRadius: 211,
         fontSize: 12,
         tickFontSize: 12,
         margins: { top: 20, right: 30, bottom: 20, left: 20 },
