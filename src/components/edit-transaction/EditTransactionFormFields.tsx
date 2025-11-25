@@ -26,6 +26,7 @@ interface EditTransactionFormFieldsProps {
   onFormDataChange: (updates: Partial<EditTransactionFormFieldsProps['formData']>) => void;
   accounts: Account[];
   filteredCategories: Category[];
+  isTransfer?: boolean;
 }
 
 export function EditTransactionFormFields({
@@ -33,19 +34,23 @@ export function EditTransactionFormFields({
   onFormDataChange,
   accounts,
   filteredCategories,
+  isTransfer = false,
 }: EditTransactionFormFieldsProps) {
   return (
     <>
-      <div className="space-y-2">
-        <Label htmlFor="description" className="text-caption">Descrição</Label>
-        <Input
-          id="description"
-          value={formData.description}
-          onChange={(e) => onFormDataChange({ description: e.target.value })}
-          placeholder="Ex: Supermercado, Salário..."
-          required
-        />
-      </div>
+      {!isTransfer && (
+        <div className="space-y-2">
+          <Label htmlFor="description" className="text-caption">Descrição</Label>
+          <Input
+            id="description"
+            value={formData.description}
+            onChange={(e) => onFormDataChange({ description: e.target.value })}
+            placeholder="Ex: Supermercado, Salário..."
+            required
+            disabled={isTransfer}
+          />
+        </div>
+      )}
 
       <div className="space-y-2">
         <Label htmlFor="amount" className="text-caption">Valor</Label>
@@ -94,48 +99,54 @@ export function EditTransactionFormFields({
         </Popover>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="type" className="text-caption">Tipo</Label>
-        <Select
-          value={formData.type}
-          onValueChange={(value: "income" | "expense") => 
-            onFormDataChange({ type: value, category_id: "" })
-          }
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Selecione o tipo" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="income">Receita</SelectItem>
-            <SelectItem value="expense">Despesa</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      {!isTransfer && (
+        <div className="space-y-2">
+          <Label htmlFor="type" className="text-caption">Tipo</Label>
+          <Select
+            value={formData.type}
+            onValueChange={(value: "income" | "expense") => 
+              onFormDataChange({ type: value, category_id: "" })
+            }
+            disabled={isTransfer}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione o tipo" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="income">Receita</SelectItem>
+              <SelectItem value="expense">Despesa</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
-      <div className="space-y-2">
-        <Label htmlFor="category" className="text-caption">Categoria</Label>
-        <Select
-          value={formData.category_id}
-          onValueChange={(value) => onFormDataChange({ category_id: value })}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Selecione uma categoria" />
-          </SelectTrigger>
-          <SelectContent>
-            {filteredCategories.map((category) => (
-              <SelectItem key={category.id} value={category.id}>
-                <div className="flex items-center gap-2">
-                  <div 
-                    className="w-3 h-3 rounded-full" 
-                    style={{ backgroundColor: category.color }}
-                  />
-                  {category.name}
-                </div>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      {!isTransfer && (
+        <div className="space-y-2">
+          <Label htmlFor="category" className="text-caption">Categoria</Label>
+          <Select
+            value={formData.category_id}
+            onValueChange={(value) => onFormDataChange({ category_id: value })}
+            disabled={isTransfer}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione uma categoria" />
+            </SelectTrigger>
+            <SelectContent>
+              {filteredCategories.map((category) => (
+                <SelectItem key={category.id} value={category.id}>
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-3 h-3 rounded-full" 
+                      style={{ backgroundColor: category.color }}
+                    />
+                    {category.name}
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
       <div className="space-y-2">
         <Label htmlFor="account" className="text-caption">Conta</Label>

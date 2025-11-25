@@ -22,7 +22,8 @@ interface FormData {
 export function useEditTransactionForm(
   transaction: Transaction | null,
   accounts: Account[],
-  open: boolean
+  open: boolean,
+  isTransfer: boolean = false
 ) {
   const [formData, setFormData] = useState<FormData>({
     description: "",
@@ -63,6 +64,11 @@ export function useEditTransactionForm(
 
   const validateForm = async (): Promise<boolean> => {
     if (!transaction) return false;
+
+    // Se for transferência, não validar descrição, tipo e categoria
+    if (isTransfer) {
+      return true;
+    }
 
     try {
       const validationData = {
@@ -140,24 +146,27 @@ export function useEditTransactionForm(
   const getUpdates = (): Partial<Transaction> | null => {
     const updates: Partial<Transaction> = {};
     
-    if (formData.description.trim() !== originalData.description.trim()) {
-      updates.description = formData.description.trim();
+    // Se for transferência, não permitir edição de descrição, tipo e categoria
+    if (!isTransfer) {
+      if (formData.description.trim() !== originalData.description.trim()) {
+        updates.description = formData.description.trim();
+      }
+      
+      if (formData.type !== originalData.type) {
+        updates.type = formData.type;
+      }
+      
+      if (formData.category_id !== originalData.category_id) {
+        updates.category_id = formData.category_id;
+      }
     }
     
-    if (formData.amountInCents !== originalData.amountInCents || formData.type !== originalData.type) {
+    if (formData.amountInCents !== originalData.amountInCents) {
       updates.amount = Math.abs(formData.amountInCents);
     }
     
     if (formData.date.getTime() !== originalData.date.getTime()) {
       updates.date = formData.date;
-    }
-    
-    if (formData.type !== originalData.type) {
-      updates.type = formData.type;
-    }
-    
-    if (formData.category_id !== originalData.category_id) {
-      updates.category_id = formData.category_id;
     }
     
     if (formData.account_id !== originalData.account_id) {

@@ -19,6 +19,9 @@ export function EditTransactionModal({
   const { toast } = useToast();
   const { categories } = useCategories();
   
+  // Detectar se é uma transação de transferência
+  const isTransfer = Boolean(transaction?.to_account_id || transaction?.linked_transaction_id);
+  
   const {
     scopeDialogOpen,
     setScopeDialogOpen,
@@ -35,7 +38,7 @@ export function EditTransactionModal({
     validateForm,
     validateBalance,
     getUpdates,
-  } = useEditTransactionForm(transaction, accounts, open);
+  } = useEditTransactionForm(transaction, accounts, open, isTransfer);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -106,6 +109,7 @@ export function EditTransactionModal({
               onFormDataChange={(updates) => setFormData({ ...formData, ...updates })}
               accounts={accounts}
               filteredCategories={filteredCategories}
+              isTransfer={isTransfer}
             />
 
             <div className="flex gap-3 pt-4">
