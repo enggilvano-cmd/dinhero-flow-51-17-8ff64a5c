@@ -76,7 +76,8 @@ export const TransferInputSchema = z.object({
   from_account_id: uuidSchema,
   to_account_id: uuidSchema,
   amount: z.number().positive('Amount must be positive').max(1_000_000_000, 'Amount exceeds maximum allowed value'),
-  description: z.string().trim().min(1, 'Description is required').max(200, 'Description must be less than 200 characters'),
+  outgoing_description: z.string().trim().max(200, 'Description must be less than 200 characters').optional(),
+  incoming_description: z.string().trim().max(200, 'Description must be less than 200 characters').optional(),
   date: dateSchema,
   status: z.enum(['pending', 'completed']),
 }).refine(data => data.from_account_id !== data.to_account_id, {
