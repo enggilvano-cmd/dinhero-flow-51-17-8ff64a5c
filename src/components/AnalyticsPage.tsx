@@ -82,7 +82,9 @@ interface Transaction {
   account_id?: string;
   status: "pending" | "completed";
   to_account_id?: string;
+  linked_transaction_id?: string;
 }
+
 
 interface AnalyticsPageProps {
   transactions: Transaction[];
@@ -252,38 +254,51 @@ export default function AnalyticsPage({
     categories,
   ]);
 
+  // Helper para identificar transações de transferência (ambos os lados)
+  const isTransferLike = (transaction: Transaction) =>
+    transaction.type === "transfer" ||
+    Boolean(transaction.to_account_id) ||
+    Boolean(transaction.linked_transaction_id);
+
+  // Lista base para gráficos/relatórios: sempre sem transferências
+  const nonTransferFilteredTransactions = useMemo(
+    () => filteredTransactions.filter((t) => !isTransferLike(t)),
+    [filteredTransactions]
+  );
+
+
   const categoryData = useMemo(() => {
-    const typeFilteredTransactions = filteredTransactions.filter(
+    const typeFilteredTransactions = nonTransferFilteredTransactions.filter(
       (t) => t.type === categoryChartType
     );
 
-    const categoryFilteredTransactions = typeFilteredTransactions.filter((transaction) => {
-      const category = getTransactionCategory(transaction);
-      return category !== "Pagamento de Fatura";
-    });
+    const categoryFilteredTransactions = typeFilteredTransactions.filter(
+      (transaction) => {
+        const category = getTransactionCategory(transaction);
+        return category !== "Pagamento de Fatura";
+      }
+    );
 
     if (categoryFilteredTransactions.length === 0) {
       return [];
     }
 
-    // 1. LÓGICA DE AGRUPAMENTO ATUALIZADA PARA USAR A COR DA CATEGORIA
     const categoryTotals = categoryFilteredTransactions.reduce(
       (acc, transaction) => {
-        // Encontra a categoria real a partir do ID
         const categoryObj = categories.find(
           (c) => c.id === transaction.category_id
         );
-        // Usa o nome da categoria encontrada, ou um fallback
         const categoryName = categoryObj?.name || "Sem categoria";
-        // Usa a cor da categoria encontrada, ou um fallback
         const categoryColor = categoryObj?.color || FALLBACK_COLOR;
 
         if (!acc[categoryName]) {
           acc[categoryName] = { amount: 0, color: categoryColor };
         }
-        // CORREÇÃO: Usar o valor absoluto para despesas, pois o gráfico de pizza
-        // não lida com valores negativos. O valor original é negativo.
-        const value = categoryChartType === 'expense' ? Math.abs(transaction.amount) : transaction.amount;
+
+        const value =
+          categoryChartType === "expense"
+            ? Math.abs(transaction.amount)
+            : transaction.amount;
         acc[categoryName].amount += value;
 
         return acc;
@@ -300,7 +315,7 @@ export default function AnalyticsPage({
       .map(([category, data]) => ({
         category,
         amount: data.amount,
-        color: data.color, // Passa a cor da categoria para o relatório
+        color: data.color,
         percentage: totalAmount > 0 ? (data.amount / totalAmount) * 100 : 0,
         transactions: categoryFilteredTransactions.filter(
           (t) => getTransactionCategory(t) === category
@@ -310,65 +325,66 @@ export default function AnalyticsPage({
 
     return report.map((item, index) => ({
       ...item,
-      // Define o 'fill' com a cor da categoria
-      fill: item.color || COLORS[index % COLORS.length], // Fallback para cores padrão
+      fill: item.color || COLORS[index % COLORS.length],
     }));
-  }, [filteredTransactions, categoryChartType, categories]);
+  }, [nonTransferFilteredTransactions, categoryChartType, categories]);
+
 
   const monthlyData = useMemo(() => {
-    // O gráfico agora obedece aos filtros da página.
-    // Usamos 'filteredTransactions' em vez de 'transactions'.
-    const monthlyTotals = filteredTransactions.reduce((acc, transaction) => {
-      const transactionDate =
-        typeof transaction.date === "string"
-          ? createDateFromString(transaction.date)
-          : transaction.date;
-      const monthKey = format(transactionDate, "yyyy-MM");
+    const monthlyTotals = nonTransferFilteredTransactions.reduce(
+      (acc, transaction) => {
+        const transactionDate =
+          typeof transaction.date === "string"
+            ? createDateFromString(transaction.date)
+            : transaction.date;
+        const monthKey = format(transactionDate, "yyyy-MM");
 
-      if (!acc[monthKey]) {
-        acc[monthKey] = { income: 0, expenses: 0 };
-      }
+        if (!acc[monthKey]) {
+          acc[monthKey] = { income: 0, expenses: 0 };
+        }
 
-      if (transaction.type === "income") {
-        acc[monthKey].income += transaction.amount;
-      } else if (transaction.type === "expense") {
-        acc[monthKey].expenses -= transaction.amount; // Subtrair para tornar negativo
-      }
+        if (transaction.type === "income") {
+          acc[monthKey].income += transaction.amount;
+        } else if (transaction.type === "expense") {
+          acc[monthKey].expenses -= transaction.amount;
+        }
 
-      return acc;
-    }, {} as Record<string, { income: number; expenses: number }>);
+        return acc;
+      },
+      {} as Record<string, { income: number; expenses: number }>
+    );
 
     const sortedEntries = Object.entries(monthlyTotals).sort(([a], [b]) =>
       a.localeCompare(b)
     );
 
-    // Calcular o saldo anterior ao período filtrado (todas as transações antes do primeiro mês)
     const firstMonthKey = sortedEntries.length > 0 ? sortedEntries[0][0] : null;
     const previousBalance = firstMonthKey
-      ? transactions.reduce((acc, transaction) => {
-          const transactionDate =
-            typeof transaction.date === "string"
-              ? createDateFromString(transaction.date)
-              : transaction.date;
-          const monthKey = format(transactionDate, "yyyy-MM");
+      ? transactions
+          .filter((t) => !isTransferLike(t as Transaction))
+          .reduce((acc, transaction) => {
+            const transactionDate =
+              typeof transaction.date === "string"
+                ? createDateFromString(transaction.date)
+                : transaction.date;
+            const monthKey = format(transactionDate, "yyyy-MM");
 
-          // Somar apenas transações anteriores ao primeiro mês do período filtrado
-          if (monthKey < firstMonthKey) {
-            if (transaction.type === "income") {
-              return acc + transaction.amount;
-            } else if (transaction.type === "expense") {
-              return acc - transaction.amount;
+            if (monthKey < firstMonthKey) {
+              if (transaction.type === "income") {
+                return acc + transaction.amount;
+              } else if (transaction.type === "expense") {
+                return acc - transaction.amount;
+              }
             }
-          }
 
-          return acc;
-        }, 0)
+            return acc;
+          }, 0)
       : 0;
 
     let saldoAcumulado = previousBalance;
 
     const sortedMonths = sortedEntries.map(([monthKey, data]) => {
-      const saldoMensal = data.income + data.expenses; // expenses já são negativas
+      const saldoMensal = data.income + data.expenses;
       saldoAcumulado += saldoMensal;
       const [year, month] = monthKey
         .split("-")
@@ -379,16 +395,17 @@ export default function AnalyticsPage({
           locale: ptBR,
         }),
         receitas: data.income,
-        despesas: Math.abs(data.expenses), // Exibir despesas como valor positivo para comparação
+        despesas: Math.abs(data.expenses),
         saldo: saldoAcumulado,
       };
     });
 
     return sortedMonths;
-  }, [filteredTransactions, transactions]);
+  }, [nonTransferFilteredTransactions, transactions]);
+
 
   const totalsByType = useMemo(() => {
-    return filteredTransactions.reduce(
+    return nonTransferFilteredTransactions.reduce(
       (acc, transaction) => {
         const amount = Math.abs(Number(transaction.amount) || 0);
         if (transaction.type === "income") {
@@ -400,7 +417,8 @@ export default function AnalyticsPage({
       },
       { income: 0, expenses: 0 }
     );
-  }, [filteredTransactions]);
+  }, [nonTransferFilteredTransactions]);
+
 
   const accountBalanceData = useMemo(() => {
     return accounts
