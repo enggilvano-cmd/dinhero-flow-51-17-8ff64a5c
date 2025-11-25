@@ -28,7 +28,10 @@ export function InstallmentOptions({
 }: InstallmentOptionsProps) {
   return (
     <div className="space-y-4 border rounded-lg p-4 bg-muted/30">
-      <div className="flex items-center justify-end">
+      <div className="flex items-center justify-between gap-4">
+        <Label htmlFor="installment" className="text-headline cursor-pointer">
+          Parcelamento
+        </Label>
         <Switch
           id="installment"
           checked={isInstallment}

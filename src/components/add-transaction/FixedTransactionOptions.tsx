@@ -1,3 +1,4 @@
+import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 
 interface FixedTransactionOptionsProps {
@@ -17,7 +18,10 @@ export function FixedTransactionOptions({
 }: FixedTransactionOptionsProps) {
   return (
     <div className="space-y-4 border rounded-lg p-4 bg-muted/30">
-      <div className="flex items-center justify-end">
+      <div className="flex items-center justify-between gap-4">
+        <Label htmlFor="fixed" className="text-headline cursor-pointer">
+          Transação Fixa
+        </Label>
         <Switch
           id="fixed"
           checked={isFixed}
