@@ -21,7 +21,7 @@ interface ResponsiveTableProps<T> {
   className?: string;
 }
 
-export function ResponsiveTable<T extends Record<string, any>>({
+export function ResponsiveTable<T extends Record<string, unknown>>({
   data,
   columns,
   keyField,
@@ -56,7 +56,7 @@ export function ResponsiveTable<T extends Record<string, any>>({
     return (
       <div className={cn(tableConfig.spacing, className)}>
         {data.map((item) => (
-          <Card key={item[keyField]} className="financial-card border border-border/50 bg-card/80 backdrop-blur-sm hover:bg-card/90 transition-all duration-200">
+          <Card key={item[keyField] as React.Key} className="financial-card border border-border/50 bg-card/80 backdrop-blur-sm hover:bg-card/90 transition-all duration-200">
             <CardContent className={cn(tableConfig.padding, "space-y-3")}>
               {/* Main info row - destacar informação principal */}
               <div className="flex items-start justify-between gap-3 pb-2 border-b border-border/30">
@@ -101,7 +101,7 @@ export function ResponsiveTable<T extends Record<string, any>>({
     return (
       <div className={cn(tableConfig.spacing, className)}>
         {data.map((item) => (
-          <Card key={item[keyField]} className="financial-card">
+          <Card key={item[keyField] as React.Key} className="financial-card">
             <CardContent className={tableConfig.padding}>
               <div className="space-y-3">
                 {/* Primary row - Main info */}
@@ -215,7 +215,7 @@ export function ResponsiveTable<T extends Record<string, any>>({
           <tbody>
             {data.map((item) => (
               <tr 
-                key={item[keyField]} 
+                key={item[keyField] as React.Key} 
                 className="border-b last:border-b-0 hover:bg-muted/50 transition-colors"
               >
                 {visibleColumns.map((column) => (

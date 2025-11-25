@@ -74,7 +74,7 @@ export const setSentryUser = (user: { id: string; email?: string; username?: str
 };
 
 // Helper to add breadcrumb
-export const addSentryBreadcrumb = (message: string, category: string, level: Sentry.SeverityLevel = 'info', data?: Record<string, any>) => {
+export const addSentryBreadcrumb = (message: string, category: string, level: Sentry.SeverityLevel = 'info', data?: Record<string, unknown>) => {
   Sentry.addBreadcrumb({
     message,
     category,
@@ -85,14 +85,14 @@ export const addSentryBreadcrumb = (message: string, category: string, level: Se
 };
 
 // Helper to capture exception manually
-export const captureException = (error: Error, context?: Record<string, any>) => {
+export const captureException = (error: Error, context?: Record<string, unknown>) => {
   Sentry.captureException(error, {
     extra: context,
   });
 };
 
 // Helper to capture message
-export const captureMessage = (message: string, level: Sentry.SeverityLevel = 'info', context?: Record<string, any>) => {
+export const captureMessage = (message: string, level: Sentry.SeverityLevel = 'info', context?: Record<string, unknown>) => {
   Sentry.captureMessage(message, {
     level,
     extra: context,
@@ -100,6 +100,6 @@ export const captureMessage = (message: string, level: Sentry.SeverityLevel = 'i
 };
 
 // Helper to set context
-export const setSentryContext = (key: string, context: Record<string, any>) => {
+export const setSentryContext = (key: string, context: Record<string, unknown>) => {
   Sentry.setContext(key, context);
 };

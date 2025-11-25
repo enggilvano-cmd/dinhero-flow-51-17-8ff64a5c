@@ -420,9 +420,9 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
                 selectedAccountId={selectedAccountId}
                 onAccountChange={setSelectedAccountId}
                 filterBillStatus={filterBillStatus}
-                onBillStatusChange={(value) => setFilterBillStatus(value as any)}
+                onBillStatusChange={(value) => setFilterBillStatus(value as "all" | "open" | "closed")}
                 filterPaymentStatus={filterPaymentStatus}
-                onPaymentStatusChange={(value) => setFilterPaymentStatus(value as any)}
+                onPaymentStatusChange={(value) => setFilterPaymentStatus(value as "all" | "paid" | "pending")}
                 creditAccounts={creditAccounts}
                 activeFiltersCount={filterChips.length}
               />

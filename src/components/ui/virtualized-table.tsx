@@ -23,7 +23,7 @@ interface VirtualizedTableProps<T> {
   overscan?: number;
 }
 
-export function VirtualizedTable<T extends Record<string, any>>({
+export function VirtualizedTable<T extends Record<string, unknown>>({
   data,
   columns,
   keyField,
@@ -68,7 +68,7 @@ export function VirtualizedTable<T extends Record<string, any>>({
             const item = data[virtualRow.index];
             return (
               <div
-                key={item[keyField]}
+                key={item[keyField] as React.Key}
                 style={{
                   position: "absolute",
                   top: 0,
@@ -135,7 +135,7 @@ export function VirtualizedTable<T extends Record<string, any>>({
             const item = data[virtualRow.index];
             return (
               <div
-                key={item[keyField]}
+                key={item[keyField] as React.Key}
                 style={{
                   position: "absolute",
                   top: 0,
@@ -260,7 +260,7 @@ export function VirtualizedTable<T extends Record<string, any>>({
                   const item = data[virtualRow.index];
                   return (
                     <tr
-                      key={item[keyField]}
+                      key={item[keyField] as React.Key}
                       className="border-b last:border-b-0 hover:bg-muted/50 transition-colors"
                       style={{
                         position: "absolute",

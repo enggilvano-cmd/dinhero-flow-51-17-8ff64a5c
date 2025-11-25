@@ -1,7 +1,13 @@
 import { loadJsPDF } from "./lazyImports";
+import type jsPDF from 'jspdf';
 import { format } from "date-fns";
 import { formatCurrency } from "./formatters";
 import type { JournalEntry, ChartOfAccount } from "@/types/accounting";
+
+// Types for PDF export
+interface TranslationFunction {
+  (key: string): string;
+}
 
 // Interfaces
 export interface DREReport {
@@ -267,13 +273,18 @@ export function generateCashFlow(
   };
 }
 
+// Types for PDF export
+interface TranslationFunction {
+  (key: string): string;
+}
+
 // Exportar relatório para PDF
 export async function exportReportToPDF(
   reportType: "dre" | "balance" | "cashflow",
-  reportData: any,
+  reportData: DREReport | BalanceSheetReport | CashFlowReport,
   startDate: Date,
   endDate: Date,
-  t: any
+  t: TranslationFunction
 ) {
   const { jsPDF } = await loadJsPDF();
   const doc = new jsPDF();
@@ -303,11 +314,11 @@ export async function exportReportToPDF(
 
   // Conteúdo específico de cada relatório
   if (reportType === "dre") {
-    exportDREtoPDF(doc, reportData, yPos, t);
+    exportDREtoPDF(doc, reportData as DREReport, yPos, t);
   } else if (reportType === "balance") {
-    exportBalanceSheetToPDF(doc, reportData, yPos, t);
+    exportBalanceSheetToPDF(doc, reportData as BalanceSheetReport, yPos, t);
   } else if (reportType === "cashflow") {
-    exportCashFlowToPDF(doc, reportData, yPos, t);
+    exportCashFlowToPDF(doc, reportData as CashFlowReport, yPos, t);
   }
 
   // Salvar
@@ -315,7 +326,7 @@ export async function exportReportToPDF(
   doc.save(filename);
 }
 
-function exportDREtoPDF(doc: any, data: DREReport, startY: number, t: any) {
+function exportDREtoPDF(doc: jsPDF, data: DREReport, startY: number, t: TranslationFunction) {
   let y = startY;
 
   // Receitas
@@ -359,7 +370,7 @@ function exportDREtoPDF(doc: any, data: DREReport, startY: number, t: any) {
   doc.text(formatCurrency(data.netResult), 170, y, { align: "right" });
 }
 
-function exportBalanceSheetToPDF(doc: any, data: BalanceSheetReport, startY: number, t: any) {
+function exportBalanceSheetToPDF(doc: jsPDF, data: BalanceSheetReport, startY: number, t: TranslationFunction) {
   let y = startY;
 
   // Ativo
@@ -425,7 +436,7 @@ function exportBalanceSheetToPDF(doc: any, data: BalanceSheetReport, startY: num
   doc.text(formatCurrency(data.equity), 180, maxY, { align: "right" });
 }
 
-function exportCashFlowToPDF(doc: any, data: CashFlowReport, startY: number, t: any) {
+function exportCashFlowToPDF(doc: jsPDF, data: CashFlowReport, startY: number, t: TranslationFunction) {
   let y = startY;
 
   // Saldo Inicial

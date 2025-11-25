@@ -108,7 +108,7 @@ export function ImportFixedTransactionsModal({
   };
 
   // Extrair valor da célula (suporta diferentes formatos)
-  const extractValue = (row: Record<string, unknown>, keys: string[]): any => {
+  const extractValue = (row: Record<string, unknown>, keys: string[]): unknown => {
     for (const key of keys) {
       if (row[key] !== undefined && row[key] !== null && row[key] !== '') {
         return row[key];
@@ -148,17 +148,17 @@ export function ImportFixedTransactionsModal({
     const errors: string[] = [];
     let isValid = true;
 
-    const descricao = extractValue(row, ['Descrição', 'Description', 'descricao', 'description']) as string;
+    const descricao = String(extractValue(row, ['Descrição', 'Description', 'descricao', 'description']) || '');
     
     // Parse valor com suporte ao formato brasileiro (vírgula como decimal)
     const rawValor = String(extractValue(row, ['Valor', 'Amount', 'valor', 'amount']) || '0');
     const valor = parseFloat(rawValor.replace(/\./g, '').replace(',', '.'));
     
-    const tipo = extractValue(row, ['Tipo', 'Type', 'tipo', 'type']) as string;
-    const conta = extractValue(row, ['Conta', 'Account', 'conta', 'account']) as string;
-    const categoria = extractValue(row, ['Categoria', 'Category', 'categoria', 'category']) as string;
-    const diaDoMes = parseInt(extractValue(row, ['Dia do Mês', 'Day of Month', 'diaDoMes', 'dia']) || '0');
-    const status = extractValue(row, ['Status', 'status']) as string || 'pending';
+    const tipo = String(extractValue(row, ['Tipo', 'Type', 'tipo', 'type']) || '');
+    const conta = String(extractValue(row, ['Conta', 'Account', 'conta', 'account']) || '');
+    const categoria = String(extractValue(row, ['Categoria', 'Category', 'categoria', 'category']) || '');
+    const diaDoMes = parseInt(String(extractValue(row, ['Dia do Mês', 'Day of Month', 'diaDoMes', 'dia']) || '0'));
+    const status = String(extractValue(row, ['Status', 'status']) || 'pending');
 
     // Validações
     if (!descricao) {

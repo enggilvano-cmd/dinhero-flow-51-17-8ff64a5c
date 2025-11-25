@@ -99,7 +99,7 @@ export function ImportTransactionsModal({
 
   const pick = (row: Record<string, unknown>, keys: readonly string[]) => {
     // Mapa normalizado de chaves do Excel -> valor
-    const keyMap = new Map<string, any>();
+    const keyMap = new Map<string, unknown>();
     for (const k of Object.keys(row)) {
       keyMap.set(normalizeKey(k), row[k]);
     }
@@ -181,12 +181,12 @@ export function ImportTransactionsModal({
     let isValid = true;
 
     // Usar o mapeador de cabeçalhos para suportar diferentes idiomas
-    const data = pick(row, HEADERS.date);
-    const descricao = pick(row, HEADERS.description);
-    const categoria = pick(row, HEADERS.category);
-    const tipo = pick(row, HEADERS.type);
-    const conta = pick(row, HEADERS.account);
-    const valor = parseFloat(pick(row, HEADERS.amount) || '0');
+    const data = String(pick(row, HEADERS.date) || '');
+    const descricao = String(pick(row, HEADERS.description) || '');
+    const categoria = String(pick(row, HEADERS.category) || '');
+    const tipo = String(pick(row, HEADERS.type) || '');
+    const conta = String(pick(row, HEADERS.account) || '');
+    const valor = parseFloat(String(pick(row, HEADERS.amount) || '0'));
 
     if (!data) {
       errors.push('Data é obrigatória');
@@ -241,8 +241,8 @@ export function ImportTransactionsModal({
       isValid = false;
     }
 
-    const status = pick(row, HEADERS.status) || 'completed';
-    const parsedStatus = validateStatus(status.toString());
+    const statusStr = String(pick(row, HEADERS.status) || 'completed');
+    const parsedStatus = validateStatus(statusStr);
     if (!parsedStatus) {
       errors.push('Status inválido. Use: Concluída ou Pendente');
       isValid = false;
@@ -267,7 +267,7 @@ export function ImportTransactionsModal({
           txDate.getUTCDate() === parsedNorm.getUTCDate();
         // Comparar valores sem conversão - ambos já estão em centavos
         const isSameAmount = Math.abs(tx.amount) === valorInCents;
-        const isSameDescription = (tx.description || '').trim().toLowerCase() === descricao.trim().toLowerCase();
+        const isSameDescription = (tx.description || '').trim().toLowerCase() === String(descricao).trim().toLowerCase();
         const isSameAccount = tx.account_id === accountId;
         return isSameAccount && isSameDate && isSameAmount && isSameDescription;
       });
@@ -275,7 +275,7 @@ export function ImportTransactionsModal({
       if (!existingTx) {
         // Logs de diagnóstico para entender por que não casou
         const sameAccDesc = transactions.filter(tx => {
-          const isSameDescription = (tx.description || '').trim().toLowerCase() === descricao.trim().toLowerCase();
+          const isSameDescription = (tx.description || '').trim().toLowerCase() === String(descricao).trim().toLowerCase();
           const isSameAccount = tx.account_id === accountId;
           return isSameAccount && isSameDescription;
         }).map(tx => ({ id: tx.id, amount: tx.amount, date: (createDateFromString(tx.date)).toISOString().slice(0,10) }));
@@ -301,8 +301,8 @@ export function ImportTransactionsModal({
       tipo,
       conta,
       valor: valor,
-      status,
-      parcelas: (row.Parcelas || row.parcelas || '') as string,
+      status: statusStr,
+      parcelas: String(row.Parcelas || row.parcelas || ''),
       isValid,
       errors,
       accountId: accountId,

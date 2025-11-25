@@ -198,8 +198,8 @@ export function FixedTransactionsPage() {
       staleTime: 30 * 1000,
     });
 
-    const pendingCount = childTransactions?.filter((t: any) => t.status === "pending").length || 0;
-    const hasCompleted = childTransactions?.some((t: any) => t.status === "completed") || false;
+    const pendingCount = childTransactions?.filter((t) => t.status === "pending").length || 0;
+    const hasCompleted = childTransactions?.some((t) => t.status === "completed") || false;
 
     setPendingTransactionsCount(pendingCount);
     setHasCompletedTransactions(hasCompleted);
@@ -295,8 +295,8 @@ export function FixedTransactionsPage() {
       staleTime: 30 * 1000,
     });
 
-    const pendingCount = childTransactions?.filter((t: any) => t.status === "pending").length || 0;
-    const hasCompleted = childTransactions?.some((t: any) => t.status === "completed") || false;
+    const pendingCount = childTransactions?.filter((t) => t.status === "pending").length || 0;
+    const hasCompleted = childTransactions?.some((t) => t.status === "completed") || false;
 
     setPendingTransactionsCount(pendingCount);
     setHasCompletedTransactions(hasCompleted);

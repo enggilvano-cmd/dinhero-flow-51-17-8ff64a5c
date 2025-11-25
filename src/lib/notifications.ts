@@ -17,7 +17,7 @@ export interface Notification {
   date: Date;
   read: boolean;
   actionType?: "bill_payment" | "budget_exceeded" | "account_low";
-  actionData?: any;
+  actionData?: Record<string, unknown>;
 }
 
 // Check if browser supports notifications
