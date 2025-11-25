@@ -1,0 +1,66 @@
+import { useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { useAccounts } from '../queries/useAccounts';
+import { logger } from '@/lib/logger';
+import { queryKeys, refetchWithDelay } from '@/lib/queryClient';
+import { getErrorMessage } from '@/lib/errorUtils';
+
+export function useTransferMutations() {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const { accounts } = useAccounts();
+
+  const handleTransfer = useCallback(async (
+    fromAccountId: string,
+    toAccountId: string,
+    amount: number,
+    date: Date
+  ) => {
+    if (!user) throw new Error('Usuário não autenticado');
+
+    try {
+      const fromAccount = accounts.find((acc) => acc.id === fromAccountId);
+      const toAccount = accounts.find((acc) => acc.id === toAccountId);
+      if (!fromAccount || !toAccount) throw new Error('Contas não encontradas');
+
+      const { error } = await supabase.functions.invoke('atomic-transfer', {
+        body: {
+          transfer: {
+            from_account_id: fromAccountId,
+            to_account_id: toAccountId,
+            amount: amount,
+            date: date.toISOString().split('T')[0],
+            description: `Transferência para ${toAccount.name}`,
+            status: 'completed' as const,
+          }
+        }
+      });
+
+      if (error) throw error;
+
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
+      ]);
+      
+      refetchWithDelay(queryClient, [queryKeys.transactionsBase, queryKeys.accounts]);
+    } catch (error: unknown) {
+      logger.error('Error processing transfer:', error);
+      const errorMessage = getErrorMessage(error);
+      toast({
+        title: 'Erro na transferência',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+      throw error;
+    }
+  }, [user, accounts, queryClient, toast]);
+
+  return {
+    handleTransfer,
+  };
+}
