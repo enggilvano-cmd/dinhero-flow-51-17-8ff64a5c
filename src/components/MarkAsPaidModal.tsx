@@ -40,6 +40,7 @@ export function MarkAsPaidModal({
   const [date, setDate] = useState<Date>(new Date());
   const [amount, setAmount] = useState<string>("");
   const [accountId, setAccountId] = useState<string>("");
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
 
   // Quando o modal abre, pré-preenche os valores
   useEffect(() => {
@@ -86,7 +87,7 @@ export function MarkAsPaidModal({
           {/* Data */}
           <div className="grid gap-2">
             <Label htmlFor="date" className="text-caption">Data</Label>
-            <Popover>
+            <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
@@ -103,7 +104,12 @@ export function MarkAsPaidModal({
                 <Calendar
                   mode="single"
                   selected={date}
-                  onSelect={(newDate) => newDate && setDate(newDate)}
+                  onSelect={(newDate) => {
+                    if (newDate) {
+                      setDate(newDate);
+                      setDatePickerOpen(false);
+                    }
+                  }}
                   initialFocus
                   className="pointer-events-auto"
                 />
