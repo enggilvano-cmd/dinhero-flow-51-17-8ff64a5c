@@ -285,7 +285,7 @@ const PlaniFlowApp = () => {
       }}
       onNavigateToAccounts={(filterType) => {
         if (filterType) {
-          setAccountFilterType(filterType as any);
+          setAccountFilterType(filterType as "all" | "checking" | "savings" | "credit" | "investment");
         } else {
           setAccountFilterType("all");
         }
@@ -393,7 +393,7 @@ const PlaniFlowApp = () => {
             filterStatus={transactionsFilterStatus}
             onFilterStatusChange={setTransactionsFilterStatus}
             filterAccountType={transactionsFilterAccountType}
-            onFilterAccountTypeChange={(value: string) => setTransactionsFilterAccountType(value as any)}
+            onFilterAccountTypeChange={(value: string) => setTransactionsFilterAccountType(value as "all" | "checking" | "savings" | "credit" | "investment")}
             dateFrom={transactionsDateFrom}
             dateTo={transactionsDateTo}
             onDateFromChange={setTransactionsDateFrom}

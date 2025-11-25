@@ -10,8 +10,8 @@ import { logger } from './logger';
  * - Memory-safe with bounded cache size
  */
 class IdempotencyManager {
-  private pendingOperations = new Map<string, Promise<any>>();
-  private completedOperations = new Map<string, { result: any; timestamp: number; lastAccessed: number }>();
+  private pendingOperations = new Map<string, Promise<unknown>>();
+  private completedOperations = new Map<string, { result: unknown; timestamp: number; lastAccessed: number }>();
   
   // Cache limits to prevent memory leaks
   private readonly MAX_CACHE_SIZE = 1000;
@@ -20,13 +20,13 @@ class IdempotencyManager {
   /**
    * Generate a unique idempotency key based on operation type and parameters
    */
-  generateKey(operation: string, params: Record<string, any>): string {
+  generateKey(operation: string, params: Record<string, unknown>): string {
     const sortedParams = Object.keys(params)
       .sort()
       .reduce((acc, key) => {
         acc[key] = params[key];
         return acc;
-      }, {} as Record<string, any>);
+      }, {} as Record<string, unknown>);
     
     return `${operation}:${JSON.stringify(sortedParams)}`;
   }
@@ -190,6 +190,6 @@ if (typeof window !== 'undefined') {
 /**
  * Helper hook for generating idempotency keys in components
  */
-export function useIdempotencyKey(operation: string, params: Record<string, any>): string {
+export function useIdempotencyKey(operation: string, params: Record<string, unknown>): string {
   return idempotencyManager.generateKey(operation, params);
 }

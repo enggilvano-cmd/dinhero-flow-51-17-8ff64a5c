@@ -83,7 +83,7 @@ export const queryKeys = {
   account: (id: string) => ['accounts', id] as const,
   // Base key SEM filtros para facilitar invalidation
   transactionsBase: ['transactions'] as const,
-  transactions: (filters?: Record<string, any>) => 
+  transactions: (filters?: Record<string, unknown>) => 
     ['transactions', filters] as const,
   transaction: (id: string) => ['transactions', id] as const,
   categories: ['categories'] as const,

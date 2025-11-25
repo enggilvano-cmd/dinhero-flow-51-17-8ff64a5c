@@ -82,7 +82,7 @@ export function ImportCategoriesModal({
 
   const pick = (row: Record<string, unknown>, keys: readonly string[]) => {
     // Mapa normalizado de chaves do Excel -> valor
-    const keyMap = new Map<string, any>();
+    const keyMap = new Map<string, unknown>();
     for (const k of Object.keys(row)) {
       keyMap.set(normalizeKey(k), row[k]);
     }
@@ -116,9 +116,9 @@ export function ImportCategoriesModal({
     let isValid = true;
 
     // Usar o mapeador de cabeçalhos para suportar diferentes idiomas
-    const nome = pick(row, HEADERS.name).toString().trim();
-    const tipo = pick(row, HEADERS.type).toString().trim();
-    const cor = pick(row, HEADERS.color).toString().trim();
+    const nome = String(pick(row, HEADERS.name) || '').trim();
+    const tipo = String(pick(row, HEADERS.type) || '').trim();
+    const cor = String(pick(row, HEADERS.color) || '').trim();
 
     if (!nome) {
       errors.push('Nome é obrigatório');

@@ -91,7 +91,7 @@ export async function withErrorHandling<T>(
  */
 export async function withIdempotency<T>(
   operation: string,
-  params: Record<string, any>,
+  params: Record<string, unknown>,
   fn: () => Promise<T>
 ): Promise<T> {
   const key = idempotencyManager.generateKey(operation, params);

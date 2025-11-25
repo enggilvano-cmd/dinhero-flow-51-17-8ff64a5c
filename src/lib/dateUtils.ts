@@ -6,7 +6,7 @@ import { toUserTimezone, getTodayInUserTimezone } from "@/lib/timezone";
 /**
  * Helper para criar uma data de fallback (1970) quando o parse falha.
  */
-function createFallbackDate(invalidInput?: any): Date {
+function createFallbackDate(invalidInput?: unknown): Date {
   logger.warn(
     "createDateFromString não conseguiu parsear:",
     invalidInput,
@@ -104,7 +104,7 @@ export function addMonthsToDate(date: Date, months: number): Date {
  * garantindo que não haja problemas de fuso horário e NUNCA quebre.
  * BUG FIX: Agora usa o sistema de timezone robusto do timezone.ts
  */
-export function createDateFromString(dateInput: any): Date {
+export function createDateFromString(dateInput: unknown): Date {
   const dateString = String(dateInput || "").trim();
   if (dateString === "") {
     return createFallbackDate(dateInput);
@@ -289,7 +289,7 @@ export function calculateBillDetails(
 
     // 2. Calcula o Saldo da Fatura Atual (currentBillAmount)
     // Se o usuário marcou override manual, usa o invoice_month salvo; caso contrário calcula
-    const effectiveInvoiceMonth = (t as any).invoice_month_overridden && t.invoice_month
+    const effectiveInvoiceMonth = ('invoice_month_overridden' in t && t.invoice_month_overridden && t.invoice_month)
       ? t.invoice_month
       : (account.closing_date
           ? calculateInvoiceMonthByDue(tDate, account.closing_date, account.due_date || 1)
