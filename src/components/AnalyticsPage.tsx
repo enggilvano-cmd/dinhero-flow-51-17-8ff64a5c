@@ -39,6 +39,7 @@ import {
   YAxis,
   Line,
   ComposedChart,
+  LabelList,
 } from "recharts";
 import { loadHtmlToImage, loadJsPDF } from "@/lib/lazyImports";
 import {
@@ -1059,11 +1060,29 @@ export default function AnalyticsPage({
                     {accountBalanceData.map((entry, index) => (
                       <Cell key={`cell-positive-${index}`} fill={entry.balance > 0 ? entry.color : "transparent"} />
                     ))}
+                    <LabelList
+                      dataKey="positiveBalance"
+                      position="top"
+                      formatter={(value: any) => {
+                        const numValue = typeof value === 'number' ? value : 0;
+                        return numValue > 0 ? formatCurrency(numValue) : "";
+                      }}
+                      style={{ fontSize: isMobile ? 9 : 11, fill: "hsl(var(--foreground))", fontWeight: 600 }}
+                    />
                   </Bar>
                   <Bar dataKey="negativeBalance" stackId="balance" fill="hsl(var(--destructive))">
                     {accountBalanceData.map((entry, index) => (
                       <Cell key={`cell-negative-${index}`} fill={entry.balance < 0 ? entry.color : "transparent"} />
                     ))}
+                    <LabelList
+                      dataKey="negativeBalance"
+                      position="bottom"
+                      formatter={(value: any) => {
+                        const numValue = typeof value === 'number' ? value : 0;
+                        return numValue < 0 ? formatCurrency(numValue) : "";
+                      }}
+                      style={{ fontSize: isMobile ? 9 : 11, fill: "hsl(var(--foreground))", fontWeight: 600 }}
+                    />
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
