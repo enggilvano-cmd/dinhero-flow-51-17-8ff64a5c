@@ -93,7 +93,7 @@ export function useChartResponsive(): {
       },
       desktop: {
         containerHeight: "min-h-[640px]",
-        outerRadius: 480,
+        outerRadius: 192,
         fontSize: 12,
         tickFontSize: 12,
         margins: { top: 20, right: 30, bottom: 20, left: 20 },
