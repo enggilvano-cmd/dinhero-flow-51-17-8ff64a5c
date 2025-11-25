@@ -101,7 +101,7 @@ export function useDashboardCalculations(
     fetchAggregatedTotals();
   }, [dateRange]);
 
-  // Calcular despesas de cartão de crédito do período (filtradas)
+  // Calcular despesas de cartão de crédito do período (filtradas, transferências já excluídas por type='expense')
   const creditCardExpenses = useMemo(() => 
     filteredTransactions
       .filter((t) => {
@@ -112,7 +112,7 @@ export function useDashboardCalculations(
     [filteredTransactions, accounts]
   );
 
-  // Calcular pendências (filtradas)
+  // Calcular pendências (filtradas, transferências já excluídas por type check)
   const pendingExpenses = useMemo(() => 
     filteredTransactions
       .filter((t) => t.type === 'expense' && t.status === 'pending')

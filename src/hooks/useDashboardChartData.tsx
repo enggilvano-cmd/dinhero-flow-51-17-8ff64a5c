@@ -53,7 +53,9 @@ export function useDashboardChartData(
 
       if (dailyFilteredTrans.length === 0) return [];
 
-      const dailyTotals = dailyFilteredTrans.reduce((acc, transaction) => {
+      const dailyTotals = dailyFilteredTrans
+        .filter(t => t.type !== 'transfer') // Excluir transferências
+        .reduce((acc, transaction) => {
         const transactionDate = typeof transaction.date === 'string'
           ? createDateFromString(transaction.date)
           : transaction.date;
@@ -94,7 +96,9 @@ export function useDashboardChartData(
         };
       });
     } else {
-      const monthlyTotals = transactions.reduce((acc, transaction) => {
+      const monthlyTotals = transactions
+        .filter(t => t.type !== 'transfer') // Excluir transferências
+        .reduce((acc, transaction) => {
         const transactionDate = typeof transaction.date === 'string'
           ? createDateFromString(transaction.date)
           : transaction.date;
@@ -123,7 +127,9 @@ export function useDashboardChartData(
         monthsToShow.push(monthKey);
       }
 
-      const previousYearBalance = transactions.reduce((acc, transaction) => {
+      const previousYearBalance = transactions
+        .filter(t => t.type !== 'transfer') // Excluir transferências
+        .reduce((acc, transaction) => {
         const transactionDate = typeof transaction.date === 'string'
           ? createDateFromString(transaction.date)
           : transaction.date;
