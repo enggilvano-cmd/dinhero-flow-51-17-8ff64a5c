@@ -23,7 +23,8 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
     fromAccountId: "",
     toAccountId: "",
     amountInCents: 0,
-    date: getTodayString()
+    date: getTodayString(),
+    description: ""
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -48,12 +49,13 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validação Zod
+    // Validação Zod - ajustar nomes dos campos para corresponder ao schema
     const validationResult = transferSchema.safeParse({
-      fromAccountId: formData.fromAccountId,
-      toAccountId: formData.toAccountId,
-      amountInCents: formData.amountInCents,
+      description: formData.description,
+      amount: formData.amountInCents,
       date: formData.date,
+      from_account_id: formData.fromAccountId,
+      to_account_id: formData.toAccountId,
     });
 
     if (!validationResult.success) {
@@ -109,7 +111,8 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
         formData.fromAccountId,
         formData.toAccountId,
         formData.amountInCents,
-        createDateFromString(formData.date)
+        createDateFromString(formData.date),
+        formData.description
       );
 
       toast({
@@ -123,7 +126,8 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
         fromAccountId: "",
         toAccountId: "",
         amountInCents: 0,
-        date: getTodayString()
+        date: getTodayString(),
+        description: ""
       });
 
       onOpenChange(false);
@@ -151,6 +155,17 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="description" className="text-caption">Descrição</Label>
+            <Input
+              id="description"
+              type="text"
+              placeholder="Ex: Transferência para poupança"
+              value={formData.description}
+              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+            />
+          </div>
+
           <div className="grid grid-cols-1 gap-4">
             <div className="space-y-2">
               <Label htmlFor="fromAccount" className="text-caption">Conta de Origem</Label>

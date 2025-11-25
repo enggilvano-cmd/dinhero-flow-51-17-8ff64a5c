@@ -71,7 +71,8 @@ export interface TransferModalProps extends BaseModalProps {
     fromAccountId: string,
     toAccountId: string,
     amountInCents: number,
-    date: Date
+    date: Date,
+    description: string
   ) => Promise<{ fromAccount: Account; toAccount: Account }>;
 }
 
