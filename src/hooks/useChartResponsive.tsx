@@ -63,7 +63,7 @@ export function useChartResponsive(): {
     const configs = {
       mobile: {
         containerHeight: "min-h-[176px]",
-        outerRadius: 50,
+        outerRadius: 125,
         fontSize: 10,
         tickFontSize: 9,
         margins: { top: 10, right: 10, bottom: 40, left: 10 },
