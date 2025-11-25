@@ -61,7 +61,7 @@ export function EditTransactionFormFields({
         />
       </div>
 
-      {formData.account_id && formData.type && (
+      {!isTransfer && formData.account_id && formData.type && (
         <AvailableBalanceIndicator
           account={accounts.find(acc => acc.id === formData.account_id)}
           transactionType={formData.type}
@@ -148,51 +148,55 @@ export function EditTransactionFormFields({
         </div>
       )}
 
-      <div className="space-y-2">
-        <Label htmlFor="account" className="text-caption">Conta</Label>
-        <Select
-          value={formData.account_id}
-          onValueChange={(value) => onFormDataChange({ account_id: value })}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Selecione uma conta" />
-          </SelectTrigger>
-          <SelectContent>
-            {accounts.map((account) => (
-              <SelectItem key={account.id} value={account.id}>
-                <div className="flex justify-between items-center w-full">
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: account.color || "#6b7280" }}
-                    />
-                    <span>{account.name}</span>
+      {!isTransfer && (
+        <div className="space-y-2">
+          <Label htmlFor="account" className="text-caption">Conta</Label>
+          <Select
+            value={formData.account_id}
+            onValueChange={(value) => onFormDataChange({ account_id: value })}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione uma conta" />
+            </SelectTrigger>
+            <SelectContent>
+              {accounts.map((account) => (
+                <SelectItem key={account.id} value={account.id}>
+                  <div className="flex justify-between items-center w-full">
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: account.color || "#6b7280" }}
+                      />
+                      <span>{account.name}</span>
+                    </div>
+                    <span className="ml-2 text-caption text-muted-foreground">
+                      {ACCOUNT_TYPE_LABELS[account.type]}
+                    </span>
                   </div>
-                  <span className="ml-2 text-caption text-muted-foreground">
-                    {ACCOUNT_TYPE_LABELS[account.type]}
-                  </span>
-                </div>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
-      <div className="space-y-2">
-        <Label htmlFor="status" className="text-caption">Status</Label>
-        <Select
-          value={formData.status}
-          onValueChange={(value: "pending" | "completed") => onFormDataChange({ status: value })}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Selecione o status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="pending">Pendente</SelectItem>
-            <SelectItem value="completed">Concluído</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      {!isTransfer && (
+        <div className="space-y-2">
+          <Label htmlFor="status" className="text-caption">Status</Label>
+          <Select
+            value={formData.status}
+            onValueChange={(value: "pending" | "completed") => onFormDataChange({ status: value })}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione o status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="pending">Pendente</SelectItem>
+              <SelectItem value="completed">Concluído</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
       {formData.account_id &&
        accounts.find(acc => acc.id === formData.account_id)?.type === "credit" && (
