@@ -1100,8 +1100,8 @@ export default function AnalyticsPage({
                          
                          const barBottom = Math.max(y, y + height);
                          const labelX = x + width / 2;
-                         // base da barra negativa (próximo ao fim da barra, não da linha do eixo)
-                         const labelY = barBottom - 5;
+                         // mesma distância que o label positivo, mas abaixo da barra
+                         const labelY = barBottom + 15;
                          
                          return (
                            <text
