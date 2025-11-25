@@ -976,13 +976,16 @@ export default function AnalyticsPage({
                 </Pie>
                 {responsiveConfig.showLegend && categoryData.length > 0 && (
                   <ChartLegend
-                    content={<ChartLegendContent />}
+                    content={((props: any) => (
+                      <ChartLegendContent {...props} nameKey="name" />
+                    )) as any}
                     wrapperStyle={{
                       paddingTop: responsiveConfig.showLabels ? "10px" : "20px",
                     }}
                     iconType="circle"
                   />
                 )}
+
               </RechartsPieChart>
             </ChartContainer>
             {categoryData.length === 0 && (
