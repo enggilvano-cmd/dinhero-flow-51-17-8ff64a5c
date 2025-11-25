@@ -4,7 +4,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -135,9 +134,6 @@ export function EditFixedTransactionModal({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Editar Transação Fixa</DialogTitle>
-          <DialogDescription>
-            Modifique os dados da transação fixa. As transações já geradas não serão afetadas.
-          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">

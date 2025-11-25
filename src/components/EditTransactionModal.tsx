@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useCategories } from "@/hooks/useCategories";
@@ -98,9 +98,6 @@ export function EditTransactionModal({
                   Parcela {transaction?.current_installment} de {transaction?.installments}
                 </span>
               )}
-              <DialogDescription className="text-body">
-                Atualize as informações da transação
-              </DialogDescription>
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">

@@ -1,11 +1,5 @@
 import { useState, useEffect, FormEvent } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CurrencyInput } from "@/components/forms/CurrencyInput";
@@ -139,9 +133,6 @@ export function EditAccountModal({
       <DialogContent className="w-[95vw] max-w-[425px] p-4 sm:p-6">
         <DialogHeader className="space-y-2 pb-4">
           <DialogTitle className="text-headline">Editar Conta</DialogTitle>
-          <DialogDescription className="text-body">
-            Atualize as informações da conta
-          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">

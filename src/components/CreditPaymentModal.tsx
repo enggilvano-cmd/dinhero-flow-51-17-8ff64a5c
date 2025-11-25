@@ -2,7 +2,6 @@ import { useState, useMemo, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -215,9 +214,6 @@ export function CreditPaymentModal({
       <DialogContent className="sm:max-w-[500px] overflow-visible">
         <DialogHeader>
           <DialogTitle>Pagar Fatura do Cartão</DialogTitle>
-          <DialogDescription>
-            Realize o pagamento da fatura do seu cartão de crédito
-          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
