@@ -64,6 +64,7 @@ export function useTransactionsPageLogic({
 }: UseTransactionsPageLogicProps) {
   const { toast } = useToast();
   const [scopeDialogOpen, setScopeDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [pendingDeleteTransaction, setPendingDeleteTransaction] = useState<Transaction | null>(null);
   const [pendingTransactionsCount, setPendingTransactionsCount] = useState(0);
   const [hasCompletedTransactions, setHasCompletedTransactions] = useState(false);
@@ -334,9 +335,22 @@ export function useTransactionsPageLogic({
         setScopeDialogOpen(true);
         return;
       }
+      
+      // Transação simples - abrir diálogo de confirmação
+      setPendingDeleteTransaction(transaction);
+      setDeleteDialogOpen(true);
+      return;
     }
     
     onDeleteTransaction(transactionId, scope);
+  };
+
+  const confirmDelete = () => {
+    if (pendingDeleteTransaction) {
+      onDeleteTransaction(pendingDeleteTransaction.id);
+      setDeleteDialogOpen(false);
+      setPendingDeleteTransaction(null);
+    }
   };
 
   return {
@@ -348,8 +362,11 @@ export function useTransactionsPageLogic({
     aggregatedTotals,
     exportToExcel,
     handleDeleteWithScope,
+    confirmDelete,
     scopeDialogOpen,
     setScopeDialogOpen,
+    deleteDialogOpen,
+    setDeleteDialogOpen,
     pendingDeleteTransaction,
     setPendingDeleteTransaction,
     pendingTransactionsCount,
