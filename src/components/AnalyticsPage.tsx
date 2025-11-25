@@ -811,7 +811,7 @@ export default function AnalyticsPage({
           </CardContent>
         </Card>
 
-        <Card className="financial-card">
+        <Card className="financial-card md:col-span-2 lg:col-span-1">
           <CardContent className="p-4">
             <div className="flex flex-col items-center gap-2 text-center">
               <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
