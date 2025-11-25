@@ -1070,6 +1070,8 @@ export default function AnalyticsPage({
                          
                          const labelX = x + width / 2;
                          const labelY = y - 5;
+                         // Inclina se a barra for estreita (< 70px) ou em mobile
+                         const shouldRotate = width < 70 || isMobile;
                          
                          return (
                            <text
@@ -1079,7 +1081,7 @@ export default function AnalyticsPage({
                              textAnchor="middle"
                              fontSize={isMobile ? 9 : 11}
                              fontWeight={600}
-                             transform={isMobile ? `rotate(-45 ${labelX} ${labelY})` : undefined}
+                             transform={shouldRotate ? `rotate(-45 ${labelX} ${labelY})` : undefined}
                            >
                              {formatCurrency(numValue)}
                            </text>
@@ -1100,8 +1102,9 @@ export default function AnalyticsPage({
                          
                          const barBottom = Math.max(y, y + height);
                          const labelX = x + width / 2;
-                         // mesma distância que o label positivo, mas abaixo da barra
                          const labelY = barBottom + 15;
+                         // Inclina se a barra for estreita (< 70px) ou em mobile
+                         const shouldRotate = width < 70 || isMobile;
                          
                          return (
                            <text
@@ -1111,7 +1114,7 @@ export default function AnalyticsPage({
                              textAnchor="middle"
                              fontSize={isMobile ? 9 : 11}
                              fontWeight={600}
-                             transform={isMobile ? `rotate(-45 ${labelX} ${labelY})` : undefined}
+                             transform={shouldRotate ? `rotate(-45 ${labelX} ${labelY})` : undefined}
                            >
                              {formatCurrency(numValue)}
                            </text>
