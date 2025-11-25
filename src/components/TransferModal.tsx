@@ -23,8 +23,7 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
     fromAccountId: "",
     toAccountId: "",
     amountInCents: 0,
-    date: getTodayString(),
-    description: ""
+    date: getTodayString()
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -51,7 +50,6 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
 
     // Validação Zod - ajustar nomes dos campos para corresponder ao schema
     const validationResult = transferSchema.safeParse({
-      description: formData.description,
       amount: formData.amountInCents,
       date: formData.date,
       from_account_id: formData.fromAccountId,
@@ -111,8 +109,7 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
         formData.fromAccountId,
         formData.toAccountId,
         formData.amountInCents,
-        createDateFromString(formData.date),
-        formData.description
+        createDateFromString(formData.date)
       );
 
       toast({
@@ -126,8 +123,7 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
         fromAccountId: "",
         toAccountId: "",
         amountInCents: 0,
-        date: getTodayString(),
-        description: ""
+        date: getTodayString()
       });
 
       onOpenChange(false);
@@ -155,17 +151,6 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="description" className="text-caption">Descrição</Label>
-            <Input
-              id="description"
-              type="text"
-              placeholder="Ex: Transferência para poupança"
-              value={formData.description}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-            />
-          </div>
-
           <div className="grid grid-cols-1 gap-4">
             <div className="space-y-2">
               <Label htmlFor="fromAccount" className="text-caption">Conta de Origem</Label>
