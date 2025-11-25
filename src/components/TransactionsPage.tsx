@@ -1,6 +1,7 @@
 import { useSettings } from "@/context/SettingsContext";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { StatCardsSkeletonGrid } from "@/components/transactions/StatCardSkeleton";
 import { TransactionTableSkeleton } from "@/components/transactions/TransactionTableSkeleton";
 import { TransactionList } from "@/components/transactions/TransactionList";
@@ -119,8 +120,11 @@ export function TransactionsPage({
     aggregatedTotals,
     exportToExcel,
     handleDeleteWithScope,
+    confirmDelete,
     scopeDialogOpen,
     setScopeDialogOpen,
+    deleteDialogOpen,
+    setDeleteDialogOpen,
     pendingDeleteTransaction,
     setPendingDeleteTransaction,
     pendingTransactionsCount,
@@ -289,6 +293,24 @@ export function TransactionsPage({
           mode="delete"
         />
       )}
+
+      {/* Delete Confirmation Dialog for Simple Transactions */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir transação?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingDeleteTransaction?.description}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
