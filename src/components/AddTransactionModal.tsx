@@ -141,7 +141,6 @@ export function AddTransactionModal({
             installments={formData.installments}
             customInstallments={customInstallments}
             amount={formData.amount}
-            accountType={selectedAccount?.type}
             isRecurring={formData.isRecurring}
             isFixed={formData.isFixed}
             onInstallmentChange={(checked: boolean) =>

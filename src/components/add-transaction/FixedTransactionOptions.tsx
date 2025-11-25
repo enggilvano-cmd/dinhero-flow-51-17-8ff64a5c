@@ -17,18 +17,13 @@ export function FixedTransactionOptions({
 }: FixedTransactionOptionsProps) {
   return (
     <div className="space-y-4 border rounded-lg p-4 bg-muted/30">
-      <div className="flex items-start justify-between gap-4">
-        <div className="space-y-1 flex-1">
-          <p className="text-body text-muted-foreground">
-            Receitas ou despesas que se repetem todo mês, sem data de término (ex: salário, aluguel)
-          </p>
-        </div>
+      <div className="flex items-center justify-end">
         <Switch
           id="fixed"
           checked={isFixed}
           disabled={isInstallment || isRecurring}
           onCheckedChange={onFixedChange}
-          className="mt-1 data-[state=unchecked]:bg-muted data-[state=unchecked]:border data-[state=unchecked]:border-primary/50"
+          className="data-[state=unchecked]:bg-muted data-[state=unchecked]:border data-[state=unchecked]:border-primary/50"
         />
       </div>
 
