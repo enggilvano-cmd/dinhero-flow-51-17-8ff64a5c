@@ -1077,6 +1077,7 @@ export default function AnalyticsPage({
                     <LabelList
                       dataKey="negativeBalance"
                       position="bottom"
+                      offset={10}
                       formatter={(value: any) => {
                         const numValue = typeof value === 'number' ? value : 0;
                         return numValue < 0 ? formatCurrency(numValue) : "";
