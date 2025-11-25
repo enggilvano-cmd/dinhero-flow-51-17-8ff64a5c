@@ -1099,7 +1099,8 @@ export default function AnalyticsPage({
                          if (numValue >= 0) return null;
                          
                          const labelX = x + width / 2;
-                         const labelY = y + height + 15;
+                         // posiciona próximo à base da barra negativa
+                         const labelY = y + height - 5;
                          
                          return (
                            <text
