@@ -40,20 +40,16 @@ interface CreditBillsPageProps {
 
 export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBillsPageProps) {
   const { accounts: allAccounts = [] } = useAccounts();
+  // ✅ P0-4 FIX: Usar pageSize: null para carregar todas sem limite artificial
   const { transactions: allTransactions = [] } = useTransactions({ 
     page: 0, 
-    pageSize: 10000, // Carrega todas as transações de cartão
+    pageSize: null, // Carrega todas as transações de cartão (sem limite)
     type: 'all',
     accountType: 'credit'
   });
   const { settings } = useSettings();
   
-  // Força atualização quando contas ou transações mudam
-  const updateKey = useMemo(() => {
-    const key = `${allAccounts.length}-${allTransactions.length}-${allAccounts.map(a => a.balance).join(',').substring(0, 50)}`;
-    logger.debug('CreditBillsPage updateKey:', key, { accounts: allAccounts.length, transactions: allTransactions.length });
-    return key;
-  }, [allAccounts, allTransactions]);
+  // ✅ P0-1 FIX: Removido updateKey que causava race condition
 
   // Helper para formatar moeda
   const formatCents = (valueInCents: number) => {
@@ -162,7 +158,7 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
 
   // Memo para calcular os detalhes da fatura do mês selecionado (alinhado ao mês exibido)
   const allBillDetails = useMemo(() => {
-    logger.debug('Recalculando faturas...', updateKey);
+    logger.debug('Recalculando faturas...', { accounts: filteredCreditAccounts.length, transactions: allTransactions.length });
 
     return filteredCreditAccounts.map((account) => {
       const accountTransactions = allTransactions
@@ -242,7 +238,6 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
     allTransactions,
     selectedMonthDate,
     selectedMonthOffset,
-    updateKey,
   ]);
 
   // Memo para aplicar os filtros de status
@@ -263,13 +258,13 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
       if (filterBillStatus === "open" && isClosed) return false;
       if (filterBillStatus === "closed" && !isClosed) return false;
 
-      // Calcula se está paga
+      // ✅ P0-3 FIX: Calcula se está paga sem margem arbitrária
       const paidAmount = details.paymentTransactions.reduce((sum, t) => sum + Math.abs(t.amount), 0);
       const amountDue = Math.max(0, details.currentBillAmount);
       // Uma fatura está "Paga" se:
       // 1. Não há valor a pagar (amountDue <= 0) - conta tem crédito
-      // 2. OU o valor pago é igual ou maior que o valor devido (com margem de 1 centavo)
-      const isPaid = amountDue <= 0 || paidAmount >= (amountDue - 1);
+      // 2. OU o valor pago é igual ou maior que o valor devido (sem margem arbitrária)
+      const isPaid = amountDue <= 0 || paidAmount >= amountDue;
 
       logger.debug("[CreditBillsPage] Status check", {
         account: details.account.name,
@@ -288,7 +283,7 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
 
       return true;
     });
-  }, [allBillDetails, filterBillStatus, filterPaymentStatus, updateKey]);
+  }, [allBillDetails, filterBillStatus, filterPaymentStatus]);
 
   // Memo para os TOTAIS (baseado nos cartões filtrados)
   const totalSummary = useMemo(() => {
@@ -297,9 +292,14 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
         acc.currentBill += details.currentBillAmount;
         acc.nextBill += details.nextBillAmount;
         acc.availableLimit += details.availableLimit;
-        // Calcula o limite usado: limite total - limite disponível
-        const limitAmount = details.account.limit_amount || 0;
-        acc.usedLimit += limitAmount - details.availableLimit;
+        // ✅ P0-2 FIX: Tratamento correto quando limit_amount é null
+        const limitAmount = details.account.limit_amount ?? 0;
+        // Se availableLimit for negativo, o limite usado é o valor absoluto
+        // Se availableLimit for positivo, o limite usado é a diferença
+        const usedLimit = limitAmount > 0 
+          ? Math.max(0, limitAmount - details.availableLimit)
+          : Math.abs(Math.min(0, details.availableLimit));
+        acc.usedLimit += usedLimit;
         return acc;
       },
       { currentBill: 0, nextBill: 0, availableLimit: 0, usedLimit: 0 }
@@ -503,8 +503,8 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
             
             return (
               <CreditCardBillCard
-                key={`${details.account.id}-${updateKey}`}
-                account={details.account} 
+                key={details.account.id}
+                account={details.account}
                 billDetails={details}
                 selectedMonth={selectedMonthDate}
                 onPayBill={() =>

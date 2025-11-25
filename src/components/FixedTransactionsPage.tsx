@@ -20,12 +20,13 @@ import { AddFixedTransactionModal } from "./AddFixedTransactionModal";
 import { EditFixedTransactionModal } from "./EditFixedTransactionModal";
 import { FixedTransactionScopeDialog, FixedScope } from "./FixedTransactionScopeDialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryClient";
 import { FixedTransactionPageActions } from "./fixedtransactions/FixedTransactionPageActions";
 import { ImportFixedTransactionsModal } from "./ImportFixedTransactionsModal";
 import * as XLSX from "xlsx";
 import { formatBRNumber } from "@/lib/formatters";
+import { useAuth } from "@/hooks/useAuth";
 
 interface FixedTransaction {
   id: string;
@@ -50,9 +51,47 @@ interface Account {
 
 export function FixedTransactionsPage() {
   const queryClient = useQueryClient();
-  const [transactions, setTransactions] = useState<FixedTransaction[]>([]);
+  const { user } = useAuth();
+  
+  // ✅ P0-7 FIX: Remover dual state - usar apenas React Query
+  const { 
+    data: transactions = [], 
+    isLoading: loading, 
+    refetch: loadFixedTransactions 
+  } = useQuery({
+    queryKey: [...queryKeys.transactions(), 'fixed'],
+    queryFn: async () => {
+      if (!user) return [];
+
+      const { data, error } = await supabase
+        .from("transactions")
+        .select(`
+          id,
+          description,
+          amount,
+          date,
+          type,
+          category_id,
+          account_id,
+          is_fixed,
+          parent_transaction_id,
+          category:categories(name, color),
+          account:accounts!transactions_account_id_fkey(name)
+        `)
+        .eq("user_id", user.id)
+        .eq("is_fixed", true)
+        .is("parent_transaction_id", null)
+        .neq("type", "transfer")
+        .order("date", { ascending: false });
+
+      if (error) throw error;
+      return data as FixedTransaction[];
+    },
+    enabled: !!user,
+    staleTime: 30 * 1000,
+  });
+
   const [accounts, setAccounts] = useState<Account[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<"all" | "income" | "expense">("all");
   const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
@@ -67,48 +106,9 @@ export function FixedTransactionsPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    loadFixedTransactions();
     loadAccounts();
   }, []);
 
-  const loadFixedTransactions = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data, error } = await supabase
-        .from("transactions")
-        .select(`
-          id,
-          description,
-          amount,
-          date,
-          type,
-          category_id,
-          account_id,
-          is_fixed,
-          category:categories(name, color),
-          account:accounts!transactions_account_id_fkey(name)
-        `)
-        .eq("user_id", user.id)
-        .eq("is_fixed", true)
-        .is("parent_transaction_id", null)
-        .neq("type", "transfer")
-        .order("date", { ascending: false });
-
-      if (error) throw error;
-      setTransactions(data as FixedTransaction[]);
-    } catch (error) {
-      logger.error("Error loading fixed transactions:", error);
-      toast({
-        title: "Erro ao carregar transações fixas",
-        description: "Não foi possível carregar as transações fixas.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const loadAccounts = async () => {
     try {
@@ -168,7 +168,7 @@ export function FixedTransactionsPage() {
         queryClient.refetchQueries({ queryKey: queryKeys.accounts }),
       ]);
 
-      loadFixedTransactions();
+      loadFixedTransactions(); // Refetch fixed transactions
       setAddModalOpen(false);
     } catch (error) {
       logger.error("Error adding fixed transaction:", error);
@@ -183,30 +183,31 @@ export function FixedTransactionsPage() {
   const handleEditClick = async (transaction: FixedTransaction) => {
     setTransactionToEdit(transaction);
     
-    // Buscar informações sobre transações geradas
-    try {
-      const { data: childTransactions } = await supabase
-        .from("transactions")
-        .select("id, status")
-        .eq("parent_transaction_id", transaction.id);
+    // ✅ P0-5 FIX: Usar query cacheable ao invés de buscar a cada clique
+    const childTransactions = await queryClient.fetchQuery({
+      queryKey: [...queryKeys.transactions(), 'children', transaction.id],
+      queryFn: async () => {
+        const { data, error } = await supabase
+          .from("transactions")
+          .select("id, status")
+          .eq("parent_transaction_id", transaction.id);
 
-      const pendingCount = childTransactions?.filter(t => t.status === "pending").length || 0;
-      const hasCompleted = childTransactions?.some(t => t.status === "completed") || false;
+        if (error) throw error;
+        return data || [];
+      },
+      staleTime: 30 * 1000,
+    });
 
-      setPendingTransactionsCount(pendingCount);
-      setHasCompletedTransactions(hasCompleted);
-      setScopeMode("edit");
-      setScopeDialogOpen(true);
-    } catch (error) {
-      logger.error("Error fetching child transactions:", error);
-      // Se houver erro, abre o dialog sem informações de contagem
-      setPendingTransactionsCount(0);
-      setHasCompletedTransactions(false);
-      setScopeMode("edit");
-      setScopeDialogOpen(true);
-    }
+    const pendingCount = childTransactions?.filter((t: any) => t.status === "pending").length || 0;
+    const hasCompleted = childTransactions?.some((t: any) => t.status === "completed") || false;
+
+    setPendingTransactionsCount(pendingCount);
+    setHasCompletedTransactions(hasCompleted);
+    setScopeMode("edit");
+    setScopeDialogOpen(true);
   };
 
+  // ✅ P0-6 FIX: Migrar para edge function atômica ao invés de updates diretos
   const handleScopeSelectedForEdit = async (scope: FixedScope) => {
     if (!transactionToEdit) return;
 
@@ -223,69 +224,36 @@ export function FixedTransactionsPage() {
         date: transactionToEdit.date,
       };
 
-      if (scope === "current") {
-        // Editar apenas a transação principal
-        const { error } = await supabase
-          .from("transactions")
-          .update(updates)
-          .eq("id", transactionToEdit.id)
-          .eq("user_id", user.id);
-        if (error) throw error;
+      // ✅ P0-6 FIX: Usar edge function atômica ao invés de updates diretos
+      const { data, error } = await supabase.functions.invoke('atomic-edit-transaction', {
+        body: {
+          transaction_id: transactionToEdit.id,
+          updates,
+          scope,
+        },
+      });
 
-        toast({
-          title: "Transação atualizada",
-          description: "A transação principal foi atualizada com sucesso.",
-        });
-      } else if (scope === "current-and-remaining") {
-        // Editar a transação principal
-        const { error: mainError } = await supabase
-          .from("transactions")
-          .update(updates)
-          .eq("id", transactionToEdit.id)
-          .eq("user_id", user.id);
-        if (mainError) throw mainError;
+      if (error) throw error;
 
-        // Editar todas as transações pendentes geradas
-        const { error: childrenError, data: updatedChildren } = await supabase
-          .from("transactions")
-          .update(updates)
-          .eq("parent_transaction_id", transactionToEdit.id)
-          .eq("status", "pending")
-          .eq("user_id", user.id)
-          .select();
-        if (childrenError) throw childrenError;
-
-        logger.info(`Updated ${updatedChildren?.length || 0} pending child transactions`);
-
-        toast({
-          title: "Transações atualizadas",
-          description: `A transação principal e ${updatedChildren?.length || 0} transação(ões) pendente(s) foram atualizadas.`,
-        });
-      } else if (scope === "all") {
-        // Editar a transação principal
-        const { error: mainError } = await supabase
-          .from("transactions")
-          .update(updates)
-          .eq("id", transactionToEdit.id)
-          .eq("user_id", user.id);
-        if (mainError) throw mainError;
-
-        // Editar TODAS as transações geradas (pendentes e concluídas)
-        const { error: childrenError, data: updatedChildren } = await supabase
-          .from("transactions")
-          .update(updates)
-          .eq("parent_transaction_id", transactionToEdit.id)
-          .eq("user_id", user.id)
-          .select();
-        if (childrenError) throw childrenError;
-
-        logger.info(`Updated ${updatedChildren?.length || 0} child transactions`);
-
-        toast({
-          title: "Transações atualizadas",
-          description: `A transação principal e ${updatedChildren?.length || 0} transação(ões) geradas foram atualizadas.`,
-        });
+      const result = data;
+      if (!result?.success) {
+        throw new Error(result?.error || 'Erro ao atualizar transação');
       }
+
+      const updatedCount = result.updated || 0;
+      let message = '';
+      if (scope === 'current') {
+        message = 'A transação principal foi atualizada com sucesso.';
+      } else if (scope === 'current-and-remaining') {
+        message = `A transação principal e ${updatedCount - 1} transação(ões) pendente(s) foram atualizadas.`;
+      } else {
+        message = `A transação principal e ${updatedCount - 1} transação(ões) geradas foram atualizadas.`;
+      }
+
+      toast({
+        title: "Transações atualizadas",
+        description: message,
+      });
 
       // 🔄 Sincronizar listas e dashboard imediatamente
       await Promise.all([
@@ -312,30 +280,31 @@ export function FixedTransactionsPage() {
   const handleDeleteClick = async (transactionId: string) => {
     setTransactionToDelete(transactionId);
     
-    // Buscar informações sobre transações geradas
-    try {
-      const { data: childTransactions } = await supabase
-        .from("transactions")
-        .select("id, status")
-        .eq("parent_transaction_id", transactionId);
+    // ✅ P0-5 FIX: Usar query cacheable ao invés de buscar a cada clique
+    const childTransactions = await queryClient.fetchQuery({
+      queryKey: [...queryKeys.transactions(), 'children', transactionId],
+      queryFn: async () => {
+        const { data, error } = await supabase
+          .from("transactions")
+          .select("id, status")
+          .eq("parent_transaction_id", transactionId);
 
-      const pendingCount = childTransactions?.filter(t => t.status === "pending").length || 0;
-      const hasCompleted = childTransactions?.some(t => t.status === "completed") || false;
+        if (error) throw error;
+        return data || [];
+      },
+      staleTime: 30 * 1000,
+    });
 
-      setPendingTransactionsCount(pendingCount);
-      setHasCompletedTransactions(hasCompleted);
-      setScopeMode("delete");
-      setScopeDialogOpen(true);
-    } catch (error) {
-      logger.error("Error fetching child transactions:", error);
-      // Se houver erro, abre o dialog sem informações de contagem
-      setPendingTransactionsCount(0);
-      setHasCompletedTransactions(false);
-      setScopeMode("delete");
-      setScopeDialogOpen(true);
-    }
+    const pendingCount = childTransactions?.filter((t: any) => t.status === "pending").length || 0;
+    const hasCompleted = childTransactions?.some((t: any) => t.status === "completed") || false;
+
+    setPendingTransactionsCount(pendingCount);
+    setHasCompletedTransactions(hasCompleted);
+    setScopeMode("delete");
+    setScopeDialogOpen(true);
   };
 
+  // ✅ P0-6 FIX: Migrar para edge function atômica ao invés de deletes diretos
   const handleScopeSelectedForDelete = async (scope: FixedScope) => {
     if (!transactionToDelete) return;
 
@@ -343,85 +312,35 @@ export function FixedTransactionsPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      if (scope === "current") {
-        // Deletar apenas a transação principal
-        const { error } = await supabase
-          .from("transactions")
-          .delete()
-          .eq("id", transactionToDelete)
-          .eq("user_id", user.id);
-        if (error) throw error;
+      // ✅ P0-6 FIX: Usar edge function atômica ao invés de deletes diretos
+      const { data, error } = await supabase.functions.invoke('atomic-delete-transaction', {
+        body: {
+          transaction_id: transactionToDelete,
+          scope,
+        },
+      });
 
-        toast({
-          title: "Transação removida",
-          description: "A transação principal foi removida com sucesso.",
-        });
-      } else if (scope === "current-and-remaining") {
-        // Primeiro, deletar todas as transações PENDENTES filhas
-        const { error: childrenError, data: deletedChildren } = await supabase
-          .from("transactions")
-          .delete()
-          .eq("parent_transaction_id", transactionToDelete)
-          .eq("status", "pending")
-          .eq("user_id", user.id)
-          .select();
-        
-        if (childrenError) {
-          logger.error("Error deleting children:", childrenError);
-          throw childrenError;
-        }
+      if (error) throw error;
 
-        logger.info(`Deleted ${deletedChildren?.length || 0} pending child transactions`);
-
-        // Depois, deletar a transação principal
-        const { error: mainError } = await supabase
-          .from("transactions")
-          .delete()
-          .eq("id", transactionToDelete)
-          .eq("user_id", user.id);
-        
-        if (mainError) {
-          logger.error("Error deleting main transaction:", mainError);
-          throw mainError;
-        }
-
-        toast({
-          title: "Transações removidas",
-          description: `A transação principal e ${deletedChildren?.length || 0} transação(ões) pendente(s) foram removidas.`,
-        });
-      } else if (scope === "all") {
-        // Primeiro, deletar TODAS as transações filhas (pendentes E concluídas)
-        const { error: childrenError, data: deletedChildren } = await supabase
-          .from("transactions")
-          .delete()
-          .eq("parent_transaction_id", transactionToDelete)
-          .eq("user_id", user.id)
-          .select();
-        
-        if (childrenError) {
-          logger.error("Error deleting all children:", childrenError);
-          throw childrenError;
-        }
-
-        logger.info(`Deleted ${deletedChildren?.length || 0} child transactions`);
-
-        // Depois, deletar a transação principal
-        const { error: mainError } = await supabase
-          .from("transactions")
-          .delete()
-          .eq("id", transactionToDelete)
-          .eq("user_id", user.id);
-        
-        if (mainError) {
-          logger.error("Error deleting main transaction:", mainError);
-          throw mainError;
-        }
-
-        toast({
-          title: "Transações removidas",
-          description: `A transação principal e ${deletedChildren?.length || 0} transação(ões) geradas foram removidas.`,
-        });
+      const result = data;
+      if (!result?.success) {
+        throw new Error(result?.error || 'Erro ao deletar transação');
       }
+
+      const deletedCount = result.deleted || 0;
+      let message = '';
+      if (scope === 'current') {
+        message = 'A transação principal foi removida com sucesso.';
+      } else if (scope === 'current-and-remaining') {
+        message = `A transação principal e ${deletedCount - 1} transação(ões) pendente(s) foram removidas.`;
+      } else {
+        message = `A transação principal e ${deletedCount - 1} transação(ões) geradas foram removidas.`;
+      }
+
+      toast({
+        title: "Transações removidas",
+        description: message,
+      });
 
       // 🔄 Sincronizar listas e dashboard imediatamente
       await Promise.all([
