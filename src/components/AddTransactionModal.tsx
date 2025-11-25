@@ -3,7 +3,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { AvailableBalanceIndicator } from "@/components/forms/AvailableBalanceIndicator";
@@ -62,13 +61,6 @@ export function AddTransactionModal({
               ? "Adicionar Despesa"
               : "Adicionar Transação"}
           </DialogTitle>
-          <DialogDescription className="text-body">
-            {initialType === "income" 
-              ? "Registre uma nova receita"
-              : initialType === "expense" 
-              ? "Registre uma nova despesa"
-              : "Preencha os dados da nova transação"}
-          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
