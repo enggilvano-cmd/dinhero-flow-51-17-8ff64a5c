@@ -1098,9 +1098,10 @@ export default function AnalyticsPage({
                          const numValue = typeof value === 'number' ? value : 0;
                          if (numValue >= 0) return null;
                          
+                         const barBottom = Math.max(y, y + height);
                          const labelX = x + width / 2;
-                         // posiciona próximo à base da barra negativa
-                         const labelY = y + height - 5;
+                         // base da barra negativa (próximo ao fim da barra, não da linha do eixo)
+                         const labelY = barBottom - 5;
                          
                          return (
                            <text
