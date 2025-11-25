@@ -985,7 +985,7 @@ export default function AnalyticsPage({
               </RechartsPieChart>
               
               {/* Custom Legend */}
-              {responsiveConfig.showLegend && categoryData.length > 0 && (
+              {categoryData.length > 0 && (
                 <div 
                   className={cn(
                     "flex flex-col gap-2 px-4",
