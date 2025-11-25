@@ -12,6 +12,18 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Verify CRON_SECRET for scheduled job authentication
+    const cronSecret = Deno.env.get('CRON_SECRET');
+    const providedSecret = req.headers.get('X-Cron-Secret');
+    
+    if (cronSecret && providedSecret !== cronSecret) {
+      console.warn('[cleanup-old-backups] WARN: Unauthorized access attempt - invalid CRON_SECRET');
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);

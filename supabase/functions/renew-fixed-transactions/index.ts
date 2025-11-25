@@ -25,6 +25,18 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Verify CRON_SECRET for scheduled job authentication
+    const cronSecret = Deno.env.get('CRON_SECRET');
+    const providedSecret = req.headers.get('X-Cron-Secret');
+    
+    if (cronSecret && providedSecret !== cronSecret) {
+      console.warn('[renew-fixed-transactions] WARN: Unauthorized access attempt - invalid CRON_SECRET');
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     console.log('Starting fixed transactions renewal for next year...')
 
     // Initialize Supabase client with service role
