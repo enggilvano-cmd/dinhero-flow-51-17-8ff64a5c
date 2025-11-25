@@ -503,8 +503,8 @@ const PlaniFlowApp = () => {
         <TransferModal
           open={transferModalOpen}
           onOpenChange={setTransferModalOpen}
-          onTransfer={async (fromAccountId, toAccountId, amountInCents, date, description) => {
-            await handleTransfer(fromAccountId, toAccountId, amountInCents, date, description);
+          onTransfer={async (fromAccountId, toAccountId, amountInCents, date) => {
+            await handleTransfer(fromAccountId, toAccountId, amountInCents, date);
             const fromAccount = accounts.find(acc => acc.id === fromAccountId)!;
             const toAccount = accounts.find(acc => acc.id === toAccountId)!;
             return { fromAccount, toAccount };

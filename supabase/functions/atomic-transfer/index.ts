@@ -67,9 +67,9 @@ Deno.serve(async (req) => {
     const fromAccount = accounts?.find(a => a.id === transfer.from_account_id);
     const toAccount = accounts?.find(a => a.id === transfer.to_account_id);
 
-    // Criar descrições específicas para cada lado da transferência
-    const outgoingDescription = transfer.description || `Transferência para ${toAccount?.name || 'Conta Destino'}`;
-    const incomingDescription = transfer.description ? transfer.description : `Transferência de ${fromAccount?.name || 'Conta Origem'}`;
+    // Criar descrições automáticas específicas para cada lado da transferência
+    const outgoingDescription = transfer.outgoing_description || `Transferência para ${toAccount?.name || 'Conta Destino'}`;
+    const incomingDescription = transfer.incoming_description || `Transferência de ${fromAccount?.name || 'Conta Origem'}`;
 
     // Usar função PL/pgSQL atômica com retry
     const { data: result, error: functionError } = await withRetry(

@@ -236,14 +236,6 @@ export type EditTransactionFormData = z.infer<typeof editTransactionSchema>;
 
 // Schema para transferências
 export const transferSchema = z.object({
-  description: z
-    .string()
-    .trim()
-    .min(1, { message: "A descrição é obrigatória" })
-    .max(MAX_DESCRIPTION_LENGTH, { 
-      message: `A descrição deve ter no máximo ${MAX_DESCRIPTION_LENGTH} caracteres` 
-    }),
-  
   amount: z
     .number({ invalid_type_error: "O valor deve ser um número" })
     .positive({ message: "O valor deve ser maior que zero" })

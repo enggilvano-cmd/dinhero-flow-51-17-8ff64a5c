@@ -18,8 +18,7 @@ export function useTransferMutations() {
     fromAccountId: string,
     toAccountId: string,
     amount: number,
-    date: Date,
-    description: string
+    date: Date
   ) => {
     if (!user) throw new Error('Usuário não autenticado');
 
@@ -35,7 +34,8 @@ export function useTransferMutations() {
             to_account_id: toAccountId,
             amount: amount,
             date: date.toISOString().split('T')[0],
-            description: description || `Transferência para ${toAccount.name}`,
+            outgoing_description: `Transferência para ${toAccount.name}`,
+            incoming_description: `Transferência de ${fromAccount.name}`,
             status: 'completed' as const,
           }
         }
