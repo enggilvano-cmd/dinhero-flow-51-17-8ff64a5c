@@ -422,7 +422,7 @@ export default function AnalyticsPage({
 
   const accountBalanceData = useMemo(() => {
     return accounts
-      .filter((acc) => acc.type !== "credit")
+      .filter((acc) => acc.type !== "credit" && acc.balance !== 0)
       .map((account) => ({
         name: account.name.split(" - ")[0] || account.name,
         balance: account.balance,
@@ -1059,17 +1059,17 @@ export default function AnalyticsPage({
             <div className="relative w-full">
               <ChartContainer
                 config={accountChartConfig}
-                className={`${isMobile ? 'min-h-[500px]' : responsiveConfig.containerHeight} w-full overflow-hidden`}
+                className={`${isMobile ? 'min-h-[400px]' : 'min-h-[500px]'} w-full overflow-hidden`}
               >
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={accountBalanceData}
-                  margin={{
-                    top: 20,
-                    right: isMobile ? 15 : 180,
-                    bottom: isMobile ? 20 : 30,
-                    left: isMobile ? 10 : 15
-                  }}
+                    margin={{
+                      top: 20,
+                      right: isMobile ? 15 : 200,
+                      bottom: isMobile ? 20 : 30,
+                      left: isMobile ? 10 : 20
+                    }}
                   >
                   <XAxis
                     dataKey="name"
@@ -1103,26 +1103,27 @@ export default function AnalyticsPage({
 
             {/* Legenda de Contas - desktop/tablet (dentro do container) */}
             {!isMobile && accountBalanceData.length > 0 && (
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-2 px-4" style={{ maxWidth: '35%' }}>
+              <div className="absolute right-6 top-1/2 -translate-y-1/2 flex flex-col gap-2.5 bg-card/95 backdrop-blur-sm p-4 rounded-lg border border-border shadow-sm" style={{ maxWidth: '180px' }}>
+                <div className="text-caption font-semibold text-muted-foreground mb-1">Contas</div>
                 {accountBalanceData.map((account, index) => (
                   <div 
                     key={`legend-account-desktop-${index}`} 
-                    className="flex items-center justify-between gap-2 text-caption"
+                    className="flex items-start gap-2"
                   >
-                    <div className="flex items-center gap-2 min-w-0">
-                      <div 
-                        className="w-3 h-3 rounded-full flex-shrink-0" 
-                        style={{ backgroundColor: account.color }}
-                      />
-                      <span className="truncate text-foreground">
+                    <div 
+                      className="w-3 h-3 rounded-full flex-shrink-0 mt-0.5" 
+                      style={{ backgroundColor: account.color }}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-caption text-foreground truncate">
                         {account.name}
-                      </span>
+                      </div>
+                      <div className={`text-caption font-semibold ${
+                        account.balance >= 0 ? 'text-success' : 'text-destructive'
+                      }`}>
+                        {formatCurrency(account.balance)}
+                      </div>
                     </div>
-                    <span className={`font-medium flex-shrink-0 ${
-                      account.balance >= 0 ? 'text-success' : 'text-destructive'
-                    }`}>
-                      {formatCurrency(account.balance)}
-                    </span>
                   </div>
                 ))}
               </div>
@@ -1131,26 +1132,27 @@ export default function AnalyticsPage({
 
             {/* Legenda de Contas - mobile (abaixo do gráfico) */}
             {isMobile && accountBalanceData.length > 0 && (
-              <div className="mt-4 flex flex-col gap-2 px-2">
+              <div className="mt-4 flex flex-col gap-2.5 bg-card/95 backdrop-blur-sm p-4 rounded-lg border border-border">
+                <div className="text-caption font-semibold text-muted-foreground mb-1">Contas</div>
                 {accountBalanceData.map((account, index) => (
                   <div 
                     key={`legend-account-mobile-${index}`} 
-                    className="flex items-center justify-between gap-2 text-caption"
+                    className="flex items-start gap-2"
                   >
-                    <div className="flex items-center gap-2 min-w-0">
-                      <div 
-                        className="w-3 h-3 rounded-full flex-shrink-0" 
-                        style={{ backgroundColor: account.color }}
-                      />
-                      <span className="truncate text-foreground">
+                    <div 
+                      className="w-3 h-3 rounded-full flex-shrink-0 mt-0.5" 
+                      style={{ backgroundColor: account.color }}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-caption text-foreground truncate">
                         {account.name}
-                      </span>
+                      </div>
+                      <div className={`text-caption font-semibold ${
+                        account.balance >= 0 ? 'text-success' : 'text-destructive'
+                      }`}>
+                        {formatCurrency(account.balance)}
+                      </div>
                     </div>
-                    <span className={`font-medium flex-shrink-0 ${
-                      account.balance >= 0 ? 'text-success' : 'text-destructive'
-                    }`}>
-                      {formatCurrency(account.balance)}
-                    </span>
                   </div>
                 ))}
               </div>
