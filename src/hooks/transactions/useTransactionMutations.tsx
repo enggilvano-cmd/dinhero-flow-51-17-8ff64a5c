@@ -5,7 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { TransactionInput, TransactionUpdate } from '@/types';
 import { logger } from '@/lib/logger';
-import { queryKeys, refetchWithDelay } from '@/lib/queryClient';
+import { queryKeys } from '@/lib/queryClient';
 import { EditScope } from '@/components/TransactionScopeDialog';
 import { getErrorMessage } from '@/lib/errorUtils';
 
@@ -60,12 +60,9 @@ export function useTransactionMutations() {
         throw error;
       }
 
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
-      ]);
-      
-      refetchWithDelay(queryClient, [queryKeys.transactionsBase, queryKeys.accounts]);
+      // ✅ Invalidação imediata dispara refetch automático sem delay
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
     } catch (error: unknown) {
       logger.error('Error adding transaction:', error);
       const errorMessage = getErrorMessage(error);
@@ -123,12 +120,9 @@ export function useTransactionMutations() {
 
       if (error) throw error;
 
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
-      ]);
-      
-      refetchWithDelay(queryClient, [queryKeys.transactionsBase, queryKeys.accounts]);
+      // ✅ Invalidação imediata dispara refetch automático sem delay
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
     } catch (error: unknown) {
       logger.error('Error updating transaction:', error);
       const errorMessage = getErrorMessage(error);
@@ -164,12 +158,9 @@ export function useTransactionMutations() {
         throw new Error(data.error || 'Transação não encontrada ou já foi excluída');
       }
 
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
-      ]);
-      
-      refetchWithDelay(queryClient, [queryKeys.transactionsBase, queryKeys.accounts]);
+      // ✅ Invalidação imediata dispara refetch automático sem delay
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
 
       toast({
         title: 'Sucesso',
