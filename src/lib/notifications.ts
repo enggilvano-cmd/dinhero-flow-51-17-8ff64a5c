@@ -1,5 +1,6 @@
 // Notification utilities for reminders and alerts
 import { logger } from '@/lib/logger';
+import type { NotificationAccount } from '@/types/export';
 
 export interface NotificationSettings {
   billReminders: boolean;
@@ -52,19 +53,19 @@ export function showSystemNotification(title: string, options?: NotificationOpti
 }
 
 // Get due date reminders for credit cards
-export function getDueDateReminders(accounts: any[], settings: NotificationSettings): Notification[] {
+export function getDueDateReminders(accounts: NotificationAccount[], settings: NotificationSettings): Notification[] {
   const reminders: Notification[] = [];
   const today = new Date();
   const reminderDays = settings.dueDateReminders;
   
   accounts
-    .filter(acc => acc.type === "credit" && acc.dueDate && acc.balance < 0)
+    .filter(acc => acc.type === "credit" && acc.due_date && acc.balance < 0)
     .forEach(account => {
       const currentMonth = today.getMonth();
       const currentYear = today.getFullYear();
       
       // Calculate due date for current month
-      const dueDate = new Date(currentYear, currentMonth, account.dueDate);
+      const dueDate = new Date(currentYear, currentMonth, account.due_date!);
       
       // If due date has passed this month, calculate for next month
       if (dueDate < today) {
@@ -91,7 +92,7 @@ export function getDueDateReminders(accounts: any[], settings: NotificationSetti
 }
 
 // Get low balance alerts
-export function getLowBalanceAlerts(accounts: any[], threshold: number = 100): Notification[] {
+export function getLowBalanceAlerts(accounts: NotificationAccount[], threshold: number = 100): Notification[] {
   const alerts: Notification[] = [];
   const today = new Date();
   
@@ -131,7 +132,7 @@ export function formatNotificationTime(date: Date): string {
 }
 
 // Schedule recurring notifications (would need a background service in production)
-export function scheduleNotifications(accounts: any[], settings: NotificationSettings) {
+export function scheduleNotifications(accounts: NotificationAccount[], settings: NotificationSettings) {
   if (!settings.billReminders) return;
   
   const reminders = getDueDateReminders(accounts, settings);
@@ -144,7 +145,7 @@ export function scheduleNotifications(accounts: any[], settings: NotificationSet
 }
 
 // Get all active notifications
-export function getAllNotifications(accounts: any[], settings: NotificationSettings): Notification[] {
+export function getAllNotifications(accounts: NotificationAccount[], settings: NotificationSettings): Notification[] {
   const notifications: Notification[] = [];
   
   if (settings.billReminders) {

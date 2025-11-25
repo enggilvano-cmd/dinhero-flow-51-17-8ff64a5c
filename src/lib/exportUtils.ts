@@ -1,6 +1,7 @@
 import { loadXLSX } from './lazyImports';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import type { ExportAccount, ExportCategory, ExportTransaction } from '@/types/export';
 
 /**
  * Formata números para padrão brasileiro (vírgula como decimal, ponto como milhar)
@@ -17,7 +18,7 @@ function formatBRNumber(valueInCents: number): string {
 /**
  * Exporta contas para Excel
  */
-export async function exportAccountsToExcel(accounts: any[]) {
+export async function exportAccountsToExcel(accounts: ExportAccount[]) {
   const XLSX = await loadXLSX();
   
   const exportData = accounts.map(account => ({
@@ -53,7 +54,7 @@ export async function exportAccountsToExcel(accounts: any[]) {
 /**
  * Exporta categorias para Excel
  */
-export async function exportCategoriesToExcel(categories: any[]) {
+export async function exportCategoriesToExcel(categories: ExportCategory[]) {
   const XLSX = await loadXLSX();
   
   const exportData = categories.map(category => ({
@@ -82,9 +83,9 @@ export async function exportCategoriesToExcel(categories: any[]) {
  * Exporta transações para Excel
  */
 export async function exportTransactionsToExcel(
-  transactions: any[],
-  accounts: any[],
-  categories: any[]
+  transactions: ExportTransaction[],
+  accounts: ExportAccount[],
+  categories: ExportCategory[]
 ) {
   const XLSX = await loadXLSX();
   
@@ -111,7 +112,7 @@ export async function exportTransactionsToExcel(
       'Recorrente': transaction.is_recurring ? 'Sim' : 'Não',
       'Fixa': transaction.is_fixed ? 'Sim' : 'Não',
       'Reconciliada': transaction.reconciled ? 'Sim' : 'Não',
-      'Criado em': format(new Date(transaction.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })
+      'Criado em': transaction.created_at ? format(new Date(transaction.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR }) : ''
     };
   });
 
@@ -146,9 +147,9 @@ export async function exportTransactionsToExcel(
  * Exporta todos os dados para Excel (backup completo)
  */
 export async function exportAllDataToExcel(
-  accounts: any[],
-  categories: any[],
-  transactions: any[]
+  accounts: ExportAccount[],
+  categories: ExportCategory[],
+  transactions: ExportTransaction[]
 ) {
   const XLSX = await loadXLSX();
   const wb = XLSX.utils.book_new();
@@ -175,7 +176,7 @@ export async function exportAllDataToExcel(
     'Nome': category.name,
     'Tipo': getCategoryTypeLabel(category.type),
     'Cor': category.color,
-    'Criado em': format(new Date(category.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })
+    'Criado em': category.created_at ? format(new Date(category.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR }) : ''
   }));
   const wsCategories = XLSX.utils.json_to_sheet(categoriesData);
   wsCategories['!cols'] = [
@@ -207,7 +208,7 @@ export async function exportAllDataToExcel(
       'Recorrente': transaction.is_recurring ? 'Sim' : 'Não',
       'Fixa': transaction.is_fixed ? 'Sim' : 'Não',
       'Reconciliada': transaction.reconciled ? 'Sim' : 'Não',
-      'Criado em': format(new Date(transaction.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })
+      'Criado em': transaction.created_at ? format(new Date(transaction.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR }) : ''
     };
   });
   const wsTransactions = XLSX.utils.json_to_sheet(transactionsData);

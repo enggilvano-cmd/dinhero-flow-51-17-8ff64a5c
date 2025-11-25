@@ -1,4 +1,5 @@
 import { ChartDimensions } from "@/hooks/useChartResponsive";
+import type { ChartDataItem } from "@/types/export";
 
 export function formatCurrencyForAxis(value: number, isMobile: boolean): string {
   if (isMobile) {
@@ -18,13 +19,13 @@ export function formatCurrencyForAxis(value: number, isMobile: boolean): string 
   }).format(value);
 }
 
-export function getPieChartProps(chartConfig: ChartDimensions, data: any[]) {
+export function getPieChartProps(chartConfig: ChartDimensions, data: ChartDataItem[]) {
   return {
     cx: "50%",
     cy: "50%",
     labelLine: false,
     label: chartConfig.showLabels && data.length <= 8 
-      ? ({ name, percentage }: any) => `${name}: ${percentage.toFixed(1)}%` 
+      ? ({ name, percentage }: ChartDataItem) => `${name}: ${percentage?.toFixed(1) ?? '0.0'}%` 
       : false,
     outerRadius: chartConfig.outerRadius,
     fill: "#8884d8",
