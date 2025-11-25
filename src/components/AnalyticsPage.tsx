@@ -426,6 +426,8 @@ export default function AnalyticsPage({
       .map((account) => ({
         name: account.name.split(" - ")[0] || account.name,
         balance: account.balance,
+        positiveBalance: account.balance > 0 ? account.balance : 0,
+        negativeBalance: account.balance < 0 ? account.balance : 0,
         type: account.type,
         color: account.color || "hsl(var(--primary))",
       }));
@@ -604,7 +606,13 @@ export default function AnalyticsPage({
   );
 
   const accountTooltipFormatter = useMemo(
-    () => (value: number) => [formatCurrency(value), "Saldo"],
+    () => (value: number, _name: string, props: any) => {
+      // Show only the actual balance value, not the split values
+      if (props?.payload?.balance !== undefined) {
+        return [formatCurrency(props.payload.balance), "Saldo"];
+      }
+      return [formatCurrency(value), "Saldo"];
+    },
     [formatCurrency]
   );
 
@@ -1047,9 +1055,14 @@ export default function AnalyticsPage({
                     content={<ChartTooltipContent />}
                     formatter={accountTooltipFormatter}
                   />
-                  <Bar dataKey="balance">
+                  <Bar dataKey="positiveBalance" stackId="balance" fill="hsl(var(--success))">
                     {accountBalanceData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
+                      <Cell key={`cell-positive-${index}`} fill={entry.balance > 0 ? entry.color : "transparent"} />
+                    ))}
+                  </Bar>
+                  <Bar dataKey="negativeBalance" stackId="balance" fill="hsl(var(--destructive))">
+                    {accountBalanceData.map((entry, index) => (
+                      <Cell key={`cell-negative-${index}`} fill={entry.balance < 0 ? entry.color : "transparent"} />
                     ))}
                   </Bar>
                 </BarChart>
