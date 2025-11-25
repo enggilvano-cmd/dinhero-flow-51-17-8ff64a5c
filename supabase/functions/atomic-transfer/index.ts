@@ -67,7 +67,7 @@ Deno.serve(async (req) => {
     const fromAccount = accounts?.find(a => a.id === transfer.from_account_id);
     const toAccount = accounts?.find(a => a.id === transfer.to_account_id);
 
-    // Criar descrições automáticas específicas para cada lado da transferência
+    // Gerar descrições automáticas se não foram fornecidas
     const outgoingDescription = transfer.outgoing_description || `Transferência para ${toAccount?.name || 'Conta Destino'}`;
     const incomingDescription = transfer.incoming_description || `Transferência de ${fromAccount?.name || 'Conta Origem'}`;
 
