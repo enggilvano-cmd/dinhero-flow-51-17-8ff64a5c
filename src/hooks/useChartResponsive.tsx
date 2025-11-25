@@ -78,7 +78,7 @@ export function useChartResponsive(): {
       },
       tablet: {
         containerHeight: "min-h-[224px]",
-        outerRadius: 70,
+        outerRadius: 175,
         fontSize: 11,
         tickFontSize: 10,
         margins: { top: 15, right: 20, bottom: 30, left: 15 },
