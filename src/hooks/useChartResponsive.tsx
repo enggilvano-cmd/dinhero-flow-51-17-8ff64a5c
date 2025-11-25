@@ -98,7 +98,7 @@ export function useChartResponsive(): {
         tickFontSize: 12,
         margins: { top: 20, right: 30, bottom: 20, left: 20 },
         showLabels: true,
-        showLegend: false,
+        showLegend: true,
         angleRotation: 0,
         textAnchor: "middle" as const,
         axisHeight: 30,
