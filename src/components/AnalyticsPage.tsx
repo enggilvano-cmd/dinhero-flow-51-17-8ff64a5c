@@ -1035,22 +1035,31 @@ export default function AnalyticsPage({
           <CardContent className="p-2 sm:p-3">
             <ChartContainer
               config={accountChartConfig}
-              className={`${responsiveConfig.containerHeight} w-full overflow-hidden`}
+              className={`${isMobile ? 'min-h-[500px]' : responsiveConfig.containerHeight} w-full overflow-hidden`}
             >
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={accountBalanceData}
-                  margin={getComposedChartMargins(responsiveConfig)}
+                  margin={{
+                    top: 30,
+                    right: isMobile ? 15 : 20,
+                    bottom: isMobile ? 100 : 80,
+                    left: isMobile ? 10 : 15
+                  }}
                 >
                   <XAxis
                     dataKey="name"
-                    {...getBarChartAxisProps(responsiveConfig).xAxis}
+                    tick={{ fontSize: isMobile ? 10 : 11 }}
+                    angle={-45}
+                    textAnchor="end"
+                    height={isMobile ? 85 : 70}
+                    interval={0}
                   />
                   <YAxis
                     tickFormatter={(value) =>
                       formatCurrencyForAxis(value / 100, isMobile)
                     }
-                    {...getBarChartAxisProps(responsiveConfig).yAxis}
+                    tick={{ fontSize: isMobile ? 9 : 11 }}
                   />
                   <ChartTooltip
                     content={<ChartTooltipContent />}
@@ -1069,8 +1078,8 @@ export default function AnalyticsPage({
                          if (numValue <= 0) return null;
                          
                          const labelX = x + width / 2;
-                         const shouldRotate = width < 70 || isMobile; // ajusta conforme largura da barra
-                         const labelY = shouldRotate ? y - 10 : y - 5;
+                         const shouldRotate = width < 60 || isMobile;
+                         const labelY = shouldRotate ? y - 15 : y - 8;
                          
                          return (
                            <text
@@ -1101,8 +1110,8 @@ export default function AnalyticsPage({
                          
                          const barBottom = Math.max(y, y + height);
                          const labelX = x + width / 2;
-                         const shouldRotate = width < 70 || isMobile; // ajusta conforme largura da barra
-                         const labelY = shouldRotate ? barBottom + 10 : barBottom + 15;
+                         const shouldRotate = width < 60 || isMobile;
+                         const labelY = shouldRotate ? barBottom + 20 : barBottom + 18;
                          
                          return (
                            <text
