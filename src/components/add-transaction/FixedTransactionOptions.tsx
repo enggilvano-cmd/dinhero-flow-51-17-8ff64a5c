@@ -1,4 +1,3 @@
-import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 
 interface FixedTransactionOptionsProps {
@@ -20,11 +19,6 @@ export function FixedTransactionOptions({
     <div className="space-y-4 border rounded-lg p-4 bg-muted/30">
       <div className="flex items-start justify-between gap-4">
         <div className="space-y-1 flex-1">
-          <div className="flex items-center gap-2">
-            <Label htmlFor="fixed" className="text-headline cursor-pointer">
-              Transação Fixa
-            </Label>
-          </div>
           <p className="text-body text-muted-foreground">
             Receitas ou despesas que se repetem todo mês, sem data de término (ex: salário, aluguel)
           </p>
