@@ -1059,9 +1059,9 @@ export default function AnalyticsPage({
             <div className="relative w-full">
               <ChartContainer
                 config={accountChartConfig}
-                className={`${isMobile ? 'min-h-[400px]' : 'min-h-[500px]'} w-full overflow-hidden`}
+                className={`${responsiveConfig.containerHeight} w-full overflow-hidden`}
               >
-                <ResponsiveContainer width="100%" height={isMobile ? 320 : 400}>
+                <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={accountBalanceData}
                     margin={{
