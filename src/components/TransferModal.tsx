@@ -277,7 +277,13 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
             <Button 
               type="submit" 
               className="flex-1 text-body"
-              disabled={sourceAccounts.length < 2 || isSubmitting}
+              disabled={
+                sourceAccounts.length < 2 || 
+                isSubmitting || 
+                !formData.fromAccountId || 
+                !formData.toAccountId || 
+                formData.amountInCents <= 0
+              }
             >
               {isSubmitting ? "Processando..." : "Realizar Transferência"}
             </Button>
