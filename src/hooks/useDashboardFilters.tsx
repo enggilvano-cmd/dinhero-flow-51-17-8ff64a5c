@@ -8,8 +8,6 @@ export function useDashboardFilters() {
   const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
   const [customStartDate, setCustomStartDate] = useState<Date | undefined>(undefined);
   const [customEndDate, setCustomEndDate] = useState<Date | undefined>(undefined);
-  const [startDatePickerOpen, setStartDatePickerOpen] = useState(false);
-  const [endDatePickerOpen, setEndDatePickerOpen] = useState(false);
 
   const getFilteredTransactions = useCallback((transactions: Transaction[]) => {
     let filtered = transactions;
@@ -96,10 +94,6 @@ export function useDashboardFilters() {
     setCustomStartDate,
     customEndDate,
     setCustomEndDate,
-    startDatePickerOpen,
-    setStartDatePickerOpen,
-    endDatePickerOpen,
-    setEndDatePickerOpen,
     getFilteredTransactions,
     goToPreviousMonth,
     goToNextMonth,
