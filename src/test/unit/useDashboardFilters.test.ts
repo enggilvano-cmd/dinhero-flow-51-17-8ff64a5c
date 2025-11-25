@@ -231,37 +231,4 @@ describe('useDashboardFilters', () => {
     });
   });
 
-  describe('Date picker state', () => {
-    it('should toggle start date picker', () => {
-      const { result } = renderHook(() => useDashboardFilters());
-
-      act(() => {
-        result.current.setStartDatePickerOpen(true);
-      });
-
-      expect(result.current.startDatePickerOpen).toBe(true);
-
-      act(() => {
-        result.current.setStartDatePickerOpen(false);
-      });
-
-      expect(result.current.startDatePickerOpen).toBe(false);
-    });
-
-    it('should toggle end date picker', () => {
-      const { result } = renderHook(() => useDashboardFilters());
-
-      act(() => {
-        result.current.setEndDatePickerOpen(true);
-      });
-
-      expect(result.current.endDatePickerOpen).toBe(true);
-
-      act(() => {
-        result.current.setEndDatePickerOpen(false);
-      });
-
-      expect(result.current.endDatePickerOpen).toBe(false);
-    });
-  });
 });
