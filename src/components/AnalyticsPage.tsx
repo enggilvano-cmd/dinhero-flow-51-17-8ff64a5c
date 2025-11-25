@@ -945,11 +945,12 @@ export default function AnalyticsPage({
             </div>
           </CardHeader>
           <CardContent className="p-2 sm:p-3">
-            <ChartContainer
-              config={categoryChartConfig}
-              className={`${responsiveConfig.containerHeight} w-full overflow-hidden`}
-            >
-              <RechartsPieChart width={undefined} height={undefined}>
+            <div className="relative w-full">
+              <ChartContainer
+                config={categoryChartConfig}
+                className={`${responsiveConfig.containerHeight} w-full overflow-hidden`}
+              >
+               <RechartsPieChart width={undefined} height={undefined}>
                 <ChartTooltip
                   content={<ChartTooltipContent />}
                   formatter={categoryTooltipFormatter}
@@ -960,39 +961,52 @@ export default function AnalyticsPage({
                     name: item.category,
                     value: item.amount,
                   }))}
-                  cx={isMobile ? "50%" : "40%"}
+                  cx={isMobile ? "50%" : "35%"}
                   cy="50%"
                   labelLine={false}
-                  label={responsiveConfig.showLabels && categoryData.length <= 6 ? undefined : false}
+                  label={false}
                   outerRadius={responsiveConfig.outerRadius}
                   fill="#8884d8"
                   dataKey="value"
                 >
                   {categoryData.map((entry, index) => (
-                    // A cor agora vem de 'entry.fill', que definimos
-                    // com a cor da categoria no 'useMemo'
                     <Cell key={`cell-${index}`} fill={entry.fill} />
                   ))}
                 </Pie>
-                {responsiveConfig.showLegend && categoryData.length > 0 && (
-                  <ChartLegend
-                    content={((props: any) => (
-                      <ChartLegendContent {...props} nameKey="name" />
-                    )) as any}
-                    layout="vertical"
-                    align={isMobile ? "center" : "right"}
-                    verticalAlign={isMobile ? "bottom" : "middle"}
-                    wrapperStyle={
-                      isMobile
-                        ? { paddingTop: "20px" }
-                        : { paddingRight: "10px" }
-                    }
-                    iconType="circle"
-                  />
-                )}
-
               </RechartsPieChart>
+              
+              {/* Custom Legend */}
+              {responsiveConfig.showLegend && categoryData.length > 0 && (
+                <div 
+                  className={cn(
+                    "flex flex-col gap-2 px-4",
+                    isMobile ? "mt-4" : "absolute right-4 top-1/2 -translate-y-1/2"
+                  )}
+                  style={{ maxWidth: isMobile ? "100%" : "35%" }}
+                >
+                  {categoryData.map((item, index) => (
+                    <div 
+                      key={`legend-${index}`} 
+                      className="flex items-center justify-between gap-2 text-caption"
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <div 
+                          className="w-3 h-3 rounded-full flex-shrink-0" 
+                          style={{ backgroundColor: item.fill }}
+                        />
+                        <span className="truncate text-foreground">
+                          {item.category}
+                        </span>
+                      </div>
+                      <span className="text-muted-foreground font-medium flex-shrink-0">
+                        {item.percentage.toFixed(1)}%
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </ChartContainer>
+            </div>
             {categoryData.length === 0 && (
               <div className="text-body text-center text-muted-foreground py-8">
                 Nenhuma transação encontrada para o período selecionado
