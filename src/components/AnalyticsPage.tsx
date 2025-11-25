@@ -1063,11 +1063,16 @@ export default function AnalyticsPage({
                     <LabelList
                       dataKey="positiveBalance"
                       position="top"
+                      angle={isMobile ? -45 : 0}
                       formatter={(value: any) => {
                         const numValue = typeof value === 'number' ? value : 0;
                         return numValue > 0 ? formatCurrency(numValue) : "";
                       }}
-                      style={{ fontSize: isMobile ? 9 : 11, fill: "hsl(var(--foreground))", fontWeight: 600 }}
+                      style={{ 
+                        fontSize: isMobile ? 9 : 11, 
+                        fill: "hsl(var(--foreground))", 
+                        fontWeight: 600 
+                      }}
                     />
                   </Bar>
                   <Bar dataKey="negativeBalance" stackId="balance" fill="hsl(var(--destructive))">
@@ -1078,11 +1083,16 @@ export default function AnalyticsPage({
                       dataKey="negativeBalance"
                       position="bottom"
                       offset={10}
+                      angle={isMobile ? -45 : 0}
                       formatter={(value: any) => {
                         const numValue = typeof value === 'number' ? value : 0;
                         return numValue < 0 ? formatCurrency(numValue) : "";
                       }}
-                      style={{ fontSize: isMobile ? 9 : 11, fill: "hsl(var(--foreground))", fontWeight: 600 }}
+                      style={{ 
+                        fontSize: isMobile ? 9 : 11, 
+                        fill: "hsl(var(--foreground))", 
+                        fontWeight: 600 
+                      }}
                     />
                   </Bar>
                 </BarChart>
