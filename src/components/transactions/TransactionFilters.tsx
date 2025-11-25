@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -59,6 +60,9 @@ export function TransactionFilters({
   onCustomEndDateChange,
   t,
 }: TransactionFiltersProps) {
+  const [startDatePickerOpen, setStartDatePickerOpen] = useState(false);
+  const [endDatePickerOpen, setEndDatePickerOpen] = useState(false);
+
   return (
     <div className="space-y-4">
       {/* Search */}
@@ -162,7 +166,7 @@ export function TransactionFilters({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <Label>{t("transactions.filters.startDate")}</Label>
-            <Popover>
+            <Popover open={startDatePickerOpen} onOpenChange={setStartDatePickerOpen}>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
@@ -183,7 +187,10 @@ export function TransactionFilters({
                 <CalendarComponent
                   mode="single"
                   selected={customStartDate}
-                  onSelect={onCustomStartDateChange}
+                  onSelect={(date) => {
+                    onCustomStartDateChange(date);
+                    setStartDatePickerOpen(false);
+                  }}
                   initialFocus
                 />
               </PopoverContent>
@@ -192,7 +199,7 @@ export function TransactionFilters({
 
           <div>
             <Label>{t("transactions.filters.endDate")}</Label>
-            <Popover>
+            <Popover open={endDatePickerOpen} onOpenChange={setEndDatePickerOpen}>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
@@ -213,7 +220,10 @@ export function TransactionFilters({
                 <CalendarComponent
                   mode="single"
                   selected={customEndDate}
-                  onSelect={onCustomEndDateChange}
+                  onSelect={(date) => {
+                    onCustomEndDateChange(date);
+                    setEndDatePickerOpen(false);
+                  }}
                   initialFocus
                 />
               </PopoverContent>

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -78,6 +79,9 @@ export function TransactionFilterDialog({
   categories,
   activeFiltersCount,
 }: TransactionFilterDialogProps) {
+  const [startDatePickerOpen, setStartDatePickerOpen] = useState(false);
+  const [endDatePickerOpen, setEndDatePickerOpen] = useState(false);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
@@ -250,7 +254,7 @@ export function TransactionFilterDialog({
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>Data Inicial</Label>
-                  <Popover>
+                  <Popover open={startDatePickerOpen} onOpenChange={setStartDatePickerOpen}>
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
@@ -271,7 +275,10 @@ export function TransactionFilterDialog({
                       <CalendarComponent
                         mode="single"
                         selected={customStartDate}
-                        onSelect={onCustomStartDateChange}
+                        onSelect={(date) => {
+                          onCustomStartDateChange(date);
+                          setStartDatePickerOpen(false);
+                        }}
                         initialFocus
                         className="pointer-events-auto"
                       />
@@ -281,7 +288,7 @@ export function TransactionFilterDialog({
 
                 <div>
                   <Label>Data Final</Label>
-                  <Popover>
+                  <Popover open={endDatePickerOpen} onOpenChange={setEndDatePickerOpen}>
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
@@ -302,7 +309,10 @@ export function TransactionFilterDialog({
                       <CalendarComponent
                         mode="single"
                         selected={customEndDate}
-                        onSelect={onCustomEndDateChange}
+                        onSelect={(date) => {
+                          onCustomEndDateChange(date);
+                          setEndDatePickerOpen(false);
+                        }}
                         initialFocus
                         className="pointer-events-auto"
                       />

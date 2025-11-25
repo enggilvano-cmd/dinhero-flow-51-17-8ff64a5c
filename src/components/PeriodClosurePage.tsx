@@ -38,6 +38,8 @@ export function PeriodClosurePage() {
   const [notes, setNotes] = useState('');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [closureToDelete, setClosureToDelete] = useState<PeriodClosure | null>(null);
+  const [startDatePickerOpen, setStartDatePickerOpen] = useState(false);
+  const [endDatePickerOpen, setEndDatePickerOpen] = useState(false);
 
   useEffect(() => {
     loadPeriodClosures();
@@ -240,7 +242,7 @@ export function PeriodClosurePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">Data de Início</label>
-              <Popover>
+              <Popover open={startDatePickerOpen} onOpenChange={setStartDatePickerOpen}>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
@@ -257,7 +259,10 @@ export function PeriodClosurePage() {
                   <Calendar
                     mode="single"
                     selected={startDate}
-                    onSelect={setStartDate}
+                    onSelect={(date) => {
+                      setStartDate(date);
+                      setStartDatePickerOpen(false);
+                    }}
                     initialFocus
                   />
                 </PopoverContent>
@@ -266,7 +271,7 @@ export function PeriodClosurePage() {
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Data de Fim</label>
-              <Popover>
+              <Popover open={endDatePickerOpen} onOpenChange={setEndDatePickerOpen}>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
@@ -283,7 +288,10 @@ export function PeriodClosurePage() {
                   <Calendar
                     mode="single"
                     selected={endDate}
-                    onSelect={setEndDate}
+                    onSelect={(date) => {
+                      setEndDate(date);
+                      setEndDatePickerOpen(false);
+                    }}
                     initialFocus
                   />
                 </PopoverContent>

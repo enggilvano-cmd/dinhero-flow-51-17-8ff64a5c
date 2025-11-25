@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -36,6 +37,8 @@ export function EditTransactionFormFields({
   filteredCategories,
   isTransfer = false,
 }: EditTransactionFormFieldsProps) {
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
+
   return (
     <>
       {!isTransfer && (
@@ -71,7 +74,7 @@ export function EditTransactionFormFields({
 
       <div className="space-y-2">
         <Label className="text-caption">Data</Label>
-        <Popover>
+        <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
           <PopoverTrigger asChild>
             <Button
               variant="outline"
@@ -92,7 +95,12 @@ export function EditTransactionFormFields({
             <Calendar
               mode="single"
               selected={formData.date}
-              onSelect={(date) => date && onFormDataChange({ date })}
+              onSelect={(date) => {
+                if (date) {
+                  onFormDataChange({ date });
+                  setDatePickerOpen(false);
+                }
+              }}
               initialFocus
             />
           </PopoverContent>
