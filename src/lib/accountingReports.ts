@@ -1,6 +1,7 @@
 import { loadJsPDF } from "./lazyImports";
 import { format } from "date-fns";
 import { formatCurrency } from "./formatters";
+import type { JournalEntry, ChartOfAccount } from "@/types/accounting";
 
 // Interfaces
 export interface DREReport {
@@ -36,8 +37,8 @@ export interface CashFlowReport {
 // Gerar DRE (Demonstração do Resultado do Exercício)
 // ATUALIZADO: Agora usa journal_entries ao invés de transactions
 export function generateDRE(
-  journalEntries: any[],
-  chartOfAccounts: any[],
+  journalEntries: JournalEntry[],
+  chartOfAccounts: ChartOfAccount[],
   _startDate: Date,
   _endDate: Date
 ): DREReport {
@@ -86,8 +87,8 @@ export function generateDRE(
 // Gerar Balanço Patrimonial
 // ATUALIZADO: Agora usa chart_of_accounts e journal_entries
 export function generateBalanceSheet(
-  journalEntries: any[],
-  chartOfAccounts: any[],
+  journalEntries: JournalEntry[],
+  chartOfAccounts: ChartOfAccount[],
   _referenceDate: Date
 ): BalanceSheetReport {
   // Calcular saldo de cada conta contábil
@@ -166,8 +167,8 @@ export function generateBalanceSheet(
 // Gerar Fluxo de Caixa
 // ATUALIZADO: Agora usa journal_entries e chart_of_accounts
 export function generateCashFlow(
-  journalEntries: any[],
-  chartOfAccounts: any[],
+  journalEntries: JournalEntry[],
+  chartOfAccounts: ChartOfAccount[],
   startDate: Date,
   endDate: Date
 ): CashFlowReport {

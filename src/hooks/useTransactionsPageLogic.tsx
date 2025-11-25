@@ -282,7 +282,12 @@ export function useTransactionsPageLogic({
   const exportToExcel = async () => {
     try {
       const { exportTransactionsToExcel } = await import('@/lib/exportUtils');
-      await exportTransactionsToExcel(transactions, accounts, categories);
+      // Converter transactions para formato compatível com ExportTransaction
+      const exportData = transactions.map(t => ({
+        ...t,
+        date: typeof t.date === 'string' ? t.date : t.date.toISOString(),
+      }));
+      await exportTransactionsToExcel(exportData as any, accounts, categories);
       
       toast({
         title: "Sucesso",

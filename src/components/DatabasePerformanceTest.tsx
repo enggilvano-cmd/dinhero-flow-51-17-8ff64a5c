@@ -11,12 +11,39 @@ import { useToast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
 import { logger } from "@/lib/logger";
 
+interface TestDataResult {
+  message: string;
+  created: number;
+  duration: string;
+  rate: string;
+  totalTransactions: number;
+  transactionsCreated?: number;
+  executionTime?: string;
+  transactionsPerSecond?: number;
+}
+
+interface PerformanceTest {
+  time: string;
+  records?: number;
+  result?: number | null;
+  error?: string | null;
+}
+
+interface AnalysisResult {
+  totalTransactions: number;
+  tests: {
+    pagination: PerformanceTest;
+    count: PerformanceTest;
+    filter: PerformanceTest;
+  };
+}
+
 export function DatabasePerformanceTest() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [transactionCount, setTransactionCount] = useState(1000);
-  const [result, setResult] = useState<any>(null);
-  const [analysisResult, setAnalysisResult] = useState<any>(null);
+  const [result, setResult] = useState<TestDataResult | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const { toast } = useToast();
 
   const generateTestData = async () => {

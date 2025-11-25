@@ -58,12 +58,20 @@ export function ImportFixedTransactionsModal({
   onImportComplete,
   accounts,
 }: ImportFixedTransactionsModalProps) {
+  interface ExistingTransaction {
+    id: string;
+    description: string;
+    account_id: string;
+    amount: number;
+    date: string;
+  }
+
   const [file, setFile] = useState<File | null>(null);
   const [importing, setImporting] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [importedData, setImportedData] = useState<ImportedFixedTransaction[]>([]);
   const [excludedIndexes, setExcludedIndexes] = useState<Set<number>>(new Set());
-  const [existingTransactions, setExistingTransactions] = useState<any[]>([]);
+  const [existingTransactions, setExistingTransactions] = useState<ExistingTransaction[]>([]);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
