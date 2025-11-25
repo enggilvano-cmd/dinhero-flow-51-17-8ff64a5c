@@ -1,6 +1,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { DeleteTransactionInputSchema, validateWithZod, validationErrorResponse } from '../_shared/validation.ts';
 import { withRetry } from '../_shared/retry.ts';
+import { rateLimiters } from '../_shared/rate-limiter.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -38,6 +39,13 @@ Deno.serve(async (req) => {
         JSON.stringify({ error: 'Unauthorized' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
+    }
+
+    // Apply strict rate limiting for deletion operations
+    const rateLimitResponse = await rateLimiters.strict.middleware(req, user.id);
+    if (rateLimitResponse) {
+      console.warn('[atomic-delete] WARN: Rate limit exceeded for user:', user.id);
+      return rateLimitResponse;
     }
 
     const body = await req.json();
