@@ -41,8 +41,8 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Apply strict rate limiting for deletion operations
-    const rateLimitResponse = await rateLimiters.strict.middleware(req, user.id);
+    // Apply moderate rate limiting for deletion operations (allows bulk deletes)
+    const rateLimitResponse = await rateLimiters.moderate.middleware(req, user.id);
     if (rateLimitResponse) {
       console.warn('[atomic-delete] WARN: Rate limit exceeded for user:', user.id);
       return rateLimitResponse;
