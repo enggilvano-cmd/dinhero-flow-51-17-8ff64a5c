@@ -45,7 +45,11 @@ export function MarkAsPaidModal({
   useEffect(() => {
     if (open && transaction) {
       setDate(new Date());
-      setAmount(Math.abs(transaction.amount / 100).toFixed(2));
+      // Formatar com vírgula (padrão brasileiro)
+      const formattedAmount = Math.abs(transaction.amount / 100)
+        .toFixed(2)
+        .replace(".", ",");
+      setAmount(formattedAmount);
       setAccountId(transaction.account_id);
     }
   }, [open, transaction]);
@@ -53,15 +57,21 @@ export function MarkAsPaidModal({
   const handleConfirm = () => {
     if (!transaction || !accountId) return;
     
-    const amountInCents = Math.round(parseFloat(amount) * 100);
+    // Converter vírgula para ponto antes de parseFloat
+    const amountInCents = Math.round(parseFloat(amount.replace(",", ".")) * 100);
     onConfirm(transaction.id, date, amountInCents, accountId);
     onOpenChange(false);
   };
 
   const handleAmountChange = (value: string) => {
-    // Permitir apenas números e ponto/vírgula
-    const sanitized = value.replace(/[^\d.,]/g, "").replace(",", ".");
-    setAmount(sanitized);
+    // Permitir apenas números e vírgula (padrão brasileiro)
+    const sanitized = value.replace(/[^\d,]/g, "");
+    // Garantir apenas uma vírgula
+    const parts = sanitized.split(",");
+    const formatted = parts.length > 2 
+      ? parts[0] + "," + parts.slice(1).join("")
+      : sanitized;
+    setAmount(formatted);
   };
 
   if (!transaction) return null;
@@ -147,7 +157,7 @@ export function MarkAsPaidModal({
           </Button>
           <Button 
             onClick={handleConfirm}
-            disabled={!accountId || !amount || parseFloat(amount) <= 0}
+            disabled={!accountId || !amount || parseFloat(amount.replace(",", ".")) <= 0}
           >
             Confirmar
           </Button>
