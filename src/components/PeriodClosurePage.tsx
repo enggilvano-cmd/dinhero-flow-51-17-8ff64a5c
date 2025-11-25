@@ -8,7 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Lock, Unlock, CalendarIcon, Loader2 } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Lock, Unlock, CalendarIcon, Loader2, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -35,6 +36,8 @@ export function PeriodClosurePage() {
   const [endDate, setEndDate] = useState<Date>();
   const [closureType, setClosureType] = useState<'monthly' | 'annual'>('monthly');
   const [notes, setNotes] = useState('');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [closureToDelete, setClosureToDelete] = useState<PeriodClosure | null>(null);
 
   useEffect(() => {
     loadPeriodClosures();
@@ -189,19 +192,28 @@ export function PeriodClosurePage() {
     }
   }
 
-  async function handleDeleteClosure(id: string) {
-    if (!confirm('Tem certeza que deseja excluir este fechamento?')) return;
+  function handleDeleteClick(closure: PeriodClosure) {
+    setClosureToDelete(closure);
+    setDeleteDialogOpen(true);
+  }
+
+  async function confirmDeleteClosure() {
+    if (!closureToDelete) return;
 
     try {
       const { error } = await supabase
         .from('period_closures')
         .delete()
-        .eq('id', id);
+        .eq('id', closureToDelete.id);
 
       if (error) throw error;
 
-      toast.success('Fechamento excluído com sucesso');
+      toast.success('Fechamento Excluído', {
+        description: 'Fechamento removido com sucesso',
+      });
       loadPeriodClosures();
+      setDeleteDialogOpen(false);
+      setClosureToDelete(null);
     } catch (error) {
       logger.error('Error deleting closure:', error);
       toast.error('Erro ao excluir fechamento');
@@ -390,8 +402,10 @@ export function PeriodClosurePage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleDeleteClosure(closure.id)}
+                          onClick={() => handleDeleteClick(closure)}
+                          className="text-destructive"
                         >
+                          <Trash2 className="mr-1 h-3 w-3" />
                           Excluir
                         </Button>
                       </TableCell>
@@ -403,6 +417,31 @@ export function PeriodClosurePage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir fechamento?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {closureToDelete && (
+                <>
+                  Período: {format(new Date(closureToDelete.period_start), 'dd/MM/yyyy')} - {format(new Date(closureToDelete.period_end), 'dd/MM/yyyy')}
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteClosure}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import {
   Plus,
   Search,
@@ -60,6 +61,8 @@ export function AccountsPage({
     "all" | "checking" | "savings" | "credit" | "investment"
   >(initialFilterType);
   const [importModalOpen, setImportModalOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [accountToDelete, setAccountToDelete] = useState<Account | null>(null);
   const { toast } = useToast();
 
   const getAccountIcon = (type: string) => {
@@ -114,15 +117,20 @@ export function AccountsPage({
       a.name.localeCompare(b.name, "pt-BR", { sensitivity: "base" })
     );
 
-  const handleDeleteAccount = (account: Account) => {
-    if (
-      window.confirm(`Tem certeza que deseja excluir a conta "${account.name}"?`)
-    ) {
-      onDeleteAccount(account.id);
+  const handleDeleteClick = (account: Account) => {
+    setAccountToDelete(account);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteAccount = () => {
+    if (accountToDelete) {
+      onDeleteAccount(accountToDelete.id);
       toast({
-        title: "Conta excluída",
-        description: `A conta ${account.name} foi excluída com sucesso`,
+        title: "Conta Excluída",
+        description: "Conta removida com sucesso",
       });
+      setDeleteDialogOpen(false);
+      setAccountToDelete(null);
     }
   };
 
@@ -393,7 +401,7 @@ export function AccountsPage({
                             </DropdownMenuItem>
                           )}
                           <DropdownMenuItem
-                            onClick={() => handleDeleteAccount(account)}
+                            onClick={() => handleDeleteClick(account)}
                             className="text-destructive"
                           >
                             <Trash2 className="h-4 w-4 mr-2" />
@@ -519,6 +527,27 @@ export function AccountsPage({
         accounts={accounts}
         onImportAccounts={handleImportAccounts}
       />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir conta?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {accountToDelete?.name}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteAccount}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
