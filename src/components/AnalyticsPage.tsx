@@ -445,6 +445,39 @@ export default function AnalyticsPage({
     return config;
   }, [accountBalanceData]);
 
+  // Dados para o gráfico de saldos de cartões de crédito
+  const creditCardBalanceData = useMemo(() => {
+    return accounts
+      .filter((acc) => acc.type === "credit")
+      .map((account) => {
+        const usedCredit = account.balance < 0 ? Math.abs(account.balance) : 0;
+        const availableCredit = (account.limit_amount || 0) - usedCredit;
+        
+        return {
+          name: account.name.split(" - ")[0] || account.name,
+          balance: availableCredit,
+          positiveBalance: availableCredit > 0 ? availableCredit : 0,
+          negativeBalance: availableCredit < 0 ? availableCredit : 0,
+          type: account.type,
+          color: account.color || "hsl(var(--primary))",
+          usedCredit,
+          limitAmount: account.limit_amount || 0,
+        };
+      });
+  }, [accounts]);
+
+  // Chart config específico para o gráfico de cartões de crédito
+  const creditCardChartConfig = useMemo(() => {
+    const config: Record<string, { label: string; color: string }> = {};
+    creditCardBalanceData.forEach((card) => {
+      config[card.name] = {
+        label: card.name,
+        color: card.color,
+      };
+    });
+    return config;
+  }, [creditCardBalanceData]);
+
   const handleExportPDF = async () => {
     if (!contentRef.current) {
       toast({
@@ -1160,6 +1193,127 @@ export default function AnalyticsPage({
             )}
           </CardContent>
         </Card>
+
+        {/* Credit Card Balances */}
+        {creditCardBalanceData.length > 0 && (
+          <Card className="financial-card">
+            <CardHeader className="px-3 pt-3 pb-2 sm:px-4 sm:pt-4">
+              <CardTitle className="text-headline flex items-center gap-2">
+                <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5" />
+                Crédito Disponível - Cartões
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-2 sm:p-3">
+              <div className="relative w-full">
+                <ChartContainer
+                  config={creditCardChartConfig}
+                  className={`${responsiveConfig.containerHeight} w-full overflow-hidden`}
+                >
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={creditCardBalanceData}
+                      margin={{
+                        top: 20,
+                        right: isMobile ? 15 : 200,
+                        bottom: isMobile ? 20 : 30,
+                        left: isMobile ? 10 : 20
+                      }}
+                    >
+                    <XAxis
+                      dataKey="name"
+                      tick={false}
+                      axisLine={false}
+                      height={0}
+                    />
+                    <YAxis
+                      tickFormatter={(value) =>
+                        formatCurrencyForAxis(value / 100, isMobile)
+                      }
+                      tick={{ fontSize: isMobile ? 9 : 11 }}
+                    />
+                    <ChartTooltip
+                      content={<ChartTooltipContent />}
+                      formatter={(value: number, _name: string, props: any) => {
+                        if (props?.payload?.balance !== undefined) {
+                          return [formatCurrency(props.payload.balance), "Crédito Disponível"];
+                        }
+                        return [formatCurrency(value), "Crédito Disponível"];
+                      }}
+                     />
+                     <Bar dataKey="positiveBalance" stackId="balance" fill="hsl(var(--success))">
+                       {creditCardBalanceData.map((entry, index) => (
+                         <Cell key={`cell-credit-positive-${index}`} fill={entry.balance > 0 ? entry.color : "transparent"} />
+                       ))}
+                     </Bar>
+                     <Bar dataKey="negativeBalance" stackId="balance" fill="hsl(var(--destructive))">
+                       {creditCardBalanceData.map((entry, index) => (
+                         <Cell key={`cell-credit-negative-${index}`} fill={entry.balance < 0 ? entry.color : "transparent"} />
+                       ))}
+                     </Bar>
+                   </BarChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+
+              {/* Legenda de Cartões - desktop/tablet (dentro do container) */}
+              {!isMobile && creditCardBalanceData.length > 0 && (
+                <div 
+                  className="flex flex-col gap-2 px-4 absolute right-4 top-1/2 -translate-y-1/2"
+                  style={{ maxWidth: "35%" }}
+                >
+                  {creditCardBalanceData.map((card, index) => (
+                    <div 
+                      key={`legend-credit-desktop-${index}`} 
+                      className="flex items-center justify-between gap-2 text-caption"
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <div 
+                          className="w-3 h-3 rounded-full flex-shrink-0" 
+                          style={{ backgroundColor: card.color }}
+                        />
+                        <span className="truncate text-foreground">
+                          {card.name}
+                        </span>
+                      </div>
+                      <span className={`font-medium flex-shrink-0 ${
+                        card.balance >= 0 ? 'text-success' : 'text-destructive'
+                      }`}>
+                        {formatCurrency(card.balance)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              </div>
+
+              {/* Legenda de Cartões - mobile (abaixo do gráfico) */}
+              {isMobile && creditCardBalanceData.length > 0 && (
+                <div className="mt-4 flex flex-col gap-2 px-2">
+                  {creditCardBalanceData.map((card, index) => (
+                    <div 
+                      key={`legend-credit-mobile-${index}`} 
+                      className="flex items-center justify-between gap-2 text-caption"
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <div 
+                          className="w-3 h-3 rounded-full flex-shrink-0" 
+                          style={{ backgroundColor: card.color }}
+                        />
+                        <span className="truncate text-foreground">
+                          {card.name}
+                        </span>
+                      </div>
+                      <span className={`font-medium flex-shrink-0 ${
+                        card.balance >= 0 ? 'text-success' : 'text-destructive'
+                      }`}>
+                        {formatCurrency(card.balance)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Monthly Trend */}
         <Card className="financial-card">
