@@ -1057,20 +1057,21 @@ export default function AnalyticsPage({
             </CardTitle>
           </CardHeader>
           <CardContent className="p-2 sm:p-3">
-            <ChartContainer
-              config={accountChartConfig}
-              className={`${isMobile ? 'min-h-[500px]' : responsiveConfig.containerHeight} w-full overflow-hidden`}
-            >
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={accountBalanceData}
-                  margin={{
-                    top: 30,
-                    right: isMobile ? 15 : 20,
-                    bottom: isMobile ? 100 : 80,
-                    left: isMobile ? 10 : 15
-                  }}
-                >
+            <div className="relative w-full">
+              <ChartContainer
+                config={accountChartConfig}
+                className={`${isMobile ? 'min-h-[500px]' : responsiveConfig.containerHeight} w-full overflow-hidden`}
+              >
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={accountBalanceData}
+                    margin={{
+                      top: 30,
+                      right: isMobile ? 15 : 180,
+                      bottom: isMobile ? 100 : 80,
+                      left: isMobile ? 10 : 15
+                    }}
+                  >
                   <XAxis
                     dataKey="name"
                     tick={{ fontSize: isMobile ? 10 : 11 }}
@@ -1153,9 +1154,64 @@ export default function AnalyticsPage({
                        }}
                      />
                    </Bar>
-                </BarChart>
+                 </BarChart>
               </ResponsiveContainer>
             </ChartContainer>
+
+            {/* Legenda de Contas - desktop/tablet (dentro do container) */}
+            {!isMobile && accountBalanceData.length > 0 && (
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-2 px-4" style={{ maxWidth: '35%' }}>
+                {accountBalanceData.map((account, index) => (
+                  <div 
+                    key={`legend-account-desktop-${index}`} 
+                    className="flex items-center justify-between gap-2 text-caption"
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div 
+                        className="w-3 h-3 rounded-full flex-shrink-0" 
+                        style={{ backgroundColor: account.color }}
+                      />
+                      <span className="truncate text-foreground">
+                        {account.name}
+                      </span>
+                    </div>
+                    <span className={`font-medium flex-shrink-0 ${
+                      account.balance >= 0 ? 'text-success' : 'text-destructive'
+                    }`}>
+                      {formatCurrency(account.balance)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+            </div>
+
+            {/* Legenda de Contas - mobile (abaixo do gráfico) */}
+            {isMobile && accountBalanceData.length > 0 && (
+              <div className="mt-4 flex flex-col gap-2 px-2">
+                {accountBalanceData.map((account, index) => (
+                  <div 
+                    key={`legend-account-mobile-${index}`} 
+                    className="flex items-center justify-between gap-2 text-caption"
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div 
+                        className="w-3 h-3 rounded-full flex-shrink-0" 
+                        style={{ backgroundColor: account.color }}
+                      />
+                      <span className="truncate text-foreground">
+                        {account.name}
+                      </span>
+                    </div>
+                    <span className={`font-medium flex-shrink-0 ${
+                      account.balance >= 0 ? 'text-success' : 'text-destructive'
+                    }`}>
+                      {formatCurrency(account.balance)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 
