@@ -1055,46 +1055,68 @@ export default function AnalyticsPage({
                   <ChartTooltip
                     content={<ChartTooltipContent />}
                     formatter={accountTooltipFormatter}
-                  />
-                  <Bar dataKey="positiveBalance" stackId="balance" fill="hsl(var(--success))">
-                    {accountBalanceData.map((entry, index) => (
-                      <Cell key={`cell-positive-${index}`} fill={entry.balance > 0 ? entry.color : "transparent"} />
-                    ))}
-                    <LabelList
-                      dataKey="positiveBalance"
-                      position="top"
-                      angle={isMobile ? -45 : 0}
-                      formatter={(value: any) => {
-                        const numValue = typeof value === 'number' ? value : 0;
-                        return numValue > 0 ? formatCurrency(numValue) : "";
-                      }}
-                      style={{ 
-                        fontSize: isMobile ? 9 : 11, 
-                        fill: "hsl(var(--foreground))", 
-                        fontWeight: 600 
-                      }}
-                    />
-                  </Bar>
-                  <Bar dataKey="negativeBalance" stackId="balance" fill="hsl(var(--destructive))">
-                    {accountBalanceData.map((entry, index) => (
-                      <Cell key={`cell-negative-${index}`} fill={entry.balance < 0 ? entry.color : "transparent"} />
-                    ))}
-                    <LabelList
-                      dataKey="negativeBalance"
-                      position="bottom"
-                      offset={10}
-                      angle={isMobile ? -45 : 0}
-                      formatter={(value: any) => {
-                        const numValue = typeof value === 'number' ? value : 0;
-                        return numValue < 0 ? formatCurrency(numValue) : "";
-                      }}
-                      style={{ 
-                        fontSize: isMobile ? 9 : 11, 
-                        fill: "hsl(var(--foreground))", 
-                        fontWeight: 600 
-                      }}
-                    />
-                  </Bar>
+                   />
+                   <Bar dataKey="positiveBalance" stackId="balance" fill="hsl(var(--success))">
+                     {accountBalanceData.map((entry, index) => (
+                       <Cell key={`cell-positive-${index}`} fill={entry.balance > 0 ? entry.color : "transparent"} />
+                     ))}
+                     <LabelList
+                       dataKey="positiveBalance"
+                       position="top"
+                       content={(props: any) => {
+                         const { x, y, width, value } = props;
+                         const numValue = typeof value === 'number' ? value : 0;
+                         if (numValue <= 0) return null;
+                         
+                         const labelX = x + width / 2;
+                         const labelY = y - 5;
+                         
+                         return (
+                           <text
+                             x={labelX}
+                             y={labelY}
+                             fill="hsl(var(--foreground))"
+                             textAnchor="middle"
+                             fontSize={isMobile ? 9 : 11}
+                             fontWeight={600}
+                             transform={isMobile ? `rotate(-45 ${labelX} ${labelY})` : undefined}
+                           >
+                             {formatCurrency(numValue)}
+                           </text>
+                         );
+                       }}
+                     />
+                   </Bar>
+                   <Bar dataKey="negativeBalance" stackId="balance" fill="hsl(var(--destructive))">
+                     {accountBalanceData.map((entry, index) => (
+                       <Cell key={`cell-negative-${index}`} fill={entry.balance < 0 ? entry.color : "transparent"} />
+                     ))}
+                     <LabelList
+                       dataKey="negativeBalance"
+                       content={(props: any) => {
+                         const { x, y, width, height, value } = props;
+                         const numValue = typeof value === 'number' ? value : 0;
+                         if (numValue >= 0) return null;
+                         
+                         const labelX = x + width / 2;
+                         const labelY = y + height + 15;
+                         
+                         return (
+                           <text
+                             x={labelX}
+                             y={labelY}
+                             fill="hsl(var(--foreground))"
+                             textAnchor="middle"
+                             fontSize={isMobile ? 9 : 11}
+                             fontWeight={600}
+                             transform={isMobile ? `rotate(-45 ${labelX} ${labelY})` : undefined}
+                           >
+                             {formatCurrency(numValue)}
+                           </text>
+                         );
+                       }}
+                     />
+                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </ChartContainer>
