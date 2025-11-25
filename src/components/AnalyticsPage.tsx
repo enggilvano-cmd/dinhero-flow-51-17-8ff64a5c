@@ -39,7 +39,6 @@ import {
   YAxis,
   Line,
   ComposedChart,
-  LabelList,
 } from "recharts";
 import { loadHtmlToImage, loadJsPDF } from "@/lib/lazyImports";
 import {
@@ -1065,20 +1064,18 @@ export default function AnalyticsPage({
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={accountBalanceData}
-                    margin={{
-                      top: 30,
-                      right: isMobile ? 15 : 180,
-                      bottom: isMobile ? 100 : 80,
-                      left: isMobile ? 10 : 15
-                    }}
+                  margin={{
+                    top: 20,
+                    right: isMobile ? 15 : 180,
+                    bottom: isMobile ? 20 : 30,
+                    left: isMobile ? 10 : 15
+                  }}
                   >
                   <XAxis
                     dataKey="name"
-                    tick={{ fontSize: isMobile ? 10 : 11 }}
-                    angle={-45}
-                    textAnchor="end"
-                    height={isMobile ? 85 : 70}
-                    interval={0}
+                    tick={false}
+                    axisLine={false}
+                    height={0}
                   />
                   <YAxis
                     tickFormatter={(value) =>
@@ -1094,65 +1091,11 @@ export default function AnalyticsPage({
                      {accountBalanceData.map((entry, index) => (
                        <Cell key={`cell-positive-${index}`} fill={entry.balance > 0 ? entry.color : "transparent"} />
                      ))}
-                     <LabelList
-                       dataKey="positiveBalance"
-                       position="top"
-                       content={(props: any) => {
-                         const { x, y, width, value } = props;
-                         const numValue = typeof value === "number" ? value : 0;
-                         if (numValue <= 0) return null;
-                         
-                         const labelX = x + width / 2;
-                         const shouldRotate = width < 60 || isMobile;
-                         const labelY = shouldRotate ? y - 15 : y - 8;
-                         
-                         return (
-                           <text
-                             x={labelX}
-                             y={labelY}
-                             fill="hsl(var(--foreground))"
-                             textAnchor="middle"
-                             fontSize={isMobile ? 9 : 11}
-                             fontWeight={600}
-                             transform={shouldRotate ? `rotate(-45 ${labelX} ${labelY})` : undefined}
-                           >
-                             {formatCurrency(numValue)}
-                           </text>
-                         );
-                       }}
-                     />
                    </Bar>
                    <Bar dataKey="negativeBalance" stackId="balance" fill="hsl(var(--destructive))">
                      {accountBalanceData.map((entry, index) => (
                        <Cell key={`cell-negative-${index}`} fill={entry.balance < 0 ? entry.color : "transparent"} />
                      ))}
-                     <LabelList
-                       dataKey="negativeBalance"
-                       content={(props: any) => {
-                         const { x, y, width, height, value } = props;
-                         const numValue = typeof value === "number" ? value : 0;
-                         if (numValue >= 0) return null;
-                         
-                         const barBottom = Math.max(y, y + height);
-                         const labelX = x + width / 2;
-                         const shouldRotate = width < 60 || isMobile;
-                         const labelY = shouldRotate ? barBottom + 20 : barBottom + 18;
-                         
-                         return (
-                           <text
-                             x={labelX}
-                             y={labelY}
-                             fill="hsl(var(--foreground))"
-                             textAnchor="middle"
-                             fontSize={isMobile ? 9 : 11}
-                             fontWeight={600}
-                             transform={shouldRotate ? `rotate(-45 ${labelX} ${labelY})` : undefined}
-                           >
-                             {formatCurrency(numValue)}
-                           </text>
-                         );
-                       }}
-                     />
                    </Bar>
                  </BarChart>
               </ResponsiveContainer>
