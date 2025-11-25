@@ -1,7 +1,6 @@
 import { useState, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { createDateFromString, getTodayString } from "@/lib/dateUtils";
@@ -16,6 +15,7 @@ import { logger } from "@/lib/logger";
 import { transferSchema } from "@/lib/validationSchemas";
 import { TransferModalProps } from "@/types/formProps";
 import { useBalanceValidation, validateCreditLimitForAdd } from "@/hooks/useBalanceValidation";
+import { DatePicker } from "@/components/ui/date-picker";
 
 export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalProps) {
   const { accounts } = useAccounts();
@@ -247,11 +247,17 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
 
             <div className="space-y-2">
               <Label htmlFor="date" className="text-caption">Data</Label>
-              <Input
-                id="date"
-                type="date"
-                value={formData.date}
-                onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
+              <DatePicker
+                date={formData.date ? createDateFromString(formData.date) : undefined}
+                onDateChange={(newDate) => {
+                  if (newDate) {
+                    const year = newDate.getFullYear();
+                    const month = String(newDate.getMonth() + 1).padStart(2, '0');
+                    const day = String(newDate.getDate()).padStart(2, '0');
+                    setFormData(prev => ({ ...prev, date: `${year}-${month}-${day}` }));
+                  }
+                }}
+                placeholder="Selecione a data"
               />
             </div>
           </div>

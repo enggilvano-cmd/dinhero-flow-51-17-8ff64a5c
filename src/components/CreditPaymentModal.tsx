@@ -7,7 +7,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -18,7 +17,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { logger } from "@/lib/logger";
-import { getTodayString } from "@/lib/dateUtils";
+import { getTodayString, createDateFromString } from "@/lib/dateUtils";
 import { getAvailableBalance } from "@/lib/formatters";
 import { AccountBalanceDetails } from "./AccountBalanceDetails";
 import { CurrencyInput } from "./forms/CurrencyInput";
@@ -27,6 +26,7 @@ import { creditPaymentSchema } from "@/lib/validationSchemas";
 import { z } from "zod";
 import { CreditPaymentModalProps } from "@/types/formProps";
 import { useBalanceValidation } from "@/hooks/useBalanceValidation";
+import { DatePicker } from "@/components/ui/date-picker";
 
 // Helper para formatar moeda (R$)
 const formatBRL = (valueInCents: number) => {
@@ -355,13 +355,17 @@ export function CreditPaymentModal({
 
             <div className="space-y-2">
               <Label htmlFor="date">Data do Pagamento</Label>
-              <Input
-                id="date"
-                type="date"
-                value={formData.date}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, date: e.target.value }))
-                }
+              <DatePicker
+                date={formData.date ? createDateFromString(formData.date) : undefined}
+                onDateChange={(newDate) => {
+                  if (newDate) {
+                    const year = newDate.getFullYear();
+                    const month = String(newDate.getMonth() + 1).padStart(2, '0');
+                    const day = String(newDate.getDate()).padStart(2, '0');
+                    setFormData((prev) => ({ ...prev, date: `${year}-${month}-${day}` }));
+                  }
+                }}
+                placeholder="Selecione a data"
               />
             </div>
           </div>
