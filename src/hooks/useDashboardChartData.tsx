@@ -17,6 +17,9 @@ export function useDashboardChartData(
   customEndDate: Date | undefined
 ) {
   return useMemo(() => {
+    const isTransferLike = (t: Transaction) =>
+      t.type === 'transfer' || Boolean((t as any).to_account_id) || Boolean((t as any).linked_transaction_id);
+
     if (chartScale === 'daily') {
       let dailyFilteredTrans = transactions;
 
@@ -54,7 +57,7 @@ export function useDashboardChartData(
       if (dailyFilteredTrans.length === 0) return [];
 
       const dailyTotals = dailyFilteredTrans
-        .filter(t => t.type !== 'transfer') // Excluir transferências
+        .filter(t => !isTransferLike(t)) // Excluir transferências (saída e entrada)
         .reduce((acc, transaction) => {
         const transactionDate = typeof transaction.date === 'string'
           ? createDateFromString(transaction.date)
@@ -97,7 +100,7 @@ export function useDashboardChartData(
       });
     } else {
       const monthlyTotals = transactions
-        .filter(t => t.type !== 'transfer') // Excluir transferências
+        .filter(t => !isTransferLike(t)) // Excluir transferências (saída e entrada)
         .reduce((acc, transaction) => {
         const transactionDate = typeof transaction.date === 'string'
           ? createDateFromString(transaction.date)
@@ -128,7 +131,7 @@ export function useDashboardChartData(
       }
 
       const previousYearBalance = transactions
-        .filter(t => t.type !== 'transfer') // Excluir transferências
+        .filter(t => !isTransferLike(t)) // Excluir transferências (saída e entrada)
         .reduce((acc, transaction) => {
         const transactionDate = typeof transaction.date === 'string'
           ? createDateFromString(transaction.date)
