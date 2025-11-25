@@ -5,7 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useAccounts } from '../queries/useAccounts';
 import { logger } from '@/lib/logger';
-import { queryKeys, refetchWithDelay } from '@/lib/queryClient';
+import { queryKeys } from '@/lib/queryClient';
 import { getErrorMessage } from '@/lib/errorUtils';
 
 export function useTransferMutations() {
@@ -42,12 +42,9 @@ export function useTransferMutations() {
 
       if (error) throw error;
 
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
-      ]);
-      
-      refetchWithDelay(queryClient, [queryKeys.transactionsBase, queryKeys.accounts]);
+      // ✅ Invalidação imediata dispara refetch automático sem delay
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
     } catch (error: unknown) {
       logger.error('Error processing transfer:', error);
       const errorMessage = getErrorMessage(error);

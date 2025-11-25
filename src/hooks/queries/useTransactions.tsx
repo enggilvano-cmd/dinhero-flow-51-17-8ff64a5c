@@ -310,16 +310,10 @@ export function useTransactions(params: UseTransactionsParams = {}) {
       if (error) throw error;
       return data;
     },
-    onSuccess: async () => {
-      // Invalidate and refetch all transaction-related queries
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
-      ]);
-      await Promise.all([
-        queryClient.refetchQueries({ queryKey: queryKeys.transactionsBase }),
-        queryClient.refetchQueries({ queryKey: queryKeys.accounts }),
-      ]);
+    onSuccess: () => {
+      // ✅ Invalidação imediata dispara refetch automático sem delay
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
     },
     onError: (error) => {
       logger.error('Error adding transaction:', error);
@@ -349,15 +343,10 @@ export function useTransactions(params: UseTransactionsParams = {}) {
       if (error) throw error;
       return data;
     },
-    onSuccess: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
-      ]);
-      await Promise.all([
-        queryClient.refetchQueries({ queryKey: queryKeys.transactionsBase }),
-        queryClient.refetchQueries({ queryKey: queryKeys.accounts }),
-      ]);
+    onSuccess: () => {
+      // ✅ Invalidação imediata dispara refetch automático sem delay
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
     },
   });
 
@@ -378,15 +367,10 @@ export function useTransactions(params: UseTransactionsParams = {}) {
       if (error) throw error;
       return data;
     },
-    onSuccess: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
-      ]);
-      await Promise.all([
-        queryClient.refetchQueries({ queryKey: queryKeys.transactionsBase }),
-        queryClient.refetchQueries({ queryKey: queryKeys.accounts }),
-      ]);
+    onSuccess: () => {
+      // ✅ Invalidação imediata dispara refetch automático sem delay
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
     },
   });
 
@@ -429,17 +413,11 @@ export function useTransactions(params: UseTransactionsParams = {}) {
       if (error) throw error;
       return newTransactions;
     },
-    onSuccess: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.categories }),
-      ]);
-      await Promise.all([
-        queryClient.refetchQueries({ queryKey: queryKeys.transactionsBase }),
-        queryClient.refetchQueries({ queryKey: queryKeys.accounts }),
-        queryClient.refetchQueries({ queryKey: queryKeys.categories }),
-      ]);
+    onSuccess: () => {
+      // ✅ Invalidação imediata dispara refetch automático sem delay
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+      queryClient.invalidateQueries({ queryKey: queryKeys.categories });
     },
   });
 

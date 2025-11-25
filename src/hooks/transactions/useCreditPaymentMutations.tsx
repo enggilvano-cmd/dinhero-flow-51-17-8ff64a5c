@@ -6,7 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAccounts } from '../queries/useAccounts';
 import { Account, Transaction } from '@/types';
 import { logger } from '@/lib/logger';
-import { queryKeys, refetchWithDelay } from '@/lib/queryClient';
+import { queryKeys } from '@/lib/queryClient';
 import { getErrorMessage } from '@/lib/errorUtils';
 
 export function useCreditPaymentMutations() {
@@ -51,12 +51,9 @@ export function useCreditPaymentMutations() {
       }
 
       logger.info('🔄 Refazendo fetch após pagamento...');
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
-      ]);
-      
-      refetchWithDelay(queryClient, [queryKeys.transactionsBase, queryKeys.accounts]);
+      // ✅ Invalidação imediata dispara refetch automático sem delay
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
 
       return {
         creditAccount: { ...creditAccount, balance: data.credit_balance?.[0]?.new_balance || creditAccount.balance },
@@ -98,12 +95,9 @@ export function useCreditPaymentMutations() {
       if (errors.length > 0) throw errors[0].error;
 
       logger.info('🔄 Refazendo fetch após estorno...');
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
-      ]);
-      
-      refetchWithDelay(queryClient, [queryKeys.transactionsBase, queryKeys.accounts]);
+      // ✅ Invalidação imediata dispara refetch automático sem delay
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
 
       toast({ title: 'Pagamento estornado com sucesso!' });
     } catch (error: unknown) {

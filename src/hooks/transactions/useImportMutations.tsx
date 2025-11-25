@@ -5,7 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { ImportTransactionData } from '@/types';
 import { logger } from '@/lib/logger';
-import { queryKeys, refetchWithDelay } from '@/lib/queryClient';
+import { queryKeys } from '@/lib/queryClient';
 import { getErrorMessage } from '@/lib/errorUtils';
 
 export function useImportMutations() {
@@ -129,12 +129,9 @@ export function useImportMutations() {
         throw firstError;
       }
 
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
-      ]);
-      
-      refetchWithDelay(queryClient, [queryKeys.transactionsBase, queryKeys.accounts]);
+      // ✅ Invalidação imediata dispara refetch automático sem delay
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactionsBase });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
       
       toast({
         title: 'Importação concluída',
