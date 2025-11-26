@@ -294,12 +294,7 @@ export function FinancialEvolutionChart({
                     }}
                     connectNulls={false}
                     name="Saldo Acumulado"
-                    isAnimationActive={
-                      initialLengthRef.current !== null &&
-                      chartData.length === initialLengthRef.current
-                    }
-                    animationDuration={800}
-                    animationEasing="ease-in-out"
+                    isAnimationActive={false}
                   />
                 </ComposedChart>
               </ResponsiveContainer>
