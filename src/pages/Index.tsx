@@ -37,6 +37,24 @@ import { useTransactionHandlers } from "@/hooks/useTransactionHandlers";
 import { TransactionScopeDialog, EditScope } from "@/components/TransactionScopeDialog";
 import { MarkAsPaidModal } from "@/components/MarkAsPaidModal";
 import { FormErrorBoundary } from "@/components/ui/form-error-boundary";
+import { usePersistedFilters } from "@/hooks/usePersistedFilters";
+
+interface TransactionsFilters {
+  search: string;
+  filterType: "all" | "income" | "expense" | "transfer";
+  filterAccount: string;
+  filterCategory: string;
+  filterStatus: "all" | "pending" | "completed";
+  filterAccountType: "all" | "checking" | "savings" | "credit" | "investment";
+  dateFrom?: string;
+  dateTo?: string;
+  sortBy: "date" | "amount";
+  sortOrder: "asc" | "desc";
+  periodFilter: "all" | "current_month" | "month_picker" | "custom";
+  selectedMonth: string;
+  customStartDate?: string;
+  customEndDate?: string;
+}
 
 const PlaniFlowApp = () => {
   const { user, loading: authLoading, isAdmin } = useAuth();
@@ -49,23 +67,63 @@ const PlaniFlowApp = () => {
   const [transactionsPage, setTransactionsPage] = useState(0);
   const [transactionsPageSize, setTransactionsPageSize] = useState<number | null>(50);
 
-  // Transaction filters state
-  const [transactionsSearch, setTransactionsSearch] = useState("");
-  const [transactionsFilterType, setTransactionsFilterType] = useState<"all" | "income" | "expense" | "transfer">("all");
-  const [transactionsFilterAccount, setTransactionsFilterAccount] = useState<string>("all");
-  const [transactionsFilterCategory, setTransactionsFilterCategory] = useState<string>("all");
-  const [transactionsFilterStatus, setTransactionsFilterStatus] = useState<"all" | "pending" | "completed">("all");
-  const [transactionsFilterAccountType, setTransactionsFilterAccountType] = useState<"all" | "checking" | "savings" | "credit" | "investment">("all");
-  const [transactionsDateFrom, setTransactionsDateFrom] = useState<string | undefined>(undefined);
-  const [transactionsDateTo, setTransactionsDateTo] = useState<string | undefined>(undefined);
-  const [transactionsSortBy, setTransactionsSortBy] = useState<"date" | "amount">("date");
-  const [transactionsSortOrder, setTransactionsSortOrder] = useState<"asc" | "desc">("desc");
-  
-  // Period filter state (sincronizado com dateFrom/dateTo)
-  const [transactionsPeriodFilter, setTransactionsPeriodFilter] = useState<"all" | "current_month" | "month_picker" | "custom">("all");
-  const [transactionsSelectedMonth, setTransactionsSelectedMonth] = useState<Date>(new Date());
-  const [transactionsCustomStartDate, setTransactionsCustomStartDate] = useState<Date | undefined>(undefined);
-  const [transactionsCustomEndDate, setTransactionsCustomEndDate] = useState<Date | undefined>(undefined);
+  // Transaction filters state with persistence
+  const [transactionsFilters, setTransactionsFilters] = usePersistedFilters<TransactionsFilters>(
+    'transactions-filters',
+    {
+      search: "",
+      filterType: "all",
+      filterAccount: "all",
+      filterCategory: "all",
+      filterStatus: "all",
+      filterAccountType: "all",
+      dateFrom: undefined,
+      dateTo: undefined,
+      sortBy: "date",
+      sortOrder: "desc",
+      periodFilter: "all",
+      selectedMonth: new Date().toISOString(),
+      customStartDate: undefined,
+      customEndDate: undefined,
+    }
+  );
+
+  // Helper functions para atualizar filtros
+  const updateTransactionsFilter = (updates: Partial<TransactionsFilters>) => {
+    setTransactionsFilters((prev) => ({ ...prev, ...updates }));
+  };
+
+  // Create individual setters for backwards compatibility
+  const setTransactionsSearch = (search: string) => updateTransactionsFilter({ search });
+  const setTransactionsFilterType = (filterType: typeof transactionsFilters.filterType) => updateTransactionsFilter({ filterType });
+  const setTransactionsFilterAccount = (filterAccount: string) => updateTransactionsFilter({ filterAccount });
+  const setTransactionsFilterCategory = (filterCategory: string) => updateTransactionsFilter({ filterCategory });
+  const setTransactionsFilterStatus = (filterStatus: typeof transactionsFilters.filterStatus) => updateTransactionsFilter({ filterStatus });
+  const setTransactionsFilterAccountType = (filterAccountType: typeof transactionsFilters.filterAccountType) => updateTransactionsFilter({ filterAccountType });
+  const setTransactionsDateFrom = (dateFrom: string | undefined) => updateTransactionsFilter({ dateFrom });
+  const setTransactionsDateTo = (dateTo: string | undefined) => updateTransactionsFilter({ dateTo });
+  const setTransactionsSortBy = (sortBy: typeof transactionsFilters.sortBy) => updateTransactionsFilter({ sortBy });
+  const setTransactionsSortOrder = (sortOrder: typeof transactionsFilters.sortOrder) => updateTransactionsFilter({ sortOrder });
+  const setTransactionsPeriodFilter = (periodFilter: typeof transactionsFilters.periodFilter) => updateTransactionsFilter({ periodFilter });
+  const setTransactionsSelectedMonth = (date: Date) => updateTransactionsFilter({ selectedMonth: date.toISOString() });
+  const setTransactionsCustomStartDate = (date: Date | undefined) => updateTransactionsFilter({ customStartDate: date?.toISOString() });
+  const setTransactionsCustomEndDate = (date: Date | undefined) => updateTransactionsFilter({ customEndDate: date?.toISOString() });
+
+  // Extract values from filters for easier access
+  const transactionsSearch = transactionsFilters.search;
+  const transactionsFilterType = transactionsFilters.filterType;
+  const transactionsFilterAccount = transactionsFilters.filterAccount;
+  const transactionsFilterCategory = transactionsFilters.filterCategory;
+  const transactionsFilterStatus = transactionsFilters.filterStatus;
+  const transactionsFilterAccountType = transactionsFilters.filterAccountType;
+  const transactionsDateFrom = transactionsFilters.dateFrom;
+  const transactionsDateTo = transactionsFilters.dateTo;
+  const transactionsSortBy = transactionsFilters.sortBy;
+  const transactionsSortOrder = transactionsFilters.sortOrder;
+  const transactionsPeriodFilter = transactionsFilters.periodFilter;
+  const transactionsSelectedMonth = new Date(transactionsFilters.selectedMonth);
+  const transactionsCustomStartDate = transactionsFilters.customStartDate ? new Date(transactionsFilters.customStartDate) : undefined;
+  const transactionsCustomEndDate = transactionsFilters.customEndDate ? new Date(transactionsFilters.customEndDate) : undefined;
 
   const [accountFilterType, setAccountFilterType] = useState<
     "all" | "checking" | "savings" | "credit" | "investment"
@@ -81,16 +139,16 @@ const PlaniFlowApp = () => {
   } = useTransactions({
     page: transactionsPage,
     pageSize: transactionsPageSize,
-    search: transactionsSearch,
-    type: transactionsFilterType,
-    accountId: transactionsFilterAccount,
-    categoryId: transactionsFilterCategory,
-    status: transactionsFilterStatus,
-    accountType: transactionsFilterAccountType,
-    dateFrom: transactionsDateFrom,
-    dateTo: transactionsDateTo,
-    sortBy: transactionsSortBy,
-    sortOrder: transactionsSortOrder,
+    search: transactionsFilters.search,
+    type: transactionsFilters.filterType,
+    accountId: transactionsFilters.filterAccount,
+    categoryId: transactionsFilters.filterCategory,
+    status: transactionsFilters.filterStatus,
+    accountType: transactionsFilters.filterAccountType,
+    dateFrom: transactionsFilters.dateFrom,
+    dateTo: transactionsFilters.dateTo,
+    sortBy: transactionsFilters.sortBy,
+    sortOrder: transactionsFilters.sortOrder,
   });
   const { categories, loading: loadingCategories } = useCategories();
 

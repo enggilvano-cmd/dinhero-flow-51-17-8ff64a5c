@@ -36,6 +36,7 @@ import { ImportFixedTransactionsModal } from "./ImportFixedTransactionsModal";
 import * as XLSX from "xlsx";
 import { formatBRNumber } from "@/lib/formatters";
 import { useAuth } from "@/hooks/useAuth";
+import { usePersistedFilters } from "@/hooks/usePersistedFilters";
 
 interface FixedTransaction {
   id: string;
@@ -58,9 +59,29 @@ interface Account {
   color: string;
 }
 
+interface FixedTransactionsFilters {
+  searchTerm: string;
+  filterType: "all" | "income" | "expense";
+}
+
 export function FixedTransactionsPage() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  
+  // Filters with persistence
+  const [filters, setFilters] = usePersistedFilters<FixedTransactionsFilters>(
+    'fixed-transactions-filters',
+    {
+      searchTerm: "",
+      filterType: "all",
+    }
+  );
+
+  const searchTerm = filters.searchTerm;
+  const filterType = filters.filterType;
+
+  const setSearchTerm = (value: string) => setFilters((prev) => ({ ...prev, searchTerm: value }));
+  const setFilterType = (value: typeof filters.filterType) => setFilters((prev) => ({ ...prev, filterType: value }));
   
   // ✅ P0-7 FIX: Remover dual state - usar apenas React Query
   const { 
@@ -101,8 +122,6 @@ export function FixedTransactionsPage() {
   });
 
   const [accounts, setAccounts] = useState<Account[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterType, setFilterType] = useState<"all" | "income" | "expense">("all");
   const [transactionToDelete, setTransactionToDelete] = useState<FixedTransaction | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [addModalOpen, setAddModalOpen] = useState(false);

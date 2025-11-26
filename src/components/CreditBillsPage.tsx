@@ -24,8 +24,15 @@ import { format, addMonths, isPast } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { CreditBillFilterDialog } from "@/components/creditbills/CreditBillFilterDialog";
 import { CreditBillFilterChips } from "@/components/creditbills/CreditBillFilterChips";
+import { usePersistedFilters } from "@/hooks/usePersistedFilters";
 
-// This will be replaced with a method inside the component
+interface CreditBillsFilters {
+  searchTerm: string;
+  selectedAccountId: string;
+  selectedMonthOffset: number;
+  filterBillStatus: "all" | "open" | "closed";
+  filterPaymentStatus: "all" | "paid" | "pending";
+}
 
 interface CreditBillsPageProps {
   onPayCreditCard: (
@@ -49,7 +56,38 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
   });
   const { settings } = useSettings();
   
-  // ✅ P0-1 FIX: Removido updateKey que causava race condition
+  // Filters with persistence
+  const [filters, setFilters] = usePersistedFilters<CreditBillsFilters>(
+    'credit-bills-filters',
+    {
+      searchTerm: "",
+      selectedAccountId: "all",
+      selectedMonthOffset: 0,
+      filterBillStatus: "all",
+      filterPaymentStatus: "all",
+    }
+  );
+
+  // Extract values for easier access
+  const searchTerm = filters.searchTerm;
+  const selectedAccountId = filters.selectedAccountId;
+  const selectedMonthOffset = filters.selectedMonthOffset;
+  const filterBillStatus = filters.filterBillStatus;
+  const filterPaymentStatus = filters.filterPaymentStatus;
+
+  // Setters
+  const setSearchTerm = (value: string) => setFilters((prev) => ({ ...prev, searchTerm: value }));
+  const setSelectedAccountId = (value: string) => setFilters((prev) => ({ ...prev, selectedAccountId: value }));
+  const setSelectedMonthOffset = (value: number) => setFilters((prev) => ({ ...prev, selectedMonthOffset: value }));
+  const setFilterBillStatus = (value: typeof filters.filterBillStatus) => setFilters((prev) => ({ ...prev, filterBillStatus: value }));
+  const setFilterPaymentStatus = (value: typeof filters.filterPaymentStatus) => setFilters((prev) => ({ ...prev, filterPaymentStatus: value }));
+
+  const [filterDialogOpen, setFilterDialogOpen] = useState(false);
+  const [selectedBillForDetails, setSelectedBillForDetails] = useState<{
+    account: Account;
+    transactions: AppTransaction[];
+    billDetails: ReturnType<typeof calculateBillDetails>;
+  } | null>(null);
 
   // Helper para formatar moeda
   const formatCents = (valueInCents: number) => {
@@ -58,18 +96,6 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
       currency: settings.currency,
     }).format(valueInCents / 100);
   };
-
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedAccountId, setSelectedAccountId] = useState("all");
-  const [selectedMonthOffset, setSelectedMonthOffset] = useState(0); // 0 = mês atual (pré-selecionado)
-  const [filterBillStatus, setFilterBillStatus] = useState<"all" | "open" | "closed">("all");
-  const [filterPaymentStatus, setFilterPaymentStatus] = useState<"all" | "paid" | "pending">("all");
-  const [filterDialogOpen, setFilterDialogOpen] = useState(false);
-  const [selectedBillForDetails, setSelectedBillForDetails] = useState<{
-    account: Account;
-    transactions: AppTransaction[];
-    billDetails: ReturnType<typeof calculateBillDetails>;
-  } | null>(null);
 
   const creditAccounts = useMemo(() => {
     return allAccounts

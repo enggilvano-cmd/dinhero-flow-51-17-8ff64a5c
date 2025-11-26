@@ -58,6 +58,7 @@ import { useCategories } from "@/hooks/useCategories";
 import { formatCurrency } from "@/lib/formatters";
 import { TransactionFilterChips } from "@/components/transactions/TransactionFilterChips";
 import { AnalyticsFilterDialog } from "@/components/analytics/AnalyticsFilterDialog";
+import { usePersistedFilters } from "@/hooks/usePersistedFilters";
 
 interface Account {
   id: string;
@@ -95,6 +96,19 @@ interface AnalyticsPageProps {
   initialCustomEndDate?: Date;
 }
 
+interface AnalyticsFilters {
+  searchTerm: string;
+  filterType: "all" | "income" | "expense" | "transfer";
+  filterAccount: string;
+  filterCategory: string;
+  filterStatus: "all" | "pending" | "completed";
+  dateFilter: "all" | "current_month" | "month_picker" | "custom";
+  selectedMonth: string;
+  customStartDate?: string;
+  customEndDate?: string;
+  categoryChartType: "expense" | "income";
+}
+
 interface DotProps {
   cx?: number;
   cy?: number;
@@ -128,25 +142,47 @@ export default function AnalyticsPage({
   initialCustomStartDate = undefined,
   initialCustomEndDate = undefined,
 }: AnalyticsPageProps) {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterType, setFilterType] = useState<
-    "all" | "income" | "expense" | "transfer"
-  >("all");
-  const [filterAccount, setFilterAccount] = useState<string>("all");
-  const [filterCategory, setFilterCategory] = useState<string>("all");
-  const [filterStatus, setFilterStatus] = useState<
-    "all" | "pending" | "completed"
-  >("all");
-  const [dateFilter, setDateFilter] = useState<
-    "all" | "current_month" | "month_picker" | "custom"
-  >(initialDateFilter);
-  const [selectedMonth, setSelectedMonth] = useState<Date>(initialSelectedMonth);
-  const [customStartDate, setCustomStartDate] = useState<Date | undefined>(
-    initialCustomStartDate
+  // Filters with persistence
+  const [filters, setFilters] = usePersistedFilters<AnalyticsFilters>(
+    'analytics-filters',
+    {
+      searchTerm: "",
+      filterType: "all",
+      filterAccount: "all",
+      filterCategory: "all",
+      filterStatus: "all",
+      dateFilter: initialDateFilter,
+      selectedMonth: initialSelectedMonth.toISOString(),
+      customStartDate: initialCustomStartDate?.toISOString(),
+      customEndDate: initialCustomEndDate?.toISOString(),
+      categoryChartType: "expense",
+    }
   );
-  const [customEndDate, setCustomEndDate] = useState<Date | undefined>(
-    initialCustomEndDate
-  );
+
+  // Extract values for easier access
+  const searchTerm = filters.searchTerm;
+  const filterType = filters.filterType;
+  const filterAccount = filters.filterAccount;
+  const filterCategory = filters.filterCategory;
+  const filterStatus = filters.filterStatus;
+  const dateFilter = filters.dateFilter;
+  const selectedMonth = new Date(filters.selectedMonth);
+  const customStartDate = filters.customStartDate ? new Date(filters.customStartDate) : undefined;
+  const customEndDate = filters.customEndDate ? new Date(filters.customEndDate) : undefined;
+  const categoryChartType = filters.categoryChartType;
+
+  // Setters
+  const setSearchTerm = (value: string) => setFilters((prev) => ({ ...prev, searchTerm: value }));
+  const setFilterType = (value: typeof filters.filterType) => setFilters((prev) => ({ ...prev, filterType: value }));
+  const setFilterAccount = (value: string) => setFilters((prev) => ({ ...prev, filterAccount: value }));
+  const setFilterCategory = (value: string) => setFilters((prev) => ({ ...prev, filterCategory: value }));
+  const setFilterStatus = (value: typeof filters.filterStatus) => setFilters((prev) => ({ ...prev, filterStatus: value }));
+  const setDateFilter = (value: typeof filters.dateFilter) => setFilters((prev) => ({ ...prev, dateFilter: value }));
+  const setSelectedMonth = (value: Date) => setFilters((prev) => ({ ...prev, selectedMonth: value.toISOString() }));
+  const setCustomStartDate = (value: Date | undefined) => setFilters((prev) => ({ ...prev, customStartDate: value?.toISOString() }));
+  const setCustomEndDate = (value: Date | undefined) => setFilters((prev) => ({ ...prev, customEndDate: value?.toISOString() }));
+  const setCategoryChartType = (value: typeof filters.categoryChartType) => setFilters((prev) => ({ ...prev, categoryChartType: value }));
+
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
   const { toast } = useToast();
   const {
@@ -154,10 +190,6 @@ export default function AnalyticsPage({
     isMobile,
   } = useChartResponsive();
   const { categories } = useCategories();
-
-  const [categoryChartType, setCategoryChartType] = useState<
-    "expense" | "income"
-  >("expense");
   
   const contentRef = useRef<HTMLDivElement>(null);
 
