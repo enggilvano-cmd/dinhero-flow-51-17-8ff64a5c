@@ -572,7 +572,8 @@ export default function AnalyticsPage({
           usedCredit,
           limitAmount: account.limit_amount || 0,
         };
-      });
+      })
+      .filter((card) => card.balance !== 0);
   }, [accounts]);
 
   // Chart config específico para o gráfico de cartões de crédito
@@ -603,7 +604,8 @@ export default function AnalyticsPage({
           color: account.color || "hsl(var(--primary))",
           limitAmount: account.limit_amount || 0,
         };
-      });
+      })
+      .filter((card) => card.balance !== 0);
   }, [accounts]);
 
   // Chart config para o gráfico de limite usado
