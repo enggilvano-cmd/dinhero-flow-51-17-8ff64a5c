@@ -6,27 +6,23 @@ import { ACCOUNT_TYPE_LABELS } from "@/types";
 interface AccountCategoryFieldsProps {
   accountId: string;
   categoryId: string;
-  status: "pending" | "completed";
   type: string;
   accounts: Account[];
   categories: Category[];
   validationErrors: Record<string, string>;
   onAccountChange: (value: string) => void;
   onCategoryChange: (value: string) => void;
-  onStatusChange: (value: "pending" | "completed") => void;
 }
 
 export function AccountCategoryFields({
   accountId,
   categoryId,
-  status,
   type,
   accounts,
   categories,
   validationErrors,
   onAccountChange,
   onCategoryChange,
-  onStatusChange,
 }: AccountCategoryFieldsProps) {
   return (
     <>
@@ -95,22 +91,6 @@ export function AccountCategoryFields({
             <p className="text-body text-destructive">{validationErrors.account_id}</p>
           )}
         </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="status" className="text-caption">Status</Label>
-        <Select
-          value={status}
-          onValueChange={onStatusChange}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Selecione o status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="completed">Concluída</SelectItem>
-            <SelectItem value="pending">Pendente</SelectItem>
-          </SelectContent>
-        </Select>
       </div>
     </>
   );

@@ -10,12 +10,14 @@ interface TransactionFormFieldsProps {
   type: string;
   amount: number;
   date: string;
+  status: "pending" | "completed";
   lockType?: boolean;
   validationErrors: Record<string, string>;
   onDescriptionChange: (value: string) => void;
   onTypeChange: (value: "income" | "expense" | "transfer") => void;
   onAmountChange: (value: number) => void;
   onDateChange: (value: string) => void;
+  onStatusChange: (value: "pending" | "completed") => void;
 }
 
 export function TransactionFormFields({
@@ -23,12 +25,14 @@ export function TransactionFormFields({
   type,
   amount,
   date,
+  status,
   lockType = false,
   validationErrors,
   onDescriptionChange,
   onTypeChange,
   onAmountChange,
   onDateChange,
+  onStatusChange,
 }: TransactionFormFieldsProps) {
   return (
     <>
@@ -80,23 +84,41 @@ export function TransactionFormFields({
         </div>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="date" className="text-caption">Data</Label>
-        <DatePicker
-          date={date ? createDateFromString(date) : undefined}
-          onDateChange={(newDate) => {
-            if (newDate) {
-              const year = newDate.getFullYear();
-              const month = String(newDate.getMonth() + 1).padStart(2, '0');
-              const day = String(newDate.getDate()).padStart(2, '0');
-              onDateChange(`${year}-${month}-${day}`);
-            }
-          }}
-          placeholder="Selecione a data"
-        />
-        {validationErrors.date && (
-          <p className="text-body text-destructive">{validationErrors.date}</p>
-        )}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="date" className="text-caption">Data</Label>
+          <DatePicker
+            date={date ? createDateFromString(date) : undefined}
+            onDateChange={(newDate) => {
+              if (newDate) {
+                const year = newDate.getFullYear();
+                const month = String(newDate.getMonth() + 1).padStart(2, '0');
+                const day = String(newDate.getDate()).padStart(2, '0');
+                onDateChange(`${year}-${month}-${day}`);
+              }
+            }}
+            placeholder="Selecione a data"
+          />
+          {validationErrors.date && (
+            <p className="text-body text-destructive">{validationErrors.date}</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="status" className="text-caption">Status</Label>
+          <Select
+            value={status}
+            onValueChange={onStatusChange}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione o status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="completed">Concluída</SelectItem>
+              <SelectItem value="pending">Pendente</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
     </>
   );
