@@ -15,6 +15,9 @@ import { PaginationControls } from "@/components/ui/pagination-controls";
 import { useTransactionsPageLogic } from "@/hooks/useTransactionsPageLogic";
 import type { Transaction, Account, Category, ImportTransactionData } from '@/types';
 import { ListErrorBoundary } from '@/components/ui/list-error-boundary';
+import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/lib/logger";
+import { useToast } from "@/hooks/use-toast";
 
 interface TransactionsPageProps {
   transactions: Transaction[];
@@ -109,6 +112,7 @@ export function TransactionsPage({
 }: TransactionsPageProps) {
   const [importModalOpen, setImportModalOpen] = useState(false);
   const { settings, formatCurrency } = useSettings();
+  const { toast } = useToast();
 
   // Use custom hook for page logic
   const {
@@ -258,18 +262,65 @@ export function TransactionsPage({
         <FixedTransactionScopeDialog
           open={scopeDialogOpen}
           onOpenChange={setScopeDialogOpen}
-          onScopeSelected={(scope: FixedScope) => {
-            if (pendingDeleteTransaction) {
-              // Converter FixedScope para EditScope
-              const editScope: EditScope =
-                scope === "current"
-                  ? "current"
-                  : scope === "current-and-remaining"
-                    ? "current-and-remaining"
-                    : "all";
-              onDeleteTransaction(pendingDeleteTransaction.id, editScope);
-              setPendingDeleteTransaction(null);
+          onScopeSelected={async (scope: FixedScope) => {
+            if (!pendingDeleteTransaction) return;
+
+            // Se houver transações concluídas na série e o usuário escolher
+            // "atual e próximas" ou "todas", executamos uma exclusão segura:
+            // remove apenas transações PENDENTES (pai + filhos pendentes).
+            if (hasCompletedTransactions && scope !== "current") {
+              try {
+                const parentId = pendingDeleteTransaction.parent_transaction_id || pendingDeleteTransaction.id;
+
+                // 1) Excluir a transação principal (pai ou ocorrência atual)
+                await onDeleteTransaction(parentId, "current");
+
+                // 2) Buscar todas as transações filhas dessa fixa
+                const { data: childTransactions, error } = await supabase
+                  .from("transactions")
+                  .select("id, status")
+                  .eq("parent_transaction_id", parentId);
+
+                if (error) throw error;
+
+                const pendingChildren = (childTransactions || []).filter((t) => t.status === "pending");
+
+                // 3) Excluir apenas as PENDENTES individualmente
+                await Promise.allSettled(
+                  pendingChildren.map((child) =>
+                    onDeleteTransaction(child.id, "current")
+                  )
+                );
+
+                toast({
+                  title: "Transações excluídas",
+                  description: `Foram excluídas ${pendingChildren.length + 1} transações pendentes desta fixa. As concluídas foram mantidas.`,
+                });
+              } catch (error) {
+                logger.error("Erro ao excluir série de transações fixas mantendo concluídas:", error);
+                toast({
+                  title: "Erro ao excluir",
+                  description: "Ocorreu um erro ao excluir as transações pendentes desta fixa.",
+                  variant: "destructive",
+                });
+              } finally {
+                setPendingDeleteTransaction(null);
+                setScopeDialogOpen(false);
+              }
+
+              return;
             }
+
+            // Caso não haja concluídas (ou escopo apenas "atual"), usamos o fluxo padrão
+            const editScope: EditScope =
+              scope === "current"
+                ? "current"
+                : scope === "current-and-remaining"
+                  ? "current-and-remaining"
+                  : "all";
+
+            await onDeleteTransaction(pendingDeleteTransaction.id, editScope);
+            setPendingDeleteTransaction(null);
           }}
           mode="delete"
           hasCompleted={hasCompletedTransactions}
