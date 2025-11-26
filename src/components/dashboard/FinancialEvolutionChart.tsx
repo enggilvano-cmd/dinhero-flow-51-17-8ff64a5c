@@ -288,6 +288,7 @@ export function FinancialEvolutionChart({
                     }}
                     connectNulls={false}
                     name="Saldo Acumulado"
+                    isAnimationActive={false}
                   />
                 </ComposedChart>
               </ResponsiveContainer>
