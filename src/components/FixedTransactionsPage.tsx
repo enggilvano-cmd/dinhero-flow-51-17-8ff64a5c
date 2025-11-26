@@ -662,6 +662,19 @@ export function FixedTransactionsPage() {
         </CardContent>
       </Card>
 
+      {/* Nota informativa sobre o botão de renovação */}
+      <Card className="bg-primary/5 border-primary/20">
+        <CardContent className="p-4">
+          <div className="flex gap-3 items-start">
+            <CalendarPlus className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+            <p className="text-body text-foreground">
+              <strong>Dica:</strong> Use o botão <CalendarPlus className="h-4 w-4 inline mx-1" /> ao lado de cada transação 
+              para adicionar automaticamente mais 12 transações no ano subsequente às já lançadas.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
       <div className="space-y-4">
         {filteredTransactions.length === 0 ? (
           <Card>
