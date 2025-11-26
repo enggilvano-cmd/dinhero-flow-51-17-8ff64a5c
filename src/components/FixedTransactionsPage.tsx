@@ -295,7 +295,9 @@ export function FixedTransactionsPage() {
     if (!transactionToDelete) return;
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) return;
 
       // Buscar apenas as transações filhas PENDENTES dessa fixa
@@ -319,20 +321,30 @@ export function FixedTransactionsPage() {
 
       if (deleteParentError) throw deleteParentError;
       if (!deleteParentResult?.success) {
-        throw new Error(deleteParentResult?.error || "Erro ao deletar transação principal");
+        throw new Error(
+          deleteParentResult?.error || "Erro ao deletar transação principal"
+        );
       }
 
       // 2) Excluir cada filha pendente individualmente (mantém concluídas)
       if (pendingChildren && pendingChildren.length > 0) {
-        await Promise.all(
-          pendingChildren.map((child) =>
-            supabase.functions.invoke("atomic-delete-transaction", {
-              body: {
-                transaction_id: child.id,
-                scope: "current",
-              },
-            })
-          )
+        await Promise.allSettled(
+          pendingChildren.map(async (child) => {
+            const { error: childError, data: childResult } =
+              await supabase.functions.invoke("atomic-delete-transaction", {
+                body: {
+                  transaction_id: child.id,
+                  scope: "current",
+                },
+              });
+
+            if (childError || !childResult?.success) {
+              logger.error("Error deleting pending child transaction", {
+                childId: child.id,
+                error: childError || childResult?.error,
+              });
+            }
+          })
         );
       }
 
