@@ -28,7 +28,6 @@ import { formatCurrency } from "@/lib/formatters";
 import { logger } from "@/lib/logger";
 import { AddFixedTransactionModal } from "./AddFixedTransactionModal";
 import { EditFixedTransactionModal } from "./EditFixedTransactionModal";
-import { FixedTransactionScopeDialog, FixedScope } from "./FixedTransactionScopeDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryClient";
@@ -109,9 +108,6 @@ export function FixedTransactionsPage() {
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [transactionToEdit, setTransactionToEdit] = useState<FixedTransaction | null>(null);
-  const [scopeDialogOpen, setScopeDialogOpen] = useState(false);
-  const [pendingTransactionsCount, setPendingTransactionsCount] = useState(0);
-  const [hasCompletedTransactions, setHasCompletedTransactions] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const { toast } = useToast();
 
@@ -192,76 +188,35 @@ export function FixedTransactionsPage() {
 
   const handleEditClick = async (transaction: FixedTransaction) => {
     setTransactionToEdit(transaction);
-    
-    // ✅ P0-5 FIX: Usar query cacheable ao invés de buscar a cada clique
-    const childTransactions = await queryClient.fetchQuery({
-      queryKey: [...queryKeys.transactions(), 'children', transaction.id],
-      queryFn: async () => {
-        const { data, error } = await supabase
-          .from("transactions")
-          .select("id, status")
-          .eq("parent_transaction_id", transaction.id);
-
-        if (error) throw error;
-        return data || [];
-      },
-      staleTime: 30 * 1000,
-    });
-
-    const pendingCount = childTransactions?.filter((t) => t.status === "pending").length || 0;
-    const hasCompleted = childTransactions?.some((t) => t.status === "completed") || false;
-
-    setPendingTransactionsCount(pendingCount);
-    setHasCompletedTransactions(hasCompleted);
-    setScopeDialogOpen(true);
+    setEditModalOpen(true);
   };
 
-  // ✅ P0-6 FIX: Migrar para edge function atômica ao invés de updates diretos
-  const handleScopeSelectedForEdit = async (scope: FixedScope) => {
-    if (!transactionToEdit) return;
-
+  const handleEdit = async (transaction: FixedTransaction) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const updates = {
-        description: transactionToEdit.description,
-        amount: transactionToEdit.amount,
-        type: transactionToEdit.type,
-        category_id: transactionToEdit.category_id,
-        account_id: transactionToEdit.account_id,
-        date: transactionToEdit.date,
-      };
-
-      // ✅ P0-6 FIX: Usar edge function atômica ao invés de updates diretos
-      const { data, error } = await supabase.functions.invoke('atomic-edit-transaction', {
+      // Editar apenas a transação atual, sem afetar outras
+      const { error } = await supabase.functions.invoke('atomic-edit-transaction', {
         body: {
-          transaction_id: transactionToEdit.id,
-          updates,
-          scope,
+          transaction_id: transaction.id,
+          updates: {
+            description: transaction.description,
+            amount: transaction.amount,
+            type: transaction.type,
+            category_id: transaction.category_id,
+            account_id: transaction.account_id,
+            date: transaction.date,
+          },
+          scope: 'current',
         },
       });
 
       if (error) throw error;
 
-      const result = data;
-      if (!result?.success) {
-        throw new Error(result?.error || 'Erro ao atualizar transação');
-      }
-
-      const updatedCount = result.updated || 0;
-      let message = '';
-      if (scope === 'current') {
-        message = 'A transação principal foi atualizada com sucesso.';
-      } else if (scope === 'current-and-remaining') {
-        message = `A transação principal e ${updatedCount - 1} transação(ões) pendente(s) foram atualizadas.`;
-      } else {
-        message = `A transação principal e ${updatedCount - 1} transação(ões) geradas foram atualizadas.`;
-      }
-
       toast({
-        title: "Transações atualizadas",
-        description: message,
+        title: "Transação atualizada",
+        description: "A transação foi atualizada com sucesso.",
       });
 
       // 🔄 Sincronizar listas e dashboard imediatamente
@@ -782,16 +737,6 @@ export function FixedTransactionsPage() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* FixedTransactionScopeDialog apenas para edição */}
-      <FixedTransactionScopeDialog
-        open={scopeDialogOpen}
-        onOpenChange={setScopeDialogOpen}
-        onScopeSelected={handleScopeSelectedForEdit}
-        mode="edit"
-        hasCompleted={hasCompletedTransactions}
-        pendingCount={pendingTransactionsCount}
-      />
-
       <AddFixedTransactionModal
         open={addModalOpen}
         onOpenChange={setAddModalOpen}
@@ -806,14 +751,7 @@ export function FixedTransactionsPage() {
             setEditModalOpen(open);
             if (!open) setTransactionToEdit(null);
           }}
-          onEditTransaction={(transaction) => {
-            setTransactionToEdit(transaction);
-            setEditModalOpen(false);
-            // Reabrir o scope dialog para o usuário escolher o escopo
-            setPendingTransactionsCount(0);
-            setHasCompletedTransactions(false);
-            setScopeDialogOpen(true);
-          }}
+          onEditTransaction={handleEdit}
           transaction={transactionToEdit}
           accounts={accounts}
         />
