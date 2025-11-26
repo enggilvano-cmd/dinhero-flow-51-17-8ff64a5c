@@ -478,6 +478,37 @@ export default function AnalyticsPage({
     return config;
   }, [creditCardBalanceData]);
 
+  // Dados para o gráfico de limite usado dos cartões
+  const creditCardUsedData = useMemo(() => {
+    return accounts
+      .filter((acc) => acc.type === "credit")
+      .map((account) => {
+        const usedCredit = account.balance < 0 ? Math.abs(account.balance) : 0;
+        
+        return {
+          name: account.name.split(" - ")[0] || account.name,
+          balance: usedCredit,
+          positiveBalance: usedCredit > 0 ? usedCredit : 0,
+          negativeBalance: 0,
+          type: account.type,
+          color: account.color || "hsl(var(--primary))",
+          limitAmount: account.limit_amount || 0,
+        };
+      });
+  }, [accounts]);
+
+  // Chart config para o gráfico de limite usado
+  const creditCardUsedChartConfig = useMemo(() => {
+    const config: Record<string, { label: string; color: string }> = {};
+    creditCardUsedData.forEach((card) => {
+      config[card.name] = {
+        label: card.name,
+        color: card.color,
+      };
+    });
+    return config;
+  }, [creditCardUsedData]);
+
   const handleExportPDF = async () => {
     if (!contentRef.current) {
       toast({
@@ -1305,6 +1336,118 @@ export default function AnalyticsPage({
                       <span className={`font-medium flex-shrink-0 ${
                         card.balance >= 0 ? 'text-success' : 'text-destructive'
                       }`}>
+                        {formatCurrency(card.balance)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Credit Card Used Limit */}
+        {creditCardUsedData.length > 0 && (
+          <Card className="financial-card">
+            <CardHeader className="px-3 pt-3 pb-2 sm:px-4 sm:pt-4">
+              <CardTitle className="text-headline flex items-center gap-2">
+                <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5" />
+                Limite Usado - Cartões
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-2 sm:p-3">
+              <div className="relative w-full">
+                <ChartContainer
+                  config={creditCardUsedChartConfig}
+                  className={`${responsiveConfig.containerHeight} w-full overflow-hidden`}
+                >
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={creditCardUsedData}
+                      margin={{
+                        top: 20,
+                        right: isMobile ? 15 : 200,
+                        bottom: isMobile ? 20 : 30,
+                        left: isMobile ? 10 : 20
+                      }}
+                    >
+                    <XAxis
+                      dataKey="name"
+                      tick={false}
+                      axisLine={false}
+                      height={0}
+                    />
+                    <YAxis
+                      tickFormatter={(value) =>
+                        formatCurrencyForAxis(value / 100, isMobile)
+                      }
+                      tick={{ fontSize: isMobile ? 9 : 11 }}
+                    />
+                    <ChartTooltip
+                      content={<ChartTooltipContent />}
+                      formatter={(value: number, _name: string, props: any) => {
+                        if (props?.payload?.balance !== undefined) {
+                          return [formatCurrency(props.payload.balance), "Limite Usado"];
+                        }
+                        return [formatCurrency(value), "Limite Usado"];
+                      }}
+                     />
+                     <Bar dataKey="positiveBalance" stackId="balance" fill="hsl(var(--destructive))">
+                       {creditCardUsedData.map((entry, index) => (
+                         <Cell key={`cell-used-positive-${index}`} fill={entry.color} />
+                       ))}
+                     </Bar>
+                   </BarChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+
+              {/* Legenda de Limite Usado - desktop/tablet */}
+              {!isMobile && creditCardUsedData.length > 0 && (
+                <div 
+                  className="flex flex-col gap-2 px-4 absolute right-4 top-1/2 -translate-y-1/2"
+                  style={{ maxWidth: "35%" }}
+                >
+                  {creditCardUsedData.map((card, index) => (
+                    <div 
+                      key={`legend-used-desktop-${index}`} 
+                      className="flex items-center justify-between gap-2 text-caption"
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <div 
+                          className="w-3 h-3 rounded-full flex-shrink-0" 
+                          style={{ backgroundColor: card.color }}
+                        />
+                        <span className="truncate text-foreground">
+                          {card.name}
+                        </span>
+                      </div>
+                      <span className="font-medium flex-shrink-0 text-destructive">
+                        {formatCurrency(card.balance)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              </div>
+
+              {/* Legenda de Limite Usado - mobile */}
+              {isMobile && creditCardUsedData.length > 0 && (
+                <div className="mt-4 flex flex-col gap-2 px-2">
+                  {creditCardUsedData.map((card, index) => (
+                    <div 
+                      key={`legend-used-mobile-${index}`} 
+                      className="flex items-center justify-between gap-2 text-caption"
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <div 
+                          className="w-3 h-3 rounded-full flex-shrink-0" 
+                          style={{ backgroundColor: card.color }}
+                        />
+                        <span className="truncate text-foreground">
+                          {card.name}
+                        </span>
+                      </div>
+                      <span className="font-medium flex-shrink-0 text-destructive">
                         {formatCurrency(card.balance)}
                       </span>
                     </div>
