@@ -19,7 +19,7 @@ export function useInstallmentMutations() {
       const totalInstallments = transactionsData.length;
 
       const results = await Promise.all(
-        transactionsData.map((data, index) => {
+        transactionsData.map(async (data, index) => {
           const dateStr = data.date.toISOString().split('T')[0];
           logger.debug(`Criando parcela ${index + 1}/${totalInstallments}:`, {
             description: data.description,
@@ -28,21 +28,36 @@ export function useInstallmentMutations() {
             currentInstallment: data.currentInstallment
           });
           
-          return supabase.functions.invoke('atomic-transaction', {
-            body: {
-              transaction: {
-                description: data.description,
-                amount: data.amount,
-                date: dateStr,
-                type: data.type,
-                category_id: data.category_id,
-                account_id: data.account_id,
-                status: data.status,
-                invoice_month: data.invoiceMonth || null,
-                invoice_month_overridden: !!data.invoiceMonth,
-              },
-            },
+          const { data: rpcData, error } = await supabase.rpc('atomic_create_transaction', {
+            p_user_id: user.id,
+            p_description: data.description,
+            p_amount: data.amount,
+            p_date: dateStr,
+            p_type: data.type,
+            p_category_id: data.category_id,
+            p_account_id: data.account_id,
+            p_status: data.status,
+            p_invoice_month: data.invoiceMonth ?? undefined,
+            p_invoice_month_overridden: !!data.invoiceMonth,
           });
+
+          if (error) {
+            return { data: null, error };
+          }
+
+          const record = rpcData && Array.isArray(rpcData) ? rpcData[0] as { transaction_id?: string; success?: boolean; error_message?: string } : null;
+
+          if (!record || record.success === false) {
+            const err = new Error(record?.error_message || 'Erro ao criar transação parcelada');
+            return { data: null, error: err };
+          }
+
+          return {
+            data: {
+              transaction: { id: record.transaction_id },
+            },
+            error: null,
+          };
         })
       );
 
