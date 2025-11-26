@@ -139,8 +139,16 @@ export function AccountsPage({
     .reduce((sum, acc) => sum + acc.balance, 0);
 
   const creditUsed = filteredAccounts
-    .filter((acc) => acc.type === "credit")
-    .reduce((sum, acc) => sum + Math.abs(Math.min(acc.balance, 0)), 0);
+    .reduce((sum, acc) => {
+      if (acc.type === "credit") {
+        // Cartões de crédito: saldo negativo é dívida
+        return sum + Math.abs(Math.min(acc.balance, 0));
+      } else if (acc.limit_amount && acc.limit_amount > 0 && acc.balance < 0) {
+        // Outras contas com limite: saldo negativo é uso de cheque especial
+        return sum + Math.abs(acc.balance);
+      }
+      return sum;
+    }, 0);
 
   const creditAvailable = filteredAccounts
     .filter((acc) => acc.limit_amount && acc.limit_amount > 0)
