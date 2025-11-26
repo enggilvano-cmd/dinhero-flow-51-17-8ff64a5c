@@ -287,6 +287,18 @@ class OfflineSyncManager {
           );
         break;
 
+      case 'add_account':
+        const { data: { user: addAccUser } } = await supabase.auth.getUser();
+        if (!addAccUser) throw new Error('User not authenticated');
+
+        await supabase
+          .from('accounts')
+          .insert({
+            ...operation.data,
+            user_id: addAccUser.id,
+          });
+        break;
+
       case 'edit_account':
         await supabase
           .from('accounts')

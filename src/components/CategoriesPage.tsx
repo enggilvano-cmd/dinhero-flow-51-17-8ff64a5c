@@ -17,7 +17,8 @@ import { queryClient, queryKeys } from "@/lib/queryClient";
 import { CategoryFilterDialog } from "@/components/categories/CategoryFilterDialog";
 import { CategoryFilterChips } from "@/components/categories/CategoryFilterChips";
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
-
+import { useOfflineCategoryMutations } from "@/hooks/useTransactionHandlers";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 interface CategoriesPageProps {}
 
 interface CategoriesFilters {
@@ -52,7 +53,8 @@ export function CategoriesPage({}: CategoriesPageProps) {
   const [loading, setLoading] = useState(true);
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
   const { toast } = useToast();
-
+  const isOnline = useOnlineStatus();
+  const { handleAddCategory: offlineAddCategory } = useOfflineCategoryMutations();
   // Generate filter chips
   const filterChips = useMemo(() => {
     const chips = [];
@@ -106,6 +108,16 @@ export function CategoriesPage({}: CategoriesPageProps) {
   }, []);
 
   const handleAddCategory = async (categoryData: Omit<Category, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
+    if (!isOnline) {
+      await offlineAddCategory({
+        name: categoryData.name,
+        type: categoryData.type,
+        color: categoryData.color,
+        chart_account_id: categoryData.chart_account_id ?? undefined,
+      });
+      return;
+    }
+
     const { data } = await withErrorHandling(
       async () => {
         const userId = await getUserId();
@@ -134,7 +146,6 @@ export function CategoriesPage({}: CategoriesPageProps) {
       });
     }
   };
-
   const handleEditCategory = async (updatedCategory: Category) => {
     const { data } = await withErrorHandling(
       async () => {
