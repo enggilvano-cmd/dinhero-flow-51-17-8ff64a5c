@@ -1345,7 +1345,7 @@ export default function AnalyticsPage({
                 Crédito Disponível - Cartões
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-2 sm:p-3">
+            <CardContent className="px-2 pb-2 pt-18 sm:px-3 sm:pb-3 sm:pt-27">
               <div className="relative w-full">
                 <ChartContainer
                   config={creditCardChartConfig}
@@ -1466,7 +1466,7 @@ export default function AnalyticsPage({
                 Limite Usado - Cartões
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-2 sm:p-3">
+            <CardContent className="px-2 pb-2 pt-18 sm:px-3 sm:pb-3 sm:pt-27">
               <div className="relative w-full">
                 <ChartContainer
                   config={creditCardUsedChartConfig}
