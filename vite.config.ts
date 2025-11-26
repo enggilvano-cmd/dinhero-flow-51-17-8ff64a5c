@@ -22,7 +22,7 @@ export default defineConfig(({ mode }) => ({
         short_name: 'PlaniFlow',
         description: 'Aplicativo completo para gestão financeira pessoal - controle suas contas, cartões e investimentos',
         theme_color: '#1469B6',
-        background_color: '#ffffff',
+        background_color: '#1469B6',
         display: 'standalone',
         scope: '/',
         start_url: '/',
@@ -45,6 +45,14 @@ export default defineConfig(({ mode }) => ({
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any maskable'
+          }
+        ],
+        screenshots: [
+          {
+            src: '/icon-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            form_factor: 'wide'
           }
         ]
       },
