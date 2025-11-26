@@ -288,7 +288,9 @@ export function FinancialEvolutionChart({
                     }}
                     connectNulls={false}
                     name="Saldo Acumulado"
-                    isAnimationActive={false}
+                    isAnimationActive={true}
+                    animationDuration={800}
+                    animationEasing="ease-in-out"
                   />
                 </ComposedChart>
               </ResponsiveContainer>
