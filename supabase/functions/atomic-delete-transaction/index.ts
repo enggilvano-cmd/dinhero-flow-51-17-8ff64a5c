@@ -89,11 +89,25 @@ Deno.serve(async (req) => {
     }
     
     if (!record.success) {
+      // Treat "Transaction not found" as a non-fatal, idempotent delete
+      if (record.error_message === 'Transaction not found') {
+        console.warn('[atomic-delete-transaction] WARN: Transaction already deleted or not found, treating as success');
+        return new Response(
+          JSON.stringify({
+            deleted: 0,
+            affected_accounts: [],
+            success: true,
+            warning: record.error_message,
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
       console.error('[atomic-delete-transaction] ERROR:', record.error_message);
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           error: record.error_message || 'Failed to delete transaction',
-          success: false 
+          success: false,
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
