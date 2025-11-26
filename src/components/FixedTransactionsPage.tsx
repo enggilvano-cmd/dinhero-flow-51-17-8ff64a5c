@@ -196,14 +196,39 @@ export function FixedTransactionsPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const updates = {
-        description: transaction.description,
-        amount: transaction.amount,
-        type: transaction.type,
-        category_id: transaction.category_id,
-        account_id: transaction.account_id,
-        date: transaction.date,
-      };
+      if (!transactionToEdit) return;
+
+      // Comparar valores originais com editados e enviar apenas os campos alterados
+      const updates: Record<string, any> = {};
+
+      if (transaction.description !== transactionToEdit.description) {
+        updates.description = transaction.description;
+      }
+      if (transaction.amount !== transactionToEdit.amount) {
+        updates.amount = transaction.amount;
+      }
+      if (transaction.type !== transactionToEdit.type) {
+        updates.type = transaction.type;
+      }
+      if (transaction.category_id !== transactionToEdit.category_id) {
+        updates.category_id = transaction.category_id;
+      }
+      if (transaction.account_id !== transactionToEdit.account_id) {
+        updates.account_id = transaction.account_id;
+      }
+      if (transaction.date !== transactionToEdit.date) {
+        updates.date = transaction.date;
+      }
+
+      // Se nenhum campo foi alterado, não fazer nada
+      if (Object.keys(updates).length === 0) {
+        toast({
+          title: "Nenhuma alteração",
+          description: "Nenhum campo foi modificado.",
+        });
+        setEditModalOpen(false);
+        return;
+      }
 
       // 1) Editar a transação principal (fixa)
       const { error: mainError } = await supabase.functions.invoke('atomic-edit-transaction', {
@@ -225,7 +250,7 @@ export function FixedTransactionsPage() {
 
       if (childError) throw childError;
 
-      // Editar apenas as filhas pendentes
+      // Editar apenas as filhas pendentes com os mesmos campos alterados
       if (childTransactions) {
         for (const child of childTransactions) {
           if (child.status === "pending") {
@@ -257,6 +282,7 @@ export function FixedTransactionsPage() {
 
       loadFixedTransactions();
       setEditModalOpen(false);
+      setTransactionToEdit(null);
     } catch (error) {
       logger.error("Error updating transaction:", error);
       toast({
