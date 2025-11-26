@@ -143,7 +143,7 @@ export function AccountsPage({
     .reduce((sum, acc) => sum + Math.abs(Math.min(acc.balance, 0)), 0);
 
   const creditAvailable = filteredAccounts
-    .filter((acc) => acc.type === "credit" && acc.limit_amount)
+    .filter((acc) => acc.limit_amount && acc.limit_amount > 0)
     .reduce((sum, acc) => {
       const used = Math.abs(Math.min(acc.balance, 0));
       const available = (acc.limit_amount || 0) - used;
