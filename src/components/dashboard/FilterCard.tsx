@@ -38,14 +38,14 @@ export function FilterCard({
 }: FilterCardProps) {
   return (
     <Card className="financial-card">
-      <CardContent className="p-4">
+      <CardContent className="p-3">
         <div className="space-y-3">
           <div>
-            <label id="period-filter-label" className="text-caption font-medium mb-2 block text-foreground">
+            <label id="period-filter-label" className="text-caption mb-1 block">
               Período
             </label>
             <Select value={dateFilter} onValueChange={(value: DateFilterType) => setDateFilter(value)}>
-              <SelectTrigger className="h-9 text-body" aria-labelledby="period-filter-label">
+              <SelectTrigger className="h-8 text-body" aria-labelledby="period-filter-label">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -59,61 +59,59 @@ export function FilterCard({
 
           {dateFilter === 'month_picker' && (
             <div>
-              <label id="month-navigation-label" className="text-caption font-medium mb-2 block text-foreground">
+              <label id="month-navigation-label" className="text-caption mb-1 block">
                 Mês
               </label>
-              <div className="flex items-center gap-2 h-9 px-3 border border-input rounded-md bg-background hover:bg-accent/5 transition-colors">
+              <div className="flex items-center gap-1 h-8 px-2 border border-input rounded-md">
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={goToPreviousMonth}
-                  className="h-6 w-6 p-0 hover:bg-accent"
+                  className="h-5 w-5 p-0"
                   aria-label="Mês anterior"
                 >
-                  <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+                  <ChevronLeft className="h-3 w-3" aria-hidden="true" />
                 </Button>
-                <span className="flex-1 text-center text-body font-medium" aria-live="polite">
-                  {format(selectedMonth, 'MMMM yyyy', { locale: ptBR })}
+                <span className="flex-1 text-center text-caption" aria-live="polite">
+                  {format(selectedMonth, 'MMM/yy', { locale: ptBR })}
                 </span>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={goToNextMonth}
-                  className="h-6 w-6 p-0 hover:bg-accent"
+                  className="h-5 w-5 p-0"
                   aria-label="Próximo mês"
                 >
-                  <ChevronRight className="h-4 w-4" aria-hidden="true" />
+                  <ChevronRight className="h-3 w-3" aria-hidden="true" />
                 </Button>
               </div>
             </div>
           )}
 
           {dateFilter === 'custom' && (
-            <div className="space-y-2">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <label id="start-date-label" className="text-caption font-medium block text-foreground">
-                    Início
-                  </label>
-                  <DatePicker
-                    date={customStartDate}
-                    onDateChange={setCustomStartDate}
-                    placeholder="Inicial"
-                    className="h-9 text-body w-full"
-                  />
-                </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label id="start-date-label" className="text-caption mb-1 block">
+                  Início
+                </label>
+                <DatePicker
+                  date={customStartDate}
+                  onDateChange={setCustomStartDate}
+                  placeholder="Inicial"
+                  className="h-8 text-body"
+                />
+              </div>
 
-                <div className="space-y-1.5">
-                  <label id="end-date-label" className="text-caption font-medium block text-foreground">
-                    Final
-                  </label>
-                  <DatePicker
-                    date={customEndDate}
-                    onDateChange={setCustomEndDate}
-                    placeholder="Final"
-                    className="h-9 text-body w-full"
-                  />
-                </div>
+              <div>
+                <label id="end-date-label" className="text-caption mb-1 block">
+                  Final
+                </label>
+                <DatePicker
+                  date={customEndDate}
+                  onDateChange={setCustomEndDate}
+                  placeholder="Final"
+                  className="h-8 text-body"
+                />
               </div>
             </div>
           )}
