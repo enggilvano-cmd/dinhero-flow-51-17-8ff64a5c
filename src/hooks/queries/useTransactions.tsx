@@ -95,7 +95,9 @@ export function useTransactions(params: UseTransactionsParams = {}) {
       let query = supabase
         .from('transactions')
         .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        // Excluir apenas o PAI das transações fixas (mantém as filhas)
+        .or('parent_transaction_id.not.is.null,is_fixed.neq.true,is_fixed.is.null');
 
       // Apply filters
       if (search) {
@@ -196,7 +198,9 @@ export function useTransactions(params: UseTransactionsParams = {}) {
             color
           )
         `)
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        // Excluir apenas o PAI das transações fixas (mantém as filhas)
+        .or('parent_transaction_id.not.is.null,is_fixed.neq.true,is_fixed.is.null');
 
       // Apply filters
       if (search) {
