@@ -87,7 +87,7 @@ function AppSidebar({ currentPage, onPageChange }: { currentPage: string; onPage
               : "px-4 pt-6 pb-4"
         )}>
           <SidebarTrigger className={cn(
-            "hover:bg-muted/50 rounded-xl transition-all duration-200 hover:scale-105",
+            "hover:bg-accent hover:text-accent-foreground rounded-xl transition-all duration-200 hover:scale-105 hover:shadow-md",
             isMobile ? "h-8 w-8" : "h-9 w-9"
           )} />
         </div>
@@ -206,7 +206,7 @@ function AppSidebar({ currentPage, onPageChange }: { currentPage: string; onPage
                 <Button 
                   variant="ghost" 
                   className={cn(
-                    "transition-all duration-200 hover:bg-muted/50 hover:text-foreground",
+                    "transition-all duration-200 hover:bg-accent hover:text-accent-foreground hover:shadow-md hover:scale-[1.02]",
                     isMobile
                       ? "w-full h-12 rounded-2xl justify-start gap-3"
                       : isCollapsed 
@@ -294,7 +294,7 @@ function LayoutContent({ children, currentPage, onPageChange, onNavigate }: Layo
         <header className="safe-top fixed top-0 left-0 right-0 z-50 h-14 bg-background/95 backdrop-blur-xl border-b border-border/50 shadow-sm">
           <div className="flex items-center justify-between h-full px-4">
             <div className="flex items-center gap-3">
-              <SidebarTrigger className="h-10 w-10 hover:bg-muted/50 rounded-xl transition-all duration-200 hover:scale-105 flex items-center justify-center touch-target">
+              <SidebarTrigger className="h-10 w-10 hover:bg-accent hover:text-accent-foreground rounded-xl transition-all duration-200 hover:scale-105 hover:shadow-md flex items-center justify-center touch-target">
                 <div className="w-5 h-5 flex flex-col justify-center gap-1">
                   <div className="w-full h-0.5 bg-foreground rounded-full"></div>
                   <div className="w-full h-0.5 bg-foreground rounded-full"></div>
