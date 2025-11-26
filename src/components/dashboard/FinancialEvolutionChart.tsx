@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -49,6 +49,13 @@ export function FinancialEvolutionChart({
   const { chartConfig: responsiveConfig, isMobile } = useChartResponsive();
   const [chartScale, setChartScale] = useState<ChartScaleType>('monthly');
   const [chartYear, setChartYear] = useState<number>(new Date().getFullYear());
+  const [hasAnimated, setHasAnimated] = useState(false);
+
+  useEffect(() => {
+    if (!hasAnimated) {
+      setHasAnimated(true);
+    }
+  }, [hasAnimated]);
 
   const availableYears = useMemo(() => {
     const years = new Set<number>();
@@ -289,7 +296,7 @@ export function FinancialEvolutionChart({
                     }}
                     connectNulls={false}
                     name="Saldo Acumulado"
-                    isAnimationActive={true}
+                    isAnimationActive={!hasAnimated}
                     animationDuration={800}
                     animationEasing="ease-in-out"
                   />
