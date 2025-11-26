@@ -151,6 +151,8 @@ export function useDashboardCalculations(
           .eq('status', 'pending')
           .is('to_account_id', null)
           .is('linked_transaction_id', null)
+          // Excluir apenas o PAI das transações fixas (mantém as filhas)
+          .or('parent_transaction_id.not.is.null,is_fixed.neq.true,is_fixed.is.null')
           .gte('date', dateRange.dateFrom || '1900-01-01')
           .lte('date', dateRange.dateTo || '2100-12-31');
 
@@ -167,6 +169,8 @@ export function useDashboardCalculations(
           .eq('status', 'pending')
           .is('to_account_id', null)
           .is('linked_transaction_id', null)
+          // Excluir apenas o PAI das transações fixas (mantém as filhas)
+          .or('parent_transaction_id.not.is.null,is_fixed.neq.true,is_fixed.is.null')
           .gte('date', dateRange.dateFrom || '1900-01-01')
           .lte('date', dateRange.dateTo || '2100-12-31');
 
