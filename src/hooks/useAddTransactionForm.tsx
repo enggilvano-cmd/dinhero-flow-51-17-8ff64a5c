@@ -108,19 +108,6 @@ export function useAddTransactionForm({
     }
   }, [formData.date, formData.account_id, formData.invoiceMonth, accounts]);
 
-  // Define status automaticamente baseado na data
-  useEffect(() => {
-    if (formData.date) {
-      const transactionDateStr = formData.date;
-      const todayStr = getTodayString();
-      const newStatus = transactionDateStr <= todayStr ? "completed" : "pending";
-
-      if (formData.status !== newStatus) {
-        setFormData((prev) => ({ ...prev, status: newStatus }));
-      }
-    }
-  }, [formData.date, formData.status]);
-
   const filteredCategories = useMemo(() => {
     if (!formData.type || formData.type === "transfer") return [];
     return categories.filter(
