@@ -298,11 +298,11 @@ export function FixedTransactionsPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Excluir TODAS as transações (principal + todas as geradas)
+      // Excluir apenas a transação principal e as transações PENDENTES (não as concluídas)
       const { data, error } = await supabase.functions.invoke('atomic-delete-transaction', {
         body: {
           transaction_id: transactionToDelete.id,
-          scope: 'all',
+          scope: 'current-and-remaining',
         },
       });
 
@@ -317,7 +317,7 @@ export function FixedTransactionsPage() {
       
       toast({
         title: "Transações removidas",
-        description: `A transação fixa e ${deletedCount - 1} transação(ões) gerada(s) foram removidas com sucesso.`,
+        description: `A transação fixa e ${deletedCount - 1} transação(ões) pendente(s) foram removidas com sucesso.`,
       });
 
       // 🔄 Sincronizar listas e dashboard imediatamente
@@ -739,7 +739,8 @@ export function FixedTransactionsPage() {
                   Você está prestes a excluir a transação fixa &quot;{transactionToDelete.description}&quot;.
                   <br /><br />
                   <strong>Atenção:</strong> Esta ação removerá a transação principal e todas as transações 
-                  pendentes associadas. Esta ação não pode ser desfeita.
+                  <strong> pendentes</strong> associadas. As transações já concluídas não serão afetadas. 
+                  Esta ação não pode ser desfeita.
                 </>
               )}
             </AlertDialogDescription>
