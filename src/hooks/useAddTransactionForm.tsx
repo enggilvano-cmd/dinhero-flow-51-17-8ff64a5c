@@ -88,7 +88,10 @@ export function useAddTransactionForm({
     
     const selectedAccount = accounts.find(acc => acc.id === formData.account_id);
     if (!selectedAccount || selectedAccount.type !== "credit" || !selectedAccount.closing_date) {
-      setFormData(prev => ({ ...prev, invoiceMonth: "" }));
+      // Só atualiza se o invoiceMonth não estiver vazio
+      if (formData.invoiceMonth !== "") {
+        setFormData(prev => ({ ...prev, invoiceMonth: "" }));
+      }
       return;
     }
     
@@ -99,8 +102,11 @@ export function useAddTransactionForm({
       selectedAccount.due_date || 1
     );
     
-    setFormData(prev => ({ ...prev, invoiceMonth: calculatedMonth }));
-  }, [formData.date, formData.account_id, accounts]);
+    // Só atualiza se o invoiceMonth mudou
+    if (formData.invoiceMonth !== calculatedMonth) {
+      setFormData(prev => ({ ...prev, invoiceMonth: calculatedMonth }));
+    }
+  }, [formData.date, formData.account_id, formData.invoiceMonth, accounts]);
 
   // Define status automaticamente baseado na data
   useEffect(() => {
@@ -113,7 +119,7 @@ export function useAddTransactionForm({
         setFormData((prev) => ({ ...prev, status: newStatus }));
       }
     }
-  }, [formData.date]);
+  }, [formData.date, formData.status]);
 
   const filteredCategories = useMemo(() => {
     if (!formData.type || formData.type === "transfer") return [];
