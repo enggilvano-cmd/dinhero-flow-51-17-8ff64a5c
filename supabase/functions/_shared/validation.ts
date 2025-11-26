@@ -206,50 +206,50 @@ export function validateTransaction(data: Record<string, unknown>) {
   const errors: Record<string, string> = {};
 
   try {
-    transactionSchema.description.parse(data.description);
+    transactionSchema.description.parse(data.description as string);
   } catch (e) {
     errors.description = e instanceof Error ? e.message : 'Validation failed';
   }
 
   try {
-    transactionSchema.amount.parse(data.amount);
+    transactionSchema.amount.parse(data.amount as number);
   } catch (e) {
     errors.amount = e instanceof Error ? e.message : 'Validation failed';
   }
 
   try {
-    transactionSchema.date.parse(data.date);
+    transactionSchema.date.parse(data.date as string);
   } catch (e) {
     errors.date = e instanceof Error ? e.message : 'Validation failed';
   }
 
   try {
-    transactionSchema.type.parse(data.type);
+    transactionSchema.type.parse(data.type as string);
   } catch (e) {
     errors.type = e instanceof Error ? e.message : 'Validation failed';
   }
 
   try {
-    transactionSchema.status.parse(data.status);
+    transactionSchema.status.parse(data.status as string);
   } catch (e) {
     errors.status = e instanceof Error ? e.message : 'Validation failed';
   }
 
   try {
-    transactionSchema.account_id.parse(data.account_id);
+    transactionSchema.account_id.parse(data.account_id as string);
   } catch (e) {
     errors.account_id = e instanceof Error ? e.message : 'Validation failed';
   }
 
   try {
-    transactionSchema.category_id.parse(data.category_id);
+    transactionSchema.category_id.parse(data.category_id as string);
   } catch (e) {
     errors.category_id = e instanceof Error ? e.message : 'Validation failed';
   }
 
   if (data.invoice_month) {
     try {
-      transactionSchema.invoice_month.parse(data.invoice_month);
+      transactionSchema.invoice_month.parse(data.invoice_month as string);
     } catch (e) {
       errors.invoice_month = e instanceof Error ? e.message : 'Validation failed';
     }
@@ -257,7 +257,7 @@ export function validateTransaction(data: Record<string, unknown>) {
 
   if (data.to_account_id) {
     try {
-      transactionSchema.to_account_id.parse(data.to_account_id);
+      transactionSchema.to_account_id.parse(data.to_account_id as string);
     } catch (e) {
       errors.to_account_id = e instanceof Error ? e.message : 'Validation failed';
     }

@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
 
     // Verificar se o período está fechado com retry
     const { data: isLocked } = await withRetry(
-      () => supabaseClient.rpc('is_period_locked', { 
+      async () => supabaseClient.rpc('is_period_locked', {
         p_user_id: user.id, 
         p_date: payment_date 
       })

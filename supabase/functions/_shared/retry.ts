@@ -17,32 +17,40 @@ const DEFAULT_OPTIONS: Required<RetryOptions> = {
   backoffMultiplier: 2,
 };
 
+interface ErrorWithProps {
+  message?: string;
+  code?: string;
+  status?: number;
+}
+
 /**
  * Checks if an error is retryable (transient failure)
  */
 function isRetryableError(error: unknown): boolean {
+  const err = error as ErrorWithProps;
+  
   // Network timeouts
-  if (error?.message?.toLowerCase().includes('timeout')) {
+  if (err?.message?.toLowerCase().includes('timeout')) {
     return true;
   }
   
   // Database deadlocks
-  if (error?.code === '40P01' || error?.message?.toLowerCase().includes('deadlock')) {
+  if (err?.code === '40P01' || err?.message?.toLowerCase().includes('deadlock')) {
     return true;
   }
   
   // PostgreSQL serialization failures
-  if (error?.code === '40001') {
+  if (err?.code === '40001') {
     return true;
   }
   
   // HTTP 5xx errors
-  if (error?.status >= 500 && error?.status < 600) {
+  if (err?.status && err.status >= 500 && err.status < 600) {
     return true;
   }
   
   // Supabase connection errors
-  if (error?.message?.toLowerCase().includes('connection')) {
+  if (err?.message?.toLowerCase().includes('connection')) {
     return true;
   }
   
@@ -90,7 +98,8 @@ export async function withRetry<T>(
         opts.maxDelayMs
       );
       
-      console.log(`Retry attempt ${attempt + 1}/${opts.maxRetries} after ${delayMs}ms due to:`, error?.message || error);
+        const err = error as ErrorWithProps;
+        console.log(`Retry attempt ${attempt + 1}/${opts.maxRetries} after ${delayMs}ms due to:`, err?.message || error);
       
       // Wait before retrying
       await new Promise(resolve => setTimeout(resolve, delayMs));
