@@ -142,20 +142,24 @@ export function useTransactionMutations() {
     if (!user) return;
 
     try {
-      const { data, error } = await supabase.functions.invoke('atomic-delete-transaction', {
-        body: {
-          transaction_id: transactionId,
-          scope: editScope || 'current',
-        }
+      // Usar função SQL atômica diretamente para evitar falhas de Edge Function / rate limit
+      const { data: rpcData, error } = await supabase.rpc('atomic_delete_transaction', {
+        p_user_id: user.id,
+        p_transaction_id: transactionId,
+        p_scope: editScope || 'current',
       });
 
       if (error) {
         const errorMessage = getErrorMessage(error);
-        throw new Error(errorMessage);
+        throw new Error(errorMessage || 'Erro ao excluir transação');
       }
 
-      if (data && !data.success) {
-        throw new Error(data.error || 'Transação não encontrada ou já foi excluída');
+      const record = rpcData && Array.isArray(rpcData)
+        ? (rpcData[0] as { deleted_count?: number; success?: boolean; error_message?: string })
+        : null;
+
+      if (!record || record.success === false) {
+        throw new Error(record?.error_message || 'Transação não encontrada ou já foi excluída');
       }
 
       // ✅ Invalidação imediata dispara refetch automático sem delay
@@ -164,12 +168,12 @@ export function useTransactionMutations() {
 
       toast({
         title: 'Sucesso',
-        description: `${data?.deleted || 1} transação(ões) excluída(s)`,
+        description: `${record.deleted_count ?? 1} transação(ões) excluída(s)`,
       });
     } catch (error: unknown) {
       logger.error('Error deleting transaction:', error);
       const errorMessage = getErrorMessage(error);
-      
+
       toast({
         title: 'Erro ao excluir',
         description: errorMessage,
@@ -178,7 +182,7 @@ export function useTransactionMutations() {
       throw error;
     }
   }, [user, queryClient, toast]);
-
+ 
   return {
     handleAddTransaction,
     handleEditTransaction,
