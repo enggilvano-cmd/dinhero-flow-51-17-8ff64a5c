@@ -70,6 +70,7 @@ export function AddTransactionModal({
             type={formData.type}
             amount={formData.amount}
             date={formData.date}
+            status={formData.status}
             lockType={lockType}
             validationErrors={validationErrors}
             onDescriptionChange={(value) =>
@@ -88,6 +89,13 @@ export function AddTransactionModal({
             onDateChange={(value) =>
               setFormData((prev) => ({ ...prev, date: value }))
             }
+            onStatusChange={(value) => {
+              setManualStatusChange(true);
+              setFormData((prev) => ({
+                ...prev,
+                status: value as "pending" | "completed",
+              }));
+            }}
           />
 
           {formData.account_id && formData.type && (
@@ -101,7 +109,6 @@ export function AddTransactionModal({
           <AccountCategoryFields
             accountId={formData.account_id}
             categoryId={formData.category_id}
-            status={formData.status}
             type={formData.type}
             accounts={filteredAccounts}
             categories={filteredCategories}
@@ -112,13 +119,6 @@ export function AddTransactionModal({
             onCategoryChange={(value) =>
               setFormData((prev) => ({ ...prev, category_id: value }))
             }
-            onStatusChange={(value) => {
-              setManualStatusChange(true);
-              setFormData((prev) => ({
-                ...prev,
-                status: value as "pending" | "completed",
-              }));
-            }}
           />
 
           {formData.account_id && selectedAccount?.type === "credit" && (
