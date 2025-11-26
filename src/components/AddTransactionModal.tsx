@@ -40,6 +40,7 @@ export function AddTransactionModal({
     filteredCategories,
     selectedAccount,
     handleSubmit,
+    setManualStatusChange,
   } = useAddTransactionForm({
     open,
     initialType,
@@ -111,12 +112,13 @@ export function AddTransactionModal({
             onCategoryChange={(value) =>
               setFormData((prev) => ({ ...prev, category_id: value }))
             }
-            onStatusChange={(value) =>
+            onStatusChange={(value) => {
+              setManualStatusChange(true);
               setFormData((prev) => ({
                 ...prev,
                 status: value as "pending" | "completed",
-              }))
-            }
+              }));
+            }}
           />
 
           {formData.account_id && selectedAccount?.type === "credit" && (
