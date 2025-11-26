@@ -317,9 +317,6 @@ export default function AnalyticsPage({
         amount: data.amount,
         color: data.color,
         percentage: totalAmount > 0 ? (data.amount / totalAmount) * 100 : 0,
-        transactions: categoryFilteredTransactions.filter(
-          (t) => getTransactionCategory(t) === category
-        ).length,
       }))
       .sort((a, b) => b.amount - a.amount);
 
@@ -1635,9 +1632,6 @@ export default function AnalyticsPage({
                     <th className="text-right py-2 text-caption hidden sm:table-cell">
                       %
                     </th>
-                    <th className="text-right py-2 text-caption hidden md:table-cell">
-                      Qtd.
-                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1658,15 +1652,12 @@ export default function AnalyticsPage({
                         <div className="flex flex-col sm:block">
                           <span>{formatCurrency(item.amount)}</span>
                           <span className="text-caption text-muted-foreground sm:hidden">
-                            {item.percentage.toFixed(1)}% • {item.transactions}x
+                            {item.percentage.toFixed(1)}%
                           </span>
                         </div>
                       </td>
                       <td className="text-right py-2 sm:py-3 text-body hidden sm:table-cell">
                         {item.percentage.toFixed(1)}%
-                      </td>
-                      <td className="text-right py-2 sm:py-3 text-body hidden md:table-cell">
-                        {item.transactions}
                       </td>
                     </tr>
                   ))}
