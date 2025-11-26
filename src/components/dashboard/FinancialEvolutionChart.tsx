@@ -18,8 +18,6 @@ import {
 import { formatCurrencyForAxis, getBarChartAxisProps } from '@/lib/chartUtils';
 import { Bar, Line, ComposedChart, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 
-let financialEvolutionLineHasAnimated = false;
-
 interface FinancialEvolutionChartProps {
   transactions: Transaction[];
   accounts: Account[];
@@ -51,7 +49,7 @@ export function FinancialEvolutionChart({
   const { chartConfig: responsiveConfig, isMobile } = useChartResponsive();
   const [chartScale, setChartScale] = useState<ChartScaleType>('monthly');
   const [chartYear, setChartYear] = useState<number>(new Date().getFullYear());
-  const [hasAnimated, setHasAnimated] = useState(financialEvolutionLineHasAnimated);
+  const [hasAnimated, setHasAnimated] = useState(false);
 
   const availableYears = useMemo(() => {
     const years = new Set<number>();
@@ -295,10 +293,7 @@ export function FinancialEvolutionChart({
                     isAnimationActive={!hasAnimated}
                     animationDuration={800}
                     animationEasing="ease-in-out"
-                    onAnimationEnd={() => {
-                      setHasAnimated(true);
-                      financialEvolutionLineHasAnimated = true;
-                    }}
+                    onAnimationEnd={() => setHasAnimated(true)}
                   />
                 </ComposedChart>
               </ResponsiveContainer>
