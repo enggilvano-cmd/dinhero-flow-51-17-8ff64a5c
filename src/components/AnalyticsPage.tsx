@@ -1130,7 +1130,7 @@ export default function AnalyticsPage({
                     data={accountBalanceData}
                     margin={{
                       top: 20,
-                      right: isMobile ? 15 : 200,
+                      right: isMobile ? 15 : 240,
                       bottom: isMobile ? 20 : 30,
                       left: isMobile ? 10 : 20
                     }}
@@ -1168,8 +1168,8 @@ export default function AnalyticsPage({
             {/* Legenda de Contas - desktop/tablet (dentro do container) */}
             {!isMobile && accountBalanceData.length > 0 && (
               <div 
-                className="flex flex-col gap-2 px-4 absolute right-4 top-1/2 -translate-y-1/2"
-                style={{ maxWidth: "35%" }}
+                className="flex flex-col gap-2 px-4 absolute right-2 top-1/2 -translate-y-1/2 z-10"
+                style={{ maxWidth: "38%" }}
               >
                 {accountBalanceData.map((account, index) => (
                   <div 
@@ -1245,7 +1245,7 @@ export default function AnalyticsPage({
                       data={creditCardBalanceData}
                       margin={{
                         top: 20,
-                        right: isMobile ? 15 : 200,
+                        right: isMobile ? 15 : 240,
                         bottom: isMobile ? 20 : 30,
                         left: isMobile ? 10 : 20
                       }}
@@ -1288,8 +1288,8 @@ export default function AnalyticsPage({
               {/* Legenda de Cartões - desktop/tablet (dentro do container) */}
               {!isMobile && creditCardBalanceData.length > 0 && (
                 <div 
-                  className="flex flex-col gap-2 px-4 absolute right-4 top-1/2 -translate-y-1/2"
-                  style={{ maxWidth: "35%" }}
+                  className="flex flex-col gap-2 px-4 absolute right-2 top-1/2 -translate-y-1/2 z-10"
+                  style={{ maxWidth: "38%" }}
                 >
                   {creditCardBalanceData.map((card, index) => (
                     <div 
@@ -1366,7 +1366,7 @@ export default function AnalyticsPage({
                       data={creditCardUsedData}
                       margin={{
                         top: 20,
-                        right: isMobile ? 15 : 200,
+                        right: isMobile ? 15 : 240,
                         bottom: isMobile ? 20 : 30,
                         left: isMobile ? 10 : 20
                       }}
@@ -1404,8 +1404,8 @@ export default function AnalyticsPage({
               {/* Legenda de Limite Usado - desktop/tablet */}
               {!isMobile && creditCardUsedData.length > 0 && (
                 <div 
-                  className="flex flex-col gap-2 px-4 absolute right-4 top-1/2 -translate-y-1/2"
-                  style={{ maxWidth: "35%" }}
+                  className="flex flex-col gap-2 px-4 absolute right-2 top-1/2 -translate-y-1/2 z-10"
+                  style={{ maxWidth: "38%" }}
                 >
                   {creditCardUsedData.map((card, index) => (
                     <div 
