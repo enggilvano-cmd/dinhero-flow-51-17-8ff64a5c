@@ -1,5 +1,5 @@
 import { useMemo, useEffect, useState } from 'react';
-import type { Account, Transaction, DateFilterType } from '@/types';
+import type { Account, DateFilterType } from '@/types';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { supabase } from '@/integrations/supabase/client';
@@ -7,7 +7,6 @@ import { logger } from '@/lib/logger';
 
 export function useDashboardCalculations(
   accounts: Account[],
-  filteredTransactions: Transaction[],
   dateFilter: DateFilterType,
   selectedMonth: Date,
   customStartDate: Date | undefined,
@@ -32,11 +31,16 @@ export function useDashboardCalculations(
     [accounts]
   );
 
-  // Usar agregação SQL para totais do período (consistente com TransactionsPage)
+  // Buscar todos os dados via SQL independente dos filtros da página de Transações
   const [aggregatedTotals, setAggregatedTotals] = useState({
     periodIncome: 0,
     periodExpenses: 0,
     balance: 0,
+    creditCardExpenses: 0,
+    pendingExpenses: 0,
+    pendingIncome: 0,
+    pendingExpensesCount: 0,
+    pendingIncomeCount: 0,
   });
 
   // Calcular date range baseado no filtro (memoizado para estabilidade)
@@ -69,7 +73,8 @@ export function useDashboardCalculations(
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        const { data, error } = await supabase.rpc('get_transactions_totals', {
+        // Buscar totais gerais do período
+        const { data: totalsData, error: totalsError } = await supabase.rpc('get_transactions_totals', {
           p_user_id: user.id,
           p_type: 'all',
           p_status: 'all',
@@ -81,18 +86,104 @@ export function useDashboardCalculations(
           p_search: undefined,
         });
 
-        if (error) {
-          logger.error("Error fetching aggregated totals:", error);
+        if (totalsError) {
+          logger.error("Error fetching aggregated totals:", totalsError);
           return;
         }
-        
-        if (data && data.length > 0) {
-          setAggregatedTotals({
-            periodIncome: data[0].total_income,
-            periodExpenses: data[0].total_expenses,
-            balance: data[0].balance,
-          });
+
+        // Buscar despesas de cartão de crédito do período
+        const { data: creditData, error: creditError } = await supabase.rpc('get_transactions_totals', {
+          p_user_id: user.id,
+          p_type: 'expense',
+          p_status: 'all',
+          p_account_id: undefined,
+          p_category_id: undefined,
+          p_account_type: 'credit',
+          p_date_from: dateRange.dateFrom,
+          p_date_to: dateRange.dateTo,
+          p_search: undefined,
+        });
+
+        if (creditError) {
+          logger.error("Error fetching credit card expenses:", creditError);
         }
+
+        // Buscar despesas pendentes do período
+        const { data: pendingExpData, error: pendingExpError } = await supabase.rpc('get_transactions_totals', {
+          p_user_id: user.id,
+          p_type: 'expense',
+          p_status: 'pending',
+          p_account_id: undefined,
+          p_category_id: undefined,
+          p_account_type: 'all',
+          p_date_from: dateRange.dateFrom,
+          p_date_to: dateRange.dateTo,
+          p_search: undefined,
+        });
+
+        if (pendingExpError) {
+          logger.error("Error fetching pending expenses:", pendingExpError);
+        }
+
+        // Buscar receitas pendentes do período
+        const { data: pendingIncData, error: pendingIncError } = await supabase.rpc('get_transactions_totals', {
+          p_user_id: user.id,
+          p_type: 'income',
+          p_status: 'pending',
+          p_account_id: undefined,
+          p_category_id: undefined,
+          p_account_type: 'all',
+          p_date_from: dateRange.dateFrom,
+          p_date_to: dateRange.dateTo,
+          p_search: undefined,
+        });
+
+        if (pendingIncError) {
+          logger.error("Error fetching pending income:", pendingIncError);
+        }
+
+        // Contar transações pendentes (despesas)
+        const { count: pendingExpCount, error: pendingExpCountError } = await supabase
+          .from('transactions')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .eq('type', 'expense')
+          .eq('status', 'pending')
+          .is('to_account_id', null)
+          .is('linked_transaction_id', null)
+          .gte('date', dateRange.dateFrom || '1900-01-01')
+          .lte('date', dateRange.dateTo || '2100-12-31');
+
+        if (pendingExpCountError) {
+          logger.error("Error counting pending expenses:", pendingExpCountError);
+        }
+
+        // Contar transações pendentes (receitas)
+        const { count: pendingIncCount, error: pendingIncCountError } = await supabase
+          .from('transactions')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .eq('type', 'income')
+          .eq('status', 'pending')
+          .is('to_account_id', null)
+          .is('linked_transaction_id', null)
+          .gte('date', dateRange.dateFrom || '1900-01-01')
+          .lte('date', dateRange.dateTo || '2100-12-31');
+
+        if (pendingIncCountError) {
+          logger.error("Error counting pending income:", pendingIncCountError);
+        }
+        
+        setAggregatedTotals({
+          periodIncome: totalsData?.[0]?.total_income || 0,
+          periodExpenses: totalsData?.[0]?.total_expenses || 0,
+          balance: totalsData?.[0]?.balance || 0,
+          creditCardExpenses: creditData?.[0]?.total_expenses || 0,
+          pendingExpenses: pendingExpData?.[0]?.total_expenses || 0,
+          pendingIncome: pendingIncData?.[0]?.total_income || 0,
+          pendingExpensesCount: pendingExpCount || 0,
+          pendingIncomeCount: pendingIncCount || 0,
+        });
       } catch (error) {
         logger.error("Error fetching aggregated totals:", error);
       }
@@ -101,45 +192,6 @@ export function useDashboardCalculations(
     fetchAggregatedTotals();
   }, [dateRange]);
 
-  // Calcular despesas de cartão de crédito do período (filtradas, transferências já excluídas por type='expense')
-  const creditCardExpenses = useMemo(() => 
-    filteredTransactions
-      .filter((t) => {
-        const account = accounts.find((acc) => acc.id === t.account_id);
-        return t.type === 'expense' && account?.type === 'credit';
-      })
-      .reduce((sum, t) => sum + t.amount, 0),
-    [filteredTransactions, accounts]
-  );
-
-  // Calcular pendências (filtradas, transferências já excluídas por type check)
-  const pendingExpenses = useMemo(() => 
-    filteredTransactions
-      .filter((t) => t.type === 'expense' && t.status === 'pending')
-      .reduce((sum, t) => sum + t.amount, 0),
-    [filteredTransactions]
-  );
-
-  const pendingIncome = useMemo(() => 
-    filteredTransactions
-      .filter((t) => t.type === 'income' && t.status === 'pending')
-      .reduce((sum, t) => sum + t.amount, 0),
-    [filteredTransactions]
-  );
-
-  const pendingExpensesCount = useMemo(() => 
-    filteredTransactions
-      .filter((t) => t.type === 'expense' && t.status === 'pending')
-      .length,
-    [filteredTransactions]
-  );
-
-  const pendingIncomeCount = useMemo(() => 
-    filteredTransactions
-      .filter((t) => t.type === 'income' && t.status === 'pending')
-      .length,
-    [filteredTransactions]
-  );
 
   const getPeriodLabel = () => {
     if (dateFilter === 'all') {
@@ -167,11 +219,11 @@ export function useDashboardCalculations(
     creditAvailable,
     periodIncome: aggregatedTotals.periodIncome,
     periodExpenses: aggregatedTotals.periodExpenses,
-    creditCardExpenses,
-    pendingExpenses,
-    pendingIncome,
-    pendingExpensesCount,
-    pendingIncomeCount,
+    creditCardExpenses: aggregatedTotals.creditCardExpenses,
+    pendingExpenses: aggregatedTotals.pendingExpenses,
+    pendingIncome: aggregatedTotals.pendingIncome,
+    pendingExpensesCount: aggregatedTotals.pendingExpensesCount,
+    pendingIncomeCount: aggregatedTotals.pendingIncomeCount,
     getPeriodLabel,
   };
 }

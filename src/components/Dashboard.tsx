@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import { useSettings } from '@/context/SettingsContext';
 import type { Account, Transaction, Category, AccountFilterType, TransactionFilterType, StatusFilterType, DateFilterType } from '@/types';
 import { useDashboardFilters } from '@/hooks/useDashboardFilters';
@@ -57,16 +56,10 @@ export function Dashboard({
     setCustomStartDate,
     customEndDate,
     setCustomEndDate,
-    getFilteredTransactions,
     goToPreviousMonth,
     goToNextMonth,
     getNavigationParams,
   } = useDashboardFilters();
-
-  const filteredTransactions = useMemo(
-    () => getFilteredTransactions(transactions),
-    [transactions, getFilteredTransactions]
-  );
 
   const {
     totalBalance,
@@ -81,7 +74,6 @@ export function Dashboard({
     getPeriodLabel,
   } = useDashboardCalculations(
     accounts,
-    filteredTransactions,
     dateFilter,
     selectedMonth,
     customStartDate,
@@ -168,7 +160,7 @@ export function Dashboard({
 
           <ListErrorBoundary fallbackMessage="Erro ao carregar transações recentes">
             <RecentTransactions
-              transactions={filteredTransactions}
+              transactions={transactions}
               maxItems={Math.max(accounts.length, 3)}
               onNavigateToTransactions={onNavigateToTransactions}
               onAddTransaction={onAddTransaction}
