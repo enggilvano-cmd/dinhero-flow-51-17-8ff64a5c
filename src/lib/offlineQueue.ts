@@ -16,6 +16,7 @@ export interface QueuedOperation {
     | 'edit_category'
     | 'delete_category'
     | 'import_categories'
+    | 'add_account'
     | 'edit_account'
     | 'delete_account'
     | 'import_accounts';

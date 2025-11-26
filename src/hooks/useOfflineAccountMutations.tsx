@@ -5,11 +5,75 @@ import { offlineQueue } from '@/lib/offlineQueue';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
 import { Account, ImportAccountData } from '@/types';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryClient';
+import { getErrorMessage } from '@/types/errors';
 
 export function useOfflineAccountMutations() {
   const isOnline = useOnlineStatus();
   const onlineMutations = useAccountHandlers();
   const { toast } = useToast();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  const handleAddAccount = useCallback(async (
+    accountData: Omit<Account, 'id' | 'user_id' | 'created_at' | 'updated_at'>
+  ) => {
+    if (isOnline) {
+      if (!user) return;
+      try {
+        const { error } = await supabase
+          .from('accounts')
+          .insert({
+            ...accountData,
+            user_id: user.id,
+          });
+
+        if (error) throw error;
+
+        queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+        toast({
+          title: 'Sucesso',
+          description: 'Conta adicionada com sucesso',
+        });
+      } catch (error: unknown) {
+        logger.error('Error adding account:', error);
+        toast({
+          title: 'Erro',
+          description: getErrorMessage(error) || 'Erro ao adicionar conta',
+          variant: 'destructive',
+        });
+        throw error;
+      }
+      return;
+    }
+
+    // Offline: enqueue add account operation
+    try {
+      await offlineQueue.enqueue({
+        type: 'add_account',
+        data: accountData,
+      });
+
+      toast({
+        title: 'Conta registrada',
+        description: 'Será sincronizada quando você voltar online.',
+        duration: 3000,
+      });
+
+      logger.info('Account add queued for offline sync');
+    } catch (error) {
+      logger.error('Failed to queue account add:', error);
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível registrar a conta offline.',
+        variant: 'destructive',
+      });
+      throw error;
+    }
+  }, [isOnline, user, queryClient, toast]);
 
   const handleEditAccount = useCallback(async (updatedAccount: Account) => {
     if (isOnline) {
@@ -113,6 +177,7 @@ export function useOfflineAccountMutations() {
   }, [isOnline, onlineMutations, toast]);
 
   return {
+    handleAddAccount,
     handleEditAccount,
     handleDeleteAccount,
     handleImportAccounts,

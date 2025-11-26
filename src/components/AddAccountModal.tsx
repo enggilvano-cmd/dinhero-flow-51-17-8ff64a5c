@@ -12,18 +12,12 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { PREDEFINED_COLORS, ACCOUNT_TYPE_LABELS } from "@/types";
-import { logger } from "@/lib/logger";
 import { ColorPicker } from "./forms/ColorPicker";
 import { CurrencyInput } from "@/components/forms/CurrencyInput";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
-import { useQueryClient } from "@tanstack/react-query";
-import { queryKeys } from "@/lib/queryClient";
 import { AddAccountModalProps } from "@/types/formProps";
+import { useOfflineAccountMutations } from "@/hooks/useTransactionHandlers";
 
 export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
-  const { user } = useAuth();
-  const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     name: "",
     type: "" as "checking" | "savings" | "credit" | "investment" | "",
@@ -34,6 +28,7 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const { handleAddAccount } = useOfflineAccountMutations();
 
   const handleColorChange = (color: string) => {
     setFormData((prev) => ({ ...prev, color }));
@@ -87,7 +82,8 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
       formData.limitInCents > 0 ? formData.limitInCents : undefined;
 
     let dueDate: number | undefined;
-    if (formData.type === "credit") { // Validação de data (só se for crédito)
+    if (formData.type === "credit") {
+      // Validação de data (só se for crédito)
       dueDate = parseInt(formData.dueDate);
       if (isNaN(dueDate) || dueDate < 1 || dueDate > 31) {
         toast({
@@ -100,7 +96,8 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
     }
 
     let closingDate: number | undefined;
-    if (formData.type === "credit") { // Validação de data (só se for crédito)
+    if (formData.type === "credit") {
+      // Validação de data (só se for crédito)
       closingDate = parseInt(formData.closingDate);
       if (isNaN(closingDate) || closingDate < 1 || closingDate > 31) {
         toast({
@@ -114,33 +111,15 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
 
     setIsSubmitting(true);
     try {
-      if (!user) throw new Error("User not authenticated");
-
-      const { error } = await supabase
-        .from("accounts")
-        .insert({
-          name: formData.name,
-          type: formData.type,
-          balance: balanceInCents,
-          limit_amount: limitInCents,
-          due_date: dueDate,
-          closing_date: closingDate,
-          color: formData.color,
-          user_id: user.id,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      // Invalidar cache do React Query
-      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
-
-      toast({
-        title: "Sucesso",
-        description: "Conta adicionada com sucesso",
-        variant: "default",
-      });
+      await handleAddAccount({
+        name: formData.name,
+        type: formData.type as any,
+        balance: balanceInCents,
+        limit_amount: limitInCents,
+        due_date: dueDate,
+        closing_date: closingDate,
+        color: formData.color,
+      } as any);
 
       // Reset form
       setFormData({
@@ -153,13 +132,8 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
       });
 
       onOpenChange(false);
-    } catch (error) {
-      logger.error("Failed to add account:", error);
-      toast({
-        title: "Erro no Servidor",
-        description: "Não foi possível adicionar a conta. Tente novamente.",
-        variant: "destructive",
-      });
+    } catch {
+      // Erro já tratado no hook
     } finally {
       setIsSubmitting(false);
     }
@@ -198,9 +172,9 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
             </Label>
             <Select
               value={formData.type}
-              onValueChange={(value: "checking" | "savings" | "credit" | "investment") =>
-                setFormData((prev) => ({ ...prev, type: value }))
-              }
+              onValueChange={(
+                value: "checking" | "savings" | "credit" | "investment"
+              ) => setFormData((prev) => ({ ...prev, type: value }))}
             >
               <SelectTrigger className="h-10 sm:h-11">
                 <SelectValue placeholder="Selecione o tipo de conta" />
