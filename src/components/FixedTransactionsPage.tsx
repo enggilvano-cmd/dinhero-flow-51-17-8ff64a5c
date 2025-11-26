@@ -230,44 +230,55 @@ export function FixedTransactionsPage() {
         return;
       }
 
-      // 1) Editar a transação principal (fixa)
-      const { error: mainError } = await supabase.functions.invoke('atomic-edit-transaction', {
-        body: {
-          transaction_id: transaction.id,
-          updates,
-          scope: 'current',
-        },
-      });
+      // 1) Buscar status da transação principal
+      const { data: mainTransaction, error: statusError } = await supabase
+        .from("transactions")
+        .select("status")
+        .eq("id", transaction.id)
+        .eq("user_id", user.id)
+        .single();
 
-      if (mainError) throw mainError;
+      if (statusError) throw statusError;
 
-      // 2) Buscar e editar todas as filhas PENDENTES dessa fixa
+      // 2) Editar a transação principal SOMENTE se estiver PENDENTE
+      if (mainTransaction?.status === "pending") {
+        const { error: mainError } = await supabase.functions.invoke('atomic-edit-transaction', {
+          body: {
+            transaction_id: transaction.id,
+            updates,
+            scope: 'current',
+          },
+        });
+
+        if (mainError) throw mainError;
+      }
+
+      // 3) Buscar e editar todas as filhas PENDENTES dessa fixa
       const { data: childTransactions, error: childError } = await supabase
         .from("transactions")
         .select("id, status")
         .eq("parent_transaction_id", transaction.id)
-        .eq("user_id", user.id);
+        .eq("user_id", user.id)
+        .eq("status", "pending"); // Buscar APENAS pendentes
 
       if (childError) throw childError;
 
       // Editar apenas as filhas pendentes com os mesmos campos alterados
-      if (childTransactions) {
+      if (childTransactions && childTransactions.length > 0) {
         for (const child of childTransactions) {
-          if (child.status === "pending") {
-            await supabase.functions.invoke('atomic-edit-transaction', {
-              body: {
-                transaction_id: child.id,
-                updates,
-                scope: 'current',
-              },
-            });
-          }
+          await supabase.functions.invoke('atomic-edit-transaction', {
+            body: {
+              transaction_id: child.id,
+              updates,
+              scope: 'current',
+            },
+          });
         }
       }
 
       toast({
         title: "Transações atualizadas",
-        description: "A transação fixa e todas as pendentes foram atualizadas com sucesso.",
+        description: "A transação fixa e todas as ocorrências pendentes foram atualizadas. As concluídas foram preservadas.",
       });
 
       // 🔄 Sincronizar listas e dashboard imediatamente
