@@ -161,6 +161,171 @@ class OfflineSyncManager {
         await offlineDatabase.clearAll();
         break;
 
+      case 'add_fixed_transaction':
+        await supabase.functions.invoke('atomic-create-fixed', {
+          body: { transaction: operation.data }
+        });
+        break;
+
+      case 'add_installments':
+        // Process each installment transaction
+        const installmentData = operation.data as { transactions: any[]; total_installments: number };
+        const createdIds: string[] = [];
+        
+        for (const txData of installmentData.transactions) {
+          const { data: rpcData, error } = await supabase.rpc('atomic_create_transaction', {
+            p_user_id: (await supabase.auth.getUser()).data.user!.id,
+            p_description: txData.description,
+            p_amount: txData.amount,
+            p_date: txData.date,
+            p_type: txData.type,
+            p_category_id: txData.category_id,
+            p_account_id: txData.account_id,
+            p_status: txData.status,
+            p_invoice_month: txData.invoice_month,
+            p_invoice_month_overridden: !!txData.invoice_month,
+          });
+          
+          if (error) throw error;
+          
+          const record = rpcData && Array.isArray(rpcData) ? rpcData[0] : null;
+          if (record?.transaction_id) {
+            createdIds.push(record.transaction_id);
+          }
+        }
+        
+        // Update installment metadata
+        if (createdIds.length > 0) {
+          const parentId = createdIds[0];
+          await Promise.all(
+            createdIds.map((id, index) =>
+              supabase
+                .from('transactions')
+                .update({
+                  installments: installmentData.total_installments,
+                  current_installment: index + 1,
+                  parent_transaction_id: parentId,
+                })
+                .eq('id', id)
+            )
+          );
+        }
+        break;
+
+      case 'import_transactions':
+        const importData = operation.data as { transactions: any[]; replace_ids: string[] };
+        
+        // Delete transactions to replace
+        if (importData.replace_ids.length > 0) {
+          await Promise.all(
+            importData.replace_ids.map(txId =>
+              supabase.functions.invoke('atomic-delete-transaction', {
+                body: { transaction_id: txId, scope: 'current' }
+              })
+            )
+          );
+        }
+        
+        // Import transactions
+        await Promise.all(
+          importData.transactions.map(tx =>
+            supabase.functions.invoke('atomic-transaction', {
+              body: { transaction: tx }
+            })
+          )
+        );
+        break;
+
+      case 'add_category':
+        const { data: { user: categoryUser } } = await supabase.auth.getUser();
+        if (!categoryUser) throw new Error('User not authenticated');
+        
+        await supabase
+          .from('categories')
+          .insert({
+            ...operation.data,
+            user_id: categoryUser.id,
+          });
+        break;
+
+      case 'edit_category':
+        await supabase
+          .from('categories')
+          .update(operation.data.updates)
+          .eq('id', operation.data.category_id);
+        break;
+
+      case 'delete_category':
+        await supabase
+          .from('categories')
+          .delete()
+          .eq('id', operation.data.category_id);
+        break;
+
+      case 'import_categories':
+        const catImportData = operation.data as { categories: any[]; replace_ids: string[] };
+        const { data: { user: catUser } } = await supabase.auth.getUser();
+        if (!catUser) throw new Error('User not authenticated');
+        
+        // Delete categories to replace
+        if (catImportData.replace_ids.length > 0) {
+          await supabase
+            .from('categories')
+            .delete()
+            .in('id', catImportData.replace_ids)
+            .eq('user_id', catUser.id);
+        }
+        
+        // Import categories
+        await supabase
+          .from('categories')
+          .insert(
+            catImportData.categories.map(cat => ({
+              ...cat,
+              user_id: catUser.id,
+            }))
+          );
+        break;
+
+      case 'edit_account':
+        await supabase
+          .from('accounts')
+          .update(operation.data.updates)
+          .eq('id', operation.data.account_id);
+        break;
+
+      case 'delete_account':
+        await supabase
+          .from('accounts')
+          .delete()
+          .eq('id', operation.data.account_id);
+        break;
+
+      case 'import_accounts':
+        const accImportData = operation.data as { accounts: any[]; replace_ids: string[] };
+        const { data: { user: accUser } } = await supabase.auth.getUser();
+        if (!accUser) throw new Error('User not authenticated');
+        
+        // Delete accounts to replace
+        if (accImportData.replace_ids.length > 0) {
+          await supabase
+            .from('accounts')
+            .delete()
+            .in('id', accImportData.replace_ids)
+            .eq('user_id', accUser.id);
+        }
+        
+        // Import accounts
+        await supabase
+          .from('accounts')
+          .insert(
+            accImportData.accounts.map(acc => ({
+              ...acc,
+              user_id: accUser.id,
+            }))
+          );
+        break;
+
       default:
         logger.warn(`Unknown operation type: ${operation.type}`);
     }

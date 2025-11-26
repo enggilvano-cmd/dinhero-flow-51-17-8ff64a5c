@@ -2,11 +2,18 @@
 export { useTransactionMutations } from './transactions/useTransactionMutations';
 export { useOfflineTransactionMutations } from './transactions/useOfflineTransactionMutations';
 export { useInstallmentMutations } from './transactions/useInstallmentMutations';
+export { useOfflineInstallmentMutations } from './transactions/useOfflineInstallmentMutations';
 export { useTransferMutations } from './transactions/useTransferMutations';
 export { useOfflineTransferMutations } from './transactions/useOfflineTransferMutations';
 export { useImportMutations } from './transactions/useImportMutations';
+export { useOfflineImportMutations } from './transactions/useOfflineImportMutations';
 export { useCreditPaymentMutations } from './transactions/useCreditPaymentMutations';
 export { useOfflineCreditPaymentMutations } from './transactions/useOfflineCreditPaymentMutations';
+export { useOfflineFixedTransactionMutations } from './transactions/useOfflineFixedTransactionMutations';
+
+// Re-export offline hooks for accounts and categories
+export { useOfflineAccountMutations } from './useOfflineAccountMutations';
+export { useOfflineCategoryMutations } from './useOfflineCategoryMutations';
 
 // Wrapper hook that combines all handlers (for backward compatibility)
 import { useTransactionMutations } from './transactions/useTransactionMutations';
