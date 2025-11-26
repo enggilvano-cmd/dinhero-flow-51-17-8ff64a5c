@@ -35,15 +35,15 @@ export default defineConfig(({ mode }) => ({
             purpose: 'any'
           },
           {
-            src: '/favicon.ico',
+            src: '/icon-192.png',
             sizes: '192x192',
-            type: 'image/x-icon',
+            type: 'image/png',
             purpose: 'any maskable'
           },
           {
-            src: '/favicon.ico',
+            src: '/icon-512.png',
             sizes: '512x512',
-            type: 'image/x-icon',
+            type: 'image/png',
             purpose: 'any maskable'
           }
         ]
