@@ -277,6 +277,7 @@ export function useTransactionsPageLogic({
     dateFrom,
     dateTo,
     search,
+    transactions.length, // Adiciona para forçar atualização após exclusões
   ]);
 
   // Export to Excel
