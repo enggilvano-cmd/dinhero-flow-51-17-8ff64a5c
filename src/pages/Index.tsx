@@ -33,7 +33,7 @@ import { useCategories } from "@/hooks/useCategories";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryClient";
 import { useAccountHandlers } from "@/hooks/useAccountHandlers";
-import { useTransactionHandlers, useOfflineTransactionMutations } from "@/hooks/useTransactionHandlers";
+import { useTransactionHandlers, useOfflineTransactionMutations, useOfflineTransferMutations, useOfflineCreditPaymentMutations } from "@/hooks/useTransactionHandlers";
 import { TransactionScopeDialog, EditScope } from "@/components/TransactionScopeDialog";
 import { MarkAsPaidModal } from "@/components/MarkAsPaidModal";
 import { FormErrorBoundary } from "@/components/ui/form-error-boundary";
@@ -188,16 +188,15 @@ const PlaniFlowApp = () => {
   const { handleEditAccount, handleDeleteAccount, handleImportAccounts } = useAccountHandlers();
   const {
     handleAddInstallmentTransactions,
-    handleTransfer,
     handleImportTransactions,
-    handleCreditPayment,
-    handleReversePayment,
   } = useTransactionHandlers();
   const {
     handleAddTransaction,
     handleEditTransaction,
     handleDeleteTransaction,
   } = useOfflineTransactionMutations();
+  const { handleTransfer } = useOfflineTransferMutations();
+  const { handleCreditPayment, handleReversePayment } = useOfflineCreditPaymentMutations();
 
   const handleClearAllData = async () => {
     if (!user) return;

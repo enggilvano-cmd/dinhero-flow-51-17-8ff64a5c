@@ -146,6 +146,12 @@ class OfflineSyncManager {
 
       case 'transfer':
         await supabase.functions.invoke('atomic-transfer', {
+          body: { transfer: operation.data }
+        });
+        break;
+
+      case 'credit_payment':
+        await supabase.functions.invoke('atomic-pay-bill', {
           body: operation.data
         });
         break;
