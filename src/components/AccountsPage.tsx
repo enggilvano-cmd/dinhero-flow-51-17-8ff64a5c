@@ -33,8 +33,14 @@ import { ImportAccountsModal } from "@/components/ImportAccountsModal";
 import { useSettings } from "@/context/SettingsContext";
 import { AccountFilterDialog } from "@/components/accounts/AccountFilterDialog";
 import { AccountFilterChips } from "@/components/accounts/AccountFilterChips";
+import { usePersistedFilters } from "@/hooks/usePersistedFilters";
 
 import { Account, ImportAccountData } from '@/types';
+
+interface AccountsFilters {
+  searchTerm: string;
+  filterType: "all" | "checking" | "savings" | "credit" | "investment";
+}
 
 interface AccountsPageProps {
   onAddAccount: () => void;
@@ -58,10 +64,21 @@ export function AccountsPage({
   const { accounts } = useAccounts();
   const { formatCurrency } = useSettings();
 
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterType, setFilterType] = useState<
-    "all" | "checking" | "savings" | "credit" | "investment"
-  >(initialFilterType);
+  // Filters with persistence
+  const [filters, setFilters] = usePersistedFilters<AccountsFilters>(
+    'accounts-filters',
+    {
+      searchTerm: "",
+      filterType: initialFilterType,
+    }
+  );
+
+  const searchTerm = filters.searchTerm;
+  const filterType = filters.filterType;
+
+  const setSearchTerm = (value: string) => setFilters((prev) => ({ ...prev, searchTerm: value }));
+  const setFilterType = (value: typeof filters.filterType) => setFilters((prev) => ({ ...prev, filterType: value }));
+
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [accountToDelete, setAccountToDelete] = useState<Account | null>(null);
