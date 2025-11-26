@@ -3,8 +3,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Plus, Edit, Trash2, Search, Tag, TrendingUp, TrendingDown, ArrowUpDown, FileDown, Upload, MoreVertical } from "lucide-react";
@@ -346,42 +344,8 @@ export function CategoriesPage({}: CategoriesPageProps) {
 
   return (
     <div className="spacing-responsive-md fade-in pb-6 sm:pb-8">
-      {/* Filters Card */}
-      <Card className="mb-4">
-        <CardContent className="p-4 space-y-4">
-          <div className="flex flex-col gap-4">
-            {/* Filter button and active chips */}
-            <div className="flex flex-wrap items-center gap-3">
-              <CategoryFilterDialog
-                open={filterDialogOpen}
-                onOpenChange={setFilterDialogOpen}
-                filterType={filterType}
-                onFilterTypeChange={(value) => setFilterType(value as typeof filterType)}
-                activeFiltersCount={filterChips.length}
-              />
-              
-              <CategoryFilterChips
-                chips={filterChips}
-                onClearAll={clearAllFilters}
-              />
-            </div>
-
-            {/* Search */}
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar categorias..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Header */}
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3 mb-4">
         <div className="grid grid-cols-2 gap-2 w-full md:grid-cols-3 lg:flex lg:flex-nowrap lg:gap-2 lg:w-auto lg:ml-auto">
           <Button 
             variant="outline" 
@@ -411,7 +375,7 @@ export function CategoriesPage({}: CategoriesPageProps) {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4">
         <Card className="financial-card">
           <CardContent className="p-4">
             <div className="flex flex-col items-center gap-2 text-center">
@@ -475,39 +439,35 @@ export function CategoriesPage({}: CategoriesPageProps) {
         </Card>
       </div>
 
-      {/* Filters */}
-      <Card>
-        <CardContent className="p-2 sm:p-3">
-          <div className="flex flex-col gap-4 sm:flex-row">
-            <div className="flex-1">
-              <Label htmlFor="search" className="text-caption">Buscar categorias</Label>
-              <div className="relative mt-2">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="search"
-                  placeholder="Buscar categorias..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 touch-target"
-                />
-              </div>
+      {/* Filters Card */}
+      <Card className="mb-4">
+        <CardContent className="p-4 space-y-4">
+          <div className="flex flex-col gap-4">
+            {/* Filter button and active chips */}
+            <div className="flex flex-wrap items-center gap-3">
+              <CategoryFilterDialog
+                open={filterDialogOpen}
+                onOpenChange={setFilterDialogOpen}
+                filterType={filterType}
+                onFilterTypeChange={(value) => setFilterType(value as typeof filterType)}
+                activeFiltersCount={filterChips.length}
+              />
+              
+              <CategoryFilterChips
+                chips={filterChips}
+                onClearAll={clearAllFilters}
+              />
             </div>
-            <div className="sm:w-48">
-              <Label htmlFor="filter" className="text-caption">Filtrar por tipo</Label>
-              <Select 
-                value={filterType} 
-                onValueChange={(value) => setFilterType(value as typeof filterType)}
-              >
-                <SelectTrigger className="touch-target mt-2">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="income">Receitas</SelectItem>
-                  <SelectItem value="expense">Despesas</SelectItem>
-                  <SelectItem value="both">Ambos</SelectItem>
-                </SelectContent>
-              </Select>
+
+            {/* Search */}
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar categorias..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
             </div>
           </div>
         </CardContent>
