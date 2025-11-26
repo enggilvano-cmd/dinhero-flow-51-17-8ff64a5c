@@ -5,7 +5,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { AvailableBalanceIndicator } from "@/components/forms/AvailableBalanceIndicator";
 import { AddTransactionModalProps } from "@/types/formProps";
 import { useAddTransactionForm } from "@/hooks/useAddTransactionForm";
 import { TransactionFormFields } from "./add-transaction/TransactionFormFields";
@@ -97,14 +96,6 @@ export function AddTransactionModal({
               }));
             }}
           />
-
-          {formData.account_id && formData.type && (
-            <AvailableBalanceIndicator
-              account={selectedAccount}
-              transactionType={formData.type as "income" | "expense"}
-              amountInCents={formData.amount}
-            />
-          )}
 
           <AccountCategoryFields
             accountId={formData.account_id}
