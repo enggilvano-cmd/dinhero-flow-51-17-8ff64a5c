@@ -16,7 +16,7 @@ export default defineConfig(({ mode }) => ({
     VitePWA({
       registerType: 'prompt',
       strategies: 'generateSW',
-      includeAssets: ['favicon.ico', 'robots.txt'],
+      includeAssets: ['favicon.png', 'robots.txt', 'icon-192.png', 'icon-512.png'],
       manifest: {
         name: 'PlaniFlow - Gestão Financeira Pessoal',
         short_name: 'PlaniFlow',
@@ -29,9 +29,9 @@ export default defineConfig(({ mode }) => ({
         orientation: 'portrait',
         icons: [
           {
-            src: '/favicon.ico',
-            sizes: '64x64 32x32 24x24 16x16',
-            type: 'image/x-icon',
+            src: '/favicon.png',
+            sizes: '64x64',
+            type: 'image/png',
             purpose: 'any'
           },
           {
