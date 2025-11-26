@@ -1,13 +1,58 @@
-import { useState, useCallback } from 'react';
+import { useCallback } from 'react';
 import { addMonths, subMonths, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
 import type { Transaction, DateFilterType } from '@/types';
 import { createDateFromString } from '@/lib/dateUtils';
+import { usePersistedFilters } from './usePersistedFilters';
+
+interface DashboardFiltersState {
+  dateFilter: DateFilterType;
+  selectedMonth: string; // ISO string for serialization
+  customStartDate?: string;
+  customEndDate?: string;
+}
 
 export function useDashboardFilters() {
-  const [dateFilter, setDateFilter] = useState<DateFilterType>('current_month');
-  const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
-  const [customStartDate, setCustomStartDate] = useState<Date | undefined>(undefined);
-  const [customEndDate, setCustomEndDate] = useState<Date | undefined>(undefined);
+  const [filters, setFilters] = usePersistedFilters<DashboardFiltersState>(
+    'dashboard-filters',
+    {
+      dateFilter: 'current_month',
+      selectedMonth: new Date().toISOString(),
+      customStartDate: undefined,
+      customEndDate: undefined,
+    }
+  );
+
+  const dateFilter = filters.dateFilter;
+  const selectedMonth = new Date(filters.selectedMonth);
+  const customStartDate = filters.customStartDate ? new Date(filters.customStartDate) : undefined;
+  const customEndDate = filters.customEndDate ? new Date(filters.customEndDate) : undefined;
+
+  const setDateFilter = useCallback((value: DateFilterType) => {
+    setFilters((prev) => ({ ...prev, dateFilter: value }));
+  }, [setFilters]);
+
+  const setSelectedMonth = useCallback((value: Date | ((prev: Date) => Date)) => {
+    setFilters((prev) => ({
+      ...prev,
+      selectedMonth: typeof value === 'function' 
+        ? value(new Date(prev.selectedMonth)).toISOString()
+        : value.toISOString(),
+    }));
+  }, [setFilters]);
+
+  const setCustomStartDate = useCallback((value: Date | undefined) => {
+    setFilters((prev) => ({
+      ...prev,
+      customStartDate: value?.toISOString(),
+    }));
+  }, [setFilters]);
+
+  const setCustomEndDate = useCallback((value: Date | undefined) => {
+    setFilters((prev) => ({
+      ...prev,
+      customEndDate: value?.toISOString(),
+    }));
+  }, [setFilters]);
 
   const getFilteredTransactions = useCallback((transactions: Transaction[]) => {
     let filtered = transactions;
