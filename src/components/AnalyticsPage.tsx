@@ -326,6 +326,118 @@ export default function AnalyticsPage({
     }));
   }, [nonTransferFilteredTransactions, categoryChartType, categories]);
 
+  // Dados separados para despesas
+  const expenseData = useMemo(() => {
+    const expenseTransactions = nonTransferFilteredTransactions.filter(
+      (t) => t.type === "expense"
+    );
+
+    const categoryFilteredTransactions = expenseTransactions.filter(
+      (transaction) => {
+        const category = getTransactionCategory(transaction);
+        return category !== "Pagamento de Fatura";
+      }
+    );
+
+    if (categoryFilteredTransactions.length === 0) {
+      return [];
+    }
+
+    const categoryTotals = categoryFilteredTransactions.reduce(
+      (acc, transaction) => {
+        const categoryObj = categories.find(
+          (c) => c.id === transaction.category_id
+        );
+        const categoryName = categoryObj?.name || "Sem categoria";
+        const categoryColor = categoryObj?.color || FALLBACK_COLOR;
+
+        if (!acc[categoryName]) {
+          acc[categoryName] = { amount: 0, color: categoryColor };
+        }
+
+        acc[categoryName].amount += Math.abs(transaction.amount);
+
+        return acc;
+      },
+      {} as Record<string, { amount: number; color: string }>
+    );
+
+    const totalAmount = Object.values(categoryTotals).reduce(
+      (sum, data) => sum + data.amount,
+      0
+    );
+
+    const report = Object.entries(categoryTotals)
+      .map(([category, data]) => ({
+        category,
+        amount: data.amount,
+        color: data.color,
+        percentage: totalAmount > 0 ? (data.amount / totalAmount) * 100 : 0,
+      }))
+      .sort((a, b) => b.amount - a.amount);
+
+    return report.map((item, index) => ({
+      ...item,
+      fill: item.color || COLORS[index % COLORS.length],
+    }));
+  }, [nonTransferFilteredTransactions, categories]);
+
+  // Dados separados para receitas
+  const incomeData = useMemo(() => {
+    const incomeTransactions = nonTransferFilteredTransactions.filter(
+      (t) => t.type === "income"
+    );
+
+    const categoryFilteredTransactions = incomeTransactions.filter(
+      (transaction) => {
+        const category = getTransactionCategory(transaction);
+        return category !== "Pagamento de Fatura";
+      }
+    );
+
+    if (categoryFilteredTransactions.length === 0) {
+      return [];
+    }
+
+    const categoryTotals = categoryFilteredTransactions.reduce(
+      (acc, transaction) => {
+        const categoryObj = categories.find(
+          (c) => c.id === transaction.category_id
+        );
+        const categoryName = categoryObj?.name || "Sem categoria";
+        const categoryColor = categoryObj?.color || FALLBACK_COLOR;
+
+        if (!acc[categoryName]) {
+          acc[categoryName] = { amount: 0, color: categoryColor };
+        }
+
+        acc[categoryName].amount += transaction.amount;
+
+        return acc;
+      },
+      {} as Record<string, { amount: number; color: string }>
+    );
+
+    const totalAmount = Object.values(categoryTotals).reduce(
+      (sum, data) => sum + data.amount,
+      0
+    );
+
+    const report = Object.entries(categoryTotals)
+      .map(([category, data]) => ({
+        category,
+        amount: data.amount,
+        color: data.color,
+        percentage: totalAmount > 0 ? (data.amount / totalAmount) * 100 : 0,
+      }))
+      .sort((a, b) => b.amount - a.amount);
+
+    return report.map((item, index) => ({
+      ...item,
+      fill: item.color || COLORS[index % COLORS.length],
+    }));
+  }, [nonTransferFilteredTransactions, categories]);
+
 
   const monthlyData = useMemo(() => {
     const monthlyTotals = nonTransferFilteredTransactions.reduce(
@@ -1596,26 +1708,21 @@ export default function AnalyticsPage({
         </Card>
       </div>
 
-      {/* Category Details Table */}
+
+      {/* Expense Details Table */}
       <Card className="financial-card">
         <CardHeader>
           <CardTitle className="text-headline">
-            <span className="block sm:hidden">
-              Detalhes -{" "}
-              {categoryChartType === "income" ? "Receitas" : "Despesas"}
-            </span>
-            <span className="hidden sm:block">
-              Detalhes por Categoria -{" "}
-              {categoryChartType === "income" ? "Receitas" : "Despesas"}
-            </span>
+            <span className="block sm:hidden">Detalhes - Despesas</span>
+            <span className="hidden sm:block">Detalhes por Categoria - Despesas</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {categoryData.length === 0 ? (
+          {expenseData.length === 0 ? (
             <div className="text-body text-center py-8 text-muted-foreground">
               <PieChart className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p className="text-body">
-                Nenhuma transação no período selecionado
+                Nenhuma despesa no período selecionado
               </p>
             </div>
           ) : (
@@ -1635,7 +1742,73 @@ export default function AnalyticsPage({
                   </tr>
                 </thead>
                 <tbody>
-                  {categoryData.map((item) => (
+                  {expenseData.map((item) => (
+                    <tr key={item.category} className="border-b last:border-b-0">
+                      <td className="py-2 sm:py-3">
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <div
+                            className="w-3 h-3 sm:w-4 sm:h-4 rounded-full flex-shrink-0"
+                            style={{ backgroundColor: item.fill }}
+                          />
+                          <span className="text-body truncate max-w-[120px] sm:max-w-none">
+                            {item.category}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="text-right py-2 sm:py-3 font-medium text-body">
+                        <div className="flex flex-col sm:block">
+                          <span>{formatCurrency(item.amount)}</span>
+                          <span className="text-caption text-muted-foreground sm:hidden">
+                            {item.percentage.toFixed(1)}%
+                          </span>
+                        </div>
+                      </td>
+                      <td className="text-right py-2 sm:py-3 text-body hidden sm:table-cell">
+                        {item.percentage.toFixed(1)}%
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Income Details Table */}
+      <Card className="financial-card">
+        <CardHeader>
+          <CardTitle className="text-headline">
+            <span className="block sm:hidden">Detalhes - Receitas</span>
+            <span className="hidden sm:block">Detalhes por Categoria - Receitas</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {incomeData.length === 0 ? (
+            <div className="text-body text-center py-8 text-muted-foreground">
+              <PieChart className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p className="text-body">
+                Nenhuma receita no período selecionado
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto -mx-2 px-2 sm:mx-0 sm:px-0">
+              <table className="w-full min-w-max sm:min-w-0">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-2 text-caption">
+                      Categoria
+                    </th>
+                    <th className="text-right py-2 text-caption">
+                      Valor
+                    </th>
+                    <th className="text-right py-2 text-caption hidden sm:table-cell">
+                      %
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {incomeData.map((item) => (
                     <tr key={item.category} className="border-b last:border-b-0">
                       <td className="py-2 sm:py-3">
                         <div className="flex items-center gap-2 sm:gap-3">
