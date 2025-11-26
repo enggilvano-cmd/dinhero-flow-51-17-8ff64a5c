@@ -15,13 +15,10 @@ export default defineConfig(({ mode }) => ({
     mode === 'development' && componentTagger(),
     VitePWA({
       registerType: 'prompt',
-      strategies: 'injectManifest',
+      strategies: 'generateSW',
       srcDir: 'public',
       filename: 'sw.js',
       includeAssets: ['favicon.png', 'robots.txt', 'icon-192.png', 'icon-512.png'],
-      injectManifest: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
-      },
       manifest: {
         name: 'Financeiro App',
         short_name: 'Financeiro',
