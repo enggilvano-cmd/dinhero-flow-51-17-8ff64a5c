@@ -68,7 +68,14 @@ class OfflineSyncManager {
         break;
 
       case 'delete':
-        await supabase.rpc('atomic_delete_transaction', operation.data);
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          throw new Error('User not authenticated for offline delete sync');
+        }
+        await supabase.rpc('atomic_delete_transaction', {
+          p_user_id: user.id,
+          ...(operation.data || {}),
+        });
         break;
 
       case 'transfer':
