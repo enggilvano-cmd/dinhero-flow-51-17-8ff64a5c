@@ -34,7 +34,7 @@ export function FixedTransactionOptions({
       {isFixed && (
         <div className="space-y-2 pt-2 animate-fade-in">
           <p className="text-body text-muted-foreground">
-            Esta transação será criada automaticamente todo dia {new Date(date).getDate()} de cada mês, 
+            Esta transação será criada automaticamente todo dia {parseInt(date.split('-')[2])} de cada mês, 
             do mês atual até dezembro do ano seguinte. A primeira transação usará o status selecionado, 
             e todas as demais serão criadas como "Pendente".
           </p>
