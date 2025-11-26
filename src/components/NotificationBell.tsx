@@ -1,4 +1,4 @@
-import { Bell, X, AlertCircle, Info } from 'lucide-react';
+import { Bell, X, AlertCircle, Info, BellRing } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -7,12 +7,51 @@ import {
 } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import { useNotifications } from '@/hooks/useNotifications';
 import { formatNotificationTime } from '@/lib/notifications';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 export function NotificationBell() {
-  const { notifications, unreadCount, markAsRead, markAllAsRead, clearAll } = useNotifications();
+  const { 
+    notifications, 
+    unreadCount, 
+    markAsRead, 
+    markAllAsRead, 
+    clearAll,
+    pushEnabled,
+    isPushSupported,
+    enablePushNotifications,
+    disablePushNotifications,
+  } = useNotifications();
+  const { toast } = useToast();
+
+  const handlePushToggle = async (enabled: boolean) => {
+    if (enabled) {
+      const success = await enablePushNotifications();
+      if (success) {
+        toast({
+          title: 'Notificações Push Ativadas',
+          description: 'Você receberá notificações mesmo quando o app estiver fechado.',
+        });
+      } else {
+        toast({
+          title: 'Erro ao Ativar Notificações',
+          description: 'Não foi possível ativar as notificações push. Verifique as permissões.',
+          variant: 'destructive',
+        });
+      }
+    } else {
+      const success = await disablePushNotifications();
+      if (success) {
+        toast({
+          title: 'Notificações Push Desativadas',
+          description: 'Você não receberá mais notificações push.',
+        });
+      }
+    }
+  };
 
   const getIcon = (type: string) => {
     switch (type) {
@@ -81,6 +120,25 @@ export function NotificationBell() {
             </div>
           )}
         </div>
+
+        {/* Push Notifications Toggle */}
+        {isPushSupported && (
+          <div className="flex items-center justify-between p-4 border-b bg-muted/30">
+            <div className="flex items-center gap-2">
+              <BellRing className="h-4 w-4 text-primary" />
+              <div className="flex flex-col">
+                <span className="text-sm font-medium">Push Notifications</span>
+                <span className="text-xs text-muted-foreground">
+                  Receba alertas mesmo offline
+                </span>
+              </div>
+            </div>
+            <Switch
+              checked={pushEnabled}
+              onCheckedChange={handlePushToggle}
+            />
+          </div>
+        )}
 
         {notifications.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
