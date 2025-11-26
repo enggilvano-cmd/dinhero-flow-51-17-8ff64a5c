@@ -1,5 +1,6 @@
 // Re-export all handlers from refactored modules
 export { useTransactionMutations } from './transactions/useTransactionMutations';
+export { useOfflineTransactionMutations } from './transactions/useOfflineTransactionMutations';
 export { useInstallmentMutations } from './transactions/useInstallmentMutations';
 export { useTransferMutations } from './transactions/useTransferMutations';
 export { useImportMutations } from './transactions/useImportMutations';
