@@ -298,26 +298,48 @@ export function FixedTransactionsPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Excluir apenas a transação principal e as transações PENDENTES (não as concluídas)
-      const { data, error } = await supabase.functions.invoke('atomic-delete-transaction', {
-        body: {
-          transaction_id: transactionToDelete.id,
-          scope: 'current-and-remaining',
-        },
-      });
+      // Buscar apenas as transações filhas PENDENTES dessa fixa
+      const { data: pendingChildren, error: pendingError } = await supabase
+        .from("transactions")
+        .select("id, status")
+        .eq("parent_transaction_id", transactionToDelete.id)
+        .eq("user_id", user.id)
+        .eq("status", "pending");
 
-      if (error) throw error;
+      if (pendingError) throw pendingError;
 
-      const result = data;
-      if (!result?.success) {
-        throw new Error(result?.error || 'Erro ao deletar transação');
+      // 1) Excluir somente a transação principal
+      const { data: deleteParentResult, error: deleteParentError } =
+        await supabase.functions.invoke("atomic-delete-transaction", {
+          body: {
+            transaction_id: transactionToDelete.id,
+            scope: "current",
+          },
+        });
+
+      if (deleteParentError) throw deleteParentError;
+      if (!deleteParentResult?.success) {
+        throw new Error(deleteParentResult?.error || "Erro ao deletar transação principal");
       }
 
-      const deletedCount = result.deleted || 0;
-      
+      // 2) Excluir cada filha pendente individualmente (mantém concluídas)
+      if (pendingChildren && pendingChildren.length > 0) {
+        await Promise.all(
+          pendingChildren.map((child) =>
+            supabase.functions.invoke("atomic-delete-transaction", {
+              body: {
+                transaction_id: child.id,
+                scope: "current",
+              },
+            })
+          )
+        );
+      }
+
       toast({
         title: "Transações removidas",
-        description: `A transação fixa e ${deletedCount - 1} transação(ões) pendente(s) foram removidas com sucesso.`,
+        description:
+          "A transação fixa principal e todas as transações pendentes associadas foram removidas com sucesso.",
       });
 
       // 🔄 Sincronizar listas e dashboard imediatamente
