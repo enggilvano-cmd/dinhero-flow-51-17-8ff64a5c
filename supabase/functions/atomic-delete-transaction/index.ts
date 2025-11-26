@@ -63,7 +63,7 @@ Deno.serve(async (req) => {
 
     // Usar função PL/pgSQL atômica com retry
     const { data: result, error: functionError } = await withRetry(
-      () => supabaseClient.rpc('atomic_delete_transaction', {
+      async () => supabaseClient.rpc('atomic_delete_transaction', {
         p_user_id: user.id,
         p_transaction_id: transaction_id,
         p_scope: scope || 'current',

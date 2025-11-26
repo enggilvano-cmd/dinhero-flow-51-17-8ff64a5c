@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
 
     // Call atomic SQL function with retry
     const { data, error } = await withRetry(
-      () => supabaseClient.rpc(
+      async () => supabaseClient.rpc(
         'atomic_create_fixed_transaction',
         {
           p_user_id: user.id,
@@ -113,7 +113,7 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         error: 'Internal server error', 
-        details: error.message 
+      details: (error as Error)?.message || 'Unknown error'
       }),
       { 
         status: 500, 
