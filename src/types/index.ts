@@ -152,6 +152,10 @@ export interface ImportTransactionData {
   category?: string;
   account_id: string;
   status?: "pending" | "completed";
+  installments?: number;
+  current_installment?: number;
+  invoice_month?: string;
+  is_fixed?: boolean;
 }
 
 export interface ImportAccountData {
