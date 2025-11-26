@@ -300,58 +300,42 @@ export function FixedTransactionsPage() {
       } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Buscar apenas as transações filhas PENDENTES dessa fixa
-      const { data: pendingChildren, error: pendingError } = await supabase
+      // 1) Buscar status da transação "principal" (fixa)
+      const { data: mainTransaction, error: mainError } = await supabase
         .from("transactions")
         .select("id, status")
+        .eq("id", transactionToDelete.id)
+        .eq("user_id", user.id)
+        .single();
+
+      if (mainError) throw mainError;
+
+      // 2) Remover TODAS as filhas PENDENTES dessa fixa
+      const { error: deleteChildrenError } = await supabase
+        .from("transactions")
+        .delete()
         .eq("parent_transaction_id", transactionToDelete.id)
         .eq("user_id", user.id)
         .eq("status", "pending");
 
-      if (pendingError) throw pendingError;
+      if (deleteChildrenError) throw deleteChildrenError;
 
-      // 1) Excluir somente a transação principal
-      const { data: deleteParentResult, error: deleteParentError } =
-        await supabase.functions.invoke("atomic-delete-transaction", {
-          body: {
-            transaction_id: transactionToDelete.id,
-            scope: "current",
-          },
-        });
+      // 3) Se a principal também estiver PENDENTE, removê-la
+      if (mainTransaction?.status === "pending") {
+        const { error: deleteMainError } = await supabase
+          .from("transactions")
+          .delete()
+          .eq("id", transactionToDelete.id)
+          .eq("user_id", user.id)
+          .eq("status", "pending");
 
-      if (deleteParentError) throw deleteParentError;
-      if (!deleteParentResult?.success) {
-        throw new Error(
-          deleteParentResult?.error || "Erro ao deletar transação principal"
-        );
-      }
-
-      // 2) Excluir cada filha pendente individualmente (mantém concluídas)
-      if (pendingChildren && pendingChildren.length > 0) {
-        await Promise.allSettled(
-          pendingChildren.map(async (child) => {
-            const { error: childError, data: childResult } =
-              await supabase.functions.invoke("atomic-delete-transaction", {
-                body: {
-                  transaction_id: child.id,
-                  scope: "current",
-                },
-              });
-
-            if (childError || !childResult?.success) {
-              logger.error("Error deleting pending child transaction", {
-                childId: child.id,
-                error: childError || childResult?.error,
-              });
-            }
-          })
-        );
+        if (deleteMainError) throw deleteMainError;
       }
 
       toast({
         title: "Transações removidas",
         description:
-          "A transação fixa principal e todas as transações pendentes associadas foram removidas com sucesso.",
+          "Todas as ocorrências pendentes dessa transação fixa foram removidas. As concluídas foram preservadas na página Transações.",
       });
 
       // 🔄 Sincronizar listas e dashboard imediatamente
