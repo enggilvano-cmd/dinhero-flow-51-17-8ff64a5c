@@ -9,6 +9,12 @@ import {
   requestNotificationPermission,
   showSystemNotification,
 } from '@/lib/notifications';
+import {
+  isPushNotificationSupported,
+  subscribeToPushNotifications,
+  unsubscribeFromPushNotifications,
+  isPushSubscribed,
+} from '@/lib/pushNotifications';
 
 export function useNotifications() {
   const { user } = useAuth();
@@ -20,6 +26,7 @@ export function useNotifications() {
     dueDateReminders: 3, // days before due date
   });
   const [unreadCount, setUnreadCount] = useState(0);
+  const [pushEnabled, setPushEnabled] = useState(false);
 
   // Load notification settings
   useEffect(() => {
@@ -97,12 +104,55 @@ export function useNotifications() {
     return () => clearInterval(interval);
   }, [checkNotifications]);
 
+  // Check push subscription status
+  useEffect(() => {
+    const checkPushStatus = async () => {
+      if (user && isPushNotificationSupported()) {
+        const subscribed = await isPushSubscribed();
+        setPushEnabled(subscribed);
+      }
+    };
+    checkPushStatus();
+  }, [user]);
+
   // Request notification permission on first load
   useEffect(() => {
     if (settings.billReminders && Notification.permission === 'default') {
       requestNotificationPermission();
     }
   }, [settings.billReminders]);
+
+  const enablePushNotifications = useCallback(async () => {
+    if (!user) return false;
+
+    try {
+      const subscription = await subscribeToPushNotifications(user.id);
+      if (subscription) {
+        setPushEnabled(true);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      logger.error('Error enabling push notifications:', error);
+      return false;
+    }
+  }, [user]);
+
+  const disablePushNotifications = useCallback(async () => {
+    if (!user) return false;
+
+    try {
+      const success = await unsubscribeFromPushNotifications(user.id);
+      if (success) {
+        setPushEnabled(false);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      logger.error('Error disabling push notifications:', error);
+      return false;
+    }
+  }, [user]);
 
   const markAsRead = useCallback((notificationId: string) => {
     setNotifications(prev => 
@@ -129,5 +179,9 @@ export function useNotifications() {
     markAllAsRead,
     clearAll,
     refresh: checkNotifications,
+    pushEnabled,
+    isPushSupported: isPushNotificationSupported(),
+    enablePushNotifications,
+    disablePushNotifications,
   };
 }
