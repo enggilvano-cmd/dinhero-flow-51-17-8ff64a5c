@@ -31,18 +31,19 @@ export default defineConfig(({ mode }) => ({
           {
             src: '/favicon.ico',
             sizes: '64x64 32x32 24x24 16x16',
-            type: 'image/x-icon'
+            type: 'image/x-icon',
+            purpose: 'any'
           },
           {
-            src: '/placeholder.svg',
+            src: '/favicon.ico',
             sizes: '192x192',
-            type: 'image/svg+xml',
+            type: 'image/x-icon',
             purpose: 'any maskable'
           },
           {
-            src: '/placeholder.svg',
+            src: '/favicon.ico',
             sizes: '512x512',
-            type: 'image/svg+xml',
+            type: 'image/x-icon',
             purpose: 'any maskable'
           }
         ]
