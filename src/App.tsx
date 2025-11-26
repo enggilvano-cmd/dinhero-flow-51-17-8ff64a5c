@@ -5,9 +5,10 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { SettingsProvider } from "@/context/SettingsContext";
-import { BybitProvider } from "@/context/BybitContext"; // 1. Import the new provider
+import { BybitProvider } from "@/context/BybitContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { ReloadPrompt } from "@/components/ReloadPrompt";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
@@ -19,10 +20,11 @@ const App = () => (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <SettingsProvider>
-          <BybitProvider> {/* 3. Wrap the router with the new provider */}
+          <BybitProvider>
             <TooltipProvider>
               <Toaster />
               <Sonner />
+              <ReloadPrompt />
               <BrowserRouter>
                 <Routes>
                   <Route path="/auth" element={<Auth />} />
