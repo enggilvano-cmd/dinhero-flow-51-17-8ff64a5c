@@ -56,21 +56,13 @@ const PlaniFlowApp = () => {
   const [transactionsFilterCategory, setTransactionsFilterCategory] = useState<string>("all");
   const [transactionsFilterStatus, setTransactionsFilterStatus] = useState<"all" | "pending" | "completed">("all");
   const [transactionsFilterAccountType, setTransactionsFilterAccountType] = useState<"all" | "checking" | "savings" | "credit" | "investment">("all");
-  const [transactionsDateFrom, setTransactionsDateFrom] = useState<string | undefined>(() => {
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    return startOfMonth.toISOString().split('T')[0];
-  });
-  const [transactionsDateTo, setTransactionsDateTo] = useState<string | undefined>(() => {
-    const now = new Date();
-    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    return endOfMonth.toISOString().split('T')[0];
-  });
+  const [transactionsDateFrom, setTransactionsDateFrom] = useState<string | undefined>(undefined);
+  const [transactionsDateTo, setTransactionsDateTo] = useState<string | undefined>(undefined);
   const [transactionsSortBy, setTransactionsSortBy] = useState<"date" | "amount">("date");
   const [transactionsSortOrder, setTransactionsSortOrder] = useState<"asc" | "desc">("desc");
   
   // Period filter state (sincronizado com dateFrom/dateTo)
-  const [transactionsPeriodFilter, setTransactionsPeriodFilter] = useState<"all" | "current_month" | "month_picker" | "custom">("current_month");
+  const [transactionsPeriodFilter, setTransactionsPeriodFilter] = useState<"all" | "current_month" | "month_picker" | "custom">("all");
   const [transactionsSelectedMonth, setTransactionsSelectedMonth] = useState<Date>(new Date());
   const [transactionsCustomStartDate, setTransactionsCustomStartDate] = useState<Date | undefined>(undefined);
   const [transactionsCustomEndDate, setTransactionsCustomEndDate] = useState<Date | undefined>(undefined);
