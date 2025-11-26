@@ -18,13 +18,33 @@ import type { Category } from "@/types";
 import { queryClient, queryKeys } from "@/lib/queryClient";
 import { CategoryFilterDialog } from "@/components/categories/CategoryFilterDialog";
 import { CategoryFilterChips } from "@/components/categories/CategoryFilterChips";
+import { usePersistedFilters } from "@/hooks/usePersistedFilters";
 
 interface CategoriesPageProps {}
 
+interface CategoriesFilters {
+  searchTerm: string;
+  filterType: "all" | "income" | "expense" | "both";
+}
+
 export function CategoriesPage({}: CategoriesPageProps) {
   const [categories, setCategories] = useState<Category[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterType, setFilterType] = useState<"all" | "income" | "expense" | "both">("all");
+  
+  // Filters with persistence
+  const [filters, setFilters] = usePersistedFilters<CategoriesFilters>(
+    'categories-filters',
+    {
+      searchTerm: "",
+      filterType: "all",
+    }
+  );
+
+  const searchTerm = filters.searchTerm;
+  const filterType = filters.filterType;
+
+  const setSearchTerm = (value: string) => setFilters((prev) => ({ ...prev, searchTerm: value }));
+  const setFilterType = (value: typeof filters.filterType) => setFilters((prev) => ({ ...prev, filterType: value }));
+
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
