@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { useAuth } from './useAuth';
 import { useOnlineStatus } from './useOnlineStatus';
 import { offlineQueue } from '@/lib/offlineQueue';
+import { offlineDatabase } from '@/lib/offlineDatabase';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
 
@@ -21,6 +22,9 @@ export function useOfflineAuth() {
         type: 'logout',
         data: {}
       });
+
+      // Clear local database immediately
+      await offlineDatabase.clearAll();
 
       // Clear local session immediately
       window.location.href = '/auth';
