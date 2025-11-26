@@ -86,7 +86,7 @@ export function RecentTransactions({
                           ? '⇄'
                           : '-'}
                       </span>
-                      <span>{formatCurrency(transaction.amount)}</span>
+                      <span>{formatCurrency(Math.abs(transaction.amount))}</span>
                     </div>
                   </div>
                 </div>
