@@ -485,10 +485,10 @@ export function FixedTransactionsPage() {
     const totalFixed = filteredTransactions.length;
     const monthlyIncome = filteredTransactions
       .filter((t) => t.type === "income")
-      .reduce((sum, t) => sum + Number(t.amount), 0);
+      .reduce((sum, t) => sum + Math.abs(Number(t.amount)), 0);
     const monthlyExpenses = filteredTransactions
       .filter((t) => t.type === "expense")
-      .reduce((sum, t) => sum + Number(t.amount), 0);
+      .reduce((sum, t) => sum + Math.abs(Number(t.amount)), 0);
     const monthlyBalance = monthlyIncome - monthlyExpenses;
 
     return { totalFixed, monthlyIncome, monthlyExpenses, monthlyBalance };
