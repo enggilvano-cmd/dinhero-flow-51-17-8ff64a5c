@@ -196,6 +196,7 @@ export function FinancialEvolutionChart({
             >
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart
+                  key={`chart-${chartScale}-${chartYear}`}
                   data={chartData}
                   margin={{
                     top: 20,
