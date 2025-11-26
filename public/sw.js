@@ -1,6 +1,9 @@
 // Service Worker for Push Notifications
 // This file handles push notifications when the app is closed
 
+// Workbox manifest injection point - DO NOT REMOVE
+self.__WB_MANIFEST;
+
 self.addEventListener('install', (event) => {
   console.log('Service Worker installing...');
   self.skipWaiting();
