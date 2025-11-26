@@ -54,7 +54,12 @@ export function CategoriesPage({}: CategoriesPageProps) {
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
   const { toast } = useToast();
   const isOnline = useOnlineStatus();
-  const { handleAddCategory: offlineAddCategory } = useOfflineCategoryMutations();
+  const {
+    handleAddCategory: offlineAddCategory,
+    handleEditCategory: offlineEditCategory,
+    handleDeleteCategory: offlineDeleteCategory,
+    handleImportCategories: offlineImportCategories,
+  } = useOfflineCategoryMutations();
   // Generate filter chips
   const filterChips = useMemo(() => {
     const chips = [];
@@ -147,6 +152,17 @@ export function CategoriesPage({}: CategoriesPageProps) {
     }
   };
   const handleEditCategory = async (updatedCategory: Category) => {
+    if (!isOnline) {
+      await offlineEditCategory(updatedCategory.id, {
+        name: updatedCategory.name,
+        type: updatedCategory.type,
+        color: updatedCategory.color,
+        chart_account_id: updatedCategory.chart_account_id ?? undefined,
+      });
+      setEditingCategory(null);
+      return;
+    }
+
     const { data } = await withErrorHandling(
       async () => {
         const userId = await getUserId();
@@ -179,6 +195,12 @@ export function CategoriesPage({}: CategoriesPageProps) {
   };
 
   const handleDeleteCategory = async (categoryId: string) => {
+    if (!isOnline) {
+      await offlineDeleteCategory(categoryId);
+      setCategories(prev => prev.filter(cat => cat.id !== categoryId));
+      return;
+    }
+
     const { data } = await withErrorHandling(
       async () => {
         const userId = await getUserId();
@@ -233,6 +255,11 @@ export function CategoriesPage({}: CategoriesPageProps) {
   };
 
   const handleImportCategories = async (categoriesToAdd: Omit<Category, 'id'>[], categoriesToReplaceIds: string[]) => {
+    if (!isOnline) {
+      await offlineImportCategories(categoriesToAdd as any, categoriesToReplaceIds);
+      return;
+    }
+
     const { data } = await withErrorHandling(
       async () => {
         const userId = await getUserId();
