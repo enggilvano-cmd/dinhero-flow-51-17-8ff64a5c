@@ -4,13 +4,11 @@ import { offlineQueue } from '@/lib/offlineQueue';
 import { offlineSync } from '@/lib/offlineSync';
 import { WifiOff, Wifi, RefreshCw } from 'lucide-react';
 import { Button } from './ui/button';
-import { useToast } from '@/hooks/use-toast';
 
 export function OfflineSyncIndicator() {
   const isOnline = useOnlineStatus();
   const [queueCount, setQueueCount] = useState(0);
   const [isSyncing, setIsSyncing] = useState(false);
-  const { toast } = useToast();
 
   useEffect(() => {
     const checkQueue = async () => {
@@ -35,19 +33,9 @@ export function OfflineSyncIndicator() {
       await offlineSync.syncAll();
       const operations = await offlineQueue.getAll();
       setQueueCount(operations.length);
-      
-      if (operations.length === 0) {
-        toast({
-          title: 'Sincronizado',
-          description: 'Todas as operações offline foram sincronizadas',
-        });
-      }
     } catch (error) {
-      toast({
-        title: 'Erro na sincronização',
-        description: 'Algumas operações não puderam ser sincronizadas',
-        variant: 'destructive',
-      });
+      // Silent background sync: errors are not shown to the user via toast
+      console.error('Offline sync error', error);
     } finally {
       setIsSyncing(false);
     }

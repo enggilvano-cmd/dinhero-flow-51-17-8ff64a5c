@@ -34,10 +34,6 @@ export function useOfflineTransactionMutations() {
         }
       });
 
-      toast({
-        title: 'Offline',
-        description: 'Transação salva e será sincronizada quando voltar online',
-      });
     } catch (error) {
       logger.error('Failed to queue transaction:', error);
       toast({
@@ -96,10 +92,6 @@ export function useOfflineTransactionMutations() {
         }
       });
 
-      toast({
-        title: 'Offline',
-        description: 'Edição salva e será sincronizada quando voltar online',
-      });
     } catch (error) {
       logger.error('Failed to queue edit:', error);
       toast({
@@ -128,10 +120,6 @@ export function useOfflineTransactionMutations() {
         }
       });
 
-      toast({
-        title: 'Offline',
-        description: 'Exclusão salva e será sincronizada quando voltar online',
-      });
     } catch (error) {
       logger.error('Failed to queue delete:', error);
       toast({
