@@ -145,9 +145,15 @@ export function AccountsPage({
   const creditAvailable = filteredAccounts
     .filter((acc) => acc.limit_amount && acc.limit_amount > 0)
     .reduce((sum, acc) => {
-      const used = Math.abs(Math.min(acc.balance, 0));
-      const available = (acc.limit_amount || 0) - used;
-      return sum + available;
+      if (acc.type === "credit") {
+        // Para cartões de crédito: limite - usado
+        const used = Math.abs(Math.min(acc.balance, 0));
+        const available = (acc.limit_amount || 0) - used;
+        return sum + available;
+      } else {
+        // Para outras contas com limite (cheque especial): limite completo
+        return sum + (acc.limit_amount || 0);
+      }
     }, 0);
 
   const exportToExcel = async () => {
