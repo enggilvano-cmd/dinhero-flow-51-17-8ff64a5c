@@ -231,30 +231,18 @@ export function FixedTransactionsPage() {
         return;
       }
 
-      // 1) Buscar status da transação principal
-      const { data: mainTransaction, error: statusError } = await supabase
-        .from("transactions")
-        .select("status")
-        .eq("id", transaction.id)
-        .eq("user_id", user.id)
-        .single();
+      // 1) Editar a transação principal (fixa) SEMPRE, independente do status
+      const { error: mainError } = await supabase.functions.invoke('atomic-edit-transaction', {
+        body: {
+          transaction_id: transaction.id,
+          updates,
+          scope: 'current',
+        },
+      });
 
-      if (statusError) throw statusError;
+      if (mainError) throw mainError;
 
-      // 2) Editar a transação principal SOMENTE se estiver PENDENTE
-      if (mainTransaction?.status === "pending") {
-        const { error: mainError } = await supabase.functions.invoke('atomic-edit-transaction', {
-          body: {
-            transaction_id: transaction.id,
-            updates,
-            scope: 'current',
-          },
-        });
-
-        if (mainError) throw mainError;
-      }
-
-      // 3) Buscar e editar todas as filhas PENDENTES dessa fixa
+      // 2) Buscar e editar todas as filhas PENDENTES dessa fixa
       const { data: childTransactions, error: childError } = await supabase
         .from("transactions")
         .select("id, status")
