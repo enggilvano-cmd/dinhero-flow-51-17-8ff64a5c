@@ -2,7 +2,23 @@ import { logger } from './logger';
 
 export interface QueuedOperation {
   id: string;
-  type: 'transaction' | 'edit' | 'delete' | 'transfer' | 'credit_payment' | 'logout';
+  type: 
+    | 'transaction' 
+    | 'edit' 
+    | 'delete' 
+    | 'transfer' 
+    | 'credit_payment' 
+    | 'logout'
+    | 'add_fixed_transaction'
+    | 'add_installments'
+    | 'import_transactions'
+    | 'add_category'
+    | 'edit_category'
+    | 'delete_category'
+    | 'import_categories'
+    | 'edit_account'
+    | 'delete_account'
+    | 'import_accounts';
   data: any;
   timestamp: number;
   retries: number;
