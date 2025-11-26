@@ -51,6 +51,8 @@ interface ImportedTransaction {
   valor: number;
   status?: string;
   parcelas?: string; // Mantido como string para leitura inicial
+  invoiceMonth?: string;
+  isFixed?: boolean;
   isValid: boolean;
   errors: string[];
   accountId?: string;
@@ -94,7 +96,9 @@ export function ImportTransactionsModal({
     account: ['Conta', 'Account', 'Cuenta'],
     amount: ['Valor', 'Amount', 'Valor'],
     status: ['Status', 'Status', 'Estado'],
-    installments: ['Parcelas', 'Installments', 'Cuotas']
+    installments: ['Parcelas', 'Installments', 'Cuotas'],
+    invoiceMonth: ['Mês Fatura', 'Invoice Month', 'Mes Factura'],
+    isFixed: ['Fixa', 'Fixed', 'Fija']
   } as const;
 
   const pick = (row: Record<string, unknown>, keys: readonly string[]) => {
@@ -248,6 +252,11 @@ export function ImportTransactionsModal({
       isValid = false;
     }
 
+    // Processar campos opcionais adicionais
+    const invoiceMonth = String(pick(row, HEADERS.invoiceMonth) || '');
+    const isFixedStr = String(pick(row, HEADERS.isFixed) || '').toLowerCase();
+    const isFixed = isFixedStr === 'sim' || isFixedStr === 'yes' || isFixedStr === 'sí';
+
     // Normalização de data para evitar diferenças de fuso horário
     const normalizeToUTCDate = (d: Date) => new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate(), 12, 0, 0));
 
@@ -302,7 +311,9 @@ export function ImportTransactionsModal({
       conta,
       valor: valor,
       status: statusStr,
-      parcelas: String(row.Parcelas || row.parcelas || ''),
+      parcelas: String(pick(row, HEADERS.installments) || ''),
+      invoiceMonth,
+      isFixed,
       isValid,
       errors,
       accountId: accountId,
@@ -405,7 +416,9 @@ export function ImportTransactionsModal({
           installments: t.parcelas && t.parcelas.trim() && t.parcelas.includes('/') ? 
             parseInt(t.parcelas.split('/')[1], 10) || undefined : undefined,
           current_installment: t.parcelas && t.parcelas.trim() && t.parcelas.includes('/') ? 
-            parseInt(t.parcelas.split('/')[0], 10) || undefined : undefined
+            parseInt(t.parcelas.split('/')[0], 10) || undefined : undefined,
+          invoice_month: t.invoiceMonth && t.invoiceMonth.trim() ? t.invoiceMonth.trim() : undefined,
+          is_fixed: t.isFixed || undefined
         };
       });
 
@@ -499,7 +512,9 @@ export function ImportTransactionsModal({
         'Conta': accounts[0]?.name || 'Conta Corrente',
         'Valor': 5000.00,
         'Status': 'Concluída',
-        'Parcelas': ''
+        'Parcelas': '',
+        'Mês Fatura': '',
+        'Fixa': 'Não'
       },
       {
         'Data': '16/03/2024',
@@ -509,7 +524,9 @@ export function ImportTransactionsModal({
         'Conta': accounts[0]?.name || 'Conta Corrente',
         'Valor': 150.50,
         'Status': 'Concluída',
-        'Parcelas': ''
+        'Parcelas': '',
+        'Mês Fatura': '',
+        'Fixa': 'Não'
       },
       {
         'Data': '17/03/2024',
@@ -519,7 +536,9 @@ export function ImportTransactionsModal({
         'Conta': accounts.find(acc => acc.type === 'credit')?.name || 'Cartão de Crédito',
         'Valor': 400.00,
         'Status': 'Pendente',
-        'Parcelas': '1/3'
+        'Parcelas': '1/3',
+        'Mês Fatura': '2024-03',
+        'Fixa': 'Não'
       },
       {
         'Data': '17/03/2024',
@@ -529,7 +548,9 @@ export function ImportTransactionsModal({
         'Conta': accounts.find(acc => acc.type === 'credit')?.name || 'Cartão de Crédito',
         'Valor': 400.00,
         'Status': 'Pendente',
-        'Parcelas': '2/3'
+        'Parcelas': '2/3',
+        'Mês Fatura': '2024-04',
+        'Fixa': 'Não'
       },
       {
         'Data': '17/03/2024',
@@ -539,7 +560,9 @@ export function ImportTransactionsModal({
         'Conta': accounts.find(acc => acc.type === 'credit')?.name || 'Cartão de Crédito',
         'Valor': 400.00,
         'Status': 'Pendente',
-        'Parcelas': '3/3'
+        'Parcelas': '3/3',
+        'Mês Fatura': '2024-05',
+        'Fixa': 'Não'
       }
     ];
 
