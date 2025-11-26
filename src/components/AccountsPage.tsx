@@ -229,42 +229,8 @@ export function AccountsPage({
 
   return (
     <div className="spacing-responsive-md fade-in pb-6 sm:pb-8">
-      {/* Filters Card */}
-      <Card className="mb-4">
-        <CardContent className="p-4 space-y-4">
-          <div className="flex flex-col gap-4">
-            {/* Filter button and active chips */}
-            <div className="flex flex-wrap items-center gap-3">
-              <AccountFilterDialog
-                open={filterDialogOpen}
-                onOpenChange={setFilterDialogOpen}
-                filterType={filterType}
-                onFilterTypeChange={(value) => setFilterType(value as typeof filterType)}
-                activeFiltersCount={filterChips.length}
-              />
-              
-              <AccountFilterChips
-                chips={filterChips}
-                onClearAll={clearAllFilters}
-              />
-            </div>
-
-            {/* Search */}
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar contas..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Header */}
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3 mb-4">
         <div className="grid grid-cols-2 gap-2 w-full md:grid-cols-4 lg:flex lg:flex-nowrap lg:gap-2 lg:w-auto lg:ml-auto">
           <Button
             onClick={exportToExcel}
@@ -307,7 +273,7 @@ export function AccountsPage({
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4">
         <Card className="financial-card">
           <CardContent className="p-3">
             <div className="flex flex-col items-center gap-2">
@@ -375,6 +341,39 @@ export function AccountsPage({
         </Card>
       </div>
 
+      {/* Filters Card */}
+      <Card className="mb-4">
+        <CardContent className="p-4 space-y-4">
+          <div className="flex flex-col gap-4">
+            {/* Filter button and active chips */}
+            <div className="flex flex-wrap items-center gap-3">
+              <AccountFilterDialog
+                open={filterDialogOpen}
+                onOpenChange={setFilterDialogOpen}
+                filterType={filterType}
+                onFilterTypeChange={(value) => setFilterType(value as typeof filterType)}
+                activeFiltersCount={filterChips.length}
+              />
+              
+              <AccountFilterChips
+                chips={filterChips}
+                onClearAll={clearAllFilters}
+              />
+            </div>
+
+            {/* Search */}
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar contas..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Accounts Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
