@@ -196,27 +196,53 @@ export function FixedTransactionsPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Editar apenas a transação atual, sem afetar outras
-      const { error } = await supabase.functions.invoke('atomic-edit-transaction', {
+      const updates = {
+        description: transaction.description,
+        amount: transaction.amount,
+        type: transaction.type,
+        category_id: transaction.category_id,
+        account_id: transaction.account_id,
+        date: transaction.date,
+      };
+
+      // 1) Editar a transação principal (fixa)
+      const { error: mainError } = await supabase.functions.invoke('atomic-edit-transaction', {
         body: {
           transaction_id: transaction.id,
-          updates: {
-            description: transaction.description,
-            amount: transaction.amount,
-            type: transaction.type,
-            category_id: transaction.category_id,
-            account_id: transaction.account_id,
-            date: transaction.date,
-          },
+          updates,
           scope: 'current',
         },
       });
 
-      if (error) throw error;
+      if (mainError) throw mainError;
+
+      // 2) Buscar e editar todas as filhas PENDENTES dessa fixa
+      const { data: childTransactions, error: childError } = await supabase
+        .from("transactions")
+        .select("id, status")
+        .eq("parent_transaction_id", transaction.id)
+        .eq("user_id", user.id);
+
+      if (childError) throw childError;
+
+      // Editar apenas as filhas pendentes
+      if (childTransactions) {
+        for (const child of childTransactions) {
+          if (child.status === "pending") {
+            await supabase.functions.invoke('atomic-edit-transaction', {
+              body: {
+                transaction_id: child.id,
+                updates,
+                scope: 'current',
+              },
+            });
+          }
+        }
+      }
 
       toast({
-        title: "Transação atualizada",
-        description: "A transação foi atualizada com sucesso.",
+        title: "Transações atualizadas",
+        description: "A transação fixa e todas as pendentes foram atualizadas com sucesso.",
       });
 
       // 🔄 Sincronizar listas e dashboard imediatamente
