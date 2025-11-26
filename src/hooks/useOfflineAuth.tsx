@@ -25,10 +25,6 @@ export function useOfflineAuth() {
       // Clear local session immediately
       window.location.href = '/auth';
 
-      toast({
-        title: 'Offline',
-        description: 'Logout será sincronizado quando voltar online',
-      });
       
       return { error: null };
     } catch (error) {
