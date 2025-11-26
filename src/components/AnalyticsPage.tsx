@@ -1234,7 +1234,7 @@ export default function AnalyticsPage({
             <div className="relative w-full">
               <ChartContainer
                 config={accountChartConfig}
-                className={`${responsiveConfig.containerHeight} w-full overflow-hidden`}
+                className="min-h-[336px] sm:min-h-[128px] lg:min-h-[624px] w-full overflow-hidden"
               >
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
@@ -1349,7 +1349,7 @@ export default function AnalyticsPage({
               <div className="relative w-full">
                 <ChartContainer
                   config={creditCardChartConfig}
-                  className={`${responsiveConfig.containerHeight} w-full overflow-hidden`}
+                  className="min-h-[336px] sm:min-h-[128px] lg:min-h-[624px] w-full overflow-hidden"
                 >
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
@@ -1470,7 +1470,7 @@ export default function AnalyticsPage({
               <div className="relative w-full">
                 <ChartContainer
                   config={creditCardUsedChartConfig}
-                  className={`${responsiveConfig.containerHeight} w-full overflow-hidden`}
+                  className="min-h-[336px] sm:min-h-[128px] lg:min-h-[624px] w-full overflow-hidden"
                 >
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
