@@ -3,8 +3,10 @@ export { useTransactionMutations } from './transactions/useTransactionMutations'
 export { useOfflineTransactionMutations } from './transactions/useOfflineTransactionMutations';
 export { useInstallmentMutations } from './transactions/useInstallmentMutations';
 export { useTransferMutations } from './transactions/useTransferMutations';
+export { useOfflineTransferMutations } from './transactions/useOfflineTransferMutations';
 export { useImportMutations } from './transactions/useImportMutations';
 export { useCreditPaymentMutations } from './transactions/useCreditPaymentMutations';
+export { useOfflineCreditPaymentMutations } from './transactions/useOfflineCreditPaymentMutations';
 
 // Wrapper hook that combines all handlers (for backward compatibility)
 import { useTransactionMutations } from './transactions/useTransactionMutations';
