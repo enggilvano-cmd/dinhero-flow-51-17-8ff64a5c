@@ -72,6 +72,7 @@ export function useAddTransactionForm({
   const [formData, setFormData] = useState<FormData>({ ...initialFormState, type: (initialType || "") as "" | "income" | "expense" });
   const [customInstallments, setCustomInstallments] = useState("");
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [manualStatusChange, setManualStatusChange] = useState(false);
 
   // Reset form quando o modal abre
   useEffect(() => {
@@ -79,6 +80,7 @@ export function useAddTransactionForm({
       setFormData({ ...initialFormState, type: (initialType || "") as "" | "income" | "expense" });
       setCustomInstallments("");
       setValidationErrors({});
+      setManualStatusChange(false);
     }
   }, [open, initialType]);
 
@@ -107,6 +109,24 @@ export function useAddTransactionForm({
       setFormData(prev => ({ ...prev, invoiceMonth: calculatedMonth }));
     }
   }, [formData.date, formData.account_id, formData.invoiceMonth, accounts]);
+
+  // Reset flag de alteração manual quando a data muda
+  useEffect(() => {
+    setManualStatusChange(false);
+  }, [formData.date]);
+
+  // Define status automaticamente baseado na data (apenas se não foi alterado manualmente)
+  useEffect(() => {
+    if (formData.date && !manualStatusChange) {
+      const transactionDateStr = formData.date;
+      const todayStr = getTodayString();
+      const newStatus = transactionDateStr <= todayStr ? "completed" : "pending";
+
+      if (formData.status !== newStatus) {
+        setFormData((prev) => ({ ...prev, status: newStatus }));
+      }
+    }
+  }, [formData.date, formData.status, manualStatusChange]);
 
   const filteredCategories = useMemo(() => {
     if (!formData.type || formData.type === "transfer") return [];
@@ -456,5 +476,6 @@ export function useAddTransactionForm({
     filteredCategories,
     selectedAccount,
     handleSubmit,
+    setManualStatusChange,
   };
 }
