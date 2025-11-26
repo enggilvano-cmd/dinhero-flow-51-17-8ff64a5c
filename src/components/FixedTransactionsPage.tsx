@@ -5,13 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Pencil, Trash2, TrendingUp, TrendingDown, Calendar, Search, CalendarPlus, DollarSign } from "lucide-react";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -21,7 +14,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/lib/formatters";
@@ -614,40 +606,6 @@ export function FixedTransactionsPage() {
 
   return (
     <div className="spacing-responsive-md fade-in pb-6 sm:pb-8">
-      {/* Filters Card */}
-      <Card className="mb-4">
-        <CardContent className="p-4 space-y-4">
-          <div className="flex flex-col gap-4">
-            {/* Filter button and active chips */}
-            <div className="flex flex-wrap items-center gap-3">
-              <FixedTransactionFilterDialog
-                open={filterDialogOpen}
-                onOpenChange={setFilterDialogOpen}
-                filterType={filterType}
-                onFilterTypeChange={(value) => setFilterType(value as typeof filterType)}
-                activeFiltersCount={filterChips.length}
-              />
-              
-              <FixedTransactionFilterChips
-                chips={filterChips}
-                onClearAll={clearAllFilters}
-              />
-            </div>
-
-            {/* Search */}
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar transações fixas..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
       <FixedTransactionPageActions
         onImport={() => setImportModalOpen(true)}
         onExport={handleExportToExcel}
@@ -656,7 +614,7 @@ export function FixedTransactionsPage() {
       />
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
         <Card className="financial-card">
           <CardContent className="p-3">
             <div className="flex flex-col items-center text-center gap-3">
@@ -734,35 +692,35 @@ export function FixedTransactionsPage() {
         </Card>
       </div>
 
-      {/* Filters */}
-      <Card>
-        <CardContent className="p-2 sm:p-3">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="search" className="text-caption">Buscar</Label>
-              <div className="relative mt-2">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="search"
-                  placeholder="Buscar por descrição..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 touch-target"
-                />
-              </div>
+      {/* Filters Card */}
+      <Card className="mb-4">
+        <CardContent className="p-4 space-y-4">
+          <div className="flex flex-col gap-4">
+            {/* Filter button and active chips */}
+            <div className="flex flex-wrap items-center gap-3">
+              <FixedTransactionFilterDialog
+                open={filterDialogOpen}
+                onOpenChange={setFilterDialogOpen}
+                filterType={filterType}
+                onFilterTypeChange={(value) => setFilterType(value as typeof filterType)}
+                activeFiltersCount={filterChips.length}
+              />
+              
+              <FixedTransactionFilterChips
+                chips={filterChips}
+                onClearAll={clearAllFilters}
+              />
             </div>
-            <div>
-              <Label htmlFor="filter" className="text-caption">Filtrar por Tipo</Label>
-              <Select value={filterType} onValueChange={(value) => setFilterType(value as typeof filterType)}>
-                <SelectTrigger id="filter" className="touch-target mt-2">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas</SelectItem>
-                  <SelectItem value="income">Receitas</SelectItem>
-                  <SelectItem value="expense">Despesas</SelectItem>
-                </SelectContent>
-              </Select>
+
+            {/* Search */}
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar transações fixas..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
             </div>
           </div>
         </CardContent>
