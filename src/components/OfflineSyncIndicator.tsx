@@ -25,7 +25,7 @@ export function OfflineSyncIndicator() {
     if (isOnline && queueCount > 0) {
       handleSync();
     }
-  }, [isOnline, queueCount]);
+  }, [isOnline]);
 
   const handleSync = async () => {
     setIsSyncing(true);

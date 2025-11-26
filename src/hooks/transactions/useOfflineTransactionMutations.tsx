@@ -2,23 +2,49 @@ import { useCallback } from 'react';
 import { useTransactionMutations } from './useTransactionMutations';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { offlineQueue } from '@/lib/offlineQueue';
+import { offlineDatabase } from '@/lib/offlineDatabase';
 import { useToast } from '@/hooks/use-toast';
 import { TransactionInput, TransactionUpdate } from '@/types';
 import { EditScope } from '@/components/TransactionScopeDialog';
 import { logger } from '@/lib/logger';
+import { useAuth } from '@/hooks/useAuth';
 
 export function useOfflineTransactionMutations() {
   const isOnline = useOnlineStatus();
   const onlineMutations = useTransactionMutations();
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const handleAddTransaction = useCallback(async (transactionData: TransactionInput) => {
     if (isOnline) {
       return onlineMutations.handleAddTransaction(transactionData);
     }
 
-    // Offline: enqueue operation
+    // Offline: save locally and enqueue operation
     try {
+      if (!user) throw new Error('User not authenticated');
+
+      // Create optimistic transaction for local cache
+      const optimisticTx = {
+        id: `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        user_id: user.id,
+        description: transactionData.description,
+        amount: transactionData.type === 'expense' ? -Math.abs(transactionData.amount) : Math.abs(transactionData.amount),
+        date: transactionData.date.toISOString().split('T')[0],
+        type: transactionData.type,
+        category_id: transactionData.category_id,
+        account_id: transactionData.account_id,
+        status: transactionData.status,
+        invoice_month: transactionData.invoiceMonth || null,
+        invoice_month_overridden: !!transactionData.invoiceMonth,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      // Save to local cache immediately
+      await offlineDatabase.saveTransactions([optimisticTx as any]);
+
+      // Enqueue for server sync
       await offlineQueue.enqueue({
         type: 'transaction',
         data: {
@@ -42,7 +68,7 @@ export function useOfflineTransactionMutations() {
         variant: 'destructive',
       });
     }
-  }, [isOnline, onlineMutations, toast]);
+  }, [isOnline, onlineMutations, toast, user]);
 
   const handleEditTransaction = useCallback(async (
     updatedTransaction: TransactionUpdate,
@@ -100,7 +126,7 @@ export function useOfflineTransactionMutations() {
         variant: 'destructive',
       });
     }
-  }, [isOnline, onlineMutations, toast]);
+  }, [isOnline, onlineMutations, toast, user]);
 
   const handleDeleteTransaction = useCallback(async (
     transactionId: string,
@@ -110,8 +136,12 @@ export function useOfflineTransactionMutations() {
       return onlineMutations.handleDeleteTransaction(transactionId, editScope);
     }
 
-    // Offline: enqueue operation
+    // Offline: delete locally and enqueue operation
     try {
+      // Delete from local cache immediately
+      await offlineDatabase.deleteTransaction(transactionId);
+
+      // Enqueue for server sync
       await offlineQueue.enqueue({
         type: 'delete',
         data: {
@@ -128,7 +158,7 @@ export function useOfflineTransactionMutations() {
         variant: 'destructive',
       });
     }
-  }, [isOnline, onlineMutations, toast]);
+  }, [isOnline, onlineMutations, toast, user]);
 
   return {
     handleAddTransaction,
