@@ -7,12 +7,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/hooks/useAuth';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { Lock, User, Mail, Eye, EyeOff, BarChart3, Phone } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { TwoFactorVerify } from '@/components/TwoFactorVerify';
 
 export default function Auth() {
   const { signIn, signUp, resetPassword, user, loading } = useAuth();
+  const isOnline = useOnlineStatus();
   const navigate = useNavigate();
   
   const [activeTab, setActiveTab] = useState('signin');
@@ -73,6 +75,11 @@ export default function Auth() {
     e.preventDefault();
     
     if (!validateForm()) return;
+
+    if (!isOnline) {
+      setErrors({ email: 'Login e cadastro requerem conexão com a internet' });
+      return;
+    }
     
     setIsLoading(true);
 
@@ -97,6 +104,11 @@ export default function Auth() {
   const handleResetPassword = async () => {
     if (!formData.email) {
       setErrors({ email: 'Digite seu email para recuperar a senha' });
+      return;
+    }
+
+    if (!isOnline) {
+      setErrors({ email: 'Recuperação de senha requer conexão com a internet' });
       return;
     }
 
@@ -181,6 +193,13 @@ export default function Auth() {
             <CardDescription>
               Acesse sua conta com segurança
             </CardDescription>
+            {!isOnline && (
+              <Alert variant="destructive" className="mt-4">
+                <AlertDescription>
+                  Você está offline. Login e cadastro requerem conexão com a internet.
+                </AlertDescription>
+              </Alert>
+            )}
           </CardHeader>
           <CardContent>
             <Tabs value={activeTab} onValueChange={setActiveTab}>
