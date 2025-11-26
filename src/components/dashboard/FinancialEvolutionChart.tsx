@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -49,7 +49,7 @@ export function FinancialEvolutionChart({
   const { chartConfig: responsiveConfig, isMobile } = useChartResponsive();
   const [chartScale, setChartScale] = useState<ChartScaleType>('monthly');
   const [chartYear, setChartYear] = useState<number>(new Date().getFullYear());
-  const [hasAnimated, setHasAnimated] = useState(false);
+  const initialLengthRef = useRef<number | null>(null);
 
   const availableYears = useMemo(() => {
     const years = new Set<number>();
@@ -73,6 +73,11 @@ export function FinancialEvolutionChart({
     customStartDate,
     customEndDate
   );
+
+  if (chartData.length > 0 && initialLengthRef.current === null) {
+    initialLengthRef.current = chartData.length;
+  }
+
 
   // Memoize tooltip formatter to prevent re-renders
   const tooltipFormatter = useMemo(
@@ -289,10 +294,12 @@ export function FinancialEvolutionChart({
                     }}
                     connectNulls={false}
                     name="Saldo Acumulado"
-                    isAnimationActive={!hasAnimated}
+                    isAnimationActive={
+                      initialLengthRef.current !== null &&
+                      chartData.length === initialLengthRef.current
+                    }
                     animationDuration={800}
                     animationEasing="ease-in-out"
-                    onAnimationEnd={() => setHasAnimated(true)}
                   />
                 </ComposedChart>
               </ResponsiveContainer>
