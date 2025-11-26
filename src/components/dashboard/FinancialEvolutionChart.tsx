@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -50,12 +50,6 @@ export function FinancialEvolutionChart({
   const [chartScale, setChartScale] = useState<ChartScaleType>('monthly');
   const [chartYear, setChartYear] = useState<number>(new Date().getFullYear());
   const [hasAnimated, setHasAnimated] = useState(false);
-
-  useEffect(() => {
-    if (!hasAnimated) {
-      setHasAnimated(true);
-    }
-  }, [hasAnimated]);
 
   const availableYears = useMemo(() => {
     const years = new Set<number>();
@@ -203,7 +197,6 @@ export function FinancialEvolutionChart({
             >
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart
-                  key={`chart-${chartScale}-${chartYear}`}
                   data={chartData}
                   margin={{
                     top: 20,
@@ -299,6 +292,7 @@ export function FinancialEvolutionChart({
                     isAnimationActive={!hasAnimated}
                     animationDuration={800}
                     animationEasing="ease-in-out"
+                    onAnimationEnd={() => setHasAnimated(true)}
                   />
                 </ComposedChart>
               </ResponsiveContainer>
