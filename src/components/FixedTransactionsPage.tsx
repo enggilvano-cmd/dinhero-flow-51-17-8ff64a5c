@@ -300,10 +300,10 @@ export function FixedTransactionsPage() {
       } = await supabase.auth.getUser();
       if (!user) return;
 
-      // 1) Buscar apenas para garantir que a transação existe e pertence ao usuário
-      const { error: mainError } = await supabase
+      // 1) Buscar transação principal (fixa) com status
+      const { data: mainTransaction, error: mainError } = await supabase
         .from("transactions")
-        .select("id")
+        .select("id, status")
         .eq("id", transactionToDelete.id)
         .eq("user_id", user.id)
         .single();
@@ -320,14 +320,27 @@ export function FixedTransactionsPage() {
 
       if (deleteChildrenError) throw deleteChildrenError;
 
-      // 3) Sempre remover a transação "principal" da fixa (independente do status)
-      const { error: deleteMainError } = await supabase
-        .from("transactions")
-        .delete()
-        .eq("id", transactionToDelete.id)
-        .eq("user_id", user.id);
+      // 3) Se a principal estiver CONCLUÍDA, apenas desmarcar como fixa (is_fixed = false)
+      //    para sumir da página Transações Fixas mas continuar aparecendo em Transações.
+      if (mainTransaction?.status === "completed") {
+        const { error: updateMainError } = await supabase
+          .from("transactions")
+          .update({ is_fixed: false })
+          .eq("id", transactionToDelete.id)
+          .eq("user_id", user.id);
 
-      if (deleteMainError) throw deleteMainError;
+        if (updateMainError) throw updateMainError;
+      } else {
+        // 4) Se a principal estiver PENDENTE, removê-la de fato
+        const { error: deleteMainError } = await supabase
+          .from("transactions")
+          .delete()
+          .eq("id", transactionToDelete.id)
+          .eq("user_id", user.id)
+          .eq("status", "pending");
+
+        if (deleteMainError) throw deleteMainError;
+      }
 
       toast({
         title: "Transações removidas",
