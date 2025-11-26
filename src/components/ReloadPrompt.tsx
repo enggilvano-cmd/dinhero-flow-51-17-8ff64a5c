@@ -2,6 +2,8 @@ import { useRegisterSW } from 'virtual:pwa-register/react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
 import { useEffect } from 'react';
+import { offlineSync } from '@/lib/offlineSync';
+import { logger } from '@/lib/logger';
 
 export function ReloadPrompt() {
   const {
@@ -10,12 +12,35 @@ export function ReloadPrompt() {
     updateServiceWorker,
   } = useRegisterSW({
     onRegistered(r: ServiceWorkerRegistration | undefined) {
-      console.log('SW Registered: ' + r);
+      logger.info('Service Worker registered', r);
     },
     onRegisterError(error: Error) {
-      console.log('SW registration error', error);
+      logger.error('Service Worker registration error', error);
     },
   });
+
+  // Detecta instalação do PWA e sincroniza dados
+  useEffect(() => {
+    const handleAppInstalled = async () => {
+      logger.info('PWA installed - syncing data for offline use');
+      try {
+        await offlineSync.syncDataFromServer();
+        toast({
+          title: "App instalado com sucesso",
+          description: "Dados dos últimos 3 meses baixados para uso offline.",
+          duration: 5000,
+        });
+      } catch (error) {
+        logger.error('Failed to sync data on PWA installation', error);
+      }
+    };
+
+    window.addEventListener('appinstalled', handleAppInstalled);
+    
+    return () => {
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  }, []);
 
   useEffect(() => {
     if (offlineReady) {
