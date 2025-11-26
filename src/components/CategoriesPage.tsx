@@ -16,6 +16,8 @@ import { ImportCategoriesModal } from "@/components/ImportCategoriesModal";
 import { getUserId, withErrorHandling } from "@/lib/supabase-utils";
 import type { Category } from "@/types";
 import { queryClient, queryKeys } from "@/lib/queryClient";
+import { CategoryFilterDialog } from "@/components/categories/CategoryFilterDialog";
+import { CategoryFilterChips } from "@/components/categories/CategoryFilterChips";
 
 interface CategoriesPageProps {}
 
@@ -30,7 +32,33 @@ export function CategoriesPage({}: CategoriesPageProps) {
   const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [filterDialogOpen, setFilterDialogOpen] = useState(false);
   const { toast } = useToast();
+
+  // Generate filter chips
+  const filterChips = useMemo(() => {
+    const chips = [];
+    
+    if (filterType !== "all") {
+      const typeLabels = {
+        income: "Receita",
+        expense: "Despesa",
+        both: "Ambos"
+      };
+      chips.push({
+        id: "type",
+        label: typeLabels[filterType],
+        value: filterType,
+        onRemove: () => setFilterType("all"),
+      });
+    }
+
+    return chips;
+  }, [filterType]);
+
+  const clearAllFilters = () => {
+    setFilterType("all");
+  };
 
   useEffect(() => {
     const loadCategories = async () => {
@@ -298,6 +326,40 @@ export function CategoriesPage({}: CategoriesPageProps) {
 
   return (
     <div className="spacing-responsive-md fade-in pb-6 sm:pb-8">
+      {/* Filters Card */}
+      <Card className="mb-4">
+        <CardContent className="p-4 space-y-4">
+          <div className="flex flex-col gap-4">
+            {/* Filter button and active chips */}
+            <div className="flex flex-wrap items-center gap-3">
+              <CategoryFilterDialog
+                open={filterDialogOpen}
+                onOpenChange={setFilterDialogOpen}
+                filterType={filterType}
+                onFilterTypeChange={(value) => setFilterType(value as typeof filterType)}
+                activeFiltersCount={filterChips.length}
+              />
+              
+              <CategoryFilterChips
+                chips={filterChips}
+                onClearAll={clearAllFilters}
+              />
+            </div>
+
+            {/* Search */}
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar categorias..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Header */}
       <div className="flex flex-col gap-3">
         <div className="grid grid-cols-2 gap-2 w-full md:grid-cols-3 lg:flex lg:flex-nowrap lg:gap-2 lg:w-auto lg:ml-auto">

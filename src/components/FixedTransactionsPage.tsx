@@ -37,6 +37,8 @@ import * as XLSX from "xlsx";
 import { formatBRNumber } from "@/lib/formatters";
 import { useAuth } from "@/hooks/useAuth";
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
+import { FixedTransactionFilterDialog } from "@/components/fixedtransactions/FixedTransactionFilterDialog";
+import { FixedTransactionFilterChips } from "@/components/fixedtransactions/FixedTransactionFilterChips";
 
 interface FixedTransaction {
   id: string;
@@ -128,7 +130,32 @@ export function FixedTransactionsPage() {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [transactionToEdit, setTransactionToEdit] = useState<FixedTransaction | null>(null);
   const [importModalOpen, setImportModalOpen] = useState(false);
+  const [filterDialogOpen, setFilterDialogOpen] = useState(false);
   const { toast } = useToast();
+
+  // Generate filter chips
+  const filterChips = useMemo(() => {
+    const chips = [];
+    
+    if (filterType !== "all") {
+      const typeLabels = {
+        income: "Receita",
+        expense: "Despesa"
+      };
+      chips.push({
+        id: "type",
+        label: typeLabels[filterType],
+        value: filterType,
+        onRemove: () => setFilterType("all"),
+      });
+    }
+
+    return chips;
+  }, [filterType]);
+
+  const clearAllFilters = () => {
+    setFilterType("all");
+  };
 
   useEffect(() => {
     loadAccounts();
@@ -586,7 +613,41 @@ export function FixedTransactionsPage() {
   }
 
   return (
-    <div className="spacing-responsive-lg fade-in pb-6 sm:pb-8">
+    <div className="spacing-responsive-md fade-in pb-6 sm:pb-8">
+      {/* Filters Card */}
+      <Card className="mb-4">
+        <CardContent className="p-4 space-y-4">
+          <div className="flex flex-col gap-4">
+            {/* Filter button and active chips */}
+            <div className="flex flex-wrap items-center gap-3">
+              <FixedTransactionFilterDialog
+                open={filterDialogOpen}
+                onOpenChange={setFilterDialogOpen}
+                filterType={filterType}
+                onFilterTypeChange={(value) => setFilterType(value as typeof filterType)}
+                activeFiltersCount={filterChips.length}
+              />
+              
+              <FixedTransactionFilterChips
+                chips={filterChips}
+                onClearAll={clearAllFilters}
+              />
+            </div>
+
+            {/* Search */}
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar transações fixas..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <FixedTransactionPageActions
         onImport={() => setImportModalOpen(true)}
         onExport={handleExportToExcel}

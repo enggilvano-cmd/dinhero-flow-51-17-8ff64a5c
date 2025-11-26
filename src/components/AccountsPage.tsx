@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,6 +31,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useAccounts } from "@/hooks/queries/useAccounts";
 import { ImportAccountsModal } from "@/components/ImportAccountsModal";
 import { useSettings } from "@/context/SettingsContext";
+import { AccountFilterDialog } from "@/components/accounts/AccountFilterDialog";
+import { AccountFilterChips } from "@/components/accounts/AccountFilterChips";
 
 import { Account, ImportAccountData } from '@/types';
 
@@ -63,7 +65,24 @@ export function AccountsPage({
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [accountToDelete, setAccountToDelete] = useState<Account | null>(null);
+  const [filterDialogOpen, setFilterDialogOpen] = useState(false);
   const { toast } = useToast();
+
+  // Generate filter chips
+  const filterChips = useMemo(() => {
+    const chips = [];
+    
+    if (filterType !== "all") {
+      chips.push({
+        id: "type",
+        label: getAccountTypeLabel(filterType),
+        value: filterType,
+        onRemove: () => setFilterType("all"),
+      });
+    }
+
+    return chips;
+  }, [filterType]);
 
   const getAccountIcon = (type: string) => {
     switch (type) {
@@ -188,8 +207,46 @@ export function AccountsPage({
     }
   };
 
+  const clearAllFilters = () => {
+    setFilterType("all");
+  };
+
   return (
     <div className="spacing-responsive-md fade-in pb-6 sm:pb-8">
+      {/* Filters Card */}
+      <Card className="mb-4">
+        <CardContent className="p-4 space-y-4">
+          <div className="flex flex-col gap-4">
+            {/* Filter button and active chips */}
+            <div className="flex flex-wrap items-center gap-3">
+              <AccountFilterDialog
+                open={filterDialogOpen}
+                onOpenChange={setFilterDialogOpen}
+                filterType={filterType}
+                onFilterTypeChange={(value) => setFilterType(value as typeof filterType)}
+                activeFiltersCount={filterChips.length}
+              />
+              
+              <AccountFilterChips
+                chips={filterChips}
+                onClearAll={clearAllFilters}
+              />
+            </div>
+
+            {/* Search */}
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar contas..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Header */}
       <div className="flex flex-col gap-3">
         <div className="grid grid-cols-2 gap-2 w-full md:grid-cols-4 lg:flex lg:flex-nowrap lg:gap-2 lg:w-auto lg:ml-auto">
