@@ -23,7 +23,21 @@ export default defineConfig(({ mode }) => ({
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
       },
       manifest: {
-...
+        name: 'Financeiro App',
+        short_name: 'Financeiro',
+        description: 'Personal Finance Management Application',
+        theme_color: '#ffffff',
+        icons: [
+          {
+            src: '/icon-192.png',
+            sizes: '192x192',
+            type: 'image/png'
+          },
+          {
+            src: '/icon-512.png',
+            sizes: '512x512',
+            type: 'image/png'
+          }
         ]
       }
     })
