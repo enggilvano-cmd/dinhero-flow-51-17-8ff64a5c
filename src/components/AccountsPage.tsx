@@ -85,22 +85,7 @@ export function AccountsPage({
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
   const { toast } = useToast();
 
-  // Generate filter chips
-  const filterChips = useMemo(() => {
-    const chips = [];
-    
-    if (filterType !== "all") {
-      chips.push({
-        id: "type",
-        label: getAccountTypeLabel(filterType),
-        value: filterType,
-        onRemove: () => setFilterType("all"),
-      });
-    }
-
-    return chips;
-  }, [filterType]);
-
+  // Helper functions (must be declared before filterChips useMemo)
   const getAccountIcon = (type: string) => {
     switch (type) {
       case "checking":
@@ -139,6 +124,26 @@ export function AccountsPage({
       investment: "secondary",
     } as const;
     return variants[type as keyof typeof variants] || "default";
+  };
+
+  // Generate filter chips (after helper functions)
+  const filterChips = useMemo(() => {
+    const chips = [];
+    
+    if (filterType !== "all") {
+      chips.push({
+        id: "type",
+        label: getAccountTypeLabel(filterType),
+        value: filterType,
+        onRemove: () => setFilterType("all"),
+      });
+    }
+
+    return chips;
+  }, [filterType]);
+
+  const clearAllFilters = () => {
+    setFilterType("all");
   };
 
   const filteredAccounts = accounts
@@ -222,10 +227,6 @@ export function AccountsPage({
     if (onImportAccounts) {
       onImportAccounts(accountsToAdd, accountsToReplaceIds);
     }
-  };
-
-  const clearAllFilters = () => {
-    setFilterType("all");
   };
 
   return (
