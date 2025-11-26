@@ -2,7 +2,6 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CurrencyInput } from "@/components/forms/CurrencyInput";
-import { AvailableBalanceIndicator } from "@/components/forms/AvailableBalanceIndicator";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Account, Category, ACCOUNT_TYPE_LABELS } from "@/types";
 
@@ -54,14 +53,6 @@ export function EditTransactionFormFields({
           onValueChange={(value) => onFormDataChange({ amountInCents: value })}
         />
       </div>
-
-      {!isTransfer && formData.account_id && formData.type && (
-        <AvailableBalanceIndicator
-          account={accounts.find(acc => acc.id === formData.account_id)}
-          transactionType={formData.type}
-          amountInCents={formData.amountInCents}
-        />
-      )}
 
       <div className="space-y-2">
         <Label className="text-caption">Data</Label>

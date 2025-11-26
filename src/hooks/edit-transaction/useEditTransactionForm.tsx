@@ -5,7 +5,6 @@ import { createDateFromString } from '@/lib/dateUtils';
 import { logger } from '@/lib/logger';
 import { editTransactionSchema } from '@/lib/validationSchemas';
 import { z } from 'zod';
-import { validateBalanceForEdit } from '@/hooks/useBalanceValidation';
 
 
 interface FormData {
@@ -100,49 +99,6 @@ export function useEditTransactionForm(
     return true;
   };
 
-  const validateBalance = async (): Promise<boolean> => {
-    if (!transaction) return false;
-
-    const selectedAccount = accounts.find(acc => acc.id === formData.account_id);
-    const newAmount = Math.abs(formData.amountInCents);
-    const oldAmount = Math.abs(transaction.amount);
-
-    if (selectedAccount && formData.type === 'expense') {
-      try {
-        if (transaction.type !== 'transfer') {
-          const validation = await validateBalanceForEdit(
-            selectedAccount,
-            newAmount,
-            oldAmount,
-            formData.type,
-            transaction.type,
-            transaction.id,
-            transaction.status
-          );
-
-          if (!validation.isValid) {
-            toast({
-              title: selectedAccount.type === 'credit' ? "Limite de crédito excedido" : "Saldo insuficiente",
-              description: validation.errorMessage || validation.message,
-              variant: "destructive",
-            });
-            return false;
-          }
-        }
-      } catch (error) {
-        logger.error('Error validating balance/credit limit:', error);
-        toast({
-          title: "Erro ao validar",
-          description: "Não foi possível validar o saldo. Por favor, tente novamente.",
-          variant: "destructive",
-        });
-        return false;
-      }
-    }
-
-    return true;
-  };
-
   const getUpdates = (): Partial<Transaction> | null => {
     const updates: Partial<Transaction> = {};
     
@@ -198,7 +154,6 @@ export function useEditTransactionForm(
     formData,
     setFormData,
     validateForm,
-    validateBalance,
     getUpdates,
   };
 }

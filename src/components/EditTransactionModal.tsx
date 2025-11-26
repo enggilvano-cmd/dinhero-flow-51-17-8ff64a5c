@@ -36,7 +36,6 @@ export function EditTransactionModal({
     formData,
     setFormData,
     validateForm,
-    validateBalance,
     getUpdates,
   } = useEditTransactionForm(transaction, accounts, open, isTransfer);
 
@@ -64,8 +63,6 @@ export function EditTransactionModal({
       onOpenChange(false);
       return;
     }
-
-    if (!await validateBalance()) return;
 
     onEditTransaction({ id: transaction.id, ...updates } as typeof transaction, editScope);
     
