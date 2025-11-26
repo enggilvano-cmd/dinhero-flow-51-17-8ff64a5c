@@ -16,7 +16,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useAuth } from "@/hooks/useAuth";
+import { useOfflineAuth } from "@/hooks/useOfflineAuth";
 import { NotificationBell } from "@/components/NotificationBell";
 
 interface LayoutProps {
@@ -44,7 +44,7 @@ const menuItems = [
 ];
 
 function AppSidebar({ currentPage, onPageChange }: { currentPage: string; onPageChange: (page: string) => void }) {
-  const { profile, isAdmin, signOut, getSubscriptionTimeRemaining } = useAuth();
+  const { profile, isAdmin, signOut, getSubscriptionTimeRemaining } = useOfflineAuth();
   const { state: sidebarState, setOpenMobile } = useSidebar();
   const isMobile = useIsMobile();
   const isCollapsed = sidebarState === "collapsed";
@@ -281,7 +281,7 @@ function AppSidebar({ currentPage, onPageChange }: { currentPage: string; onPage
 
 function LayoutContent({ children, currentPage, onPageChange, onNavigate }: LayoutProps) {
   const isMobile = useIsMobile();
-  const { profile } = useAuth();
+  const { profile } = useOfflineAuth();
   const { open } = useSidebar();
   
   // Use onNavigate if provided, otherwise use onPageChange

@@ -21,7 +21,7 @@ import { EditAccountModal } from "@/components/EditAccountModal";
 import { EditTransactionModal } from "@/components/EditTransactionModal";
 import { TransferModal } from "@/components/TransferModal";
 import { CreditPaymentModal } from "@/components/CreditPaymentModal";
-import { useAuth } from "@/hooks/useAuth";
+import { useOfflineAuth } from "@/hooks/useOfflineAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { MigrationWarning } from "@/components/MigrationWarning";
@@ -33,7 +33,7 @@ import { useCategories } from "@/hooks/useCategories";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryClient";
 import { useAccountHandlers } from "@/hooks/useAccountHandlers";
-import { useTransactionHandlers } from "@/hooks/useTransactionHandlers";
+import { useTransactionHandlers, useOfflineTransactionMutations } from "@/hooks/useTransactionHandlers";
 import { TransactionScopeDialog, EditScope } from "@/components/TransactionScopeDialog";
 import { MarkAsPaidModal } from "@/components/MarkAsPaidModal";
 import { FormErrorBoundary } from "@/components/ui/form-error-boundary";
@@ -57,7 +57,7 @@ interface TransactionsFilters {
 }
 
 const PlaniFlowApp = () => {
-  const { user, loading: authLoading, isAdmin } = useAuth();
+  const { user, loading: authLoading, isAdmin } = useOfflineAuth();
   const { settings, updateSettings } = useSettings();
   const { toast } = useToast();
   const [currentPage, setCurrentPage] = useState("dashboard");
@@ -187,15 +187,17 @@ const PlaniFlowApp = () => {
   // Use hooks customizados para handlers
   const { handleEditAccount, handleDeleteAccount, handleImportAccounts } = useAccountHandlers();
   const {
-    handleAddTransaction,
     handleAddInstallmentTransactions,
-    handleEditTransaction,
-    handleDeleteTransaction,
     handleTransfer,
     handleImportTransactions,
     handleCreditPayment,
     handleReversePayment,
   } = useTransactionHandlers();
+  const {
+    handleAddTransaction,
+    handleEditTransaction,
+    handleDeleteTransaction,
+  } = useOfflineTransactionMutations();
 
   const handleClearAllData = async () => {
     if (!user) return;
