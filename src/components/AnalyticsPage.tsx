@@ -1230,7 +1230,7 @@ export default function AnalyticsPage({
               Saldos por Conta
             </CardTitle>
           </CardHeader>
-          <CardContent className="px-2 pb-2 pt-6 sm:px-3 sm:pb-3 sm:pt-9">
+          <CardContent className="px-2 pb-2 pt-18 sm:px-3 sm:pb-3 sm:pt-27">
             <div className="relative w-full">
               <ChartContainer
                 config={accountChartConfig}
