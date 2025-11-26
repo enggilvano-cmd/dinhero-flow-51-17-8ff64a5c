@@ -11,6 +11,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -94,12 +104,12 @@ export function FixedTransactionsPage() {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<"all" | "income" | "expense">("all");
-  const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
+  const [transactionToDelete, setTransactionToDelete] = useState<FixedTransaction | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [transactionToEdit, setTransactionToEdit] = useState<FixedTransaction | null>(null);
   const [scopeDialogOpen, setScopeDialogOpen] = useState(false);
-  const [scopeMode, setScopeMode] = useState<"edit" | "delete">("edit");
   const [pendingTransactionsCount, setPendingTransactionsCount] = useState(0);
   const [hasCompletedTransactions, setHasCompletedTransactions] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
@@ -203,7 +213,6 @@ export function FixedTransactionsPage() {
 
     setPendingTransactionsCount(pendingCount);
     setHasCompletedTransactions(hasCompleted);
-    setScopeMode("edit");
     setScopeDialogOpen(true);
   };
 
@@ -277,46 +286,23 @@ export function FixedTransactionsPage() {
     }
   };
 
-  const handleDeleteClick = async (transactionId: string) => {
-    setTransactionToDelete(transactionId);
-    
-    // ✅ P0-5 FIX: Usar query cacheable ao invés de buscar a cada clique
-    const childTransactions = await queryClient.fetchQuery({
-      queryKey: [...queryKeys.transactions(), 'children', transactionId],
-      queryFn: async () => {
-        const { data, error } = await supabase
-          .from("transactions")
-          .select("id, status")
-          .eq("parent_transaction_id", transactionId);
-
-        if (error) throw error;
-        return data || [];
-      },
-      staleTime: 30 * 1000,
-    });
-
-    const pendingCount = childTransactions?.filter((t) => t.status === "pending").length || 0;
-    const hasCompleted = childTransactions?.some((t) => t.status === "completed") || false;
-
-    setPendingTransactionsCount(pendingCount);
-    setHasCompletedTransactions(hasCompleted);
-    setScopeMode("delete");
-    setScopeDialogOpen(true);
+  const handleDeleteClick = async (transaction: FixedTransaction) => {
+    setTransactionToDelete(transaction);
+    setDeleteDialogOpen(true);
   };
 
-  // ✅ P0-6 FIX: Migrar para edge function atômica ao invés de deletes diretos
-  const handleScopeSelectedForDelete = async (scope: FixedScope) => {
+  const handleConfirmDelete = async () => {
     if (!transactionToDelete) return;
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // ✅ P0-6 FIX: Usar edge function atômica ao invés de deletes diretos
+      // Excluir TODAS as transações (principal + todas as geradas)
       const { data, error } = await supabase.functions.invoke('atomic-delete-transaction', {
         body: {
-          transaction_id: transactionToDelete,
-          scope,
+          transaction_id: transactionToDelete.id,
+          scope: 'all',
         },
       });
 
@@ -328,18 +314,10 @@ export function FixedTransactionsPage() {
       }
 
       const deletedCount = result.deleted || 0;
-      let message = '';
-      if (scope === 'current') {
-        message = 'A transação principal foi removida com sucesso.';
-      } else if (scope === 'current-and-remaining') {
-        message = `A transação principal e ${deletedCount - 1} transação(ões) pendente(s) foram removidas.`;
-      } else {
-        message = `A transação principal e ${deletedCount - 1} transação(ões) geradas foram removidas.`;
-      }
-
+      
       toast({
         title: "Transações removidas",
-        description: message,
+        description: `A transação fixa e ${deletedCount - 1} transação(ões) gerada(s) foram removidas com sucesso.`,
       });
 
       // 🔄 Sincronizar listas e dashboard imediatamente
@@ -362,6 +340,7 @@ export function FixedTransactionsPage() {
       });
     } finally {
       setTransactionToDelete(null);
+      setDeleteDialogOpen(false);
     }
   };
 
@@ -737,7 +716,7 @@ export function FixedTransactionsPage() {
                     <Button
                       variant="outline"
                       size="icon"
-                      onClick={() => handleDeleteClick(transaction.id)}
+                      onClick={() => handleDeleteClick(transaction)}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -749,11 +728,37 @@ export function FixedTransactionsPage() {
         )}
       </div>
 
+      {/* AlertDialog para confirmação de exclusão */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir Transação Fixa?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {transactionToDelete && (
+                <>
+                  Você está prestes a excluir a transação fixa &quot;{transactionToDelete.description}&quot;.
+                  <br /><br />
+                  <strong>Atenção:</strong> Esta ação removerá a transação principal e todas as transações 
+                  pendentes associadas. Esta ação não pode ser desfeita.
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* FixedTransactionScopeDialog apenas para edição */}
       <FixedTransactionScopeDialog
         open={scopeDialogOpen}
         onOpenChange={setScopeDialogOpen}
-        onScopeSelected={scopeMode === "edit" ? handleScopeSelectedForEdit : handleScopeSelectedForDelete}
-        mode={scopeMode}
+        onScopeSelected={handleScopeSelectedForEdit}
+        mode="edit"
         hasCompleted={hasCompletedTransactions}
         pendingCount={pendingTransactionsCount}
       />
@@ -778,7 +783,6 @@ export function FixedTransactionsPage() {
             // Reabrir o scope dialog para o usuário escolher o escopo
             setPendingTransactionsCount(0);
             setHasCompletedTransactions(false);
-            setScopeMode("edit");
             setScopeDialogOpen(true);
           }}
           transaction={transactionToEdit}
