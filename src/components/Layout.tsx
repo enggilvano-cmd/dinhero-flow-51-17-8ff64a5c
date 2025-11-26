@@ -127,10 +127,10 @@ function AppSidebar({ currentPage, onPageChange }: { currentPage: string; onPage
                               ? "bg-gradient-to-br from-primary to-primary-glow text-primary-foreground shadow-xl scale-105 ring-2 ring-primary/20"
                               : "bg-gradient-to-r from-primary to-primary-glow text-primary-foreground shadow-lg scale-[1.02]"
                           : isMobile
-                            ? "text-muted-foreground hover:bg-muted/50 hover:text-foreground hover:scale-[1.01]"
+                            ? "text-muted-foreground hover:bg-accent hover:text-accent-foreground hover:scale-[1.01] hover:shadow-md"
                             : isCollapsed
-                              ? "text-muted-foreground hover:bg-muted hover:text-foreground hover:scale-110 hover:shadow-md"
-                              : "text-muted-foreground hover:bg-muted/50 hover:text-foreground hover:scale-[1.01]"
+                              ? "text-muted-foreground hover:bg-accent hover:text-accent-foreground hover:scale-110 hover:shadow-lg"
+                              : "text-muted-foreground hover:bg-accent hover:text-accent-foreground hover:scale-[1.01] hover:shadow-md"
                       )}
                       tooltip={isCollapsed && !isMobile ? item.label : undefined}
                     >

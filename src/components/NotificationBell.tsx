@@ -39,7 +39,11 @@ export function NotificationBell() {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="relative hover:bg-accent hover:text-accent-foreground hover:shadow-md hover:scale-105 transition-all duration-200 rounded-xl"
+        >
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
             <Badge 
@@ -61,7 +65,7 @@ export function NotificationBell() {
                   variant="ghost"
                   size="sm"
                   onClick={markAllAsRead}
-                  className="h-8 text-xs"
+                  className="h-8 text-xs hover:bg-accent hover:text-accent-foreground hover:shadow-sm transition-all duration-200"
                 >
                   Marcar todas como lidas
                 </Button>
@@ -70,7 +74,7 @@ export function NotificationBell() {
                 variant="ghost"
                 size="icon"
                 onClick={clearAll}
-                className="h-8 w-8"
+                className="h-8 w-8 hover:bg-accent hover:text-accent-foreground hover:shadow-sm transition-all duration-200 rounded-lg"
               >
                 <X className="h-4 w-4" />
               </Button>
@@ -92,7 +96,7 @@ export function NotificationBell() {
                 <div
                   key={notification.id}
                   className={cn(
-                    'p-4 hover:bg-muted/50 transition-colors cursor-pointer',
+                    'p-4 hover:bg-accent/50 hover:shadow-sm transition-all duration-200 cursor-pointer rounded-lg mx-2 my-1',
                     !notification.read && 'bg-muted/30'
                   )}
                   onClick={() => markAsRead(notification.id)}
