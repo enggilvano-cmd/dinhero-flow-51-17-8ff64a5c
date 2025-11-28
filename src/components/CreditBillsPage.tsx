@@ -32,6 +32,7 @@ interface CreditBillsFilters {
   selectedMonthOffset: number;
   filterBillStatus: "all" | "open" | "closed";
   filterPaymentStatus: "all" | "paid" | "pending";
+  hideZeroBalance: boolean;
 }
 
 interface CreditBillsPageProps {
@@ -65,6 +66,7 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
       selectedMonthOffset: 0,
       filterBillStatus: "all",
       filterPaymentStatus: "all",
+      hideZeroBalance: false,
     }
   );
 
@@ -74,6 +76,7 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
   const selectedMonthOffset = filters.selectedMonthOffset;
   const filterBillStatus = filters.filterBillStatus;
   const filterPaymentStatus = filters.filterPaymentStatus;
+  const hideZeroBalance = filters.hideZeroBalance;
 
   // Setters
   const setSearchTerm = (value: string) => setFilters((prev) => ({ ...prev, searchTerm: value }));
@@ -81,6 +84,7 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
   const setSelectedMonthOffset = (value: number) => setFilters((prev) => ({ ...prev, selectedMonthOffset: value }));
   const setFilterBillStatus = (value: typeof filters.filterBillStatus) => setFilters((prev) => ({ ...prev, filterBillStatus: value }));
   const setFilterPaymentStatus = (value: typeof filters.filterPaymentStatus) => setFilters((prev) => ({ ...prev, filterPaymentStatus: value }));
+  const setHideZeroBalance = (value: boolean) => setFilters((prev) => ({ ...prev, hideZeroBalance: value }));
 
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
   const [selectedBillForDetails, setSelectedBillForDetails] = useState<{
@@ -165,21 +169,34 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
       });
     }
 
+    // Hide zero balance filter
+    if (hideZeroBalance) {
+      chips.push({
+        id: "hideZero",
+        label: "Ocultar Zeradas",
+        value: "hideZero",
+        onRemove: () => setHideZeroBalance(false),
+      });
+    }
+
     return chips;
   }, [
     selectedAccountId,
     filterBillStatus,
     filterPaymentStatus,
+    hideZeroBalance,
     creditAccounts,
     setSelectedAccountId,
     setFilterBillStatus,
     setFilterPaymentStatus,
+    setHideZeroBalance,
   ]);
 
   const clearAllFilters = () => {
     setSelectedAccountId("all");
     setFilterBillStatus("all");
     setFilterPaymentStatus("all");
+    setHideZeroBalance(false);
   };
 
   // Memo para calcular os detalhes da fatura do mês selecionado (alinhado ao mês exibido)
@@ -258,9 +275,12 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
       if (filterPaymentStatus === "paid" && !isPaid) return false;
       if (filterPaymentStatus === "pending" && isPaid) return false;
 
+      // Filtro de saldo zerado
+      if (hideZeroBalance && details.currentBillAmount === 0) return false;
+
       return true;
     });
-  }, [allBillDetails, filterBillStatus, filterPaymentStatus]);
+  }, [allBillDetails, filterBillStatus, filterPaymentStatus, hideZeroBalance, selectedMonthDate]);
 
   // Memo para os TOTAIS (baseado nos cartões filtrados)
   const totalSummary = useMemo(() => {
@@ -400,6 +420,8 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
                 onBillStatusChange={(value) => setFilterBillStatus(value as "all" | "open" | "closed")}
                 filterPaymentStatus={filterPaymentStatus}
                 onPaymentStatusChange={(value) => setFilterPaymentStatus(value as "all" | "paid" | "pending")}
+                hideZeroBalance={hideZeroBalance}
+                onHideZeroBalanceChange={setHideZeroBalance}
                 creditAccounts={creditAccounts}
                 activeFiltersCount={filterChips.length}
               />

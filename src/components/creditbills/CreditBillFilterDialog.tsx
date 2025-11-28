@@ -15,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Filter } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
@@ -27,6 +28,8 @@ interface CreditBillFilterDialogProps {
   onBillStatusChange: (value: string) => void;
   filterPaymentStatus: string;
   onPaymentStatusChange: (value: string) => void;
+  hideZeroBalance: boolean;
+  onHideZeroBalanceChange: (value: boolean) => void;
   creditAccounts: Array<{ id: string; name: string; color?: string }>;
   activeFiltersCount: number;
 }
@@ -40,6 +43,8 @@ export function CreditBillFilterDialog({
   onBillStatusChange,
   filterPaymentStatus,
   onPaymentStatusChange,
+  hideZeroBalance,
+  onHideZeroBalanceChange,
   creditAccounts,
   activeFiltersCount,
 }: CreditBillFilterDialogProps) {
@@ -118,6 +123,21 @@ export function CreditBillFilterDialog({
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          {/* Ocultar Zeradas */}
+          <div className="flex items-center space-x-2 pt-2">
+            <Checkbox
+              id="hideZeroBills"
+              checked={hideZeroBalance}
+              onCheckedChange={onHideZeroBalanceChange}
+            />
+            <Label
+              htmlFor="hideZeroBills"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+            >
+              Ocultar faturas zeradas
+            </Label>
           </div>
         </div>
       </DialogContent>
