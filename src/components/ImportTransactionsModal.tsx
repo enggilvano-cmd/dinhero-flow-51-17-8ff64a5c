@@ -190,7 +190,9 @@ export function ImportTransactionsModal({
     const categoria = String(pick(row, HEADERS.category) || '');
     const tipo = String(pick(row, HEADERS.type) || '');
     const conta = String(pick(row, HEADERS.account) || '');
-    const valor = parseFloat(String(pick(row, HEADERS.amount) || '0'));
+    // Parse valor com suporte ao formato brasileiro (ponto = milhar, vírgula = decimal)
+    const rawValor = String(pick(row, HEADERS.amount) || '0');
+    const valor = Math.round(parseFloat(rawValor.replace(/\./g, '').replace(',', '.')) * 100);
 
     if (!data) {
       errors.push('Data é obrigatória');

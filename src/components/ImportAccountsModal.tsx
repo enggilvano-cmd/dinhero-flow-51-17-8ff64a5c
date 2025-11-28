@@ -108,13 +108,14 @@ export function ImportAccountsModal({
   };
 
   const parseNumber = (value: unknown): number => {
-    if (typeof value === 'number') return value;
+    if (typeof value === 'number') return Math.round(value * 100);
     if (typeof value === 'string') {
-      // Remove tudo exceto números, ponto, vírgula e sinal negativo
-      const cleaned = value.trim().replace(/[^\d,.-]/g, '').replace(',', '.');
+      // Parse com suporte ao formato brasileiro (ponto = milhar, vírgula = decimal)
+      // Remove pontos (separador de milhar) e substitui vírgula por ponto (decimal)
+      const cleaned = value.trim().replace(/\./g, '').replace(',', '.');
       const parsed = parseFloat(cleaned);
-      // Retorna NaN se a conversão falhar (para detectar erros)
-      return isNaN(parsed) ? 0 : parsed;
+      // Converte para centavos
+      return isNaN(parsed) ? 0 : Math.round(parsed * 100);
     }
     return 0;
   };
