@@ -204,87 +204,10 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
         selectedMonthOffset
       );
 
-      // Usar SEMPRE os meses calculados pela função base, com fallback seguro
-      const targetMonth = base.currentInvoiceMonth ?? format(selectedMonthDate, "yyyy-MM");
-      const nextMonth = base.nextInvoiceMonth ?? format(addMonths(selectedMonthDate, 1), "yyyy-MM");
-
-      // Usa invoice_month salvo apenas se for override manual; senão calcula pela data
-      const effectiveMonth = (
-        d: Date,
-        savedInvoiceMonth?: string | null,
-        overridden?: boolean | null
-      ) => {
-        console.log('[CreditBillsPage] effectiveMonth DEBUG:', {
-          date: format(d, 'yyyy-MM-dd'),
-          savedInvoiceMonth,
-          overridden,
-          closingDate: account.closing_date,
-          dueDate: account.due_date,
-        });
-        
-        const result = overridden && savedInvoiceMonth
-          ? savedInvoiceMonth
-          : account.closing_date
-          ? calculateInvoiceMonthByDue(
-              d,
-              account.closing_date,
-              account.due_date || 1
-            )
-          : format(d, "yyyy-MM");
-        
-        console.log('[CreditBillsPage] effectiveMonth RESULT:', result);
-        return result;
-      };
-
-      let currentBillAmount = 0;
-      let nextBillAmount = 0;
-      const paymentTransactions: AppTransaction[] = [];
-
-      for (const t of accountTransactions) {
-        const d =
-          typeof t.date === "string" ? new Date(t.date) : (t.date as Date);
-        if (!d || isNaN(d.getTime())) continue;
-
-        // APENAS transações concluídas devem ser contabilizadas
-        if (t.status !== "completed") continue;
-
-        console.log('[CreditBillsPage] Processing transaction:', {
-          description: t.description,
-          date: format(d, 'yyyy-MM-dd'),
-          invoice_month: t.invoice_month,
-          invoice_month_overridden: t.invoice_month_overridden,
-          type: t.type,
-          amount: t.amount,
-        });
-
-        const eff = effectiveMonth(d, t.invoice_month, t.invoice_month_overridden);
-        
-        console.log('[CreditBillsPage] Comparing:', {
-          eff,
-          targetMonth,
-          nextMonth,
-          matches: eff === targetMonth ? 'CURRENT' : eff === nextMonth ? 'NEXT' : 'NONE',
-        });
-        
-        if (eff === targetMonth) {
-          if (t.type === "expense") currentBillAmount += Math.abs(t.amount);
-          else if (t.type === "income") {
-            currentBillAmount -= Math.abs(t.amount);
-            paymentTransactions.push(t as AppTransaction);
-          }
-        } else if (eff === nextMonth && t.type === "expense") {
-          nextBillAmount += Math.abs(t.amount);
-        }
-      }
-
+      // Usar os valores calculados pela função base (que já considera invoice_month_overridden)
       return {
         account,
         ...base,
-        currentBillAmount,
-        nextBillAmount,
-        paymentTransactions,
-        currentInvoiceMonth: targetMonth,
-        nextInvoiceMonth: nextMonth,
       };
     });
   }, [
