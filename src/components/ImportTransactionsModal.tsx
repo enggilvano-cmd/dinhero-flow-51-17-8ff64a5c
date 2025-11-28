@@ -266,8 +266,8 @@ export function ImportTransactionsModal({
     let isDuplicate = false;
     let existingTransactionId: string | undefined;
     if (isValid && parsedDate && accountId) {
-      // Converter valor importado para centavos para comparação
-      const valorInCents = Math.round(Math.abs(valor) * 100);
+      // Valor já está em centavos, não precisa multiplicar novamente
+      const valorInCents = Math.abs(valor);
       const parsedNorm = normalizeToUTCDate(parsedDate);
       
       const existingTx = transactions.find(tx => {
@@ -276,7 +276,7 @@ export function ImportTransactionsModal({
           txDate.getUTCFullYear() === parsedNorm.getUTCFullYear() &&
           txDate.getUTCMonth() === parsedNorm.getUTCMonth() &&
           txDate.getUTCDate() === parsedNorm.getUTCDate();
-        // Comparar valores sem conversão - ambos já estão em centavos
+        // Ambos valores já estão em centavos
         const isSameAmount = Math.abs(tx.amount) === valorInCents;
         const isSameDescription = (tx.description || '').trim().toLowerCase() === String(descricao).trim().toLowerCase();
         const isSameAccount = tx.account_id === accountId;
