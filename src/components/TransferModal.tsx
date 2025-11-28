@@ -152,8 +152,33 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
             <div className="space-y-2">
               <Label htmlFor="fromAccount" className="text-caption">Conta de Origem</Label>
               <Select value={formData.fromAccountId} onValueChange={(value) => setFormData(prev => ({ ...prev, fromAccountId: value }))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione a conta de origem" />
+                <SelectTrigger className="h-auto">
+                  <SelectValue placeholder="Selecione a conta de origem">
+                    {formData.fromAccountId && (() => {
+                      const selectedAccount = sourceAccounts.find((acc) => acc.id === formData.fromAccountId);
+                      if (!selectedAccount) return null;
+                      const hasLimit = selectedAccount.limit_amount && selectedAccount.limit_amount > 0;
+                      return (
+                        <div className="flex flex-col gap-1 w-full py-1">
+                          <div className="flex items-center gap-2">
+                            <div
+                              className="w-3 h-3 rounded-full flex-shrink-0"
+                              style={{
+                                backgroundColor: selectedAccount.color || "#6b7280",
+                              }}
+                            />
+                            <span className="text-body font-medium">{selectedAccount.name}</span>
+                          </div>
+                          <div className="text-caption text-muted-foreground pl-5">
+                            {formatCurrency(selectedAccount.balance)}
+                            {hasLimit && (
+                              <span className="text-primary font-semibold"> + {formatCurrency(selectedAccount.limit_amount || 0)} limite</span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {sourceAccounts.map((account) => {
@@ -197,8 +222,33 @@ export function TransferModal({ open, onOpenChange, onTransfer }: TransferModalP
             <div className="space-y-2">
               <Label htmlFor="toAccount" className="text-caption">Conta de Destino</Label>
               <Select value={formData.toAccountId} onValueChange={(value) => setFormData(prev => ({ ...prev, toAccountId: value }))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione a conta de destino" />
+                <SelectTrigger className="h-auto">
+                  <SelectValue placeholder="Selecione a conta de destino">
+                    {formData.toAccountId && (() => {
+                      const selectedAccount = destinationAccounts.find((acc) => acc.id === formData.toAccountId);
+                      if (!selectedAccount) return null;
+                      const hasLimit = selectedAccount.limit_amount && selectedAccount.limit_amount > 0;
+                      return (
+                        <div className="flex flex-col gap-1 w-full py-1">
+                          <div className="flex items-center gap-2">
+                            <div
+                              className="w-3 h-3 rounded-full flex-shrink-0"
+                              style={{
+                                backgroundColor: selectedAccount.color || "#6b7280",
+                              }}
+                            />
+                            <span className="text-body font-medium">{selectedAccount.name}</span>
+                          </div>
+                          <div className="text-caption text-muted-foreground pl-5">
+                            {formatCurrency(selectedAccount.balance)}
+                            {hasLimit && (
+                              <span className="text-primary font-semibold"> + {formatCurrency(selectedAccount.limit_amount || 0)} limite</span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {destinationAccounts
