@@ -403,14 +403,14 @@ export function ImportTransactionsModal({
         (t.resolution === 'add' || t.resolution === 'replace')
       )
       .map(t => {
-        // NÃO converter para centavos - os valores já estão no formato correto (centavos)
-        // Valores são sempre positivos no arquivo, o tipo define se é entrada ou saída
+        // Valores já estão em centavos e sempre positivos na validação
         const amount = Math.round(Math.abs(t.valor));
         
         return {
           description: t.descricao.trim(),        
-          // Despesas são negativas, receitas são positivas
-          amount: t.parsedType === 'expense' ? -amount : amount,
+          // Edge function + função SQL definem o sinal com base no tipo
+          // Portanto, SEMPRE enviamos amount positivo para passar na validação Zod
+          amount,
           category: t.categoria.trim(),
           type: t.parsedType as 'income' | 'expense' | 'transfer',
           account_id: t.accountId as string,
