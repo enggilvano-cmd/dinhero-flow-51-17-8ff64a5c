@@ -794,7 +794,7 @@ export function FixedTransactionsPage() {
                       {transaction.account && (
                         <span>🏦 {transaction.account.name}</span>
                       )}
-                      <span>📅 Todo dia {new Date(transaction.date).getDate()}</span>
+                      <span>📅 Todo dia {parseInt(transaction.date.split('-')[2], 10)}</span>
                     </div>
                   </div>
                   <div className="flex gap-2">
