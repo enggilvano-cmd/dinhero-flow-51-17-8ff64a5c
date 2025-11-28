@@ -206,17 +206,6 @@ export function FinancialEvolutionChart({
                     bottom: isMobile ? 60 : 50,
                   }}
                 >
-                  <defs>
-                    <linearGradient id="colorReceitas" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(var(--success))" stopOpacity={0.8} />
-                      <stop offset="95%" stopColor="hsl(var(--success))" stopOpacity={0.3} />
-                    </linearGradient>
-                    <linearGradient id="colorDespesas" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(var(--destructive))" stopOpacity={0.8} />
-                      <stop offset="95%" stopColor="hsl(var(--destructive))" stopOpacity={0.3} />
-                    </linearGradient>
-                  </defs>
-
                   <XAxis
                     dataKey="month"
                     {...getBarChartAxisProps(responsiveConfig).xAxis}
@@ -264,14 +253,14 @@ export function FinancialEvolutionChart({
 
                   <Bar
                     dataKey="receitas"
-                    fill="url(#colorReceitas)"
+                    fill="hsl(var(--success))"
                     radius={[4, 4, 0, 0]}
                     name="Receitas"
                   />
 
                   <Bar
                     dataKey="despesas"
-                    fill="url(#colorDespesas)"
+                    fill="hsl(var(--destructive))"
                     radius={[4, 4, 0, 0]}
                     name="Despesas"
                   />
