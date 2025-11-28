@@ -18,8 +18,9 @@ import { logger } from "@/lib/logger";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryClient";
 import { loadXLSX } from "@/lib/lazyImports";
-import { Upload, FileSpreadsheet, AlertCircle, Download, PlusCircle, Copy, AlertTriangle, MoreVertical } from "lucide-react";
+import { Upload, FileSpreadsheet, AlertCircle, Download, MoreVertical, PlusCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { ImportSummaryCards } from "@/components/import/ImportSummaryCards";
 
 interface Account {
   id: string;
@@ -745,55 +746,7 @@ export function ImportFixedTransactionsModal({
 
           {/* Summary Stats */}
           {importedData.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-2">
-                    <PlusCircle className="h-5 w-5 text-primary" />
-                    <div>
-                      <div className="text-2xl font-bold text-primary">{summary.new}</div>
-                      <p className="text-sm text-muted-foreground">Novas Transações</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-2">
-                    <Copy className="h-5 w-5 text-amber-500" />
-                    <div>
-                      <div className="text-2xl font-bold text-amber-500">{summary.duplicates}</div>
-                      <p className="text-sm text-muted-foreground">Duplicatas Encontradas</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-2">
-                    <AlertTriangle className="h-5 w-5 text-destructive" />
-                    <div>
-                      <div className="text-2xl font-bold text-destructive">{summary.invalid}</div>
-                      <p className="text-sm text-muted-foreground">Com Erros</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-2">
-                    <AlertCircle className="h-5 w-5 text-muted-foreground" />
-                    <div>
-                      <div className="text-2xl font-bold text-muted-foreground">{summary.excluded}</div>
-                      <p className="text-sm text-muted-foreground">Excluídas</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            <ImportSummaryCards summary={summary} />
           )}
 
           {/* Banner de Ação para Duplicadas */}
