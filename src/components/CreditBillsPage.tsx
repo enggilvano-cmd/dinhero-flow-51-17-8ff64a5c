@@ -213,8 +213,16 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
         d: Date,
         savedInvoiceMonth?: string | null,
         overridden?: boolean | null
-      ) =>
-        overridden && savedInvoiceMonth
+      ) => {
+        console.log('[CreditBillsPage] effectiveMonth DEBUG:', {
+          date: format(d, 'yyyy-MM-dd'),
+          savedInvoiceMonth,
+          overridden,
+          closingDate: account.closing_date,
+          dueDate: account.due_date,
+        });
+        
+        const result = overridden && savedInvoiceMonth
           ? savedInvoiceMonth
           : account.closing_date
           ? calculateInvoiceMonthByDue(
@@ -223,6 +231,10 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
               account.due_date || 1
             )
           : format(d, "yyyy-MM");
+        
+        console.log('[CreditBillsPage] effectiveMonth RESULT:', result);
+        return result;
+      };
 
       let currentBillAmount = 0;
       let nextBillAmount = 0;
@@ -236,7 +248,23 @@ export function CreditBillsPage({ onPayCreditCard, onReversePayment }: CreditBil
         // APENAS transações concluídas devem ser contabilizadas
         if (t.status !== "completed") continue;
 
+        console.log('[CreditBillsPage] Processing transaction:', {
+          description: t.description,
+          date: format(d, 'yyyy-MM-dd'),
+          invoice_month: t.invoice_month,
+          invoice_month_overridden: t.invoice_month_overridden,
+          type: t.type,
+          amount: t.amount,
+        });
+
         const eff = effectiveMonth(d, t.invoice_month, t.invoice_month_overridden);
+        
+        console.log('[CreditBillsPage] Comparing:', {
+          eff,
+          targetMonth,
+          nextMonth,
+          matches: eff === targetMonth ? 'CURRENT' : eff === nextMonth ? 'NEXT' : 'NONE',
+        });
         
         if (eff === targetMonth) {
           if (t.type === "expense") currentBillAmount += Math.abs(t.amount);
