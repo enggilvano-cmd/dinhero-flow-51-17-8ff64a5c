@@ -41,7 +41,7 @@ export function FilterCard({
       <CardContent className="p-3">
         <div className="space-y-3">
           <div>
-            <label id="period-filter-label" className="text-caption mb-1 block">
+            <label id="period-filter-label" className="text-caption font-medium mb-1.5 block text-foreground">
               Período
             </label>
             <Select value={dateFilter} onValueChange={(value: DateFilterType) => setDateFilter(value)}>
@@ -59,27 +59,27 @@ export function FilterCard({
 
           {dateFilter === 'month_picker' && (
             <div>
-              <label id="month-navigation-label" className="text-caption mb-1 block">
+              <label id="month-navigation-label" className="text-caption font-medium mb-1.5 block text-foreground">
                 Mês
               </label>
-              <div className="flex items-center gap-1 h-8 px-2 border border-input rounded-md">
+              <div className="flex items-center gap-1 h-8 px-2 border border-input rounded-md bg-background">
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={goToPreviousMonth}
-                  className="h-5 w-5 p-0"
+                  className="h-5 w-5 p-0 hover:bg-accent"
                   aria-label="Mês anterior"
                 >
                   <ChevronLeft className="h-3 w-3" aria-hidden="true" />
                 </Button>
-                <span className="flex-1 text-center text-caption" aria-live="polite">
+                <span className="flex-1 text-center text-body font-medium" aria-live="polite">
                   {format(selectedMonth, 'MMM/yy', { locale: ptBR })}
                 </span>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={goToNextMonth}
-                  className="h-5 w-5 p-0"
+                  className="h-5 w-5 p-0 hover:bg-accent"
                   aria-label="Próximo mês"
                 >
                   <ChevronRight className="h-3 w-3" aria-hidden="true" />
@@ -91,7 +91,7 @@ export function FilterCard({
           {dateFilter === 'custom' && (
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label id="start-date-label" className="text-caption mb-1 block">
+                <label id="start-date-label" className="text-caption font-medium mb-1.5 block text-foreground">
                   Início
                 </label>
                 <DatePicker
@@ -103,7 +103,7 @@ export function FilterCard({
               </div>
 
               <div>
-                <label id="end-date-label" className="text-caption mb-1 block">
+                <label id="end-date-label" className="text-caption font-medium mb-1.5 block text-foreground">
                   Final
                 </label>
                 <DatePicker
