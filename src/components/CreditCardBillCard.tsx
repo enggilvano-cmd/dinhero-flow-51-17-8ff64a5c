@@ -4,7 +4,7 @@ import { Progress } from "@/components/ui/progress";
 import { Account, Transaction } from "@/types";
 import { CreditCard, RotateCcw, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { isPast } from 'date-fns';
+import { format, isPast } from 'date-fns';
 import { Badge } from "@/components/ui/badge";
 import { useSettings } from "@/context/SettingsContext";
 import { logger } from "@/lib/logger";
@@ -69,14 +69,26 @@ export function CreditCardBillCard({
   // Calcula o percentual de limite usado
   const limitUsedPercentage = limit_amount > 0 ? (totalBalance / limit_amount) * 100 : 0;
   
-  // Lógica de Status - calcula a data de fechamento do mês da fatura
-  // billDetails já vem filtrado pelo mês correto (currentInvoiceMonth)
-  // Precisamos usar esse mês para calcular se está fechada
-  // selectedMonth é o mês que o usuário está visualizando (pode ser passado, atual, futuro)
-  const closingDate = closing_date 
-    ? new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), closing_date) 
-    : selectedMonth;
-  const isClosed = isPast(closingDate);
+  // Lógica de Status - calcula a data de fechamento e vencimento do mês da fatura
+  // selectedMonth é o mês que o usuário está visualizando
+  const closingDay = closing_date || 1;
+  const dueDay = due_date || 1;
+  
+  // Data de fechamento: sempre no mês selecionado
+  const closingDateOfBill = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), closingDay);
+  
+  // Data de vencimento: se dueDay <= closingDay, vence no MÊS SEGUINTE
+  // Exemplo: Fecha dia 30, vence dia 7 → vence no mês seguinte
+  let dueDateOfBill: Date;
+  if (dueDay <= closingDay) {
+    // Vence no mês seguinte ao fechamento
+    dueDateOfBill = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1, dueDay);
+  } else {
+    // Vence no mesmo mês do fechamento (caso raro)
+    dueDateOfBill = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), dueDay);
+  }
+  
+  const isClosed = isPast(closingDateOfBill);
   
   // --- LÓGICA DE PAGO ATUALIZADA ---
   const paidAmount = (paymentTransactions?.reduce((sum, t) => sum + Math.abs(t.amount), 0)) || 0;
@@ -93,7 +105,8 @@ export function CreditCardBillCard({
   logger.debug("[CreditCardBillCard] Status", {
     account: account.name,
     selectedMonth: selectedMonth.toISOString().split('T')[0],
-    closingDate: closingDate.toISOString().split('T')[0],
+    closingDateOfBill: closingDateOfBill.toISOString().split('T')[0],
+    dueDateOfBill: dueDateOfBill.toISOString().split('T')[0],
     isClosed,
     currentBillAmount,
     paidAmount,
@@ -110,7 +123,7 @@ export function CreditCardBillCard({
   
   const billLabel = currentBillAmount < 0 
     ? "Fatura Atual"
-    : `Fatura Atual (Vence dia ${due_date || 'N/A'})`;
+    : `Fatura Atual (Vence dia ${format(dueDateOfBill, 'dd/MM')})`;
 
   return (
     <Card className="financial-card flex flex-col shadow-md hover:shadow-lg transition-shadow">
@@ -162,8 +175,12 @@ export function CreditCardBillCard({
             </span>
           </div>
           <div className="flex justify-between text-xs border-t pt-2 mt-2">
-            <span className="text-muted-foreground">Data de Fechamento</span>
-            <span className="font-medium">Dia {closing_date || 'N/A'}</span>
+            <span className="text-muted-foreground">Fechamento</span>
+            <span className="font-medium">{format(closingDateOfBill, 'dd/MM/yyyy')}</span>
+          </div>
+          <div className="flex justify-between text-xs">
+            <span className="text-muted-foreground">Vencimento</span>
+            <span className="font-medium">{format(dueDateOfBill, 'dd/MM/yyyy')}</span>
           </div>
         </div>
       </CardContent>
