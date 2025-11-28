@@ -28,8 +28,23 @@ export function CreditBillDetailsModal({ bill, onClose }: CreditBillDetailsModal
   }
   
   const [year, month] = billMonth.split('-').map(Number);
-  const closingDay = new Date(bill.closing_date).getDate();
+  const closingDay = bill.account.closing_date || 1;
+  const dueDay = bill.account.due_date || 1;
+  
+  // Data de fechamento: sempre no mês da fatura
   const closingDateOfBill = new Date(year, month - 1, closingDay);
+  
+  // Data de vencimento: se dueDay <= closingDay, vence no MÊS SEGUINTE
+  // Exemplo: Fecha dia 30, vence dia 7 → vence no mês seguinte
+  let dueDateOfBill: Date;
+  if (dueDay <= closingDay) {
+    // Vence no mês seguinte ao fechamento
+    dueDateOfBill = new Date(year, month, dueDay); // month já é o próximo mês (JavaScript Date usa 0-11)
+  } else {
+    // Vence no mesmo mês do fechamento (caso raro)
+    dueDateOfBill = new Date(year, month - 1, dueDay);
+  }
+  
   const isClosed = isPast(closingDateOfBill);
   
   const amountDue = Math.max(0, bill.total_amount)
@@ -39,6 +54,7 @@ export function CreditBillDetailsModal({ bill, onClose }: CreditBillDetailsModal
   logger.debug("[CreditBillDetailsModal] Status", {
     billMonth,
     closingDateOfBill: format(closingDateOfBill, 'dd/MM/yyyy'),
+    dueDateOfBill: format(dueDateOfBill, 'dd/MM/yyyy'),
     isClosed,
     totalAmount: bill.total_amount,
     paidAmount,
@@ -66,7 +82,7 @@ export function CreditBillDetailsModal({ bill, onClose }: CreditBillDetailsModal
             </div>
           </DialogTitle>
           <DialogDescription>
-            Vencimento em {format(new Date(bill.due_date), 'dd/MM/yyyy', { locale: ptBR })} | Fechamento em {format(new Date(bill.closing_date), 'dd/MM/yyyy', { locale: ptBR })}
+            Vencimento em {format(dueDateOfBill, 'dd/MM/yyyy', { locale: ptBR })} | Fechamento em {format(closingDateOfBill, 'dd/MM/yyyy', { locale: ptBR })}
           </DialogDescription>
         </DialogHeader>
         <div className="flex justify-between items-center p-4 bg-muted/50 rounded-lg border">
