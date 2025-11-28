@@ -84,7 +84,8 @@ export function useImportMutations() {
         transactionsData.map(async (data) => {
           const category_id = data.category ? categoryMap.get(data.category) || null : null;
 
-          return supabase.functions.invoke('atomic-transaction', {
+          // Criar transação base
+          const result = await supabase.functions.invoke('atomic-transaction', {
             body: {
               transaction: {
                 description: data.description,
@@ -97,6 +98,36 @@ export function useImportMutations() {
               }
             }
           });
+
+          if (result.error) {
+            return { ...result, transactionData: data };
+          }
+
+          // Se tem parcelas ou invoice_month, atualizar os campos extras
+          const responseData = result.data as { transaction?: { id: string } };
+          const transactionId = responseData?.transaction?.id;
+
+          if (transactionId && (data.installments || data.current_installment || data.invoice_month)) {
+            const updates: Record<string, unknown> = {};
+            
+            if (data.installments) updates.installments = data.installments;
+            if (data.current_installment) updates.current_installment = data.current_installment;
+            if (data.invoice_month) {
+              updates.invoice_month = data.invoice_month;
+              updates.invoice_month_overridden = true;
+            }
+
+            const { error: updateError } = await supabase
+              .from('transactions')
+              .update(updates)
+              .eq('id', transactionId);
+
+            if (updateError) {
+              logger.error('Error updating transaction metadata:', updateError);
+            }
+          }
+
+          return { ...result, transactionData: data };
         })
       );
 
