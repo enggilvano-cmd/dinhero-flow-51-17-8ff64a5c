@@ -191,8 +191,9 @@ export function ImportTransactionsModal({
     const tipo = String(pick(row, HEADERS.type) || '');
     const conta = String(pick(row, HEADERS.account) || '');
     // Parse valor com suporte ao formato brasileiro (ponto = milhar, vírgula = decimal)
+    // SEMPRE positivo - o edge function aplica o sinal baseado no tipo
     const rawValor = String(pick(row, HEADERS.amount) || '0');
-    const valor = Math.round(parseFloat(rawValor.replace(/\./g, '').replace(',', '.')) * 100);
+    const valor = Math.abs(Math.round(parseFloat(rawValor.replace(/\./g, '').replace(',', '.')) * 100));
 
     if (!data) {
       errors.push('Data é obrigatória');
