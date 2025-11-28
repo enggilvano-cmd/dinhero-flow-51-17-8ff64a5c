@@ -27,7 +27,7 @@ export default defineConfig(({ mode }) => ({
           '**/*.{js,css,html,ico,png,svg,woff,woff2}'
         ]
       },
-      includeAssets: ['favicon.png', 'robots.txt', 'icon-192.png', 'icon-512.png'],
+      includeAssets: ['favicon.png', 'robots.txt', 'pwa-icon-192.png', 'pwa-icon-512.png'],
       manifest: {
         name: 'PlaniFlow - Gestão Financeira',
         short_name: 'PlaniFlow',
@@ -40,13 +40,13 @@ export default defineConfig(({ mode }) => ({
         orientation: 'portrait',
         icons: [
           {
-            src: '/icon-192.png',
+            src: '/pwa-icon-192.png',
             sizes: '192x192',
             type: 'image/png',
             purpose: 'any maskable'
           },
           {
-            src: '/icon-512.png',
+            src: '/pwa-icon-512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any maskable'
@@ -60,7 +60,7 @@ export default defineConfig(({ mode }) => ({
             short_name: 'Nova',
             description: 'Adicionar nova transação',
             url: '/?action=new-transaction',
-            icons: [{ src: '/icon-192.png', sizes: '192x192' }]
+            icons: [{ src: '/pwa-icon-192.png', sizes: '192x192' }]
           }
         ]
       },
