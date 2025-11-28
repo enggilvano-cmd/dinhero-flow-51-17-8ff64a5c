@@ -1,12 +1,13 @@
 // Service Worker for PWA - Offline Functionality
 // This file handles caching and offline capabilities
 
-// Workbox manifest injection point - DO NOT REMOVE
-self.__WB_MANIFEST;
-
 const CACHE_NAME = 'planiflow-v2';
 const RUNTIME_CACHE = 'planiflow-runtime-v2';
 const SUPABASE_CACHE = 'planiflow-supabase-v2';
+
+// Workbox manifest injection point - DO NOT REMOVE THIS LINE
+// The build process will replace this with the actual manifest
+self.__WB_MANIFEST;
 
 // Assets to cache on install
 const STATIC_ASSETS = [
