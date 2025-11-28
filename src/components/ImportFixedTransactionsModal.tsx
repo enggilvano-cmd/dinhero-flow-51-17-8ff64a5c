@@ -42,6 +42,7 @@ interface ImportedFixedTransaction {
   categoria: string;
   diaDoMes: number;
   status?: string;
+  mesesGerados?: number;
   isValid: boolean;
   errors: string[];
   accountId?: string;
@@ -160,6 +161,7 @@ export function ImportFixedTransactionsModal({
     const categoria = String(extractValue(row, ['Categoria', 'Category', 'categoria', 'category']) || '');
     const diaDoMes = parseInt(String(extractValue(row, ['Dia do Mês', 'Day of Month', 'diaDoMes', 'dia']) || '0'));
     const status = String(extractValue(row, ['Status', 'status']) || 'pending');
+    const mesesGerados = parseInt(String(extractValue(row, ['Meses Gerados', 'Generated Months', 'mesesGerados', 'meses']) || '0'));
 
     // Validações
     if (!descricao) {
@@ -240,6 +242,7 @@ export function ImportFixedTransactionsModal({
       categoria,
       diaDoMes,
       status,
+      mesesGerados,
       isValid,
       errors,
       accountId: account?.id,
@@ -330,7 +333,8 @@ export function ImportFixedTransactionsModal({
           'Conta': accounts[0]?.name || 'Conta Corrente',
           'Categoria': 'Habitação',
           'Dia do Mês': 5,
-          'Status': 'Pendente'
+          'Status': 'Pendente',
+          'Meses Gerados': 12
         },
         {
           'Descrição': 'Salário',
@@ -339,7 +343,8 @@ export function ImportFixedTransactionsModal({
           'Conta': accounts[0]?.name || 'Conta Corrente',
           'Categoria': 'Salário',
           'Dia do Mês': 1,
-          'Status': 'Pendente'
+          'Status': 'Pendente',
+          'Meses Gerados': 0
         },
         {
           'Descrição': 'Internet',
@@ -348,7 +353,8 @@ export function ImportFixedTransactionsModal({
           'Conta': accounts[0]?.name || 'Conta Corrente',
           'Categoria': 'Serviços',
           'Dia do Mês': 10,
-          'Status': 'Pendente'
+          'Status': 'Pendente',
+          'Meses Gerados': 0
         }
       ];
 
@@ -364,7 +370,8 @@ export function ImportFixedTransactionsModal({
         { wch: 25 }, // Conta
         { wch: 20 }, // Categoria
         { wch: 12 }, // Dia do Mês
-        { wch: 12 }  // Status
+        { wch: 12 }, // Status
+        { wch: 15 }  // Meses Gerados
       ];
       ws['!cols'] = colWidths;
 
@@ -501,6 +508,67 @@ export function ImportFixedTransactionsModal({
             logger.error("Error creating fixed transaction:", error);
             errorCount++;
           } else if (data?.success) {
+            // Se a transação tem meses extras gerados, criar as transações filhas adicionais
+            if (data?.parent_id && t.mesesGerados && t.mesesGerados > 0 && t.accountId) {
+              try {
+                // Buscar a última transação filha gerada pelo atomic-create-fixed
+                const { data: childTransactions, error: childError } = await supabase
+                  .from("transactions")
+                  .select("date")
+                  .eq("parent_transaction_id", data.parent_id)
+                  .order("date", { ascending: false })
+                  .limit(1);
+
+                if (!childError && childTransactions && childTransactions.length > 0) {
+                  const lastDate = new Date(childTransactions[0].date);
+                  const transactionsToGenerate = [];
+
+                  // Gerar as transações extras
+                  for (let i = 0; i < t.mesesGerados; i++) {
+                    const nextDate = new Date(
+                      lastDate.getFullYear(),
+                      lastDate.getMonth() + i + 1,
+                      t.diaDoMes
+                    );
+
+                    // Ajustar para o dia correto do mês
+                    const targetMonth = nextDate.getMonth();
+                    nextDate.setDate(t.diaDoMes);
+
+                    // Se o mês mudou, ajustar para o último dia do mês anterior
+                    if (nextDate.getMonth() !== targetMonth) {
+                      nextDate.setDate(0);
+                    }
+
+                    transactionsToGenerate.push({
+                      description: t.descricao.trim(),
+                      amount: amount,
+                      date: nextDate.toISOString().split("T")[0],
+                      type: t.parsedType!,
+                      category_id: categoryId,
+                      account_id: t.accountId,
+                      status: "pending" as const,
+                      user_id: user.id,
+                      is_fixed: false,
+                      parent_transaction_id: data.parent_id,
+                    });
+                  }
+
+                  // Inserir as transações extras
+                  if (transactionsToGenerate.length > 0) {
+                    const { error: insertError } = await supabase
+                      .from("transactions")
+                      .insert(transactionsToGenerate);
+
+                    if (insertError) {
+                      logger.error("Error generating extra months:", insertError);
+                    }
+                  }
+                }
+              } catch (extraError) {
+                logger.error("Error generating extra months:", extraError);
+              }
+            }
             successCount++;
           } else {
             errorCount++;
