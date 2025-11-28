@@ -558,17 +558,32 @@ export function FixedTransactionsPage() {
     return { totalFixed, monthlyIncome, monthlyExpenses, monthlyBalance };
   }, [filteredTransactions]);
 
-  const handleExportToExcel = () => {
+  const handleExportToExcel = async () => {
     try {
-      const exportData = filteredTransactions.map((transaction) => ({
-        Descrição: transaction.description,
-        Valor: formatBRNumber(transaction.amount),
-        Tipo: transaction.type === "income" ? "Receita" : "Despesa",
-        Conta: transaction.account?.name || "",
-        Categoria: transaction.category?.name || "",
-        "Dia do Mês": new Date(transaction.date).getDate(),
-        Status: "Pendente",
-      }));
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Para cada parent, contar quantas children pending existem
+      const exportDataPromises = filteredTransactions.map(async (transaction) => {
+        const { count } = await supabase
+          .from("transactions")
+          .select("*", { count: 'exact', head: true })
+          .eq("parent_transaction_id", transaction.id)
+          .eq("status", "pending");
+
+        return {
+          Descrição: transaction.description,
+          Valor: formatBRNumber(transaction.amount),
+          Tipo: transaction.type === "income" ? "Receita" : "Despesa",
+          Conta: transaction.account?.name || "",
+          Categoria: transaction.category?.name || "",
+          "Dia do Mês": new Date(transaction.date).getDate(),
+          Status: "Pendente",
+          "Meses Gerados": count || 0,
+        };
+      });
+
+      const exportData = await Promise.all(exportDataPromises);
 
       const ws = XLSX.utils.json_to_sheet(exportData);
       const wb = XLSX.utils.book_new();
