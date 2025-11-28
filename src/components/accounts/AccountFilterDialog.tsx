@@ -13,6 +13,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { Filter } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
@@ -21,6 +23,8 @@ interface AccountFilterDialogProps {
   onOpenChange: (open: boolean) => void;
   filterType: "all" | "checking" | "savings" | "credit" | "investment";
   onFilterTypeChange: (value: string) => void;
+  hideZeroBalance: boolean;
+  onHideZeroBalanceChange: (value: boolean) => void;
   activeFiltersCount: number;
 }
 
@@ -29,6 +33,8 @@ export function AccountFilterDialog({
   onOpenChange,
   filterType,
   onFilterTypeChange,
+  hideZeroBalance,
+  onHideZeroBalanceChange,
   activeFiltersCount,
 }: AccountFilterDialogProps) {
   return (
@@ -71,6 +77,20 @@ export function AccountFilterDialog({
                 <SelectItem value="investment">Investimento</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="hideZero"
+              checked={hideZeroBalance}
+              onCheckedChange={onHideZeroBalanceChange}
+            />
+            <Label
+              htmlFor="hideZero"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+            >
+              Ocultar contas zeradas
+            </Label>
           </div>
         </div>
       </DialogContent>

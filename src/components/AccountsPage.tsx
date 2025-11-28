@@ -39,6 +39,7 @@ import { Account, ImportAccountData } from '@/types';
 interface AccountsFilters {
   searchTerm: string;
   filterType: "all" | "checking" | "savings" | "credit" | "investment";
+  hideZeroBalance: boolean;
 }
 
 interface AccountsPageProps {
@@ -69,14 +70,17 @@ export function AccountsPage({
     {
       searchTerm: "",
       filterType: initialFilterType,
+      hideZeroBalance: false,
     }
   );
 
   const searchTerm = filters.searchTerm;
   const filterType = filters.filterType;
+  const hideZeroBalance = filters.hideZeroBalance;
 
   const setSearchTerm = (value: string) => setFilters((prev) => ({ ...prev, searchTerm: value }));
   const setFilterType = (value: typeof filters.filterType) => setFilters((prev) => ({ ...prev, filterType: value }));
+  const setHideZeroBalance = (value: boolean) => setFilters((prev) => ({ ...prev, hideZeroBalance: value }));
 
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -138,11 +142,21 @@ export function AccountsPage({
       });
     }
 
+    if (hideZeroBalance) {
+      chips.push({
+        id: "hideZero",
+        label: "Ocultar Zeradas",
+        value: "hideZero",
+        onRemove: () => setHideZeroBalance(false),
+      });
+    }
+
     return chips;
-  }, [filterType]);
+  }, [filterType, hideZeroBalance]);
 
   const clearAllFilters = () => {
     setFilterType("all");
+    setHideZeroBalance(false);
   };
 
   const filteredAccounts = accounts
@@ -151,7 +165,8 @@ export function AccountsPage({
         .toLowerCase()
         .includes(searchTerm.toLowerCase());
       const matchesType = filterType === "all" || account.type === filterType;
-      return matchesSearch && matchesType;
+      const matchesZeroBalance = !hideZeroBalance || account.balance !== 0;
+      return matchesSearch && matchesType && matchesZeroBalance;
     })
     .sort((a, b) =>
       a.name.localeCompare(b.name, "pt-BR", { sensitivity: "base" })
@@ -353,6 +368,8 @@ export function AccountsPage({
                 onOpenChange={setFilterDialogOpen}
                 filterType={filterType}
                 onFilterTypeChange={(value) => setFilterType(value as typeof filterType)}
+                hideZeroBalance={hideZeroBalance}
+                onHideZeroBalanceChange={setHideZeroBalance}
                 activeFiltersCount={filterChips.length}
               />
               
