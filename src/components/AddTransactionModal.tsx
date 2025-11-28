@@ -40,6 +40,7 @@ export function AddTransactionModal({
     selectedAccount,
     handleSubmit,
     setManualStatusChange,
+    setManualInvoiceMonthChange,
   } = useAddTransactionForm({
     open,
     initialType,
@@ -115,9 +116,10 @@ export function AddTransactionModal({
           {formData.account_id && selectedAccount?.type === "credit" && (
             <InvoiceMonthSelector
               invoiceMonth={formData.invoiceMonth}
-              onInvoiceMonthChange={(value) =>
-                setFormData((prev) => ({ ...prev, invoiceMonth: value }))
-              }
+              onInvoiceMonthChange={(value) => {
+                setManualInvoiceMonthChange(true);
+                setFormData((prev) => ({ ...prev, invoiceMonth: value }));
+              }}
             />
           )}
 
