@@ -72,6 +72,7 @@ export function useAddTransactionForm({
   const [customInstallments, setCustomInstallments] = useState("");
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [manualStatusChange, setManualStatusChange] = useState(false);
+  const [manualInvoiceMonthChange, setManualInvoiceMonthChange] = useState(false);
 
   // Reset form quando o modal abre
   useEffect(() => {
@@ -80,10 +81,11 @@ export function useAddTransactionForm({
       setCustomInstallments("");
       setValidationErrors({});
       setManualStatusChange(false);
+      setManualInvoiceMonthChange(false);
     }
   }, [open, initialType]);
 
-  // Recalcula o mês da fatura quando a data ou conta mudam
+  // Recalcula o mês da fatura quando a data ou conta mudam (apenas se não foi alterado manualmente)
   useEffect(() => {
     if (!formData.account_id || !formData.date) return;
     
@@ -92,27 +94,36 @@ export function useAddTransactionForm({
       // Só atualiza se o invoiceMonth não estiver vazio
       if (formData.invoiceMonth !== "") {
         setFormData(prev => ({ ...prev, invoiceMonth: "" }));
+        setManualInvoiceMonthChange(false);
       }
       return;
     }
     
-    const transactionDate = createDateFromString(formData.date);
-    const calculatedMonth = calculateInvoiceMonthByDue(
-      transactionDate,
-      selectedAccount.closing_date,
-      selectedAccount.due_date || 1
-    );
-    
-    // Só atualiza se o invoiceMonth mudou
-    if (formData.invoiceMonth !== calculatedMonth) {
-      setFormData(prev => ({ ...prev, invoiceMonth: calculatedMonth }));
+    // Só recalcula automaticamente se não houve alteração manual
+    if (!manualInvoiceMonthChange) {
+      const transactionDate = createDateFromString(formData.date);
+      const calculatedMonth = calculateInvoiceMonthByDue(
+        transactionDate,
+        selectedAccount.closing_date,
+        selectedAccount.due_date || 1
+      );
+      
+      // Só atualiza se o invoiceMonth mudou
+      if (formData.invoiceMonth !== calculatedMonth) {
+        setFormData(prev => ({ ...prev, invoiceMonth: calculatedMonth }));
+      }
     }
-  }, [formData.date, formData.account_id, formData.invoiceMonth, accounts]);
+  }, [formData.date, formData.account_id, formData.invoiceMonth, accounts, manualInvoiceMonthChange]);
 
   // Reset flag de alteração manual quando a data muda
   useEffect(() => {
     setManualStatusChange(false);
   }, [formData.date]);
+
+  // Reset flag de alteração manual do invoice month quando a conta muda
+  useEffect(() => {
+    setManualInvoiceMonthChange(false);
+  }, [formData.account_id]);
 
   // Define status automaticamente baseado na data (apenas se não foi alterado manualmente)
   useEffect(() => {
@@ -441,5 +452,6 @@ export function useAddTransactionForm({
     selectedAccount,
     handleSubmit,
     setManualStatusChange,
+    setManualInvoiceMonthChange,
   };
 }
