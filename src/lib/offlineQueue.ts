@@ -27,7 +27,7 @@ export interface QueuedOperation {
 
 const DB_NAME = 'planiflow-offline';
 const STORE_NAME = 'operations-queue';
-const DB_VERSION = 1;
+const DB_VERSION = 2; // Must match offlineDatabase.ts version
 
 class OfflineQueueManager {
   private db: IDBDatabase | null = null;
@@ -49,10 +49,13 @@ class OfflineQueueManager {
 
       request.onupgradeneeded = (event) => {
         const db = (event.target as IDBOpenDBRequest).result;
+        
+        // Only create if doesn't exist (could exist from offlineDatabase.ts)
         if (!db.objectStoreNames.contains(STORE_NAME)) {
           const store = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
           store.createIndex('timestamp', 'timestamp', { unique: false });
           store.createIndex('type', 'type', { unique: false });
+          logger.info('Operations queue store created');
         }
       };
     });
