@@ -20,6 +20,7 @@ export function CreditBillDetailsModal({ bill, onClose }: CreditBillDetailsModal
   
   // Calcular se está fechada baseado no mês da fatura
   // billing_cycle pode estar em formato "MM/yyyy" ou "yyyy-MM"
+  // O billing_cycle representa o mês de VENCIMENTO da fatura (convenção bancária)
   let billMonth = bill.billing_cycle;
   if (billMonth.includes('/')) {
     // Converter "11/2025" para "2025-11"
@@ -31,18 +32,19 @@ export function CreditBillDetailsModal({ bill, onClose }: CreditBillDetailsModal
   const closingDay = bill.account.closing_date || 1;
   const dueDay = bill.account.due_date || 1;
   
-  // Data de fechamento: sempre no mês da fatura
-  const closingDateOfBill = new Date(year, month - 1, closingDay);
+  // O mês da fatura (billing_cycle) é o mês de VENCIMENTO
+  // Data de vencimento: sempre no mês da fatura (billing_cycle)
+  const dueDateOfBill = new Date(year, month - 1, dueDay);
   
-  // Data de vencimento: se dueDay <= closingDay, vence no MÊS SEGUINTE
-  // Exemplo: Fecha dia 30, vence dia 7 → vence no mês seguinte
-  let dueDateOfBill: Date;
+  // Data de fechamento: se dueDay <= closingDay, fecha no MÊS ANTERIOR ao vencimento
+  // Exemplo: Vence dia 10/01, fecha dia 27 → fecha em 27/12 (mês anterior)
+  let closingDateOfBill: Date;
   if (dueDay <= closingDay) {
-    // Vence no mês seguinte ao fechamento
-    dueDateOfBill = new Date(year, month, dueDay); // month já é o próximo mês (JavaScript Date usa 0-11)
+    // Fecha no mês anterior ao vencimento
+    closingDateOfBill = new Date(year, month - 2, closingDay); // month-2 porque month-1 já é o mês da fatura
   } else {
-    // Vence no mesmo mês do fechamento (caso raro)
-    dueDateOfBill = new Date(year, month - 1, dueDay);
+    // Fecha no mesmo mês do vencimento (caso raro onde vencimento é antes do fechamento)
+    closingDateOfBill = new Date(year, month - 1, closingDay);
   }
   
   const isClosed = isPast(closingDateOfBill);
