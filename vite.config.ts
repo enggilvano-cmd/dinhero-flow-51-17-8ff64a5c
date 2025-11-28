@@ -15,6 +15,16 @@ export default defineConfig(({ mode }) => ({
     mode === 'development' && componentTagger(),
     VitePWA({
       registerType: 'autoUpdate',
+      strategies: 'injectManifest',
+      srcDir: 'public',
+      filename: 'sw.js',
+      injectManifest: {
+        injectionPoint: undefined,
+        swSrc: 'public/sw.js',
+        swDest: 'dist/sw.js',
+        globDirectory: 'dist',
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+      },
       includeAssets: ['favicon.png', 'robots.txt', 'pwa-icon-192-v2.png', 'pwa-icon-512-v2.png'],
       manifest: {
         name: 'PlaniFlow - Gestão Financeira',
@@ -31,26 +41,26 @@ export default defineConfig(({ mode }) => ({
             src: '/pwa-icon-192-v2.png',
             sizes: '192x192',
             type: 'image/png',
-            purpose: 'any'
+            purpose: 'any',
           },
           {
             src: '/pwa-icon-192-v2.png',
             sizes: '192x192',
             type: 'image/png',
-            purpose: 'maskable'
+            purpose: 'maskable',
           },
           {
             src: '/pwa-icon-512-v2.png',
             sizes: '512x512',
             type: 'image/png',
-            purpose: 'any'
+            purpose: 'any',
           },
           {
             src: '/pwa-icon-512-v2.png',
             sizes: '512x512',
             type: 'image/png',
-            purpose: 'maskable'
-          }
+            purpose: 'maskable',
+          },
         ],
         categories: ['finance', 'productivity'],
         screenshots: [],
@@ -60,9 +70,15 @@ export default defineConfig(({ mode }) => ({
             short_name: 'Nova',
             description: 'Adicionar nova transação',
             url: '/?action=new-transaction',
-            icons: [{ src: '/pwa-icon-192-v2.png', sizes: '192x192', type: 'image/png' }]
-          }
-        ]
+            icons: [
+              {
+                src: '/pwa-icon-192-v2.png',
+                sizes: '192x192',
+                type: 'image/png',
+              },
+            ],
+          },
+        ],
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
@@ -74,18 +90,18 @@ export default defineConfig(({ mode }) => ({
               cacheName: 'supabase-cache',
               expiration: {
                 maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24
+                maxAgeSeconds: 60 * 60 * 24,
               },
               cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          }
-        ]
+                statuses: [0, 200],
+              },
+            },
+          },
+        ],
       },
       devOptions: {
-        enabled: false
-      }
+        enabled: true,
+      },
     })
   ].filter(Boolean),
   resolve: {
