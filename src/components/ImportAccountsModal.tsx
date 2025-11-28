@@ -11,6 +11,7 @@ import { Upload, FileSpreadsheet, AlertCircle, MoreVertical, Copy, AlertTriangle
 import { useToast } from "@/hooks/use-toast";
 import { logger } from "@/lib/logger";
 import { loadXLSX } from "@/lib/lazyImports";
+import { formatCurrency } from "@/lib/formatters";
 import type { ImportAccountData } from '@/types';
 
 interface Account {
@@ -718,12 +719,12 @@ export function ImportAccountsModal({
                           </div>
                           <div>
                             <span className="text-muted-foreground">Saldo:</span>
-                            <span className="ml-1 font-medium">R$ {account.saldo}</span>
+                            <span className="ml-1 font-medium">{formatCurrency(account.saldo)}</span>
                           </div>
-                          {account.limite && (
+                          {account.limite > 0 && (
                             <div>
                               <span className="text-muted-foreground">Limite:</span>
-                              <span className="ml-1 font-medium">R$ {account.limite}</span>
+                              <span className="ml-1 font-medium">{formatCurrency(account.limite)}</span>
                             </div>
                           )}
                         </div>
