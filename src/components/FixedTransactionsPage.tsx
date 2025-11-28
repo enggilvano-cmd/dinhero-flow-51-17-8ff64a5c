@@ -577,7 +577,7 @@ export function FixedTransactionsPage() {
           Tipo: transaction.type === "income" ? "Receita" : "Despesa",
           Conta: transaction.account?.name || "",
           Categoria: transaction.category?.name || "",
-          "Dia do Mês": new Date(transaction.date).getDate(),
+          "Dia do Mês": parseInt(transaction.date.split('-')[2], 10),
           Status: "Pendente",
           "Meses Gerados": count || 0,
         };
