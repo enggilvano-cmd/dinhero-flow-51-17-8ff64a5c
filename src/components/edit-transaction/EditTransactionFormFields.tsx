@@ -120,8 +120,35 @@ export function EditTransactionFormFields({
             value={formData.account_id}
             onValueChange={(value) => onFormDataChange({ account_id: value })}
           >
-            <SelectTrigger>
-              <SelectValue placeholder="Selecione uma conta" />
+            <SelectTrigger className="h-auto">
+              <SelectValue placeholder="Selecione uma conta">
+                {formData.account_id && (() => {
+                  const selectedAccount = accounts.find((acc) => acc.id === formData.account_id);
+                  if (!selectedAccount) return null;
+                  return (
+                    <div className="flex flex-col gap-1 w-full py-1">
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="w-3 h-3 rounded-full flex-shrink-0"
+                          style={{
+                            backgroundColor: selectedAccount.color || "#6b7280",
+                          }}
+                        />
+                        <span className="text-body font-medium">{selectedAccount.name}</span>
+                        <span className="text-caption text-muted-foreground">
+                          - {ACCOUNT_TYPE_LABELS[selectedAccount.type]}
+                        </span>
+                      </div>
+                      <div className="text-caption text-muted-foreground pl-5">
+                        {formatCurrency(selectedAccount.balance)}
+                        {selectedAccount.limit_amount && selectedAccount.limit_amount > 0 && (
+                          <span className="text-primary font-semibold"> + {formatCurrency(selectedAccount.limit_amount)} limite</span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })()}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               {accounts.map((account) => (
