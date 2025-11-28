@@ -511,57 +511,70 @@ export function ImportFixedTransactionsModal({
             // Se a transação tem meses extras gerados, criar as transações filhas adicionais
             if (data?.parent_id && t.mesesGerados && t.mesesGerados > 0 && t.accountId) {
               try {
-                // Buscar a última transação filha gerada pelo atomic-create-fixed
-                const { data: childTransactions, error: childError } = await supabase
+                // Contar quantas transações filhas o atomic-create-fixed já criou
+                const { count: existingCount, error: countError } = await supabase
                   .from("transactions")
-                  .select("date")
-                  .eq("parent_transaction_id", data.parent_id)
-                  .order("date", { ascending: false })
-                  .limit(1);
+                  .select("*", { count: 'exact', head: true })
+                  .eq("parent_transaction_id", data.parent_id);
 
-                if (!childError && childTransactions && childTransactions.length > 0) {
-                  const lastDate = new Date(childTransactions[0].date);
-                  const transactionsToGenerate = [];
+                if (!countError && existingCount !== null) {
+                  // Calcular quantas transações adicionais precisamos criar
+                  const additionalTransactions = t.mesesGerados - existingCount;
 
-                  // Gerar as transações extras
-                  for (let i = 0; i < t.mesesGerados; i++) {
-                    const nextDate = new Date(
-                      lastDate.getFullYear(),
-                      lastDate.getMonth() + i + 1,
-                      t.diaDoMes
-                    );
-
-                    // Ajustar para o dia correto do mês
-                    const targetMonth = nextDate.getMonth();
-                    nextDate.setDate(t.diaDoMes);
-
-                    // Se o mês mudou, ajustar para o último dia do mês anterior
-                    if (nextDate.getMonth() !== targetMonth) {
-                      nextDate.setDate(0);
-                    }
-
-                    transactionsToGenerate.push({
-                      description: t.descricao.trim(),
-                      amount: amount,
-                      date: nextDate.toISOString().split("T")[0],
-                      type: t.parsedType!,
-                      category_id: categoryId,
-                      account_id: t.accountId,
-                      status: "pending" as const,
-                      user_id: user.id,
-                      is_fixed: false,
-                      parent_transaction_id: data.parent_id,
-                    });
-                  }
-
-                  // Inserir as transações extras
-                  if (transactionsToGenerate.length > 0) {
-                    const { error: insertError } = await supabase
+                  if (additionalTransactions > 0) {
+                    // Buscar a última transação filha gerada
+                    const { data: childTransactions, error: childError } = await supabase
                       .from("transactions")
-                      .insert(transactionsToGenerate);
+                      .select("date")
+                      .eq("parent_transaction_id", data.parent_id)
+                      .order("date", { ascending: false })
+                      .limit(1);
 
-                    if (insertError) {
-                      logger.error("Error generating extra months:", insertError);
+                    if (!childError && childTransactions && childTransactions.length > 0) {
+                      const lastDate = new Date(childTransactions[0].date);
+                      const transactionsToGenerate = [];
+
+                      // Gerar apenas as transações extras necessárias
+                      for (let i = 0; i < additionalTransactions; i++) {
+                        const nextDate = new Date(
+                          lastDate.getFullYear(),
+                          lastDate.getMonth() + i + 1,
+                          t.diaDoMes
+                        );
+
+                        // Ajustar para o dia correto do mês
+                        const targetMonth = nextDate.getMonth();
+                        nextDate.setDate(t.diaDoMes);
+
+                        // Se o mês mudou, ajustar para o último dia do mês anterior
+                        if (nextDate.getMonth() !== targetMonth) {
+                          nextDate.setDate(0);
+                        }
+
+                        transactionsToGenerate.push({
+                          description: t.descricao.trim(),
+                          amount: amount,
+                          date: nextDate.toISOString().split("T")[0],
+                          type: t.parsedType!,
+                          category_id: categoryId,
+                          account_id: t.accountId,
+                          status: "pending" as const,
+                          user_id: user.id,
+                          is_fixed: false,
+                          parent_transaction_id: data.parent_id,
+                        });
+                      }
+
+                      // Inserir as transações extras
+                      if (transactionsToGenerate.length > 0) {
+                        const { error: insertError } = await supabase
+                          .from("transactions")
+                          .insert(transactionsToGenerate);
+
+                        if (insertError) {
+                          logger.error("Error generating extra months:", insertError);
+                        }
+                      }
                     }
                   }
                 }
