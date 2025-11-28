@@ -19,6 +19,7 @@ export default defineConfig(({ mode }) => ({
       srcDir: 'public',
       filename: 'sw.js',
       injectManifest: {
+        injectionPoint: undefined,
         swSrc: 'public/sw.js',
         swDest: 'dist/sw.js',
         globDirectory: 'dist',
