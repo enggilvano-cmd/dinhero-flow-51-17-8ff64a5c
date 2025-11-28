@@ -30,7 +30,7 @@ function createFallbackDate(invalidInput?: unknown): Date {
 export function calculateInvoiceMonthByDue(
   transactionDate: Date,
   closingDate: number,
-  _dueDate: number = 10 // Não usado no cálculo (mantido para compatibilidade)
+  dueDate: number = 10
 ): string {
   // ✅ BUGFIX: Converte para timezone do usuário
   const txDate = toUserTimezone(transactionDate);
@@ -39,24 +39,43 @@ export function calculateInvoiceMonthByDue(
   const txMonth = txDate.getMonth();
   const txYear = txDate.getFullYear();
 
-  // Determina o mês de FECHAMENTO da fatura (que é o mês da fatura)
+  // Primeiro, determina quando a fatura FECHA
+  let billingCycleMonth: number;
+  let billingCycleYear: number;
+
+  if (txDay <= closingDate) {
+    // Transação no período atual - fecha no mês corrente
+    billingCycleMonth = txMonth;
+    billingCycleYear = txYear;
+  } else {
+    // Transação após o fechamento - vai para o próximo ciclo
+    billingCycleMonth = txMonth + 1;
+    billingCycleYear = txYear;
+    if (billingCycleMonth > 11) {
+      billingCycleMonth = 0;
+      billingCycleYear++;
+    }
+  }
+
+  // Agora calcula quando essa fatura VENCE
+  // O mês da fatura é identificado pelo mês de VENCIMENTO (convenção bancária)
+  // Se dueDate <= closingDate, vence no mês SEGUINTE ao fechamento
+  // Se dueDate > closingDate, vence no MESMO mês do fechamento
   let invoiceMonth: number;
   let invoiceYear: number;
 
-  if (txDay <= closingDate) {
-    // Compra ANTES ou NO dia do fechamento → pertence à fatura do mês corrente
-    invoiceMonth = txMonth;
-    invoiceYear = txYear;
-  } else {
-    // Compra DEPOIS do fechamento → pertence à fatura do próximo mês
-    invoiceMonth = txMonth + 1;
-    invoiceYear = txYear;
-    
-    // Ajusta ano se necessário
+  if (dueDate <= closingDate) {
+    // Vence no mês seguinte ao fechamento
+    invoiceMonth = billingCycleMonth + 1;
+    invoiceYear = billingCycleYear;
     if (invoiceMonth > 11) {
       invoiceMonth = 0;
       invoiceYear++;
     }
+  } else {
+    // Vence no mesmo mês do fechamento (caso raro)
+    invoiceMonth = billingCycleMonth;
+    invoiceYear = billingCycleYear;
   }
 
   const result = `${invoiceYear}-${String(invoiceMonth + 1).padStart(2, '0')}`;
