@@ -16,6 +16,7 @@ import {
   ArrowRight,
   DollarSign,
   TrendingUp,
+  TrendingDown,
   FileDown,
   Upload,
 } from "lucide-react";
@@ -296,7 +297,7 @@ export function AccountsPage({
           <CardContent className="p-3">
             <div className="flex flex-col items-center gap-2">
               <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center flex-shrink-0">
-                <CreditCard className="h-5 w-5 text-destructive" />
+                <TrendingDown className="h-5 w-5 text-destructive" />
               </div>
               <div className="w-full text-center">
                 <p className="text-caption font-medium mb-1">Dívida Total</p>
@@ -312,7 +313,7 @@ export function AccountsPage({
           <CardContent className="p-3">
             <div className="flex flex-col items-center gap-2">
               <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <CreditCard className="h-5 w-5 text-primary" />
+                <Wallet className="h-5 w-5 text-primary" />
               </div>
               <div className="w-full text-center">
                 <p className="text-caption font-medium mb-1">Crédito Disponível</p>

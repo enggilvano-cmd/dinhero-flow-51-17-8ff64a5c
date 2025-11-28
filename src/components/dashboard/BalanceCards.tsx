@@ -1,5 +1,5 @@
 import { Card, CardContent } from '@/components/ui/card';
-import { DollarSign, TrendingUp, TrendingDown, CreditCard, Clock } from 'lucide-react';
+import { DollarSign, TrendingUp, TrendingDown, CreditCard, Clock, Wallet } from 'lucide-react';
 import type { NavigationParams, AccountFilterType, TransactionFilterType, StatusFilterType, DateFilterType } from '@/types';
 
 interface BalanceCardsProps {
@@ -156,7 +156,7 @@ export function BalanceCards({
         <CardContent className="p-3 text-center">
           <div className="flex items-center justify-center gap-2 mb-1">
             <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center">
-              <CreditCard className="h-3.5 w-3.5 text-primary" />
+              <Wallet className="h-3.5 w-3.5 text-primary" />
             </div>
           </div>
           <p className="text-caption text-muted-foreground mb-1">
