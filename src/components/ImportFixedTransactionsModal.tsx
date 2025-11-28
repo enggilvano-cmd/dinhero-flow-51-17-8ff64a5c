@@ -150,9 +150,9 @@ export function ImportFixedTransactionsModal({
 
     const descricao = String(extractValue(row, ['Descrição', 'Description', 'descricao', 'description']) || '');
     
-    // Parse valor com suporte ao formato brasileiro (vírgula como decimal)
+    // Parse valor com suporte ao formato brasileiro (ponto = milhar, vírgula = decimal)
     const rawValor = String(extractValue(row, ['Valor', 'Amount', 'valor', 'amount']) || '0');
-    const valor = parseFloat(rawValor.replace(/\./g, '').replace(',', '.'));
+    const valor = Math.round(parseFloat(rawValor.replace(/\./g, '').replace(',', '.')) * 100);
     
     const tipo = String(extractValue(row, ['Tipo', 'Type', 'tipo', 'type']) || '');
     const conta = String(extractValue(row, ['Conta', 'Account', 'conta', 'account']) || '');
